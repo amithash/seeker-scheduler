@@ -1,0 +1,45 @@
+SEEKER - MiscScripts
+
+---------------------------------------------------------------------------------------------------------
+
+auto_pulldecode - Automates the decoding the pulling process.
+
+Usage: auto_pulldecode.pl -i /path/to/dir/with/bin/logs -o /path/to/dir/with/output/logs [-delete]
+
+The output dir contains a bunch of dirs one for each binary logs with 1 file per process,
+With a naming format:
+<PROCESS_NAME>.<PROCESS_PID>.p<PROCESSOR_ID>.log
+
+---------------------------------------------------------------------------------------------------------
+
+pre_organize - Orgainizes the pulled logs.
+
+USAGE: pre_organize.pl EXECUTION_LOG /path/to/input/dir /path/to/output/dir -paired|-single
+
+This script looks for processes of the format <NUMBER>.<CHARS> which is the spec naming convection
+for their applications. And as this is very much specific to my application this is put in the
+misc scripts section.
+
+If the -paired flag is given, It looks for 2 such processes in each dir, else for just 1.
+The EXECUTION_LOG is the log spit out by the DRACO Benchmark run script. (Benchrun.pl generated go.sh)
+
+---------------------------------------------------------------------------------------------------------
+
+auto_maxmin - Automates finding the per-sample max and min.
+
+Usage: auto_maxmin.pl /path/to/input/dir /path/to/output/dir
+
+Pretty self explanatory. Works well with the structure created by auto_interp.pl.
+
+---------------------------------------------------------------------------------------------------------
+
+mother_auto - Mother of all automation scripts! 
+
+USAGE: mother_auto.pl /path/to/binary/files /path/to/output/dirs INTERPOLATION_INTERVAL(Millions) \
+			SMOOTHNING_WINDOW (-paired | -single)
+
+This essentially runs all the above scripts back to back and and hece for the lazy.
+Run this, and go home for the day!
+
+---------------------------------------------------------------------------------------------------------
+

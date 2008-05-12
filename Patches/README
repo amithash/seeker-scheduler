@@ -1,0 +1,65 @@
+Patches:
+--------
+
+seeker-kernel-2.6.18.5.patch -> Patch for the 2.6.18.x kernel
+seeker-kernel-2.6.24.4.patch -> Patch for the 2.6.24.x kernel
+
+Things have changed a lot between these kernels, and I'd go with 2.6.24 it is more roburst.
+
+PATCHING THE KERNEL:
+--------------------
+
+Do the following to apply this patch:
+
+cd /path/to/kernel/source
+patch -p1 /path/to/seeker-kernel-2.6.x.y.patch
+and then continue configuring, compiling and installing the new kernel.
+
+SIDE NOTES:
+-----------
+
+Kernel versions vary a lot. The 2.6.18 is completely different from the 2.6.24.
+And I'd really recommend using a 2.6.18 kernel for the 2.6.18 patch and the 
+2.6.24 patch to the 2.6.24 kernel. 
+
+If you really want to use another kernel not mentioned here, here are some notes:
+1. Use the 2.6.18 patch on anything less than 2.6.24 
+2. Use the 2.6.24 for kernels greater than 2.6.24 -> This kernel has a lot of changes.
+3. After applying the patch pay attention on the error messages or warnings if any.
+4. Here is a list of files my patch modifies:
+	2.6.18:
+		x86:
+		arch/i386/kernel/apic.c
+		include/asm-i386/apic.h
+		include/asm-i386/hw_irq.h
+		include/asm-i386/irq.h
+		include/asm-i386/mach-default/arch_entry.h
+		x86_64:
+		arch/x86_64/kernel/apic.c
+		arch/x86_64/kernel/i8259.c
+		arch/x86_64/kernel/entry.S
+		include/asm-x86_64/apic.h
+		include/asm-x86_64/hw_irq.h
+		include/asm-x86_64/irq.h
+	2.6.18:
+		x86:
+		arch/x86/kernel/apic_32.c
+		include/asm-x86/apic_32.h
+		include/asm-x86/hw_irq_32.h
+		include/asm-x86/irq_32.h
+		include/asm-x86/mach-default/arch_entry.h
+		x86_64:
+		arch/x86/kernel/apic_64.c
+		arch/x86/kernel/i8259_64.c
+		arch/x86/kernel/entry_64.S
+		include/asm-x86/apic_64.h
+		include/asm-x86/hw_irq_64.h
+		include/asm-x86/irq_64.h
+5. If something cannot be done, check why. 
+6. If you are feeling brave, here is some tip to know something is wrong.
+	I do everything what the kernel does with the local timer. If you 
+	see that and not *pmu_interrupt add/modify/delete it. 
+	
+7. If you do not want to do these things, send me an email with the kernel
+   version number. I will send you a patch.
+

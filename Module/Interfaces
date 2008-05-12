@@ -1,0 +1,221 @@
+ *------------------------------------------------------------------------*
+ * Copyright 2008 Amithash Prasad                                         *
+ * This file is part of seeker                                            *
+ *                                                                        *
+ * Seeker is free software: you can redistribute it and/or modify         *
+ * it under the terms of the GNU General Public License as published by   *
+ * the Free Software Foundation, either version 3 of the License, or      *
+ * (at your option) any later version.                                    *
+ *                                                                        *
+ * This program is distributed in the hope that it will be useful,        *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ * GNU General Public License for more details.                           *
+ *                                                                        *
+ * You should have received a copy of the GNU General Public License      *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
+ *------------------------------------------------------------------------*
+
+
+-------------------------------------------------------------------------------------------
+			INTERFACE SPECIFICATION DOCUMENT
+-------------------------------------------------------------------------------------------
+
+If you are porting this to another architecture, then this document should be helpful in 
+writing the drivers for ther performance monitoring counters etc etc. 
+
+General Instructions:
+
+Your drivers must be multi-core aware even if your architecture supports only 1 core.
+Use NR_CPUS to create arrays of data structures to make them per cpu.
+Use smp_processor_id() to index into these data structures whether to write or read them.
+
+When you are done with all of them, in seeker-sampler-src.c change the header names to
+your dirver's headers.
+
+
+-------------------------------------------------------------------------------------------
+			PERFORMANCE MONITORING COUNTERS:
+-------------------------------------------------------------------------------------------
+
+Naming convenction:
+-------------------
+
+The name of the driver files must start with a max 3 letter short architecture descreption 
+(c2d -> core2duo k8 -> opteron) And end with pmu.
+
+Defines:
+--------
+
+#define MAX_COUNTERS -> This should reflect the number of performance monitoring counters 
+which exist per cpu for your architecture.
+
+Interface Methods:
+------------------
+
+void pmu_init_msrs(void);
+Initializes the msr data structures. Does not configure the msrs
+Is called on each cpu and hence get the cpuid from smp_processor_id()
+to initialize the datastructure of that cpu.
+
+void counter_clear(u32 counter);
+Note, this is called on each cpu, and this must clear the counter specified by
+the argument counter which must be an index number to the counter in your data
+structures. This does a wrmsr and hence writes 0 to them.
+
+void counter_read(void);
+Called on each cpu. reads each and every counter on the current cpu and stores them
+in the local datastructures for that corrosponding cpuid. Does not return anything.
+(This is the function which calls rdmsr)
+
+u64 get_counter_data(u32 counter, u32 cpu_id);
+Returns the value stored in the data structures for the provided cpuid and counter index.
+Returns a 64 bit number (u64).
+
+void counter_disable(int counter);
+Called on each cpu. Disables the counter provided by the counter index on the current cpu.
+and must reflect in the local data structures.
+
+int counter_enable(u32 event_num, u32 ev_mask, u32 cpu, u32 os);
+Called on each cpu. searches in the data structures for an unassigned counter. 
+If found assigns it the values of event. event_mask, os_flag and stores in the local
+data structures. Calls the function which wrtes to the corrosponding event select register. 
+and on success, returns the index to the avaliable counter on that cpu.
+
+NOTE: you can base your design on c2dpmu.c and c2dpmu.h. But these are the function names you
+MUST use if you do not want to noodle around in seeker-sampler-src.c.
+
+
+----------------------------------------------------------------------------------------------
+				TIME STAMP COUNTERS
+----------------------------------------------------------------------------------------------
+
+
+Naming convenction:
+-------------------
+
+The name of the driver files must start with a max 3 letter short architecture descreption 
+(c2d -> core2duo k8 -> opteron) And end with tsc.
+
+Defines/Data structures
+-----------------------
+
+Have a data structure which contain the time stamp counter value (2 of them one for current
+and the other for past value) and this must be an array of length NR_CPUS
+
+Interface Methods:
+------------------
+
+void tsc_init_msrs(void);
+Initializes the data structures to 0. 
+
+void read_time_stamp(void);
+Copies the values in the current tsc to the last tsc.
+ANd them does a rdmsr on the time stamp counter and gets the values into the current 
+tsc data structure.
+
+u64 get_time_stamp(u32 cpu_id);
+Returns the current time stamp as a 64 bit integer
+
+u64 get_last_time_stamp(u32 cpu_id);
+Returns the previous time stamp value as a 64 bit integer.
+
+
+
+----------------------------------------------------------------------------------------------
+				FIXED PERFORMANCE COUNTERS
+----------------------------------------------------------------------------------------------
+
+
+Naming convenction:
+-------------------
+
+The name of the driver files must start with a max 3 letter short architecture descreption 
+(c2d -> core2duo k8 -> opteron) And end with fpmu.
+This must still exist even though your architecture does not have fixed performance counters
+in which case all the functions are stubs.
+
+
+Defines/Data structures
+-----------------------
+
+#define NUM_FIXED_COUNTERS 3 -> Indicates the maximum number of fixed performance counters
+on the system. (0 if not avaliable)
+
+
+Interface Methods:
+------------------
+
+void fpmu_init_msrs(void);
+Called on each cpu. Initializes the data structures. 
+
+void fcounter_clear(u32 counter);
+Called on each cpu. Takes in a counter value and clears it. 
+
+void fcounter_read(void);
+Called on each cpu. Does an rdmsr and gets the values of all the fixed performance counters
+and stores them in the local data structures. for the current cpu.
+
+u64 get_fcounter_data(u32 counter, u32 cpu_id);
+Returns the stored counter data for the specified counter id and cpu id. 
+Returns a 64 bit number.
+
+void fcounters_disable(void);
+Clears and hance disables the control registers.
+
+void fcounters_enable(u32 os);
+Takes in the os flag and writes to the configuration registers for the current cpu,
+and then calls the function which writes these to the msrs (using a wrmsr)
+Called on each cpu.
+
+
+----------------------------------------------------------------------------------------------
+				TEMPERATURE SENSOR DRIVERS
+----------------------------------------------------------------------------------------------
+
+Naming convenction:
+-------------------
+
+The name of the driver files must start with a max 3 letter short architecture descreption 
+(c2d -> core2duo k8 -> opteron) And end with therm.
+This must still exist even though your architecture does not have fixed performance counters
+in which case all the functions are stubs.
+
+
+Defines/Data structures
+-----------------------
+
+2 integer arrays (length = NR_CPUS oc course!) are required. One for the reference temperature
+and the other for the current temperature.
+
+Interface Methods:
+------------------
+
+void therm_init_msrs(void);
+Probe the system to get the Max reference temperature this was done by reading the 0xEE register
+in c2d. If you do not have this facility, then hard code them, but you still have to initialize 
+the data structures. And finally calls read_temp to do the first temperature 
+
+int read_temp(void);
+Called on each cpu. Reads the temperautre msrs and checks if the readout is valid, if it is, 
+the temperautre is computed from the reference temperature and returns 0 (Success) else returns 
+-1 (Failure).
+
+int get_temp(int cpu_id);
+Returns the temperature for the provided cpu id.
+
+
+----------------------------------------------------------------------------------------------
+				SOMETHING ELSE, SOMETHING NEW
+----------------------------------------------------------------------------------------------
+
+Ok, if you are adding something new than the ones above, then you will HAVE TO edit 
+seeker-sampler-src.c. But it is not all bad as I have clearly documented what and where
+new counter calls must be inserted
+
+Shoot me an email about this. I could probably integrate this when you are done. Or if you
+get confused.
+
+
+----------------------------------------------------------------------------------------------
+
