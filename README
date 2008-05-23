@@ -418,6 +418,10 @@ Revision 138 Added support to sample exery x events from the perf counters. This
 	     that things are working! Note the last change! 104 to 138 I have been
 	     working on this particular feature!
 Revision 146 Seeker is tested to work with the 2.6.24 kernel. Yippee. 
+Revision 8   No, this is not a mistake. I just started using google code to revision
+	     and host my code. And hence the restart in revisioning!
+	     (At least it makes me look like a real programmer to get to this level
+	     in 7 revisions! :-)
 
 ========================================================================================
 
