@@ -59,7 +59,7 @@ seeker::do_per_dir("$output/organized", "$output/organized", "$output/interp",
 		  "$ENV{SEEKER_HOME}/Scripts/interp INPUT OUTPUT $interval") 
 		  if($what eq "-all" or $what eq "-interp");
 if($paired){
-	system("$misc_scripts/auto_maxmin.pl $output/interpolated $output/maxmin") if($what eq "-mm" or $what eq "-all");
+	system("$misc_scripts/auto_maxmin.pl $output/interp $output/maxmin") if($what eq "-mm" or $what eq "-all");
 	seeker::do_per_dir("$output/maxmin", "$output/maxmin", "$output/smooth", 
 			   "$ENV{SEEKER_HOME}/Scripts/smooth INPUT OUTPUT $window")
 		           if($what eq "-all" or $what eq "-smooth");
@@ -69,8 +69,11 @@ else{
 			   "$ENV{SEEKER_HOME}/Scripts/smooth INPUT OUTPUT $window")
 		           if($what eq "-all" or $what eq "-smooth");
 }
+system("mkdir $output/smooth_tsv") unless(-d "$output/smooth_tsv");
 seeker::do_per_dir("$output/smooth", "$output/smooth", "$output/smooth_tsv", 
-		   "$ENV{SEEKER_HOME}/Scripts/scv2tsv.pl INPUT OUTPUT")
+		   "$ENV{SEEKER_HOME}/Scripts/csv2tsv.pl INPUT OUTPUT")
 		   if($what eq "-all" or $what eq "-conv");
+seeker::do_per_dir("$output", "$output", "$output",
+		   "gzip INPUT") if($what eq "-all" or $what eq "-gzip");
 # PLOTS ANYONE? 
 

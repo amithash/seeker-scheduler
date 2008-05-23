@@ -41,7 +41,7 @@ foreach my $dir1 (@dirs1){
 
 		# P
 		foreach my $dir3 (@dirs3){
-			my @files = get_dir_tree("$input_path/$dir1/$dir2/$dir3");
+			my @files = seeker::get_dir_tree("$input_path/$dir1/$dir2/$dir3");
 			for(my $i=0;$i<=$#files;$i = $i+1){
 				$files[$i] = "$input_path/$dir1/$dir2/$dir3/$files[$i]";
 			}

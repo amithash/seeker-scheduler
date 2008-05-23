@@ -1,423 +1,45 @@
-========================================================================================
-                                    SEEKER
-       A system wide performance counter and temperature sampler with 
-       			per core monitoring capabilities.
-	 		Copyright 2008 Amithash Prasad                                         
-			 This file is part of seeker                                            
-	                                                                        
-	 Seeker is free software: you can redistribute it and/or modify         
-	 it under the terms of the GNU General Public License as published by   
-	 the Free Software Foundation, either version 3 of the License, or      
-	 (at your option) any later version.                                    
-	                                                                        
-	 This program is distributed in the hope that it will be useful,        
-	 but WITHOUT ANY WARRANTY; without even the implied warranty of         
-	 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          
-	 GNU General Public License for more details.                           
-	                                                                        
-	 You should have received a copy of the GNU General Public License      
-	 along with this program.  If not, see <http://www.gnu.org/licenses/>.  
-
-========================================================================================
-
-PRE-SETUP / PRE-REQS:
---------------------
-
-The kernel module seeker-sampler requres the linux kernel to be built with the 
-options "KPROBES" and "KALLSYM" enabled. These are not usually enabled in most 
-distributions. And hence you will have to re-compile the kernel. And I highly 
-recommend you to use a vanilla kernel from kernel.org. (I have tested this on 
-2.6.18.5 and 2.6.24.5). Here are the step by step procedures in case you are 
-new to this:
-
-1. Download the kernel from kernel.org. 
-2. unzip, untar.
-3. move the linux-2.6.x.x dir to /usr/src
-	In order to use the PMU Interrupt facilities, you need to patch your kernel.
-	For more detailed information, refer Patches/README
-	3a. Note: The patch works only with 2.6.24 or higher kernels. Not that it
-	    is different, just that from 2.6.24 on wards, they kicked the i386 branch
-	    and started calling it x86.
-	3b. cd to the kernel directory.
-	3c. patch -p1 < /path/to/seeker/Patches/seeker-kernel-2.6.24.4.patch
-4. Copy /boot/config-2.6.y.y to /usr/src/linux-2.6.x.x/.config where, 
-   2.6.y.y is the current booted, working kernel.
-5. cd /usr/src/linux-2.6.x.x
-6. make menuconfig
-7. Select Load alternate config file and select .config
-8. In Instrumentation section, make sure kprobes is selected.
-9. In Kernel Hacking section, make sure "Include debugging symbols" is selected.
-10. Exit saving the .config file.
-11. make (This takes a while, so go get a coffee)
-12. make modules_install install
-13. mkinitrd -o /boot/initrd-2.6.x.x.img 2.6.x.x
-14. Open /boot/grub/grub.conf and copy the section of your working kernel to a 
-    new place and change the title and others to reflect your new compiled kernel.
-15. Reboot to the new kernel. 
-16. Kernel Panic?? Oops... google! 
-
-
-17. Once everything is up and running and if you want to use the auto.pl or send.pl 
-    scripts, Set the enviornment variable SEEKER_HOME to the path of your seeker 
-    directory. For bash, edit the .bashrc in your home dir and put this line at the end:
-    export SEEKER_HOME=/path/to/seeker;
-18. Make sure you have perl, gcc (Of course!) and  g++ installed. To use the plotting
-    scripts, you will need gnuplot 4.2 installed.
-
-========================================================================================
-
-
-KERNEL MODULES:
---------------
-
-Core MicroArchitecture: c2d*
-AMD Opteron Microarchitecture k8*
-
-c2d/
-c2dpmu   - Performance counter driver
-c2dfpmu  - Fixed Performance Counter driver
-c2dtherm - Core temperature digital sensor driver
-c2dtsc   - Time stamp counter
-
-k8/
-k8pmu    - Performance counter driver
-k8fpmu   - Fixed Performance Counter stub driver
-k8therm  - Core temperature digital sensor stub driver
-k8tsc    - Time stamp counter
-
-seeker-sampler - the sampling kernel module : depends on c2dpmu, c2dfpmu and c2dtherm
-
-There are four modules in the Module/ directory.  You must be root
-to install or remove modules, so you probably want to run all your
-experiments as root :).
-
-All examples are for the core microarchitecture. Just replace c2d with k8 for the
-AMD architectures.
-
-1. Type 'insmod Build/c2dpmu.ko'.  This installs only the driver
-to access the performance counters.
-
-2. Type 'insmod Build/c2dfpmu.ko'. This installs the driver to access
-the fixed performance counters.
+SEEKER - MiscScripts
 
-3. Type 'insmod Build/c2dtsc.ko'. This installs the driver to access
-the time stamp counters,
+---------------------------------------------------------------------------------------------------------
 
-4. Type 'insmod Build/c2dtherm.ko'. This installs the driver to access
-the on-die temperature sensors.
+auto_pulldecode - Automates the decoding the pulling process.
 
-5. For the sampling driver, type
-'insmod Build/seeker-sampler.ko sample_freq=F [log_events=X,Y log_ev_masks=XM,YM os_flag=flag pmu_intr=P]'
+Usage: auto_pulldecode.pl -i /path/to/dir/with/bin/logs -o /path/to/dir/with/output/logs [-delete]
 
-Where log_events are event numbers, log_ev_masks are event-specific
-masks, This is optional, if not provided, PMU is not monitored and only
-the Fixed PM Counters are monitored.
-	
-sample_freq is the number of times per second you would like samples 
-to be taken. If pmu_intr=x is provided and is less than 3, then it is
-"take a sample every time counter x reaches a value of x".
+The output dir contains a bunch of dirs one for each binary logs with 1 file per process,
+With a naming format:
+<PROCESS_NAME>.<PROCESS_PID>.p<PROCESSOR_ID>.log
 
-pmu_intr if provided, and greater than or equal to 0 then the corrosponding
-fixed counter is configured for interrupt for every sample_freq events.
-Else the timer is used as an interrupt source.
+---------------------------------------------------------------------------------------------------------
 
-os_flag indicates the value for the os_flag for the performance counters.
-os_flag=0 -> Performance counters are enabled in user mode only.
-os_flag=1 -> Performance counters are enabled in kernel and user mode.
+pre_organize - Orgainizes the pulled logs.
 
-A list of events are in the C2D_EVENTS.pdf file. Use a max of 2 at a time.
+USAGE: pre_organize.pl EXECUTION_LOG /path/to/input/dir /path/to/output/dir -paired|-single
 
-Almost all the parameters are optional except the sample_freq flag. Of course,
-If you did not want to sample, why use seeker? There are things which are
-much more convienent and will not involve you with kernel modules! 
+This script looks for processes of the format <NUMBER>.<CHARS> which is the spec naming convection
+for their applications. And as this is very much specific to my application this is put in the
+misc scripts section.
 
-If you decide that you want to change the events being sampled, you
-must unload the seeker-sampler module: 'rmmod seeker-sampler'.  Also, if you're
-going to remove the module, kill the generic_log_dump (next section) process first
-and wait a couple of seconds or bad things could happen.
+If the -paired flag is given, It looks for 2 such processes in each dir, else for just 1.
+The EXECUTION_LOG is the log spit out by the DRACO Benchmark run script. (Benchrun.pl generated go.sh)
 
-'load.sh log_events=X,Y log_ev_masks=XM,YM sample_freq=F os_flag=flag'
-This will do all the above.
+---------------------------------------------------------------------------------------------------------
 
+auto_maxmin - Automates finding the per-sample max and min.
 
-========================================================================================
+Usage: auto_maxmin.pl /path/to/input/dir /path/to/output/dir
 
-DAEMONS:
---------
+Pretty self explanatory. Works well with the structure created by auto_interp.pl.
 
-generic_log_dump - Reads from seeker-sampler and dumps into a binary file.
+---------------------------------------------------------------------------------------------------------
 
-USAGE: generic_log_dump <interval> /dev/seeker_samples <binary file tempelate>
+mother_auto - Mother of all automation scripts! 
 
-To get the raw sampling data from the kernel, you have to have a
-daemon running to suck from the kernel buffer.  This is invoked by typing:
-'Scripts/generic_log_dump T /dev/seeker_samples /path/to/binary/output/log &'
+USAGE: mother_auto.pl /path/to/binary/files /path/to/output/dirs INTERPOLATION_INTERVAL(Millions) \
+			SMOOTHNING_WINDOW (-paired | -single)
 
-This has the effect of dumping the buffer (/dev/seeker_samples) every 'T'
-second.  The data will be put in /path/to/binary/output/log0.
-Note the '0' at the end. This exists to support multiple runs using 'send'
-(Next section)
+This essentially runs all the above scripts back to back and and hece for the lazy.
+Run this, and go home for the day!
 
-PS: make sure that your log* does not exist in the path you have chosen.
-in other words, if generic_log_dump finds the file it wants to create,
-It will choke and die.
-
-Sometimes it takes a few seconds after a process ends for that event
-to make it into the log, so I generally wait about 10-20s after I
-think a process/experiment is done to swap out logs.
-
-========================================================================================
-
-UTILITIES:
-----------
-
-send - Allows restart of the generic_log_dump daemon to shift log file dumps.
-
-USAGE: send.pl [-t]
-
-[-t] if provided, terminates generic_log_dump. else sends an instruction to change logs
-
-This script allows you to change log files. Helpful if you are collecting data for
-a few applications and helps a lot in automating the process.
-
-Scripts/send 
-
-then generic_log_dump will start dumping into the file /path/to/binary/output/log1
-and so on and so forth. Make sure that you call send some 20 seconds
-after the experiment is done.
-
-NOTE: To use this script, you need to have set the enviornment variable SEEKER_HOME
-to point to the dir containing this script.
-
-------------------------------------------------------------------------------------------
-
-decodelog - Utility to decode the binary log.
-
-USAGE: decodelog < /path/to/binary/log > /path/to/ascii/log
-
-The log comes out in a binary format.  You want ascii, so you have to
-convert it using 'Scripts/decodelog < binlog > asciilog'.  The < and > back
-there are for redirection, don't forget them.
-
-
-Reading the ascii log:
-
-The log file contains a "p" line which gives the pid for each application logged.
-p,<pid>,<app name>,0
-
-Using the pid of the app, the lines for that app can be calculated.
-Searching for ",<pid>," you will get the sample "s" line:
-s,<cpu>,<pid>,<cycles>,<time stamp>,[<counter1>,<counter2>],<fcounter1>,<fcounter2>,<fcounter3>,<temp>
-[] - optional, depends on the number of counters you are monitoring.
-
-You can write your own scripts to parse this file, or use 'pull.pl' (Next Section)
-
-------------------------------------------------------------------------------------------
-
-pull - To get the single process sample data.
-
-USAGE: pull.pl [-o output dir -n process_name] -i inputfile_name
-
-Usually the output ascii file is quiet exhausting and might have a lot of processes and
-not really organized as it is a global sampler with per process detail. and hence, run
-'Scripts pull.pl -o /path/to/logs/dir -n process_name -i input_log_file_name'
-
-If there exists different pids for the same process name, different output files will
-be generated and hence -o requires the path to a directory. 
-
-If -o is not provided (Optional) then the output files will be generated in the current dir.
-If -n is not provided (Optional) then a file for each and every pid will be generated.
-
-Output file naming format: <process_name>.pid.log
-
-File format: CSV Format with a header.
-
-------------------------------------------------------------------------------------------
-
-interp - Performs linear spline interpolation on data. 
-
-USAGE: interp /path/to/input/csv/file /path/to/output/csv/file. INTERVAL(Millions of instructions)
-
-Configuration: Scripts/iconfig.h
-
-As Interpolation cannot be performed on all data without generating data which does not make
-sense, like interpolating Cycles.
-
-The configuration header iconfig.h is well documented, If you required other data do edit it.
-
-------------------------------------------------------------------------------------------
-
-smooth - Performs auto regressive moving average on interpolated csv data.
-
-USAGE: smooth /pathto/inerp/csv/data /path/to/op/smooth/csv/data WINDOW_LENGTH
-
-Actual window length = 2 * WINDOW_LENGTH + 1
-
-Main use of this util is to smooth out the data and hence remove non-understndable noise
-to display trends.
-
-------------------------------------------------------------------------------------------
-
-maxmin - Computes per interval max and min for a set of performance data.
-
-USAGE: maxmin /path/to/op/csv/data /path/to/indata1 /indata2 [/indata3 ....]
-
-Computes the per interval maximum and minimum and the output is stored in
-data.max and data.min
-
-========================================================================================
-MISC SCRIPTS:
--------------
-
-auto_pulldecode.pl - automates the decodes and pulls from binary files
-pre_organize.pl - organizes the output of the above script.
-auto_interp.pl - automates the interpolation of files
-auto_smooth.pl - automates the smoothing process
-auto_maxmin.pl - automates the process to find max and min
-
-mother_auto.pl - The mother of all auto scripts. Run this, and go home and sleep!
-
-All these scripts were written for myself or my research group and might be uselss for
-anyone else using these scripts. Refer the README in the MiscScripts dir.
-
-I assume that I am running spec 2006 benchmarks which are organized as the DRACO BENCHMARK
-SUITE.
-
-========================================================================================
-FULL SYSTEM USE CASE:
----------------------
-
-# 1. insert the c2dpmu driver
-insmod Build/c2dpmu.ko
-
-# 2. insert the fixed counter driver
-insmod Build/c2dfpmu.ko
-
-# 3. insert the TSC driver
-insmod Build/c2dtsc.ko
-
-# 4. insert the temperature sensor driver
-insmod Build/c2dtherm.ko
-
-# 5. for X:XM, Y:YM refer the core2duo system programmers reference manual.
-# F is the number of times the cpu is sampled per second.
-
-insmod Build/seeker-sampler.ko log_events=X,Y log_ev_masks=XM,YM sample_freq=F os_flag=0
-
-# 6. Start the daemon to pull out the logs form the kernel
-Scripts/generic_log_dump INTERVAL /dev/seeker_samples /path/to/log/file &
-
-# Record the pid of generic_log_dump
-
-
-# 
-# 7. START THE APPLICATION TO BE MONITORED
-#
-
-# << All applications monitored ends execution
-
-# <OPTIONAL>
-# 8. change the log file name.
-Scripts/send.pl
-
-#
-# 9. START ANOTHER APPLICATION
-#
-
-# Repeat steps 7 and 8 as long as required.
-
-# << Test ENDS
-
-# 10. Kill daemons and remove kernel modules
-
-Scripts/send.pl -t
-rmmod seeker-sampler
-rmmod c2dtherm
-rmmod c2dtsc
-rmmod c2dfpmu
-rmmod c2dpmu
-
-11. Decode all log files (Repeat for every log file):
-
-Scripts/decodelog < /path/to/input/binary/log > /path/to/output/ascii/log
-
-12. get seperate files (Repeat for every log file)
-
-Scripts/pull.pl -o /path/to/log/dir -i /path/to/decodelog/output
-
-========================================================================================
-
-REFERENCE:
-----------
-
-1. p4sampler, Author: Tipp Moseley, Graduate Student, Department of Computer Science,
-University of Colorado, Boulder
-
-
-seeker-sampler_src.c, seeker-sampler.h -> Modeled after Tipp Moseley's p4sampler
-(But heavily modified to support multiple cores and multiple sources per sample)
-
-genericlog.h/c -> Taken unmodified from p4sampler
-
-generic_log_dump.c Modified version which supports 'send' taken from p4sampler
-
-decodelog.c Taken unmodified from p4sampler
-
-2. INTEL IA32/64 system programmers reference manual.
-
-3. INTEL forums.
-
-========================================================================================
-
-AUTHOR:
--------
-
-Amithash Prasad, Graduate Student, Department of Electrical and Computer Engineering,
-University of Colorado, Boulder
-Email: amithash.prasad@colorado.edu
-
-========================================================================================
-
-CHANGELOG:
-----------
-
-Fully Functional at revision 30, 
-Currently fully documented, and added pull.pl @ revision 40.
-
-Revision 46: Completely documented, added auto-decode.pl and auto-pull.pl
-	     Fixed a few bugs with c2dpmu and seeker-sampler
-Revision 47  Now seeker-sampler.ko takes in an argument os_flag which lets the user
-	     decide whether they want to count in kernel space (os_flag=1) or not
-	     (os_flag=0)
-Revision 49  Removed auto-decode.pl and auto-pull.pl and now there is a single script
-	     which does both called auto.pl
-
-Revision 56  send.c was replaced with an advanced send.pl. Now the user does not
-	     have to remember the pid of generic_log_dump
-	     Renamed all modules to maintain consistency
-
-Revision 57  Untested Change to seeker sampler. Expect another revision mentioning
-	     that there are no regressions!
-Revision 61  A lot of bugs in send.pl were removed.
-	     Modifications made in 57 was tested. Is working and hence the comments were
-	     removed.
-Revision 63  Removed the tsc part form c2dpmu and made it another driver. On the road
-	     to consistancy. And finished the Interfaces document. Found a few stray
-	     unneeded / depreciated / random code on the way which was cleaned.
-	     Of course, additions involves the Makefile too.
-Revision 69  Reorganized everything in the modules directory. Now seeker can be made
-	     architecture independent.
-Revision 70  Finally, Merged the k8sampler into seeker! Now it is fully Architecture 
-	     expandable. Notes: I am yet to find documentation on the on die temp
-	     sensor for the amd opteron, and hence the driver is currently a stub.
-Revision 104 Added a lot of automation scripts. Added programs to interpolation, 
-	     Smoothing and data analysis. 
-Revision 138 Added support to sample exery x events from the perf counters. This is
-	     a big thing. Now there is a kernel patch and I have shifted to kernel
-	     version 2.6.24. Support to older kernels will come as soon as I know
-	     that things are working! Note the last change! 104 to 138 I have been
-	     working on this particular feature!
-Revision 146 Seeker is tested to work with the 2.6.24 kernel. Yippee. 
-
-========================================================================================
+---------------------------------------------------------------------------------------------------------
 

@@ -36,14 +36,15 @@ sub do_per_dir{
 	my @dir_tree = get_dir_tree($dir);
 	foreach my $file (@dir_tree){
 		if(-d "$dir/$file"){
-			do_per_dir("$dir/$file", $mother, $operation);
+			do_per_dir("$dir/$file", $mother, "$out/$file", $operation);
 		}
 		else{
 			my $relative = extract_relative($mother,$dir);
 			make_dir("$out/$relative");
-			my $operation =~ s/INPUT/$dir\/$file/;
-			my $operation =~ s/OUTPUT/$out\/$relative\/$file/;
-			system("$operation");
+			my $oper = $operation;
+			$oper =~ s/INPUT/$dir\/$file/;
+			$oper =~ s/OUTPUT/$out\/$file/;
+			system("$oper");
 		}
 	}
 }

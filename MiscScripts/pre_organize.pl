@@ -53,6 +53,7 @@ foreach my $execution (@exec_order){
 			$sub_path2{"$logn"} = "ref$4/p1";
 			$file_name1{"$logn"} = "$name1";
 			$file_name2{"$logn"} = "$name2";
+			$index = $index + 1;
 		}
 	}
 	elsif($paired eq "-single"){
@@ -62,18 +63,22 @@ foreach my $execution (@exec_order){
 			$file_name2{"$logn"} = "single.log";
 			$sub_path1{"$logn"} = "ref$2/p0";
 			$sub_path2{"$logn"} = "ref$2/p1";
+			$index = $index + 1;
 		}
 	}
 	else{
 			die "The 4th arg can either be -paired or -single, $paired provided\n";
 	}
-	$index = $index + 1;
 }
 
 my @logs = seeker::get_dir_tree($input_path);
-
+my $count1 = 0;
+my $count2 = 0;
+my $count_1 = 0;
+my $count_2 = 0;
 foreach my $logp (@logs){
 	next unless ($logp ne "");
+	$count1++;
 	die "file_name1 for $logp is not defined\n" unless (defined($file_name1{$logp}));
 	if($paired eq "-paired"){
 		die "file_name2 for $logp is not defined\n" unless (defined($file_name2{$logp}));
@@ -88,19 +93,21 @@ foreach my $logp (@logs){
 	my @bnames = ("", "");
 	my @recorded = seeker::get_dir_tree("$input_path/$logp");
 	foreach my $record (@recorded){
-		if($record =~ /$bins[0]\.\d+\.p0/){
+		$count2++;
+		if($record =~ /$bins[0]\.\d+\.p0\.log/){
+			$count_1++;
 			$error = $error - 1;
 			$bnames[0] = $record unless ($bnames[0] ne "");
+			print "Found $record for $bins[0] in $logp\n";
 		}
-		elsif($record =~ /$bins[1]\.\d+\.p1/){
+		if($record =~ /$bins[1]\.\d+\.p1\.log/){
+			$count_2++;
 			$error = $error - 1;
 			$bnames[1] = $record unless ($bnames[1] ne "");
+			print "Found $record for $bins[1] in $logp\n";
 		}
 	}
 	die "ERROR, your execution log does not match with this dir\ndir: $logp, $log{$logp}" unless ($error == 0);
-	my $errn = 1;
-	$errn = 2 unless($paired eq "-single");
-	die "bnames does not contain $errn! bins contains $#bnames\n" unless ($#bnames == 1);
 	if($bnames[0] ne ""){
 		seeker::make_dir("$output_path/$bins[0]/$sub_path1{$logp}");
 		system("cp $input_path/$logp/$bnames[0] $output_path/$bins[0]/$sub_path1{$logp}/$file_name1{$logp}");
@@ -110,4 +117,4 @@ foreach my $logp (@logs){
 		system("cp $input_path/$logp/$bnames[1] $output_path/$bins[1]/$sub_path2{$logp}/$file_name2{$logp}");
 	}
 }
-
+print "$count1\n$count2\n$count_1\n$count_2\n";
