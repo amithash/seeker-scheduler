@@ -31,9 +31,6 @@
 #include <linux/cpumask.h>
 #include <linux/kprobes.h>
 #include <linux/vmalloc.h>
-#include <asm/apic.h>
-#include <asm/apicdef.h>
-#include <asm/hw_irq.h>
 
 #if !defined(KERNEL_VERSION)
 # define KERNEL_VERSION(a,b,c) (LINUX_VERSION_CODE + 1)
@@ -54,7 +51,12 @@
 #include <seeker-headers.h>
 #include "generic_log.h"
 
-#include "seeker-sampler.h"
+#include "seeker.h"
+
+#include "sinterrupt.h"
+#include "sio.h"
+#include "sprobe.h"
+
 
 #define SEEKER_SAMPLE_MINOR 240
 

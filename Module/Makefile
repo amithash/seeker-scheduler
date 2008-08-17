@@ -26,7 +26,7 @@ ARCA := c2d
 ifneq ($(KERNELRELEASE),)
 
 obj-m += seeker-sampler.o $(ARCA)/$(ARCA)pmu.o $(ARCA)/$(ARCA)fpmu.o $(ARCA)/$(ARCA)tsc.o $(ARCA)/$(ARCA)therm.o
-seeker-sampler-objs += seeker-sampler-src.o generic_log.o
+seeker-sampler-objs += main.o generic_log.o
 
 else
 KDIR    := /lib/modules/$(shell uname -r)/build
