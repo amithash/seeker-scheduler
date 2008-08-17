@@ -20,11 +20,8 @@
  **************************************************************************/
 
 
-#include <asm/apic.h>
-#include <asm/apicdef.h>
-#include <asm/hw_irq.h>
 
-#include "intr.h"
+#include "probe.h"
 
 #define PMU_ISR "smp_apic_pmu_interrupt" 
 
@@ -46,7 +43,8 @@ void inst_smp_apic_pmu_interrupt(struct pt_regs *regs){
 	}
 	else{
 		for(i=0;i<NUM_FIXED_COUNTERS;i++){
-			if(i == pmu_intr) continue;
+			if(i == pmu_intr) 
+				continue;
 			if(fpmu_is_interrupt(i) > 0){
 				fpmu_clear_ovf_status(i);
 				printk("Counter %d overflowed. Check if your sample_freq is unresonably large.\n",i);
@@ -100,65 +98,4 @@ static void inst___switch_to(struct task_struct *from, struct task_struct *to){
 	cpu_pid[smp_processor_id()] = to->pid;
 	jprobe_return();
 }
-
-/*---------------------------------------------------------------------------*
- * Function: do_timer_sample
- * Descreption: This is the timer ISR. Every time it goes off, a sample is taken
- * 		on all online cpu's. (See the call to do_sample) and re-calibrates
- * 		the timer,
- * Input Parameters: param -> not used,
- * Output Parameters: None
- *---------------------------------------------------------------------------*/
-static void do_timer_sample(unsigned long param){
-	if(dev_open){
-		if(unlikely(on_each_cpu((void*)do_sample, NULL, 1,1) < 0)){
-			printk("could not sample on all cpu's\n");
-		}
-	}
-
-	mod_timer(&sample_timer, jiffies + sample_freq);  
-}
-
-#ifdef LOCAL_PMU_VECTOR
-/*---------------------------------------------------------------------------*
- * Function: configure_enable_interrupt
- * Descreption: configures the counter:pmu_intr to overflow every:sample_freq
- * 		and then enables interrupts.
- * Input Parameters: None
- * Output Parameters: None
- *---------------------------------------------------------------------------*/
-static void configure_enable_interrupts(void){
-		/* Configure the initial counter value as (-1) * sample_freq */
-		fpmu_configure_interrupt(pmu_intr,((u32)0xFFFFFFFF-(u32)sample_freq + 2),0xFFFFFFFF);
-		/* clear overflow flag, just to be sure. */
-		fpmu_clear_ovf_status(pmu_intr);
-		/* Now enable the interrupt */
-		fpmu_enable_interrupt(pmu_intr);
-}
-	
-/*---------------------------------------------------------------------------*
- * Function: configure_disable_interrupts
- * Descreption: Resets any configuration and disables all interrupts.
- * Input Parameters: None
- * Output Parameters: None
- *---------------------------------------------------------------------------*/
-static void configure_disable_interrupts(void){
-		/* Configure the initial counter value as (-1) * sample_freq */
-		fpmu_configure_interrupt(pmu_intr,0,0);
-		/* clear overflow flag, just to be sure. */
-		fpmu_clear_ovf_status(pmu_intr);
-		/* Now enable the interrupt */
-		fpmu_disable_interrupt(pmu_intr);
-}
-
-/*---------------------------------------------------------------------------*
- * Function: enable_apic_pmu
- * Descreption: Enables PMU Interrupts for the current cpu's apic 
- * Input Parameters: None
- * Output Parameters: None
- *---------------------------------------------------------------------------*/
-static void enable_apic_pmu(void){
-	apic_write_around(APIC_LVTPC, LOCAL_PMU_VECTOR);
-}
-#endif
 
