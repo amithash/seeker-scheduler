@@ -53,14 +53,21 @@
 
 #include "seeker.h"
 
-#include "sinterrupt.h"
-#include "sio.h"
-#include "sprobe.h"
+// Interrupt handling code
+#include "intr.h"
+
+// File handling code
+#include "io.h"
+
+// Kprobes using code
+#include "probe.h"
+
+// Code talking to pmu.
+#include "sample.h"
 
 
 #define SEEKER_SAMPLE_MINOR 240
 
-#define PMU_ISR "smp_apic_pmu_interrupt" 
 
 
 /************************* Parameter variables *******************************/
@@ -87,47 +94,6 @@ static int mdev_registered = 0;
 static int kprobes_registered = 0;
 static int dev_open = 0;
 
-static int inst_schedule(struct kprobe *p, struct pt_regs *regs);
-static void inst_release_thread(struct task_struct *t);
-static void inst___switch_to(struct task_struct *from,
-			     struct task_struct *to);
-/* I am going to say this only once. If you do not want to use
- * pmu_intr, then why should I force you to patch your kernel?
- * That is completely uncalled for! And hence I am checking for
- * one define I have introduced into the kernel. And hence if you
- * have not patched the kernel, you do not get to use the feature,
- * and live happly ever after with the timer interrupt!
- */
-#ifdef LOCAL_PMU_VECTOR
-void inst_smp_apic_pmu_interrupt(struct pt_regs *regs);
-#endif
-
-static struct kprobe kp_schedule = {
-	.pre_handler = inst_schedule,
-	.post_handler = NULL,
-	.fault_handler = NULL,
-	.addr = (kprobe_opcode_t *) schedule,
-};
-#ifdef LOCAL_PMU_VECTOR
-static struct jprobe jp_smp_pmu_interrupt = {
-	.entry = (kprobe_opcode_t *)inst_smp_apic_pmu_interrupt,
-	.kp.symbol_name = PMU_ISR,
-};
-#endif
-
-static struct jprobe jp_release_thread = {
-	.entry = (kprobe_opcode_t *)inst_release_thread,
-#ifdef SCHED_EXIT_EXISTS
-	.kp.symbol_name = "sched_exit",
-#else
-	.kp.symbol_name = "release_thread",
-#endif
-};
-
-static struct jprobe jp___switch_to = {
-	.entry = (kprobe_opcode_t *)inst___switch_to,
-	.kp.symbol_name = "__switch_to",
-};
 
 static spinlock_t sample_lock;
 
@@ -142,11 +108,6 @@ static int seeker_sample_open(struct inode *in, struct file * f);
 static int seeker_sample_close(struct inode *in, struct file *f);
 inline void seeker_sampler_exit_handler(void);
 static void do_pid_log(struct task_struct *p);
-#ifdef LOCAL_PMU_VECTOR
-static void configure_enable_interrupts(void);
-static void configure_disable_interrupts(void);
-static void enable_apic_pmu(void);
-#endif
 
 /************************* Miscellaneous functions ***************************/
 
@@ -208,10 +169,9 @@ static void do_pid_log(struct task_struct *p) {
 static void do_sample(void) {
 	int i,j;
 	int cpu;
-	seeker_sampler_entry_t *pentry;
+	log_block_t *pentry;
 	unsigned long long now, period;
 	unsigned long long last_ts;
-	unsigned long long pmu_ctrs[NUM_COUNTERS + NUM_FIXED_COUNTERS + NUM_EXTRA_COUNTERS];
 	int num = 0;
 
 	read_time_stamp();  
@@ -229,138 +189,37 @@ static void do_sample(void) {
 	last_ts = get_last_time_stamp(cpu);
 	now = get_time_stamp(cpu);
 	period = now - last_ts;
-	/* log the pmu counters */
-	for(i = 0; i < log_num_events; i++) {
-		pmu_ctrs[i] = get_counter_data(cpu_counters[cpu][i], cpu);
-	}
-	/* log the fixed counters */
-	for(j=0;j<NUM_FIXED_COUNTERS;j++){
-		pmu_ctrs[i++] = get_fcounter_data(j,cpu);
-	}
-
-	pmu_ctrs[i++] = get_temp(cpu);
-	
-	/* GETTING DATA FROM OTHER COUNTERS GO HERE */
-
-	num = i;
-
-	spin_lock(&sample_lock);
-	pentry = log_alloc(seeker_sample_log, sizeof(seeker_sampler_entry_t));
-
-	/* if no memory was allocated! :-( */
-	if(unlikely(pentry == NULL)) {
+	pentry = log_create();
+	if(!pentry){
 		seeker_sampler_exit_handler();
 		goto out;
 	}
 
-	pentry->type = SEEKER_SAMPLE;
-	pentry->u.seeker_sample.cpu = cpu;
-	pentry->u.seeker_sample.pid = cpu_pid[cpu];
-	pentry->u.seeker_sample.cycles = period;
-    
+	pentry->sample.type = SEEKER_SAMPLE;
+	pentry->sample.u.seeker_sample.cpu = cpu;
+	pentry->sample.u.seeker_sample.pid = cpu_pid[cpu];
+	pentry->sample.u.seeker_sample.cycles = period;
 	/* log the pmu counters */
-	for(i = 0; i < num; i++) {
-		pentry->u.seeker_sample.counters[i] = pmu_ctrs[i];
+	for(i = 0; i < log_num_events; i++) {
+		pentry->sample.u.seeker_sample.counters[i] = get_counter_data(cpu_counters[cpu][i], cpu);
+		
 	}
-	log_commit(seeker_sample_log);
+	/* log the fixed counters */
+	for(j=0;j<NUM_FIXED_COUNTERS;j++){
+		pentry->sample.u.seeker_sample.counters[i++] = get_fcounter_data(j,cpu);
+	}
+
+	pentry->sample.u.seeker_sample.counters[i++] = get_temp(cpu);
+	
+	/* GETTING DATA FROM OTHER COUNTERS GO HERE */
+
+	log_link(pentry);
   
 	out:
-	spin_unlock(&sample_lock);
 	clear_counters();
 }
 
-/*---------------------------------------------------------------------------*
- * Function: inst_smp_apic_pmu_interrupt
- * Descreption: This is the probe function on the PMU overflow ISR 
- * 		Does not exist if the kernel is not patched. (Why should it?)
- * Input Parameters: regs -> Not used,
- * Output Parameters: None
- *---------------------------------------------------------------------------*/
-#ifdef LOCAL_PMU_VECTOR
-void inst_smp_apic_pmu_interrupt(struct pt_regs *regs){
-	int i,ovf=0;
-	if(likely(fpmu_is_interrupt(pmu_intr) > 0)){
-		fpmu_clear_ovf_status(pmu_intr);
-		if(likely(dev_open == 1)){
-			do_sample();
-		}
-	}
-	else{
-		for(i=0;i<NUM_FIXED_COUNTERS;i++){
-			if(i == pmu_intr) continue;
-			if(fpmu_is_interrupt(i) > 0){
-				fpmu_clear_ovf_status(i);
-				printk("Counter %d overflowed. Check if your sample_freq is unresonably large.\n",i);
-				ovf=1;
-			}
-		}
-		if(ovf == 0){
-			printk("Supposedly no counter overflowed, check if something is wrong\n");
-		}
-	}
-	jprobe_return();
-}
-#endif
 
-
-/*---------------------------------------------------------------------------*
- * Function: inst_schedule
- * Descreption: Probes the schedule function. So, reschedules, system calls etc
- * 		can be detected and a new sample is started.
- * Input Parameters: kprobes parameter and regs. Not used.
- * Output Parameters: always returns 0
- *---------------------------------------------------------------------------*/
-static int inst_schedule(struct kprobe *p, struct pt_regs *regs){
-	if(dev_open){
-		do_sample();
-	}
-	return 0;
-}
-
-
-/*---------------------------------------------------------------------------*
- * Function: inst_release_thread
- * Descreption: The pid  / name of the application is logged
- * Input Parameters: exiting tasks struct.
- * Output Parameters: None
- *---------------------------------------------------------------------------*/
-static void inst_release_thread(struct task_struct *t){
-	if(dev_open){
-		do_pid_log(t);
-	}
-	jprobe_return();
-}
-
-
-/*---------------------------------------------------------------------------*
- * Function: inst__switch_to
- * Descreption: Detects a task switch and records that, so we use the right
- * 		PID for our samples! There would be chaos without this!
- * Input Parameters: "from" task struct, "to" task struct
- * Output Parameters: None
- *---------------------------------------------------------------------------*/
-static void inst___switch_to(struct task_struct *from, struct task_struct *to){
-	cpu_pid[smp_processor_id()] = to->pid;
-	jprobe_return();
-}
-
-/*---------------------------------------------------------------------------*
- * Function: do_timer_sample
- * Descreption: This is the timer ISR. Every time it goes off, a sample is taken
- * 		on all online cpu's. (See the call to do_sample) and re-calibrates
- * 		the timer,
- * Input Parameters: param -> not used,
- * Output Parameters: None
- *---------------------------------------------------------------------------*/
-static void do_timer_sample(unsigned long param){
-	if(dev_open){
-		if(unlikely(on_each_cpu((void*)do_sample, NULL, 1,1) < 0)){
-			printk("could not sample on all cpu's\n");
-		}
-	}
-
-	mod_timer(&sample_timer, jiffies + sample_freq);  
-}
 
 /************************* FILE OPS FUNCTIONS *******************************/
 
@@ -667,48 +526,6 @@ static int __init seeker_sampler_init(void)
 	return 0;
 }
 
-#ifdef LOCAL_PMU_VECTOR
-/*---------------------------------------------------------------------------*
- * Function: configure_enable_interrupt
- * Descreption: configures the counter:pmu_intr to overflow every:sample_freq
- * 		and then enables interrupts.
- * Input Parameters: None
- * Output Parameters: None
- *---------------------------------------------------------------------------*/
-static void configure_enable_interrupts(void){
-		/* Configure the initial counter value as (-1) * sample_freq */
-		fpmu_configure_interrupt(pmu_intr,((u32)0xFFFFFFFF-(u32)sample_freq + 2),0xFFFFFFFF);
-		/* clear overflow flag, just to be sure. */
-		fpmu_clear_ovf_status(pmu_intr);
-		/* Now enable the interrupt */
-		fpmu_enable_interrupt(pmu_intr);
-}
-	
-/*---------------------------------------------------------------------------*
- * Function: configure_disable_interrupts
- * Descreption: Resets any configuration and disables all interrupts.
- * Input Parameters: None
- * Output Parameters: None
- *---------------------------------------------------------------------------*/
-static void configure_disable_interrupts(void){
-		/* Configure the initial counter value as (-1) * sample_freq */
-		fpmu_configure_interrupt(pmu_intr,0,0);
-		/* clear overflow flag, just to be sure. */
-		fpmu_clear_ovf_status(pmu_intr);
-		/* Now enable the interrupt */
-		fpmu_disable_interrupt(pmu_intr);
-}
-
-/*---------------------------------------------------------------------------*
- * Function: enable_apic_pmu
- * Descreption: Enables PMU Interrupts for the current cpu's apic 
- * Input Parameters: None
- * Output Parameters: None
- *---------------------------------------------------------------------------*/
-static void enable_apic_pmu(void){
-	apic_write_around(APIC_LVTPC, LOCAL_PMU_VECTOR);
-}
-#endif
 
 
 /*---------------------------------------------------------------------------*

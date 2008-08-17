@@ -5,11 +5,13 @@
 static log_block_t *head;
 static log_block_t *current;
 spin_lock_t log_lock;
+static first_read = 1;
 
 void log_init(void)
 {
 	init_seeker_cache();
 	head = current = seeker_alloc();
+	first_read = 1;
 }
 
 /* Create, add elements and link. */
@@ -51,10 +53,20 @@ int log_read(struct file* file_ptr, char *buf, size_t count, loff_t *offset){
 	char *b = buf;
 	int bytes_read = 0;
 	int exit = 0;
+
 	if(unlikely(head == NULL || buf == NULL || file_ptr == NULL))
 		return -1;
 
-	log = head;
+	if(unlikely(first_read)){
+		if(unlikely(!head->next))
+			return -1;
+		log = head;
+		head = head->next;
+		log_delete(log);
+		first_read = 0;
+	}
+
+		
 	/* Read max till current, do not read current 
 	 * Trying to read current will make the reader
 	 * a competetor with the writers and creates the 
@@ -63,6 +75,7 @@ int log_read(struct file* file_ptr, char *buf, size_t count, loff_t *offset){
 	while(i+sizeof(seeker_sampler_entry_t) <= count && !exit && head != current){
 		memcpy(buf+i,head->sample,sizeof(seeker_sampler_entry_t));	
 		/* Check if this is the last */
+		log = head;
 		if(log->next == NULL)
 			exit = 1;
 		head = head->next;
@@ -72,4 +85,6 @@ int log_read(struct file* file_ptr, char *buf, size_t count, loff_t *offset){
 	return i;
 }
 
-
+void log_finalize(void)
+{
+	
