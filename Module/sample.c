@@ -1,8 +1,16 @@
+#include "sample.h"
+#include "log.h"
 
-static int cpu_counters[NR_CPUS][MAX_COUNTERS_PER_CPU];
-extern static int log_events[MAX_COUNTERS_PER_CPU];
-extern static unsigned int log_ev_masks[MAX_COUNTERS_PER_CPU];
-extern static int log_num_events = 0;
+
+extern int log_events[MAX_COUNTERS_PER_CPU];
+extern unsigned int log_ev_masks[MAX_COUNTERS_PER_CPU];
+extern int log_num_events = 0;
+extern int sample_freq=100;
+extern int os_flag = 0;
+extern int pmu_intr = -1;
+
+int cpu_counters[NR_CPUS][MAX_COUNTERS_PER_CPU];
+pid_t cpu_pid[NR_CPUS] = {-1};
 
 
 /*---------------------------------------------------------------------------*
@@ -11,7 +19,8 @@ extern static int log_num_events = 0;
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-static void clear_counters(void){
+void clear_counters(void)
+{
 	int i;
 	int cpu = smp_processor_id();
 
@@ -33,13 +42,14 @@ static void clear_counters(void){
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-static void do_sample(void) {
+void do_sample(void) 
+{
 	int i,j;
-	int cpu;
 	log_block_t *pentry;
 	unsigned long long now, period;
 	unsigned long long last_ts;
 	int num = 0;
+	int cpu = get_cpu();
 
 	read_time_stamp();  
 	counter_read();
@@ -51,11 +61,11 @@ static void do_sample(void) {
 
 	/* OTHER COUNTER READ CALLS ARE DONE HERE */
 
-	cpu = smp_processor_id();
 
 	last_ts = get_last_time_stamp(cpu);
 	now = get_time_stamp(cpu);
 	period = now - last_ts;
+	/* create an unlinked block */
 	pentry = log_create();
 	if(!pentry){
 		seeker_sampler_exit_handler();
@@ -84,12 +94,8 @@ static void do_sample(void) {
   
 	out:
 	clear_counters();
+	put_cpu(cpu);
 }
-
-
-
-
-/************************* Initialization functions **************************/
 
 
 /*---------------------------------------------------------------------------*
@@ -98,9 +104,10 @@ static void do_sample(void) {
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-static int config_counters(void){
+int config_counters(void)
+{
 	int i;
-	int cpu = smp_processor_id();
+	int cpu = get_cpu();
 
 	/* enable and configure the pmu counters */
 	for(i = 0; i < log_num_events; i++) {
@@ -122,6 +129,7 @@ static int config_counters(void){
 	 * If such a facility is provided by the hardware */
 
 	clear_counters();
+	put_cpu(cpu);
 
 	return 0;
 }
@@ -134,8 +142,8 @@ static int config_counters(void){
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-static int msrs_init(void){
-
+int msrs_init(void)
+{
 	/* initialize the pmu counters */
 	if(log_num_events > 0){
 		if(unlikely(on_each_cpu((void*)pmu_init_msrs,NULL, 1,1) < 0)){
@@ -171,4 +179,26 @@ static int msrs_init(void){
 	return 0;
 }
 
+
+/*---------------------------------------------------------------------------*
+ * Function: do_pid_log
+ * Descreption: Called whenever release_thread/sched_exit is executed. Logs the pids.
+ * Input Parameters: exiting tasks structure.
+ * Output Parameters: None
+ *---------------------------------------------------------------------------*/
+void do_pid_log(struct task_struct *p) 
+{
+	log_block_t *pentry = log_create();
+	if(unlikely(!pentry)){
+		seeker_sampler_exit_handler();
+		return;
+	}
+	pentry->sample.type = PIDTAB_ENTRY;
+	pentry->sample.u.pidtab_entry.pid = (u32)(p->pid);
+	pentry->sample.u.pidtab_entry.total_cycles = 0;
+	memcpy(&(pentry->sample.u.pidtab_entry.name),
+	       p->comm, 
+	       sizeof(pentry->sample.u.pidtab_entry.name));
+	log_link(pentry);
+}
 

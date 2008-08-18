@@ -14,33 +14,6 @@ static void inst___switch_to(struct task_struct *from,
  * and live happly ever after with the timer interrupt!
  */
 
-static struct kprobe kp_schedule = {
-	.pre_handler = inst_schedule,
-	.post_handler = NULL,
-	.fault_handler = NULL,
-	.addr = (kprobe_opcode_t *) schedule,
-};
-#ifdef LOCAL_PMU_VECTOR
-static struct jprobe jp_smp_pmu_interrupt = {
-	.entry = (kprobe_opcode_t *)inst_smp_apic_pmu_interrupt,
-	.kp.symbol_name = PMU_ISR,
-};
-#endif
-
-static struct jprobe jp_release_thread = {
-	.entry = (kprobe_opcode_t *)inst_release_thread,
-#ifdef SCHED_EXIT_EXISTS
-	.kp.symbol_name = "sched_exit",
-#else
-	.kp.symbol_name = "release_thread",
-#endif
-};
-
-static struct jprobe jp___switch_to = {
-	.entry = (kprobe_opcode_t *)inst___switch_to,
-	.kp.symbol_name = "__switch_to",
-};
-
 #ifdef LOCAL_PMU_VECTOR
 static void configure_enable_interrupts(void);
 static void configure_disable_interrupts(void);

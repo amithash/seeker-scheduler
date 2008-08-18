@@ -49,7 +49,6 @@
 #endif
 
 #include <seeker-headers.h>
-#include "generic_log.h"
 
 #include "seeker.h"
 
@@ -64,6 +63,7 @@
 
 // Code talking to pmu.
 #include "sample.h"
+#include "log.h"
 
 
 #define SEEKER_SAMPLE_MINOR 240
@@ -72,58 +72,33 @@
 
 /************************* Parameter variables *******************************/
 
-static int log_events[MAX_COUNTERS_PER_CPU];
-static unsigned int log_ev_masks[MAX_COUNTERS_PER_CPU];
-static int log_num_events = 0;
-static int sample_freq=100;
-static int os_flag = 0;
-static int pmu_intr = -1;
+int log_events[MAX_COUNTERS_PER_CPU];
+unsigned int log_ev_masks[MAX_COUNTERS_PER_CPU];
+int log_num_events = 0;
+int sample_freq=100;
+int os_flag = 0;
+int pmu_intr = -1;
 
 /************************* Declarations & Prototypes *************************/
 
 static struct timer_list sample_timer;
 static int sample_timer_started = 0;
 
-static log_t *seeker_sample_log;
-static pid_t cpu_pid[NR_CPUS] = {-1};
-
 static struct file_operations seeker_sample_fops;
 static struct miscdevice seeker_sample_mdev;
 static int mdev_registered = 0;
 static int kprobes_registered = 0;
-static int dev_open = 0;
+int dev_open = 0;
 
 
-static spinlock_t sample_lock;
-
-static void seeker_sampler_exit_handler(void);
-
+extern struct kprobe kp_schedule;
+#ifdef LOCAL_PMU_VECTOR
+extern struct jprobe jp_smp_pmu_interrupt;
+#endif
+extern struct jprobe jp_release_thread;
+extern struct jprobe jp___switch_to;
 
 inline void seeker_sampler_exit_handler(void);
-static void do_pid_log(struct task_struct *p);
-
-/*---------------------------------------------------------------------------*
- * Function: do_pid_log
- * Descreption: Called whenever release_thread/sched_exit is executed. Logs the pids.
- * Input Parameters: exiting tasks structure.
- * Output Parameters: None
- *---------------------------------------------------------------------------*/
-static void do_pid_log(struct task_struct *p) {
-	seeker_sampler_entry_t *pentry;
-
-	if(unlikely((pentry = log_alloc(seeker_sample_log, sizeof(seeker_sampler_entry_t))) == NULL)){
-		seeker_sampler_exit_handler();
-		return;
-	}
-	pentry->type = PIDTAB_ENTRY;
-	pentry->u.pidtab_entry.pid = (u32)(p->pid);
-	pentry->u.pidtab_entry.total_cycles = 0;
-	(void)memcpy(&(pentry->u.pidtab_entry.name), p->comm, 
-			sizeof(pentry->u.pidtab_entry.name));
-
-	log_commit(seeker_sample_log);
-}
-
 
 /*---------------------------------------------------------------------------*
  * Function: seeker_sample_log_init
@@ -134,9 +109,7 @@ static void do_pid_log(struct task_struct *p) {
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
 static int seeker_sample_log_init(void){
-
-	spin_lock_init(&sample_lock);
-
+	log_init();
 	seeker_sample_fops.open = seeker_sample_open;
 	seeker_sample_fops.release = seeker_sample_close;
 	seeker_sample_fops.read = seeker_sample_log_read;
@@ -274,11 +247,7 @@ inline void seeker_sampler_exit_handler(void){
 		misc_deregister(&seeker_sample_mdev);
 		mdev_registered = 0;
 	}
-
-	if(likely(seeker_sample_log != NULL)) {
-		log_free(seeker_sample_log);
-		seeker_sample_log = NULL;
-	}
+	log_finalize();
 	/* Just incase something happens when the device and interrupts are enabled.... */
 	#ifdef LOCAL_PMU_VECTOR
 	if(dev_open == 1){

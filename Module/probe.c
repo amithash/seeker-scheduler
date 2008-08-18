@@ -19,11 +19,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  **************************************************************************/
 
-
-
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <linux/kprobes.h>
 #include "probe.h"
+#include "sample.h"
 
 #define PMU_ISR "smp_apic_pmu_interrupt" 
+
+extern int dev_open;
+extern pid_t cpu_pid[NR_CPUS];
+
+struct kprobe kp_schedule = {
+	.pre_handler = inst_schedule,
+	.post_handler = NULL,
+	.fault_handler = NULL,
+	.addr = (kprobe_opcode_t *) schedule,
+};
+#ifdef LOCAL_PMU_VECTOR
+struct jprobe jp_smp_pmu_interrupt = {
+	.entry = (kprobe_opcode_t *)inst_smp_apic_pmu_interrupt,
+	.kp.symbol_name = PMU_ISR,
+};
+#endif
+
+struct jprobe jp_release_thread = {
+	.entry = (kprobe_opcode_t *)inst_release_thread,
+#ifdef SCHED_EXIT_EXISTS
+	.kp.symbol_name = "sched_exit",
+#else
+	.kp.symbol_name = "release_thread",
+#endif
+};
+
+struct jprobe jp___switch_to = {
+	.entry = (kprobe_opcode_t *)inst___switch_to,
+	.kp.symbol_name = "__switch_to",
+};
+
 
 /*---------------------------------------------------------------------------*
  * Function: inst_smp_apic_pmu_interrupt

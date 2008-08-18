@@ -1,7 +1,6 @@
 #include "io.h"
 
 
-/************************* FILE OPS FUNCTIONS *******************************/
 
 /*---------------------------------------------------------------------------*
  * Function: seeker_sample_log_read
@@ -9,9 +8,10 @@
  * Input Parameters: Same params as a generic read function.
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-static ssize_t seeker_sample_log_read(struct file *file_ptr, char __user *buf, 
-			      size_t count, loff_t *offset){
-	return log_read(seeker_sample_log, file_ptr, buf, count, offset);
+ssize_t seeker_sample_log_read(struct file *file_ptr, char __user *buf, 
+			      size_t count, loff_t *offset)
+{
+	return log_read(file_ptr, buf, count, offset);
 }
 
 
@@ -23,7 +23,8 @@ static ssize_t seeker_sample_log_read(struct file *file_ptr, char __user *buf,
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-int seeker_sample_open(struct inode *in, struct file * f){
+int seeker_sample_open(struct inode *in, struct file * f)
+{
 
 	int i,retval=0;
 	seeker_sampler_entry_t *pentry;
@@ -86,7 +87,8 @@ int seeker_sample_open(struct inode *in, struct file * f){
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-static int seeker_sample_close(struct inode *in, struct file *f){
+int seeker_sample_close(struct inode *in, struct file *f)
+{
 	int retval=0;
 	dev_open = 0;
 	/* Disable interrupts on each cpu. */
