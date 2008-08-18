@@ -41,7 +41,7 @@ default:
 .PHONY: clean
 clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
-	rm -f Module.symvers
+	rm -f Module.symvers modules.order
 	rm -f ../Build/*
 
 endif

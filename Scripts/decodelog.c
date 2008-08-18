@@ -28,7 +28,7 @@ typedef unsigned long long u64;
 #define NR_CPUS 0
 
 #include <seeker-headers.h>
-#include "../Module/seeker-sampler.h"
+#include "../Module/seeker.h"
 
 int
 main(int argc, char **argv, char **envp){

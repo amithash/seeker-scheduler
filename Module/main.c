@@ -1,22 +1,27 @@
-/**************************************************************************
- * Copyright 2008 Amithash Prasad                                         *
- * Copyright 2006 Tipp Mosely                                             *
- *                                                                        *
- * This file is part of Seeker                                            *
- *                                                                        *
- * Seeker is free software: you can redistribute it and/or modify         *
- * it under the terms of the GNU General Public License as published by   *
- * the Free Software Foundation, either version 3 of the License, or      *
- * (at your option) any later version.                                    *
- *                                                                        *
- * This program is distributed in the hope that it will be useful,        *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of         *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
- * GNU General Public License for more details.                           *
- *                                                                        *
- * You should have received a copy of the GNU General Public License      *
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
- **************************************************************************/
+/*****************************************************
+ * Copyright 2008 Amithash Prasad                    *
+ *                                                   *
+ * This file is part of Seeker                       *
+ *                                                   *
+ * Seeker is free software: you can redistribute     *
+ * it and/or modify it under the terms of the        *
+ * GNU General Public License as published by        *
+ * the Free Software Foundation, either version      *
+ * 3 of the License, or (at your option) any         *
+ * later version.                                    *
+ *                                                   *
+ * This program is distributed in the hope that      *
+ * it will be useful, but WITHOUT ANY WARRANTY;      *
+ * without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR       *
+ * PURPOSE. See the GNU General Public License       *
+ * for more details.                                 *
+ *                                                   *
+ * You should have received a copy of the GNU        *
+ * General Public License along with this program.   *
+ * If not, see <http://www.gnu.org/licenses/>.       *
+ *****************************************************/
+
 #include <linux/version.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
@@ -109,7 +114,8 @@ extern struct jprobe jp___switch_to;
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-static int seeker_sample_log_init(void){
+static int seeker_sample_log_init(void)
+{
 	log_init();
 	seeker_sample_fops.open = seeker_sample_open;
 	seeker_sample_fops.release = seeker_sample_close;
@@ -141,7 +147,8 @@ static int __init seeker_sampler_init(void)
 
 	printk("---------------------------------------\n");
 	if( log_num_events <= 0 ) {
-		printk("Monitoring only fixed counters and temperature. PMU NOT CONFIGURED\n");
+		printk("Monitoring only fixed counters and "
+		       "temperature. PMU NOT CONFIGURED\n");
 	}
 
 	if(unlikely(msrs_init() < 0)) {
@@ -155,7 +162,8 @@ static int __init seeker_sampler_init(void)
 		return -1;
 	}
 
-	printk("seeker sampler module loaded logging %d events\n", log_num_events + NUM_FIXED_COUNTERS + NUM_EXTRA_COUNTERS);
+	printk("seeker sampler module loaded logging %d events\n", 
+	       log_num_events + NUM_FIXED_COUNTERS + NUM_EXTRA_COUNTERS);
 
 	for(i = 0; i < log_num_events; i++) {
 		printk("%d:0x%x ", log_events[i], log_ev_masks[i]);
@@ -178,19 +186,22 @@ static int __init seeker_sampler_init(void)
 	}
 	else{
 		#ifdef LOCAL_PMU_VECTOR
-		printk("Fixed counter %d used as the sampling interrupt source, sampling every %d events\n",pmu_intr,sample_freq);
+		printk("Fixed counter %d used as the sampling interrupt source, "
+		       "sampling every %d events\n",pmu_intr,sample_freq);
 		if(sample_freq<=0){
 			return -1;
 		}
 		if((probe_ret = register_jprobe(&jp_smp_pmu_interrupt)) < 0){
-			printk(KERN_ALERT "Could not find %s to probe, returned %d\n",PMU_ISR,probe_ret);
+			printk(KERN_ALERT "Could not find %s to probe, returned %d\n",
+			       PMU_ISR,probe_ret);
 			return -1;
 		}
 		if(on_each_cpu((void *)enable_apic_pmu, NULL, 1, 1) < 0){
 			printk("Could not enable local pmu interrupt on all cpu's\n");
 		}
 		#else
-		printk(KERN_ALERT "An attempt is made to use the pmu_intr facility without applying a seeker patch to the kernel. Exiting\n");
+		printk(KERN_ALERT "An attempt is made to use the pmu_intr "
+		"facility without applying a seeker patch to the kernel. Exiting\n");
 		return -1;
 		#endif
 	}
@@ -225,7 +236,8 @@ static int __init seeker_sampler_init(void)
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-void seeker_sampler_exit_handler(void){
+void seeker_sampler_exit_handler(void)
+{
 	if( sample_timer_started ) {
 		del_timer_sync(&sample_timer);
 		sample_timer_started = 0;
@@ -270,7 +282,8 @@ void seeker_sampler_exit_handler(void){
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-static void __exit seeker_sampler_exit(void){
+static void __exit seeker_sampler_exit(void)
+{
 	seeker_sampler_exit_handler();
 }
 
@@ -282,26 +295,31 @@ static void __exit seeker_sampler_exit(void){
 
 
 module_param_named(sample_freq, sample_freq, int, 0444);
-MODULE_PARM_DESC(sample_freq, "The sampling frequency, either samples per second or sample per x events");
+MODULE_PARM_DESC(sample_freq, "The sampling frequency, either "
+			      "samples per second or sample per x events");
 
 module_param(os_flag, int, 0444);
-MODULE_PARM_DESC(os_flag, "0->Sample in user space only, 1->Sample in user and kernel space");
+MODULE_PARM_DESC(os_flag, "0->Sample in user space only, "
+			  "1->Sample in user and kernel space");
 
 module_param(pmu_intr, int, 0444);
-MODULE_PARM_DESC(pmu_intr, "pmu_intr=x where x is the fixed counter which will be the interrupt source");
+MODULE_PARM_DESC(pmu_intr, "pmu_intr=x where x is the fixed counter "
+			   "which will be the interrupt source");
 
 module_param_array(log_events, int, &log_num_events, 0444);
 MODULE_PARM_DESC(log_events, "The event numbers. Refer *_EVENTS.pdf");
 
 module_param_array(log_ev_masks, int, &log_num_events, 0444);
-MODULE_PARM_DESC(log_ev_masks, "The masks for the corrosponding event. Refer *_EVENTS.pdf");
+MODULE_PARM_DESC(log_ev_masks, "The masks for the corrosponding "
+			       "event. Refer *_EVENTS.pdf");
 
 module_init(seeker_sampler_init);
 module_exit(seeker_sampler_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
-MODULE_DESCRIPTION("seeker-sampler samples the hardware performance counters at regular intervals specified by the user");
+MODULE_DESCRIPTION("seeker-sampler samples the hardware performance "
+		   "counters at regular intervals specified by the user");
 
 /* EOF */
 

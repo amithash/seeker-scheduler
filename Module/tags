@@ -4,88 +4,58 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.7	//
-ARCA	Makefile	/^ARCA := c2d$/;"	m
 EVTSEL_RESERVED_BITS	c2d/c2dpmu.h	16;"	d
-EVTSEL_RESERVED_BITS	k8/k8pmu.h	10;"	d
-FIXED_CTR0_OVERFLOW_CLEAR_MASK	c2d/c2dfpmu.h	19;"	d
-FIXED_CTR0_OVERFLOW_MASK	c2d/c2dfpmu.h	15;"	d
-FIXED_CTR1_OVERFLOW_CLEAR_MASK	c2d/c2dfpmu.h	20;"	d
-FIXED_CTR1_OVERFLOW_MASK	c2d/c2dfpmu.h	16;"	d
-FIXED_CTR2_OVERFLOW_CLEAR_MASK	c2d/c2dfpmu.h	21;"	d
-FIXED_CTR2_OVERFLOW_MASK	c2d/c2dfpmu.h	17;"	d
-FIXSEL_RESERVED_BITS	c2d/c2dfpmu.h	14;"	d
+FIXED_CTR0_OVERFLOW_CLEAR_MASK	c2d/c2dfpmu.h	32;"	d
+FIXED_CTR0_OVERFLOW_MASK	c2d/c2dfpmu.h	28;"	d
+FIXED_CTR1_OVERFLOW_CLEAR_MASK	c2d/c2dfpmu.h	33;"	d
+FIXED_CTR1_OVERFLOW_MASK	c2d/c2dfpmu.h	29;"	d
+FIXED_CTR2_OVERFLOW_CLEAR_MASK	c2d/c2dfpmu.h	34;"	d
+FIXED_CTR2_OVERFLOW_MASK	c2d/c2dfpmu.h	30;"	d
+FIXSEL_RESERVED_BITS	c2d/c2dfpmu.h	27;"	d
 IA32_PERFEVTSEL0	c2d/c2dpmu.h	20;"	d
 IA32_PERFEVTSEL1	c2d/c2dpmu.h	21;"	d
 IA32_PMC0	c2d/c2dpmu.h	23;"	d
 IA32_PMC1	c2d/c2dpmu.h	24;"	d
-IA32_THERM_STATUS	c2d/c2dtherm.h	13;"	d
-IA32_TIME_STAMP_COUNTER	c2d/c2dtsc.h	14;"	d
-K8_TIME_STAMP_COUNTER	k8/k8tsc.h	14;"	d
-KDIR	Makefile	/^KDIR    := \/lib\/modules\/$(shell uname -r)\/build$/;"	m
-KERNEL_VERSION	seeker-sampler-src.c	25;"	d	file:
-LOG_POOL_SIZE	generic_log.c	13;"	d	file:
-MAX_COUNTERS_PER_CPU	seeker-sampler.h	10;"	d
-MOD_FLAGS	Makefile	/^MOD_FLAGS := -I$(PWD)\/$(ARCA) -DMODULE -B$(PWD)\/$(ARCA)$/;"	m
-MSR_PERF_FIXED_CTR0	c2d/c2dfpmu.h	25;"	d
-MSR_PERF_FIXED_CTR1	c2d/c2dfpmu.h	26;"	d
-MSR_PERF_FIXED_CTR2	c2d/c2dfpmu.h	27;"	d
-MSR_PERF_FIXED_CTR_CTRL	c2d/c2dfpmu.h	29;"	d
-MSR_PERF_GLOBAL_CTRL	c2d/c2dfpmu.h	31;"	d
-MSR_PERF_GLOBAL_OVF_CTRL	c2d/c2dfpmu.h	32;"	d
-MSR_PERF_GLOBAL_STATUS	c2d/c2dfpmu.h	30;"	d
+IA32_THERM_STATUS	c2d/c2dtherm.h	28;"	d
+IA32_TIME_STAMP_COUNTER	c2d/c2dtsc.h	27;"	d
+KERNEL_VERSION	main.c	36;"	d	file:
+MAX_COUNTERS_PER_CPU	seeker.h	25;"	d
+MSR_PERF_FIXED_CTR0	c2d/c2dfpmu.h	38;"	d
+MSR_PERF_FIXED_CTR1	c2d/c2dfpmu.h	39;"	d
+MSR_PERF_FIXED_CTR2	c2d/c2dfpmu.h	40;"	d
+MSR_PERF_FIXED_CTR_CTRL	c2d/c2dfpmu.h	42;"	d
+MSR_PERF_GLOBAL_CTRL	c2d/c2dfpmu.h	44;"	d
+MSR_PERF_GLOBAL_OVF_CTRL	c2d/c2dfpmu.h	45;"	d
+MSR_PERF_GLOBAL_STATUS	c2d/c2dfpmu.h	43;"	d
 NUM_COUNTERS	c2d/c2dpmu.h	14;"	d
-NUM_COUNTERS	k8/k8pmu.h	8;"	d
 NUM_EVTSEL	c2d/c2dpmu.h	15;"	d
-NUM_EVTSEL	k8/k8pmu.h	9;"	d
-NUM_EXTRA_COUNTERS	seeker-sampler.h	9;"	d
-NUM_FIXED_COUNTERS	c2d/c2dfpmu.h	13;"	d
-NUM_FIXED_COUNTERS	k8/k8fpmu.h	13;"	d
-PERF_CTR0	k8/k8pmu.h	17;"	d
-PERF_CTR1	k8/k8pmu.h	18;"	d
-PERF_CTR2	k8/k8pmu.h	19;"	d
-PERF_CTR3	k8/k8pmu.h	20;"	d
-PERF_EVTSEL0	k8/k8pmu.h	12;"	d
-PERF_EVTSEL1	k8/k8pmu.h	13;"	d
-PERF_EVTSEL2	k8/k8pmu.h	14;"	d
-PERF_EVTSEL3	k8/k8pmu.h	15;"	d
-PIDTAB_ENTRY	seeker-sampler.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon2
-PMU_ISR	seeker-sampler-src.c	39;"	d	file:
-PWD	Makefile	/^PWD     := $(shell pwd)$/;"	m
-SAMPLE_DEF	seeker-sampler.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon2
-SCHED_EXIT_EXISTS	seeker-sampler-src.c	29;"	d	file:
-SEEKER_SAMPLE	seeker-sampler.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon2
-SEEKER_SAMPLE_MINOR	seeker-sampler-src.c	37;"	d	file:
-THERM_TRIP_STATUS	k8/k8therm.h	13;"	d
-THERM_VALID_MASK	c2d/c2dtherm.h	15;"	d
+NUM_EXTRA_COUNTERS	seeker.h	24;"	d
+NUM_FIXED_COUNTERS	c2d/c2dfpmu.h	26;"	d
+PIDTAB_ENTRY	seeker.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon1
+PMU_ISR	probe.c	29;"	d	file:
+SAMPLE_DEF	seeker.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon1
+SCHED_EXIT_EXISTS	main.c	48;"	d	file:
+SEEKER_SAMPLE	seeker.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon1
+SEEKER_SAMPLE_MINOR	main.c	71;"	d	file:
+THERM_VALID_MASK	c2d/c2dtherm.h	30;"	d
 TjMax	c2d/c2dtherm.c	/^int TjMax[NR_CPUS] = {0};$/;"	v
-_C2DFPMU_H_	c2d/c2dfpmu.h	7;"	d
+_C2DFPMU_H_	c2d/c2dfpmu.h	20;"	d
 _C2DPMU_H_	c2d/c2dpmu.h	8;"	d
-_C2DTHERM_H_	c2d/c2dtherm.h	7;"	d
-_C2DTHERM_H_	k8/k8therm.h	7;"	d
-_C2DTSC_H_	c2d/c2dtsc.h	8;"	d
-_GENERIC_LOG_H_	generic_log.h	7;"	d
-_K8FPMU_H_	k8/k8fpmu.h	7;"	d
-_K8PMU_H_	k8/k8pmu.h	2;"	d
-_K8TSC_H_	k8/k8tsc.h	8;"	d
-_SEEKER_SAMPLER_H_	seeker-sampler.h	7;"	d
-_log_block_t	generic_log.h	/^typedef struct _log_block_t {$/;"	s
-addr	c2d/c2dfpmu.h	/^	u32 addr;$/;"	m	struct:__anon12
-addr	c2d/c2dpmu.h	/^	u32 addr;$/;"	m	struct:__anon8
-addr	c2d/c2dpmu.h	/^	u32 addr;$/;"	m	struct:__anon9
-addr	k8/k8pmu.h	/^	u32 addr;$/;"	m	struct:__anon14
-addr	k8/k8pmu.h	/^	u32 addr;$/;"	m	struct:__anon15
-all	c2d/c2dfpmu.h	/^	u64 all;$/;"	m	struct:__anon11
-block_size	generic_log.h	/^  size_t block_size;$/;"	m	struct:__anon1
-bytes_logged	generic_log.h	/^  int bytes_logged;$/;"	m	struct:_log_block_t
-bytes_read	generic_log.h	/^  int bytes_read;$/;"	m	struct:_log_block_t
-clear_counters	seeker-sampler-src.c	/^static void clear_counters(void){$/;"	f	file:
+_C2DTHERM_H_	c2d/c2dtherm.h	22;"	d
+_C2DTSC_H_	c2d/c2dtsc.h	21;"	d
+_SEEKER_SAMPLER_H_	seeker.h	21;"	d
+addr	c2d/c2dfpmu.h	/^	u32 addr;$/;"	m	struct:__anon9
+addr	c2d/c2dpmu.h	/^	u32 addr;$/;"	m	struct:__anon10
+addr	c2d/c2dpmu.h	/^	u32 addr;$/;"	m	struct:__anon11
+all	c2d/c2dfpmu.h	/^	u64 all;$/;"	m	struct:__anon8
+alloc_seeker	alloc.c	/^struct log_block * alloc_seeker(void)$/;"	f
+clear_counters	sample.c	/^void clear_counters(void)$/;"	f
 cleared	c2d/c2dfpmu.c	/^cleared_t cleared[NR_CPUS][NUM_FIXED_COUNTERS] = {$/;"	v
-cleared_t	c2d/c2dfpmu.h	/^}cleared_t;$/;"	t	typeref:struct:__anon11
-cnt_mask	c2d/c2dpmu.h	/^	u32 cnt_mask:8;$/;"	m	struct:__anon8
-cnt_mask	k8/k8pmu.h	/^	u32 cnt_mask:8;$/;"	m	struct:__anon14
-config_counters	seeker-sampler-src.c	/^static int config_counters(void){$/;"	f	file:
-configure_disable_interrupts	seeker-sampler-src.c	/^static void configure_disable_interrupts(void){$/;"	f	file:
-configure_enable_interrupts	seeker-sampler-src.c	/^static void configure_enable_interrupts(void){$/;"	f	file:
+cleared_t	c2d/c2dfpmu.h	/^}cleared_t;$/;"	t	typeref:struct:__anon8
+cnt_mask	c2d/c2dpmu.h	/^	u32 cnt_mask:8;$/;"	m	struct:__anon10
+config_counters	sample.c	/^int config_counters(void)$/;"	f
+configure_disable_interrupts	intr.c	/^void configure_disable_interrupts(void){$/;"	f
+configure_enable_interrupts	intr.c	/^void configure_enable_interrupts(void){$/;"	f
 control_clear	c2d/c2dfpmu.c	/^EXPORT_SYMBOL_GPL(control_clear);$/;"	v
 control_clear	c2d/c2dfpmu.c	/^inline void control_clear(void){$/;"	f
 control_read	c2d/c2dfpmu.c	/^EXPORT_SYMBOL_GPL(control_read);$/;"	v
@@ -94,91 +64,58 @@ control_write	c2d/c2dfpmu.c	/^EXPORT_SYMBOL_GPL(control_write);$/;"	v
 control_write	c2d/c2dfpmu.c	/^inline void control_write(void){$/;"	f
 counter_clear	c2d/c2dpmu.c	/^EXPORT_SYMBOL_GPL(counter_clear);$/;"	v
 counter_clear	c2d/c2dpmu.c	/^inline void counter_clear(u32 counter){$/;"	f
-counter_clear	k8/k8pmu.c	/^EXPORT_SYMBOL_GPL(counter_clear);$/;"	v
-counter_clear	k8/k8pmu.c	/^inline void counter_clear(u32 counter){$/;"	f
 counter_disable	c2d/c2dpmu.c	/^EXPORT_SYMBOL_GPL(counter_disable);$/;"	v
 counter_disable	c2d/c2dpmu.c	/^inline void counter_disable(int counter) {$/;"	f
-counter_disable	k8/k8pmu.c	/^EXPORT_SYMBOL_GPL(counter_disable);$/;"	v
-counter_disable	k8/k8pmu.c	/^inline void counter_disable(int counter) {$/;"	f
 counter_enable	c2d/c2dpmu.c	/^EXPORT_SYMBOL_GPL(counter_enable);$/;"	v
 counter_enable	c2d/c2dpmu.c	/^int counter_enable(u32 event, u32 ev_mask, u32 os){$/;"	f
-counter_enable	k8/k8pmu.c	/^EXPORT_SYMBOL_GPL(counter_enable);$/;"	v
-counter_enable	k8/k8pmu.c	/^int counter_enable(u32 event_num, u32 ev_mask, u32 os){$/;"	f
 counter_names	c2d/c2dpmu.c	/^char *counter_names[NUM_COUNTERS] = {$/;"	v
-counter_names	k8/k8pmu.c	/^char *counter_names[NUM_COUNTERS] = {$/;"	v
 counter_read	c2d/c2dpmu.c	/^EXPORT_SYMBOL_GPL(counter_read);$/;"	v
 counter_read	c2d/c2dpmu.c	/^void counter_read(void) {$/;"	f
-counter_read	k8/k8pmu.c	/^EXPORT_SYMBOL_GPL(counter_read);$/;"	v
-counter_read	k8/k8pmu.c	/^void counter_read(void){$/;"	f
-counter_t	c2d/c2dpmu.h	/^}counter_t;$/;"	t	typeref:struct:__anon9
-counter_t	k8/k8pmu.h	/^} counter_t;$/;"	t	typeref:struct:__anon15
+counter_t	c2d/c2dpmu.h	/^}counter_t;$/;"	t	typeref:struct:__anon11
 counters	c2d/c2dpmu.c	/^counter_t counters[NR_CPUS][NUM_COUNTERS] = {$/;"	v
-counters	k8/k8pmu.c	/^counter_t counters[NR_CPUS][NUM_COUNTERS] = {$/;"	v
-counters	seeker-sampler.h	/^	unsigned char counters[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon3
-counters	seeker-sampler.h	/^	unsigned long long counters[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon4
-cpu	seeker-sampler.h	/^	unsigned int cpu;$/;"	m	struct:__anon4
-cpu_counters	seeker-sampler-src.c	/^static int cpu_counters[NR_CPUS][MAX_COUNTERS_PER_CPU];$/;"	v	file:
-cpu_cycles	seeker-sampler.h	/^	unsigned long long cpu_cycles;$/;"	m	struct:__anon5
-cpu_pid	seeker-sampler-src.c	/^static pid_t cpu_pid[NR_CPUS] = {-1};$/;"	v	file:
-cycles	seeker-sampler.h	/^	unsigned long long cycles;$/;"	m	struct:__anon4
-data	generic_log.h	/^  void *data;$/;"	m	struct:_log_block_t
-dev_open	seeker-sampler-src.c	/^static int dev_open = 0;$/;"	v	file:
-do_pid_log	seeker-sampler-src.c	/^static void do_pid_log(struct task_struct *p) {$/;"	f	file:
-do_sample	seeker-sampler-src.c	/^static void do_sample(void) {$/;"	f	file:
-do_timer_sample	seeker-sampler-src.c	/^static void do_timer_sample(unsigned long param){$/;"	f	file:
-edge	c2d/c2dpmu.h	/^	u32 edge:1;$/;"	m	struct:__anon8
-edge	k8/k8pmu.h	/^	u32 edge:1;$/;"	m	struct:__anon14
-enable_apic_pmu	seeker-sampler-src.c	/^static void enable_apic_pmu(void){$/;"	f	file:
-enabled	c2d/c2dpmu.h	/^	u32 enabled:1;$/;"	m	struct:__anon8
-enabled	c2d/c2dpmu.h	/^	u32 enabled;$/;"	m	struct:__anon9
-enabled	k8/k8pmu.h	/^	u32 enabled:1;$/;"	m	struct:__anon14
-enabled	k8/k8pmu.h	/^	u32 enabled;$/;"	m	struct:__anon15
-ev_mask	c2d/c2dpmu.h	/^	u32 ev_mask:8;$/;"	m	struct:__anon8
-ev_mask	k8/k8pmu.h	/^	u32 ev_mask:8;$/;"	m	struct:__anon14
-ev_select	c2d/c2dpmu.h	/^	u32 ev_select:8;$/;"	m	struct:__anon8
-ev_select	k8/k8pmu.h	/^	u32 ev_select:8;$/;"	m	struct:__anon14
-event	c2d/c2dpmu.h	/^	u32 event;$/;"	m	struct:__anon9
-event_num	k8/k8pmu.h	/^	u32 event_num;$/;"	m	struct:__anon15
+counters	seeker.h	/^	unsigned char counters[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon2
+counters	seeker.h	/^	unsigned long long counters[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon3
+cpu	seeker.h	/^	unsigned int cpu;$/;"	m	struct:__anon3
+cpu_counters	sample.c	/^int cpu_counters[NR_CPUS][MAX_COUNTERS_PER_CPU];$/;"	v
+cpu_cycles	seeker.h	/^	unsigned long long cpu_cycles;$/;"	m	struct:__anon4
+cpu_pid	sample.c	/^pid_t cpu_pid[NR_CPUS] = {-1};$/;"	v
+cycles	seeker.h	/^	unsigned long long cycles;$/;"	m	struct:__anon3
+delete_log	log.c	/^void delete_log(struct log_block *ent)$/;"	f
+dev_open	main.c	/^int dev_open = 0;$/;"	v
+do_pid_log	sample.c	/^void do_pid_log(struct task_struct *p) $/;"	f
+do_sample	sample.c	/^void do_sample(void) $/;"	f
+do_timer_sample	intr.c	/^void do_timer_sample(unsigned long param){$/;"	f
+edge	c2d/c2dpmu.h	/^	u32 edge:1;$/;"	m	struct:__anon10
+enable_apic_pmu	intr.c	/^void enable_apic_pmu(void){$/;"	f
+enabled	c2d/c2dpmu.h	/^	u32 enabled:1;$/;"	m	struct:__anon10
+enabled	c2d/c2dpmu.h	/^	u32 enabled;$/;"	m	struct:__anon11
+ev_mask	c2d/c2dpmu.h	/^	u32 ev_mask:8;$/;"	m	struct:__anon10
+ev_select	c2d/c2dpmu.h	/^	u32 ev_select:8;$/;"	m	struct:__anon10
+event	c2d/c2dpmu.h	/^	u32 event;$/;"	m	struct:__anon11
 evtsel	c2d/c2dpmu.c	/^evtsel_t evtsel[NR_CPUS][NUM_COUNTERS] = {$/;"	v
-evtsel	k8/k8pmu.c	/^evtsel_t evtsel[NR_CPUS][NUM_EVTSEL] = {$/;"	v
 evtsel_clear	c2d/c2dpmu.c	/^EXPORT_SYMBOL_GPL(evtsel_clear);$/;"	v
 evtsel_clear	c2d/c2dpmu.c	/^inline void evtsel_clear(u32 evtsel_num){$/;"	f
-evtsel_clear	k8/k8pmu.c	/^EXPORT_SYMBOL_GPL(evtsel_clear);$/;"	v
-evtsel_clear	k8/k8pmu.c	/^inline void evtsel_clear(u32 evtsel_num){$/;"	f
 evtsel_names	c2d/c2dpmu.c	/^char *evtsel_names[NUM_EVTSEL] = {$/;"	v
-evtsel_names	k8/k8pmu.c	/^char *evtsel_names[NUM_EVTSEL] = {$/;"	v
-evtsel_num	k8/k8pmu.h	/^	u32 evtsel_num;$/;"	m	struct:__anon15
 evtsel_read	c2d/c2dpmu.c	/^EXPORT_SYMBOL_GPL(evtsel_read);$/;"	v
-evtsel_read	c2d/c2dpmu.c	/^inline u32 evtsel_read(u32 evtsel_num) $/;"	f
-evtsel_read	k8/k8pmu.c	/^EXPORT_SYMBOL_GPL(evtsel_read);$/;"	v
-evtsel_read	k8/k8pmu.c	/^inline u32 evtsel_read(u32 evtsel_num){$/;"	f
-evtsel_t	c2d/c2dpmu.h	/^}evtsel_t;$/;"	t	typeref:struct:__anon8
-evtsel_t	k8/k8pmu.h	/^} evtsel_t;$/;"	t	typeref:struct:__anon14
+evtsel_read	c2d/c2dpmu.c	/^inline u32 evtsel_read(u32 evtsel_num) {$/;"	f
+evtsel_t	c2d/c2dpmu.h	/^}evtsel_t;$/;"	t	typeref:struct:__anon10
 evtsel_write	c2d/c2dpmu.c	/^EXPORT_SYMBOL_GPL(evtsel_write);$/;"	v
 evtsel_write	c2d/c2dpmu.c	/^inline void evtsel_write(u32 evtsel_num){$/;"	f
-evtsel_write	k8/k8pmu.c	/^EXPORT_SYMBOL_GPL(evtsel_write);$/;"	v
-evtsel_write	k8/k8pmu.c	/^inline void evtsel_write(u32 evtsel_num)$/;"	f
 fcontrol	c2d/c2dfpmu.c	/^fixctrl_t fcontrol[NR_CPUS] = {$/;"	v
 fcounter_clear	c2d/c2dfpmu.c	/^EXPORT_SYMBOL_GPL(fcounter_clear);$/;"	v
 fcounter_clear	c2d/c2dfpmu.c	/^inline void fcounter_clear(u32 counter){$/;"	f
-fcounter_clear	k8/k8fpmu.c	/^EXPORT_SYMBOL_GPL(fcounter_clear);$/;"	v
-fcounter_clear	k8/k8fpmu.c	/^inline void fcounter_clear(u32 counter){$/;"	f
 fcounter_names	c2d/c2dfpmu.c	/^char *fcounter_names[NUM_FIXED_COUNTERS] = {$/;"	v
 fcounter_read	c2d/c2dfpmu.c	/^EXPORT_SYMBOL_GPL(fcounter_read);$/;"	v
 fcounter_read	c2d/c2dfpmu.c	/^void fcounter_read(void){$/;"	f
-fcounter_read	k8/k8fpmu.c	/^EXPORT_SYMBOL_GPL(fcounter_read);$/;"	v
-fcounter_read	k8/k8fpmu.c	/^void fcounter_read(void){$/;"	f
-fcounter_t	c2d/c2dfpmu.h	/^} fcounter_t;$/;"	t	typeref:struct:__anon12
+fcounter_t	c2d/c2dfpmu.h	/^} fcounter_t;$/;"	t	typeref:struct:__anon9
 fcounters	c2d/c2dfpmu.c	/^fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS] = {$/;"	v
 fcounters_disable	c2d/c2dfpmu.c	/^EXPORT_SYMBOL_GPL(fcounters_disable);$/;"	v
 fcounters_disable	c2d/c2dfpmu.c	/^inline void fcounters_disable(void){$/;"	f
-fcounters_disable	k8/k8fpmu.c	/^EXPORT_SYMBOL_GPL(fcounters_disable);$/;"	v
-fcounters_disable	k8/k8fpmu.c	/^inline void fcounters_disable(void){$/;"	f
 fcounters_enable	c2d/c2dfpmu.c	/^EXPORT_SYMBOL_GPL(fcounters_enable);$/;"	v
 fcounters_enable	c2d/c2dfpmu.c	/^void fcounters_enable(u32 os) {$/;"	f
-fcounters_enable	k8/k8fpmu.c	/^EXPORT_SYMBOL_GPL(fcounters_enable);$/;"	v
-fcounters_enable	k8/k8fpmu.c	/^void fcounters_enable(u32 os) {$/;"	f
-fixctrl_t	c2d/c2dfpmu.h	/^} fixctrl_t;$/;"	t	typeref:struct:__anon10
+finalize_seeker_cache	alloc.c	/^void finalize_seeker_cache(void)$/;"	f
+first_read	log.c	/^static int first_read = 1;$/;"	v	file:
+fixctrl_t	c2d/c2dfpmu.h	/^} fixctrl_t;$/;"	t	typeref:struct:__anon7
 fpmu_clear_ovf_status	c2d/c2dfpmu.c	/^EXPORT_SYMBOL_GPL(fpmu_clear_ovf_status);$/;"	v
 fpmu_clear_ovf_status	c2d/c2dfpmu.c	/^int fpmu_clear_ovf_status(int ctr){$/;"	f
 fpmu_configure_interrupt	c2d/c2dfpmu.c	/^EXPORT_SYMBOL_GPL(fpmu_configure_interrupt);$/;"	v
@@ -189,194 +126,133 @@ fpmu_enable_interrupt	c2d/c2dfpmu.c	/^EXPORT_SYMBOL_GPL(fpmu_enable_interrupt);$
 fpmu_enable_interrupt	c2d/c2dfpmu.c	/^int fpmu_enable_interrupt(int ctr){$/;"	f
 fpmu_exit	c2d/c2dfpmu.c	/^module_exit(fpmu_exit);$/;"	v
 fpmu_exit	c2d/c2dfpmu.c	/^static void __exit fpmu_exit(void){$/;"	f	file:
-fpmu_exit	k8/k8fpmu.c	/^module_exit(fpmu_exit);$/;"	v
-fpmu_exit	k8/k8fpmu.c	/^static void __exit fpmu_exit(void){$/;"	f	file:
 fpmu_init	c2d/c2dfpmu.c	/^module_init(fpmu_init);$/;"	v
 fpmu_init	c2d/c2dfpmu.c	/^static int __init fpmu_init(void){$/;"	f	file:
-fpmu_init	k8/k8fpmu.c	/^module_init(fpmu_init);$/;"	v
-fpmu_init	k8/k8fpmu.c	/^static int __init fpmu_init(void){$/;"	f	file:
 fpmu_init_msrs	c2d/c2dfpmu.c	/^EXPORT_SYMBOL_GPL(fpmu_init_msrs);$/;"	v
 fpmu_init_msrs	c2d/c2dfpmu.c	/^inline void fpmu_init_msrs(void) {$/;"	f
-fpmu_init_msrs	k8/k8fpmu.c	/^EXPORT_SYMBOL_GPL(fpmu_init_msrs);$/;"	v
-fpmu_init_msrs	k8/k8fpmu.c	/^inline void fpmu_init_msrs(void) {$/;"	f
 fpmu_is_interrupt	c2d/c2dfpmu.c	/^EXPORT_SYMBOL_GPL(fpmu_is_interrupt);$/;"	v
 fpmu_is_interrupt	c2d/c2dfpmu.c	/^int fpmu_is_interrupt(int ctr){$/;"	f
-generic_close	seeker-sampler-src.c	/^static int generic_close(struct inode *i, struct file *f) {return 0;}$/;"	f	file:
-generic_open	seeker-sampler-src.c	/^static int generic_open(struct inode *i, struct file *f) {return 0;}$/;"	f	file:
+free_seeker	alloc.c	/^void free_seeker(struct log_block * entry)$/;"	f
+generic_close	io.c	/^int generic_close(struct inode *i, struct file *f) $/;"	f
+generic_open	io.c	/^int generic_open(struct inode *i, struct file *f) $/;"	f
 get_counter_data	c2d/c2dpmu.c	/^EXPORT_SYMBOL_GPL(get_counter_data);$/;"	v
 get_counter_data	c2d/c2dpmu.c	/^u64 get_counter_data(u32 counter, u32 cpu_id){$/;"	f
-get_counter_data	k8/k8pmu.c	/^EXPORT_SYMBOL_GPL(get_counter_data);$/;"	v
-get_counter_data	k8/k8pmu.c	/^u64 get_counter_data(u32 counter, u32 cpu_id){$/;"	f
 get_fcounter_data	c2d/c2dfpmu.c	/^EXPORT_SYMBOL_GPL(get_fcounter_data);$/;"	v
 get_fcounter_data	c2d/c2dfpmu.c	/^u64 get_fcounter_data(u32 counter, u32 cpu_id){$/;"	f
-get_fcounter_data	k8/k8fpmu.c	/^EXPORT_SYMBOL_GPL(get_fcounter_data);$/;"	v
-get_fcounter_data	k8/k8fpmu.c	/^u64 get_fcounter_data(u32 counter, u32 cpu_id){$/;"	f
 get_last_time_stamp	c2d/c2dtsc.c	/^EXPORT_SYMBOL_GPL(get_last_time_stamp);$/;"	v
 get_last_time_stamp	c2d/c2dtsc.c	/^u64 get_last_time_stamp(u32 cpu_id){$/;"	f
-get_last_time_stamp	k8/k8tsc.c	/^EXPORT_SYMBOL_GPL(get_last_time_stamp);$/;"	v
-get_last_time_stamp	k8/k8tsc.c	/^u64 get_last_time_stamp(u32 cpu_id){$/;"	f
 get_temp	c2d/c2dtherm.c	/^EXPORT_SYMBOL_GPL(get_temp);$/;"	v
 get_temp	c2d/c2dtherm.c	/^int get_temp(int cpu){$/;"	f
-get_temp	k8/k8therm.c	/^EXPORT_SYMBOL_GPL(get_temp);$/;"	v
-get_temp	k8/k8therm.c	/^int get_temp(int cpu){$/;"	f
 get_time_stamp	c2d/c2dtsc.c	/^EXPORT_SYMBOL_GPL(get_time_stamp);$/;"	v
 get_time_stamp	c2d/c2dtsc.c	/^u64 get_time_stamp(u32 cpu_id){$/;"	f
-get_time_stamp	k8/k8tsc.c	/^EXPORT_SYMBOL_GPL(get_time_stamp);$/;"	v
-get_time_stamp	k8/k8tsc.c	/^u64 get_time_stamp(u32 cpu_id){$/;"	f
-head	generic_log.h	/^  log_block_t *head, *tail;$/;"	m	struct:__anon1
-high	c2d/c2dfpmu.h	/^	u32 high:32;$/;"	m	struct:__anon12
-high	c2d/c2dfpmu.h	/^	u32 high;$/;"	m	struct:__anon11
-high	c2d/c2dpmu.h	/^	u32 high:32;$/;"	m	struct:__anon9
-high	c2d/c2dtsc.h	/^	u32 high;$/;"	m	struct:__anon13
-high	k8/k8pmu.h	/^	u32 high:32;$/;"	m	struct:__anon15
-high	k8/k8tsc.h	/^	u32 high;$/;"	m	struct:__anon16
-inst___switch_to	seeker-sampler-src.c	/^static void inst___switch_to(struct task_struct *from, struct task_struct *to){$/;"	f	file:
-inst_release_thread	seeker-sampler-src.c	/^static void inst_release_thread(struct task_struct *t){$/;"	f	file:
-inst_schedule	seeker-sampler-src.c	/^static int inst_schedule(struct kprobe *p, struct pt_regs *regs){$/;"	f	file:
-inst_smp_apic_pmu_interrupt	seeker-sampler-src.c	/^void inst_smp_apic_pmu_interrupt(struct pt_regs *regs){$/;"	f
-instr_sum	seeker-sampler.h	/^	unsigned long long instr_sum;$/;"	m	struct:__anon5
-int_flag	c2d/c2dpmu.h	/^	u32 int_flag:1;$/;"	m	struct:__anon8
-int_flag	k8/k8pmu.h	/^	u32 int_flag:1;$/;"	m	struct:__anon14
-inv_flag	c2d/c2dpmu.h	/^	u32 inv_flag:1;$/;"	m	struct:__anon8
-inv_flag	k8/k8pmu.h	/^	u32 inv_flag:1;$/;"	m	struct:__anon14
-jp___switch_to	seeker-sampler-src.c	/^static struct jprobe jp___switch_to = {$/;"	v	typeref:struct:jprobe	file:
-jp_release_thread	seeker-sampler-src.c	/^static struct jprobe jp_release_thread = {$/;"	v	typeref:struct:jprobe	file:
-jp_smp_pmu_interrupt	seeker-sampler-src.c	/^static struct jprobe jp_smp_pmu_interrupt = {$/;"	v	typeref:struct:jprobe	file:
-kp_schedule	seeker-sampler-src.c	/^static struct kprobe kp_schedule = {$/;"	v	typeref:struct:kprobe	file:
-kprobes_registered	seeker-sampler-src.c	/^static int kprobes_registered = 0;$/;"	v	file:
-last_high	c2d/c2dtsc.h	/^	u32 last_high;$/;"	m	struct:__anon13
-last_high	k8/k8tsc.h	/^	u32 last_high;$/;"	m	struct:__anon16
-last_low	c2d/c2dtsc.h	/^	u32 last_low;$/;"	m	struct:__anon13
-last_low	k8/k8tsc.h	/^	u32 last_low;$/;"	m	struct:__anon16
-last_ts	seeker-sampler-src.c	/^static unsigned long long last_ts = 0;$/;"	v	file:
-log_alloc	generic_log.c	/^void *log_alloc(log_t *log, size_t bytes)$/;"	f
-log_block_create	generic_log.c	/^static log_block_t *log_block_create(log_t *log)$/;"	f	file:
-log_block_free	generic_log.c	/^static void log_block_free(log_block_t *block)$/;"	f	file:
-log_block_t	generic_log.h	/^} log_block_t;$/;"	t	typeref:struct:_log_block_t
-log_commit	generic_log.c	/^void log_commit(log_t *log)$/;"	f
-log_create	generic_log.c	/^log_t *log_create(size_t block_size)$/;"	f
-log_ev_masks	seeker-sampler-src.c	/^static unsigned int log_ev_masks[MAX_COUNTERS_PER_CPU];$/;"	v	file:
-log_events	seeker-sampler-src.c	/^static int log_events[MAX_COUNTERS_PER_CPU];$/;"	v	file:
-log_free	generic_log.c	/^void log_free(log_t *log)$/;"	f
-log_get_block	generic_log.c	/^static log_block_t *log_get_block(log_t *log)$/;"	f	file:
-log_lock	generic_log.c	15;"	d	file:
-log_lock	generic_log.h	/^  spinlock_t log_lock;$/;"	m	struct:__anon1
-log_num_events	seeker-sampler-src.c	/^static int log_num_events = 0;$/;"	v	file:
-log_pool_fill	generic_log.c	/^static log_block_t *log_pool_fill(log_t *log)$/;"	f	file:
-log_read	generic_log.c	/^int log_read(log_t *log, $/;"	f
-log_recycle_block	generic_log.c	/^static void log_recycle_block(log_t *log, log_block_t *block)$/;"	f	file:
-log_t	generic_log.h	/^} log_t;$/;"	t	typeref:struct:__anon1
-log_unlock	generic_log.c	16;"	d	file:
-low	c2d/c2dfpmu.h	/^	u32 low:32;$/;"	m	struct:__anon12
-low	c2d/c2dfpmu.h	/^	u32 low;$/;"	m	struct:__anon11
-low	c2d/c2dpmu.h	/^	u32 low:32;$/;"	m	struct:__anon9
-low	c2d/c2dtsc.h	/^	u32 low;$/;"	m	struct:__anon13
-low	k8/k8pmu.h	/^	u32 low:32;$/;"	m	struct:__anon15
-low	k8/k8tsc.h	/^	u32 low;$/;"	m	struct:__anon16
-mask	c2d/c2dpmu.h	/^	u32 mask;$/;"	m	struct:__anon9
-masks	seeker-sampler.h	/^	unsigned int masks[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon3
-mdev_registered	seeker-sampler-src.c	/^static int mdev_registered = 0;$/;"	v	file:
-msrs_init	seeker-sampler-src.c	/^static int msrs_init(void){$/;"	f	file:
-name	seeker-sampler.h	/^	char name[16];$/;"	m	struct:__anon5
-next	generic_log.h	/^  struct _log_block_t *next;$/;"	m	struct:_log_block_t	typeref:struct:_log_block_t::_log_block_t
-num_counters	seeker-sampler.h	/^	unsigned char num_counters;$/;"	m	struct:__anon3
-os0	c2d/c2dfpmu.h	/^	u32 os0:1;$/;"	m	struct:__anon10
-os1	c2d/c2dfpmu.h	/^	u32 os1:1;$/;"	m	struct:__anon10
-os2	c2d/c2dfpmu.h	/^	u32 os2:1;$/;"	m	struct:__anon10
-os_flag	c2d/c2dpmu.h	/^	u32 os_flag:1;$/;"	m	struct:__anon8
-os_flag	k8/k8pmu.h	/^	u32 os_flag:1;$/;"	m	struct:__anon14
-os_flag	seeker-sampler-src.c	/^static int os_flag = 0;$/;"	v	file:
-pc_flag	c2d/c2dpmu.h	/^	u32 pc_flag:1;$/;"	m	struct:__anon8
-pc_flag	k8/k8pmu.h	/^	u32 pc_flag:1;$/;"	m	struct:__anon14
-pid	seeker-sampler.h	/^	unsigned int pid;$/;"	m	struct:__anon4
-pid	seeker-sampler.h	/^	unsigned int pid;$/;"	m	struct:__anon5
-pidtab_entry	seeker-sampler.h	/^		pidtab_entry_t pidtab_entry;$/;"	m	union:__anon6::__anon7
-pidtab_entry_t	seeker-sampler.h	/^} pidtab_entry_t;$/;"	t	typeref:struct:__anon5
-pmi0	c2d/c2dfpmu.h	/^	u32 pmi0:1;$/;"	m	struct:__anon10
-pmi1	c2d/c2dfpmu.h	/^	u32 pmi1:1;$/;"	m	struct:__anon10
-pmi2	c2d/c2dfpmu.h	/^	u32 pmi2:1;$/;"	m	struct:__anon10
+high	c2d/c2dfpmu.h	/^	u32 high:32;$/;"	m	struct:__anon9
+high	c2d/c2dfpmu.h	/^	u32 high;$/;"	m	struct:__anon8
+high	c2d/c2dpmu.h	/^	u32 high:32;$/;"	m	struct:__anon11
+high	c2d/c2dtsc.h	/^	u32 high;$/;"	m	struct:__anon12
+init_seeker_cache	alloc.c	/^int init_seeker_cache(void)$/;"	f
+inst___switch_to	probe.c	/^void inst___switch_to(struct task_struct *from, struct task_struct *to){$/;"	f
+inst_release_thread	probe.c	/^void inst_release_thread(struct task_struct *t){$/;"	f
+inst_schedule	probe.c	/^int inst_schedule(struct kprobe *p, struct pt_regs *regs){$/;"	f
+inst_smp_apic_pmu_interrupt	probe.c	/^void inst_smp_apic_pmu_interrupt(struct pt_regs *regs){$/;"	f
+instr_sum	seeker.h	/^	unsigned long long instr_sum;$/;"	m	struct:__anon4
+int_flag	c2d/c2dpmu.h	/^	u32 int_flag:1;$/;"	m	struct:__anon10
+inv_flag	c2d/c2dpmu.h	/^	u32 inv_flag:1;$/;"	m	struct:__anon10
+jp___switch_to	probe.c	/^struct jprobe jp___switch_to = {$/;"	v	typeref:struct:jprobe
+jp_release_thread	probe.c	/^struct jprobe jp_release_thread = {$/;"	v	typeref:struct:jprobe
+jp_smp_pmu_interrupt	probe.c	/^struct jprobe jp_smp_pmu_interrupt = {$/;"	v	typeref:struct:jprobe
+kp_schedule	probe.c	/^struct kprobe kp_schedule = {$/;"	v	typeref:struct:kprobe
+kprobes_registered	main.c	/^static int kprobes_registered = 0;$/;"	v	file:
+last_high	c2d/c2dtsc.h	/^	u32 last_high;$/;"	m	struct:__anon12
+last_low	c2d/c2dtsc.h	/^	u32 last_low;$/;"	m	struct:__anon12
+log_block	alloc.h	/^struct log_block {$/;"	s
+log_create	log.c	/^struct log_block *log_create(void)$/;"	f
+log_ev_masks	main.c	/^unsigned int log_ev_masks[MAX_COUNTERS_PER_CPU];$/;"	v
+log_events	main.c	/^int log_events[MAX_COUNTERS_PER_CPU];$/;"	v
+log_finalize	log.c	/^void log_finalize(void)$/;"	f
+log_init	log.c	/^void log_init(void)$/;"	f
+log_link	log.c	/^void log_link(struct log_block * ent)$/;"	f
+log_lock	log.c	/^static spinlock_t log_lock;$/;"	v	file:
+log_num_events	main.c	/^int log_num_events = 0;$/;"	v
+log_read	log.c	/^int log_read(struct file* file_ptr, $/;"	f
+low	c2d/c2dfpmu.h	/^	u32 low:32;$/;"	m	struct:__anon9
+low	c2d/c2dfpmu.h	/^	u32 low;$/;"	m	struct:__anon8
+low	c2d/c2dpmu.h	/^	u32 low:32;$/;"	m	struct:__anon11
+low	c2d/c2dtsc.h	/^	u32 low;$/;"	m	struct:__anon12
+mask	c2d/c2dpmu.h	/^	u32 mask;$/;"	m	struct:__anon11
+masks	seeker.h	/^	unsigned int masks[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon2
+mdev_registered	main.c	/^static int mdev_registered = 0;$/;"	v	file:
+msrs_init	sample.c	/^int msrs_init(void)$/;"	f
+name	seeker.h	/^	char name[16];$/;"	m	struct:__anon4
+next	alloc.h	/^	struct log_block *next;$/;"	m	struct:log_block	typeref:struct:log_block::log_block
+num_counters	seeker.h	/^	unsigned char num_counters;$/;"	m	struct:__anon2
+os0	c2d/c2dfpmu.h	/^	u32 os0:1;$/;"	m	struct:__anon7
+os1	c2d/c2dfpmu.h	/^	u32 os1:1;$/;"	m	struct:__anon7
+os2	c2d/c2dfpmu.h	/^	u32 os2:1;$/;"	m	struct:__anon7
+os_flag	c2d/c2dpmu.h	/^	u32 os_flag:1;$/;"	m	struct:__anon10
+os_flag	main.c	/^int os_flag = 0;$/;"	v
+pc_flag	c2d/c2dpmu.h	/^	u32 pc_flag:1;$/;"	m	struct:__anon10
+pid	seeker.h	/^	unsigned int pid;$/;"	m	struct:__anon3
+pid	seeker.h	/^	unsigned int pid;$/;"	m	struct:__anon4
+pidtab_entry	seeker.h	/^		pidtab_entry_t pidtab_entry;$/;"	m	union:__anon5::__anon6
+pidtab_entry_t	seeker.h	/^} pidtab_entry_t;$/;"	t	typeref:struct:__anon4
+pmi0	c2d/c2dfpmu.h	/^	u32 pmi0:1;$/;"	m	struct:__anon7
+pmi1	c2d/c2dfpmu.h	/^	u32 pmi1:1;$/;"	m	struct:__anon7
+pmi2	c2d/c2dfpmu.h	/^	u32 pmi2:1;$/;"	m	struct:__anon7
 pmu_exit	c2d/c2dpmu.c	/^module_exit(pmu_exit);$/;"	v
 pmu_exit	c2d/c2dpmu.c	/^static void __exit pmu_exit(void){$/;"	f	file:
-pmu_exit	k8/k8pmu.c	/^module_exit(pmu_exit);$/;"	v
-pmu_exit	k8/k8pmu.c	/^static void pmu_exit(void){$/;"	f	file:
 pmu_init	c2d/c2dpmu.c	/^module_init(pmu_init);$/;"	v
 pmu_init	c2d/c2dpmu.c	/^static int __init pmu_init(void){$/;"	f	file:
-pmu_init	k8/k8pmu.c	/^module_init(pmu_init);$/;"	v
-pmu_init	k8/k8pmu.c	/^static int pmu_init(void){$/;"	f	file:
 pmu_init_msrs	c2d/c2dpmu.c	/^EXPORT_SYMBOL_GPL(pmu_init_msrs);$/;"	v
 pmu_init_msrs	c2d/c2dpmu.c	/^inline void pmu_init_msrs(void){$/;"	f
-pmu_init_msrs	k8/k8pmu.c	/^EXPORT_SYMBOL_GPL(pmu_init_msrs);$/;"	v
-pmu_init_msrs	k8/k8pmu.c	/^inline void pmu_init_msrs(void){$/;"	f
-pmu_intr	seeker-sampler-src.c	/^static int pmu_intr = -1;$/;"	v	file:
-pool	generic_log.h	/^  log_block_t *pool;$/;"	m	struct:__anon1
+pmu_intr	main.c	/^int pmu_intr = -1;$/;"	v
+purge_log	log.c	/^void purge_log(void)$/;"	f
 read_temp	c2d/c2dtherm.c	/^EXPORT_SYMBOL_GPL(read_temp);$/;"	v
 read_temp	c2d/c2dtherm.c	/^int read_temp(void){$/;"	f
-read_temp	k8/k8therm.c	/^EXPORT_SYMBOL_GPL(read_temp);$/;"	v
-read_temp	k8/k8therm.c	/^int read_temp(void){$/;"	f
 read_time_stamp	c2d/c2dtsc.c	/^EXPORT_SYMBOL_GPL(read_time_stamp);$/;"	v
 read_time_stamp	c2d/c2dtsc.c	/^void read_time_stamp(void){$/;"	f
-read_time_stamp	k8/k8tsc.c	/^EXPORT_SYMBOL_GPL(read_time_stamp);$/;"	v
-read_time_stamp	k8/k8tsc.c	/^void read_time_stamp(void){$/;"	f
-reading	generic_log.h	/^  log_block_t *reading;$/;"	m	struct:__anon1
-rsvd	c2d/c2dpmu.h	/^	u32 rsvd:1;$/;"	m	struct:__anon8
-rsvd	k8/k8pmu.h	/^	u32 rsvd:1;$/;"	m	struct:__anon14
-sample_freq	seeker-sampler-src.c	/^static int sample_freq=100;$/;"	v	file:
-sample_lock	seeker-sampler-src.c	/^static spinlock_t sample_lock;$/;"	v	file:
-sample_timer	seeker-sampler-src.c	/^static struct timer_list sample_timer;$/;"	v	typeref:struct:timer_list	file:
-sample_timer_started	seeker-sampler-src.c	/^static int sample_timer_started = 0;$/;"	v	file:
-seeker_sample	seeker-sampler.h	/^		seeker_sample_t seeker_sample;$/;"	m	union:__anon6::__anon7
-seeker_sample_close	seeker-sampler-src.c	/^static int seeker_sample_close(struct inode *in, struct file *f){$/;"	f	file:
-seeker_sample_def	seeker-sampler.h	/^		seeker_sample_def_t seeker_sample_def;$/;"	m	union:__anon6::__anon7
-seeker_sample_def_t	seeker-sampler.h	/^} seeker_sample_def_t;$/;"	t	typeref:struct:__anon3
-seeker_sample_fops	seeker-sampler-src.c	/^static struct file_operations seeker_sample_fops;$/;"	v	typeref:struct:file_operations	file:
-seeker_sample_log	seeker-sampler-src.c	/^static log_t *seeker_sample_log;$/;"	v	file:
-seeker_sample_log_init	seeker-sampler-src.c	/^static int seeker_sample_log_init(void){$/;"	f	file:
-seeker_sample_log_read	seeker-sampler-src.c	/^static ssize_t seeker_sample_log_read(struct file *file_ptr, char __user *buf, $/;"	f	file:
-seeker_sample_mdev	seeker-sampler-src.c	/^static struct miscdevice seeker_sample_mdev;$/;"	v	typeref:struct:miscdevice	file:
-seeker_sample_open	seeker-sampler-src.c	/^int seeker_sample_open(struct inode *in, struct file * f){$/;"	f
-seeker_sample_t	seeker-sampler.h	/^} seeker_sample_t; $/;"	t	typeref:struct:__anon4
-seeker_sampler_entry_t	seeker-sampler.h	/^} seeker_sampler_entry_t;$/;"	t	typeref:struct:__anon6
-seeker_sampler_exit	seeker-sampler-src.c	/^module_exit(seeker_sampler_exit);$/;"	v
-seeker_sampler_exit	seeker-sampler-src.c	/^static void __exit seeker_sampler_exit(void){$/;"	f	file:
-seeker_sampler_exit_handler	seeker-sampler-src.c	/^inline void seeker_sampler_exit_handler(void){$/;"	f
-seeker_sampler_init	seeker-sampler-src.c	/^module_init(seeker_sampler_init);$/;"	v
-seeker_sampler_init	seeker-sampler-src.c	/^static int __init seeker_sampler_init(void)$/;"	f	file:
-tail	generic_log.h	/^  log_block_t *head, *tail;$/;"	m	struct:__anon1
+rsvd	c2d/c2dpmu.h	/^	u32 rsvd:1;$/;"	m	struct:__anon10
+sample	alloc.h	/^	seeker_sampler_entry_t sample;$/;"	m	struct:log_block
+sample_freq	main.c	/^int sample_freq=100;$/;"	v
+sample_timer	intr.c	/^struct timer_list sample_timer;$/;"	v	typeref:struct:timer_list
+sample_timer_started	intr.c	/^int sample_timer_started = 0;$/;"	v
+seeker_cachep	alloc.c	/^static struct kmem_cache *seeker_cachep;$/;"	v	typeref:struct:kmem_cache	file:
+seeker_log_current	log.c	/^struct log_block *seeker_log_current;$/;"	v	typeref:struct:log_block
+seeker_log_head	log.c	/^struct log_block *seeker_log_head;$/;"	v	typeref:struct:log_block
+seeker_sample	seeker.h	/^		seeker_sample_t seeker_sample;$/;"	m	union:__anon5::__anon6
+seeker_sample_close	io.c	/^int seeker_sample_close(struct inode *in, struct file *f)$/;"	f
+seeker_sample_def	seeker.h	/^		seeker_sample_def_t seeker_sample_def;$/;"	m	union:__anon5::__anon6
+seeker_sample_def_t	seeker.h	/^} seeker_sample_def_t;$/;"	t	typeref:struct:__anon2
+seeker_sample_fops	main.c	/^static struct file_operations seeker_sample_fops;$/;"	v	typeref:struct:file_operations	file:
+seeker_sample_log_init	main.c	/^static int seeker_sample_log_init(void){$/;"	f	file:
+seeker_sample_log_read	io.c	/^ssize_t seeker_sample_log_read(struct file *file_ptr, char __user *buf, $/;"	f
+seeker_sample_mdev	main.c	/^static struct miscdevice seeker_sample_mdev;$/;"	v	typeref:struct:miscdevice	file:
+seeker_sample_open	io.c	/^int seeker_sample_open(struct inode *in, struct file * f)$/;"	f
+seeker_sample_t	seeker.h	/^} seeker_sample_t; $/;"	t	typeref:struct:__anon3
+seeker_sampler_entry_t	seeker.h	/^} seeker_sampler_entry_t;$/;"	t	typeref:struct:__anon5
+seeker_sampler_exit	main.c	/^module_exit(seeker_sampler_exit);$/;"	v
+seeker_sampler_exit	main.c	/^static void __exit seeker_sampler_exit(void){$/;"	f	file:
+seeker_sampler_exit_handler	main.c	/^void seeker_sampler_exit_handler(void){$/;"	f
+seeker_sampler_init	main.c	/^module_init(seeker_sampler_init);$/;"	v
+seeker_sampler_init	main.c	/^static int __init seeker_sampler_init(void)$/;"	f	file:
 temperature	c2d/c2dtherm.c	/^int temperature[NR_CPUS] = {0};$/;"	v
-temperature	k8/k8therm.c	/^int temperature[NR_CPUS] = {0};$/;"	v
 therm_exit	c2d/c2dtherm.c	/^module_exit(therm_exit);$/;"	v
 therm_exit	c2d/c2dtherm.c	/^static void __exit therm_exit(void){$/;"	f	file:
-therm_exit	k8/k8therm.c	/^module_exit(therm_exit);$/;"	v
-therm_exit	k8/k8therm.c	/^static void __exit therm_exit(void){$/;"	f	file:
 therm_init	c2d/c2dtherm.c	/^module_init(therm_init);$/;"	v
 therm_init	c2d/c2dtherm.c	/^static int __init therm_init(void){$/;"	f	file:
-therm_init	k8/k8therm.c	/^module_init(therm_init);$/;"	v
-therm_init	k8/k8therm.c	/^static int __init therm_init(void){$/;"	f	file:
 therm_init_msrs	c2d/c2dtherm.c	/^EXPORT_SYMBOL_GPL(therm_init_msrs);$/;"	v
 therm_init_msrs	c2d/c2dtherm.c	/^void therm_init_msrs(void){$/;"	f
-therm_init_msrs	k8/k8therm.c	/^EXPORT_SYMBOL_GPL(therm_init_msrs);$/;"	v
-therm_init_msrs	k8/k8therm.c	/^void therm_init_msrs(void){$/;"	f
 time_stamp	c2d/c2dtsc.c	/^tstamp_t time_stamp[NR_CPUS] = {$/;"	v
-time_stamp	k8/k8tsc.c	/^tstamp_t time_stamp[NR_CPUS] = {$/;"	v
-total_cycles	seeker-sampler.h	/^	unsigned long long total_cycles;$/;"	m	struct:__anon5
+total_cycles	seeker.h	/^	unsigned long long total_cycles;$/;"	m	struct:__anon4
 tsc__exit	c2d/c2dtsc.c	/^module_exit(tsc__exit);$/;"	v
 tsc__exit	c2d/c2dtsc.c	/^static void __exit tsc__exit(void){$/;"	f	file:
-tsc__exit	k8/k8tsc.c	/^module_exit(tsc__exit);$/;"	v
-tsc__exit	k8/k8tsc.c	/^static void __exit tsc__exit(void){$/;"	f	file:
 tsc__init	c2d/c2dtsc.c	/^module_init(tsc__init);$/;"	v
 tsc__init	c2d/c2dtsc.c	/^static int __init tsc__init(void){$/;"	f	file:
-tsc__init	k8/k8tsc.c	/^module_init(tsc__init);$/;"	v
-tsc__init	k8/k8tsc.c	/^static int __init tsc__init(void){$/;"	f	file:
 tsc_init_msrs	c2d/c2dtsc.c	/^EXPORT_SYMBOL_GPL(tsc_init_msrs);$/;"	v
 tsc_init_msrs	c2d/c2dtsc.c	/^inline void tsc_init_msrs(void){$/;"	f
-tsc_init_msrs	k8/k8tsc.c	/^EXPORT_SYMBOL_GPL(tsc_init_msrs);$/;"	v
-tsc_init_msrs	k8/k8tsc.c	/^inline void tsc_init_msrs(void){$/;"	f
-tstamp_t	c2d/c2dtsc.h	/^}tstamp_t;$/;"	t	typeref:struct:__anon13
-tstamp_t	k8/k8tsc.h	/^}tstamp_t;$/;"	t	typeref:struct:__anon16
-type	seeker-sampler.h	/^	int type;$/;"	m	struct:__anon6
-u	seeker-sampler.h	/^	} u;$/;"	m	struct:__anon6	typeref:union:__anon6::__anon7
-usr0	c2d/c2dfpmu.h	/^	u32 usr0:1;$/;"	m	struct:__anon10
-usr1	c2d/c2dfpmu.h	/^	u32 usr1:1;$/;"	m	struct:__anon10
-usr2	c2d/c2dfpmu.h	/^	u32 usr2:1;$/;"	m	struct:__anon10
-usr_flag	c2d/c2dpmu.h	/^	u32 usr_flag:1;$/;"	m	struct:__anon8
-usr_flag	k8/k8pmu.h	/^	u32 usr_flag:1;$/;"	m	struct:__anon14
+tstamp_t	c2d/c2dtsc.h	/^}tstamp_t;$/;"	t	typeref:struct:__anon12
+type	seeker.h	/^	int type;$/;"	m	struct:__anon5
+u	seeker.h	/^	} u;$/;"	m	struct:__anon5	typeref:union:__anon5::__anon6
+usr0	c2d/c2dfpmu.h	/^	u32 usr0:1;$/;"	m	struct:__anon7
+usr1	c2d/c2dfpmu.h	/^	u32 usr1:1;$/;"	m	struct:__anon7
+usr2	c2d/c2dfpmu.h	/^	u32 usr2:1;$/;"	m	struct:__anon7
+usr_flag	c2d/c2dpmu.h	/^	u32 usr_flag:1;$/;"	m	struct:__anon10
