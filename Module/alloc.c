@@ -55,6 +55,8 @@ struct log_block * alloc_seeker(void)
 
 void free_seeker(struct log_block * entry)
 {
+	if(!entry)
+		return;
 	kmem_cache_free(seeker_cachep,entry);
 }
 

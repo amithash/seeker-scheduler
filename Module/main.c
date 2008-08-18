@@ -126,6 +126,7 @@ static int seeker_sample_log_init(void)
 	seeker_sample_mdev.fops = &seeker_sample_fops;
 
 	if(unlikely(misc_register(&seeker_sample_mdev) < 0)) {
+		error("Device register failed");
 		return -1;
 	} else {
 		mdev_registered = 1;
@@ -152,12 +153,12 @@ static int __init seeker_sampler_init(void)
 	}
 
 	if(unlikely(msrs_init() < 0)) {
-		printk("msrs_init failure\n");
+		error("msrs_init failure\n");
 		return -1;
 	}
 
 	if(unlikely(seeker_sample_log_init()  <0)) {
-		printk("seeker_sample_log_init failure\n");
+		error("seeker_sample_log_init failure\n");
 		seeker_sampler_exit_handler();
 		return -1;
 	}
@@ -200,8 +201,8 @@ static int __init seeker_sampler_init(void)
 			printk("Could not enable local pmu interrupt on all cpu's\n");
 		}
 		#else
-		printk(KERN_ALERT "An attempt is made to use the pmu_intr "
-		"facility without applying a seeker patch to the kernel. Exiting\n");
+		error("An attempt is made to use the pmu_intr "
+		"facility without applying a seeker patch to the kernel. Exiting");
 		return -1;
 		#endif
 	}
@@ -209,15 +210,15 @@ static int __init seeker_sampler_init(void)
 	/* Register kprobes */
 
 	if((unlikely(probe_ret = register_kprobe(&kp_schedule)) < 0)){
-		printk(KERN_ALERT "Could not find schededule to probe, returned %d\n",probe_ret);
+		error("Could not find schededule to probe, returned %d",probe_ret);
 		return -1;
 	}
 	if(unlikely((probe_ret = register_jprobe(&jp_release_thread)) < 0)){
-		printk(KERN_ALERT "Could not find release_thread to probe, returned %d\n",probe_ret);
+		error("Could not find release_thread to probe, returned %d",probe_ret);
 		return -1;
 	}
 	if(unlikely((probe_ret = register_jprobe(&jp___switch_to)) < 0)){
-		printk(KERN_ALERT "Could not find __switch_to to probe, returned %d\n",probe_ret);
+		error("Could not find __switch_to to probe, returned %d",probe_ret);
 		return -1;
 	}
 	kprobes_registered = 1;
@@ -238,6 +239,9 @@ static int __init seeker_sampler_init(void)
  *---------------------------------------------------------------------------*/
 void seeker_sampler_exit_handler(void)
 {
+	if(dev_open)
+		seeker_sample_close(NULL,NULL);
+	
 	if( sample_timer_started ) {
 		del_timer_sync(&sample_timer);
 		sample_timer_started = 0;
@@ -268,7 +272,7 @@ void seeker_sampler_exit_handler(void)
 		if(pmu_intr >= 0){
 			/* Disable interrupts on all cpus */
 			if(unlikely(on_each_cpu((void *)configure_disable_interrupts,NULL,1,1) < 0)){
-				printk("Oops... Could not disable interrupts on all cpu's");
+				error("Oops... Could not disable interrupts on all cpu's");
 			}
 		}
 	}

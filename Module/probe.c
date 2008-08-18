@@ -84,12 +84,12 @@ void inst_smp_apic_pmu_interrupt(struct pt_regs *regs){
 				continue;
 			if(fpmu_is_interrupt(i) > 0){
 				fpmu_clear_ovf_status(i);
-				printk("Counter %d overflowed. Check if your sample_freq is unresonably large.\n",i);
+				warn("Counter %d overflowed. Check if your sample_freq is unresonably large.\n",i);
 				ovf=1;
 			}
 		}
 		if(ovf == 0){
-			printk("Supposedly no counter overflowed, check if something is wrong\n");
+			warn("Supposedly no counter overflowed, check if something is wrong\n");
 		}
 	}
 	jprobe_return();

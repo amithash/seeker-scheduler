@@ -61,6 +61,9 @@ typedef struct {
 	} u;
 } seeker_sampler_entry_t;
 
-
+/* Error and warn hash defines kern meaning is increased on purpose... */
+#define error(str,a...) printk(KERN_EMERG "SEEKER ERROR[%s : %d]: " str "\n",__FILE__,__LINE__, ## a)
+#define warn(str,a...) printk(KERN_ERR "SEEKER WARN[%s : %d]: " str "\n",__FILE__,__LINE__, ## a)
+#define debug(str,a...) printk(KERN_INFO "SEEKER DEBUG[%s : %d]: " str "\n",__FILE__,__LINE__, ## a)
 
 #endif

@@ -88,7 +88,7 @@ void do_sample(void)
 	counter_read();
 	fcounter_read();
 	if(unlikely(read_temp() == -1)){
-		printk(KERN_INFO "Temperature value not valid, retrying\n");
+		debug("Temperature value not valid, retrying");
 		read_temp();
 	}
 
@@ -100,8 +100,10 @@ void do_sample(void)
 	period = now - last_ts;
 	/* create an unlinked block */
 	pentry = log_create();
+	/* If allocation failed, log and getout! */
 	if(!pentry){
-		seeker_sampler_exit_handler();
+		warn("Allocation failed!!! Either you are closing your "
+		     "Buffers or something bad is happening");
 		goto out;
 	}
 
@@ -147,7 +149,7 @@ int config_counters(void)
 		cpu_counters[cpu][i] =
 		counter_enable(log_events[i], log_ev_masks[i], os_flag);
 		if(unlikely(cpu_counters[cpu][i] < 0)) {
-			printk("Could not allocate counter for event %d\n", log_events[i]);
+			error("Could not allocate counter for event %d",log_events[i]);
 			return -1;
 		}
 		printk("%d: Allocated counter %d for %d:%x\n", cpu, cpu_counters[cpu][i],
@@ -180,23 +182,23 @@ int msrs_init(void)
 	/* initialize the pmu counters */
 	if(log_num_events > 0){
 		if(unlikely(on_each_cpu((void*)pmu_init_msrs,NULL, 1,1) < 0)){
-			printk("could not initialize counters !, line %d\n",__LINE__);
+			error("could not initialize counters !");
 			return -1;
   		}                   
 	}
 	/* initialize the fixed pmu counters */
 	if(unlikely(on_each_cpu((void*)fpmu_init_msrs,NULL, 1,1) < 0)){
-		printk("could not initialize fixed counters !, line %d\n",__LINE__);
+		error("could not initialize fixed counters!");
 		return -1;
   	}                   
 	/* initialize the temperature sensors */
 	if(unlikely(on_each_cpu((void*)therm_init_msrs,NULL, 1,1) < 0)){
-		printk("could not initialize the temperature sensors !, line %d\n",__LINE__);
+		error("could not initialize the temperature sensors!");
 		return -1;
   	}
 	/* initialize the time stamp counter */
 	if(unlikely(on_each_cpu((void*)tsc_init_msrs,NULL, 1,1) < 0)){
-		printk("could not initialize the time stamp counter !, line %d\n",__LINE__);
+		error("could not initialize the time stamp counter!");
 		return -1;
   	}
 
@@ -205,7 +207,7 @@ int msrs_init(void)
 	// setup the counters modifications -- needed only for counters with information from seeker 
 	// that is currently only for the variable pmu counters.
 	if(unlikely(on_each_cpu((void*)config_counters,NULL, 1,1) < 0)){
-		printk("could not configure counters!, line %d\n",__LINE__);
+		error("could not configure counters!");
 		return -1;
   	}
 
@@ -223,7 +225,8 @@ void do_pid_log(struct task_struct *p)
 {
 	struct log_block *pentry = log_create();
 	if(unlikely(!pentry)){
-		seeker_sampler_exit_handler();
+		warn("Allocation failed!!! Either you are closing your "
+		      "Buffers or something bad is happening");
 		return;
 	}
 	pentry->sample.type = PIDTAB_ENTRY;

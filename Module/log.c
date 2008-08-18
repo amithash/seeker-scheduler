@@ -47,11 +47,17 @@ void log_init(void)
 /* Create, add elements and link. */
 struct log_block *log_create(void)
 {
-	return alloc_seeker();
+	struct log_block *p;
+	p = alloc_seeker();
+	if(!p)
+		return NULL;
+	return p;
 }
 
 void log_link(struct log_block * ent)
 {
+	if(!seeker_log_current)
+		return;
 	spin_lock(&log_lock);
 	seeker_log_current->next = ent;
 	seeker_log_current = ent;

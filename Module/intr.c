@@ -29,6 +29,7 @@
 #include <asm/apicdef.h>
 #include <asm/hw_irq.h>
 
+#include "seeker.h"
 #include "intr.h"
 #include "sample.h"
 
@@ -48,7 +49,7 @@ int sample_timer_started = 0;
 void do_timer_sample(unsigned long param){
 	if(dev_open){
 		if(unlikely(on_each_cpu((void*)do_sample, NULL, 1,1) < 0)){
-			printk("could not sample on all cpu's\n");
+			error("could not sample on all cpu's\n");
 		}
 	}
 
