@@ -63,7 +63,9 @@
 
 // Code talking to pmu.
 #include "sample.h"
+#include "alloc.h"
 #include "log.h"
+#include "exit.h"
 
 
 #define SEEKER_SAMPLE_MINOR 240
@@ -81,8 +83,6 @@ int pmu_intr = -1;
 
 /************************* Declarations & Prototypes *************************/
 
-static struct timer_list sample_timer;
-static int sample_timer_started = 0;
 
 static struct file_operations seeker_sample_fops;
 static struct miscdevice seeker_sample_mdev;
@@ -90,6 +90,8 @@ static int mdev_registered = 0;
 static int kprobes_registered = 0;
 int dev_open = 0;
 
+extern struct timer_list sample_timer;
+extern int sample_timer_started;
 
 extern struct kprobe kp_schedule;
 #ifdef LOCAL_PMU_VECTOR
@@ -98,7 +100,6 @@ extern struct jprobe jp_smp_pmu_interrupt;
 extern struct jprobe jp_release_thread;
 extern struct jprobe jp___switch_to;
 
-inline void seeker_sampler_exit_handler(void);
 
 /*---------------------------------------------------------------------------*
  * Function: seeker_sample_log_init
@@ -224,7 +225,7 @@ static int __init seeker_sampler_init(void)
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-inline void seeker_sampler_exit_handler(void){
+void seeker_sampler_exit_handler(void){
 	if( sample_timer_started ) {
 		del_timer_sync(&sample_timer);
 		sample_timer_started = 0;

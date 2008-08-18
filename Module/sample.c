@@ -1,13 +1,23 @@
+#include <linux/init.h>
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/types.h>
+#include <linux/sched.h>
+#include <seeker-headers.h>
+
+#include "seeker.h"
 #include "sample.h"
+#include "alloc.h"
 #include "log.h"
+#include "exit.h"
 
 
 extern int log_events[MAX_COUNTERS_PER_CPU];
 extern unsigned int log_ev_masks[MAX_COUNTERS_PER_CPU];
-extern int log_num_events = 0;
-extern int sample_freq=100;
-extern int os_flag = 0;
-extern int pmu_intr = -1;
+extern int log_num_events;
+extern int sample_freq;
+extern int os_flag;
+extern int pmu_intr;
 
 int cpu_counters[NR_CPUS][MAX_COUNTERS_PER_CPU];
 pid_t cpu_pid[NR_CPUS] = {-1};
@@ -45,10 +55,9 @@ void clear_counters(void)
 void do_sample(void) 
 {
 	int i,j;
-	log_block_t *pentry;
+	struct log_block *pentry;
 	unsigned long long now, period;
 	unsigned long long last_ts;
-	int num = 0;
 	int cpu = get_cpu();
 
 	read_time_stamp();  
@@ -94,7 +103,7 @@ void do_sample(void)
   
 	out:
 	clear_counters();
-	put_cpu(cpu);
+	put_cpu();
 }
 
 
@@ -129,7 +138,7 @@ int config_counters(void)
 	 * If such a facility is provided by the hardware */
 
 	clear_counters();
-	put_cpu(cpu);
+	put_cpu();
 
 	return 0;
 }
@@ -188,13 +197,14 @@ int msrs_init(void)
  *---------------------------------------------------------------------------*/
 void do_pid_log(struct task_struct *p) 
 {
-	log_block_t *pentry = log_create();
+	struct log_block *pentry = log_create();
 	if(unlikely(!pentry)){
 		seeker_sampler_exit_handler();
 		return;
 	}
 	pentry->sample.type = PIDTAB_ENTRY;
-	pentry->sample.u.pidtab_entry.pid = (u32)(p->pid);
+	//pentry->sample.u.pidtab_entry.pid = (u32)(p->pid);
+	pentry->sample.u.pidtab_entry.pid = (u32)0;
 	pentry->sample.u.pidtab_entry.total_cycles = 0;
 	memcpy(&(pentry->sample.u.pidtab_entry.name),
 	       p->comm, 

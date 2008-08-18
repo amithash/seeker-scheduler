@@ -23,6 +23,7 @@
 #include <linux/init.h>
 #include <linux/kprobes.h>
 #include "probe.h"
+#include "intr.h"
 #include "sample.h"
 
 #define PMU_ISR "smp_apic_pmu_interrupt" 
@@ -99,7 +100,7 @@ void inst_smp_apic_pmu_interrupt(struct pt_regs *regs){
  * Input Parameters: kprobes parameter and regs. Not used.
  * Output Parameters: always returns 0
  *---------------------------------------------------------------------------*/
-static int inst_schedule(struct kprobe *p, struct pt_regs *regs){
+int inst_schedule(struct kprobe *p, struct pt_regs *regs){
 	if(dev_open){
 		do_sample();
 	}
@@ -112,7 +113,7 @@ static int inst_schedule(struct kprobe *p, struct pt_regs *regs){
  * Input Parameters: exiting tasks struct.
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-static void inst_release_thread(struct task_struct *t){
+void inst_release_thread(struct task_struct *t){
 	if(dev_open){
 		do_pid_log(t);
 	}
@@ -127,7 +128,7 @@ static void inst_release_thread(struct task_struct *t){
  * Input Parameters: "from" task struct, "to" task struct
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-static void inst___switch_to(struct task_struct *from, struct task_struct *to){
+void inst___switch_to(struct task_struct *from, struct task_struct *to){
 	cpu_pid[smp_processor_id()] = to->pid;
 	jprobe_return();
 }

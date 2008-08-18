@@ -1,5 +1,22 @@
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <linux/module.h>
+#include <seeker-headers.h>
+#include <linux/fs.h>
+
+#include "seeker.h"
+
+#include "alloc.h"
+#include "log.h"
 #include "io.h"
 
+extern int log_events[MAX_COUNTERS_PER_CPU];
+extern unsigned int log_ev_masks[MAX_COUNTERS_PER_CPU];
+extern int log_num_events;
+extern int sample_freq;
+extern int os_flag;
+extern int pmu_intr;
+extern int dev_open;
 
 
 /*---------------------------------------------------------------------------*
@@ -27,21 +44,14 @@ int seeker_sample_open(struct inode *in, struct file * f)
 {
 
 	int i,retval=0;
-	seeker_sampler_entry_t *pentry;
-
-	if(unlikely((seeker_sample_log = log_create(4096 * sizeof(seeker_sample_t))) == NULL)) {
-		return -1;
-	}
-
-	if(unlikely((pentry = log_alloc(seeker_sample_log, sizeof(seeker_sampler_entry_t))) == NULL)){
-		return -1;
-	}
-
-	pentry->type = SAMPLE_DEF;
-	pentry->u.seeker_sample_def.num_counters = log_num_events + NUM_FIXED_COUNTERS + NUM_EXTRA_COUNTERS;
+	struct log_block *pentry;
+	log_init();	
+	pentry = log_create();
+	pentry->sample.type = SAMPLE_DEF;
+	pentry->sample.u.seeker_sample_def.num_counters = log_num_events + NUM_FIXED_COUNTERS + NUM_EXTRA_COUNTERS;
 	for(i = 0; i < log_num_events; i++) {
-		pentry->u.seeker_sample_def.counters[i] = log_events[i];
-		pentry->u.seeker_sample_def.masks[i] = log_ev_masks[i];
+		pentry->sample.u.seeker_sample_def.counters[i] = log_events[i];
+		pentry->sample.u.seeker_sample_def.masks[i] = log_ev_masks[i];
 	}
 
 	/* add definations for the fixed counters:
@@ -50,23 +60,20 @@ int seeker_sample_open(struct inode *in, struct file * f)
 	* 0x03:0x00 = FIXED COUNTER 2; 
 	* 0x04:0x00 = TEMPERATURE
 	*/
-	pentry->u.seeker_sample_def.counters[i] = 0x01;
-	pentry->u.seeker_sample_def.masks[i] = 0x00;
+	pentry->sample.u.seeker_sample_def.counters[i] = 0x01;
+	pentry->sample.u.seeker_sample_def.masks[i] = 0x00;
 	i++;
-	pentry->u.seeker_sample_def.counters[i] = 0x02;
-	pentry->u.seeker_sample_def.masks[i] = 0x00;
+	pentry->sample.u.seeker_sample_def.counters[i] = 0x02;
+	pentry->sample.u.seeker_sample_def.masks[i] = 0x00;
 	i++;
-	pentry->u.seeker_sample_def.counters[i] = 0x03;
-	pentry->u.seeker_sample_def.masks[i] = 0x00;
+	pentry->sample.u.seeker_sample_def.counters[i] = 0x03;
+	pentry->sample.u.seeker_sample_def.masks[i] = 0x00;
 	i++;
-	pentry->u.seeker_sample_def.counters[i] = 0x04;
-	pentry->u.seeker_sample_def.masks[i] = 0x00;
+	pentry->sample.u.seeker_sample_def.counters[i] = 0x04;
+	pentry->sample.u.seeker_sample_def.masks[i] = 0x00;
 	i++;
+	log_link(pentry);
 
-	log_commit(seeker_sample_log);
-
-	retval = generic_open(in,f);
-	dev_open = 1;
 	/* Enable and configure interrupts on each cpu */
 	#ifdef LOCAL_PMU_VECTOR
 	if(pmu_intr >= 0){
@@ -75,6 +82,8 @@ int seeker_sample_open(struct inode *in, struct file * f)
 		}
 	}
 	#endif
+	retval = generic_open(in,f);
+	dev_open = 1;
 	return retval;
 }
 
@@ -99,11 +108,16 @@ int seeker_sample_close(struct inode *in, struct file *f)
 		}
 	}
 	#endif
-	if(likely(seeker_sample_log != NULL)) {
-		log_free(seeker_sample_log);
-		seeker_sample_log = NULL;
-	}
+	log_finalize();
 	retval = generic_close(in,f);
 	return retval;
 }
 
+int generic_open(struct inode *i, struct file *f) 
+{
+	return 0;
+}
+int generic_close(struct inode *i, struct file *f) 
+{
+	return 0;
+}
