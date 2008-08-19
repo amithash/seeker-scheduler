@@ -39,7 +39,8 @@ static int first_read = 1;
 void log_init(void)
 {
 	init_seeker_cache();
-	seeker_log_head = seeker_log_current = alloc_seeker();
+	seeker_log_current = alloc_seeker();
+	seeker_log_head = seeker_log_current;
 	spin_lock_init(&log_lock);
 	first_read = 1;
 }
@@ -49,15 +50,19 @@ struct log_block *log_create(void)
 {
 	struct log_block *p;
 	p = alloc_seeker();
-	if(!p)
+	if(!p){
+		warn("Allocation failed");
 		return NULL;
+	}
 	return p;
 }
 
 void log_link(struct log_block * ent)
 {
-	if(!seeker_log_current)
+	if(!seeker_log_current || !ent){
+		warn("Current of ent is NULL");
 		return;
+	}
 	spin_lock(&log_lock);
 	seeker_log_current->next = ent;
 	seeker_log_current = ent;
@@ -67,6 +72,10 @@ void log_link(struct log_block * ent)
 
 void delete_log(struct log_block *ent)
 {
+	if(!ent){
+		error("Trying to delete a NULL Block.");
+		return;
+	}
 	free_seeker(ent);
 }
 
@@ -93,8 +102,10 @@ int log_read(struct file* file_ptr,
 	int i = 0;
 	int exit = 0;
 
-	if(unlikely(seeker_log_head == NULL || buf == NULL || file_ptr == NULL))
+	if(unlikely(seeker_log_head == NULL || buf == NULL || file_ptr == NULL)){
+		warn("Trying to read or write from/to a NULL buf");
 		return -1;
+	}
 
 	if(unlikely(first_read)){
 		if(unlikely(!seeker_log_head->next))
@@ -111,7 +122,9 @@ int log_read(struct file* file_ptr,
 	 * a competetor with the writers and creates the 
 	 * need for a lock.
 	 */
-	while(i+sizeof(seeker_sampler_entry_t) <= count && !exit && seeker_log_head != seeker_log_current){
+	while(i+sizeof(seeker_sampler_entry_t) <= count 
+	      && !exit 
+	      && seeker_log_head != seeker_log_current){
 		memcpy(buf+i,&(seeker_log_head->sample),sizeof(seeker_sampler_entry_t));	
 		/* Check if this is the last */
 		log = seeker_log_head;

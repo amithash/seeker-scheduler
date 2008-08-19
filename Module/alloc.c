@@ -31,7 +31,7 @@
 #include "log.h"
 
 
-static struct kmem_cache *seeker_cachep;
+static struct kmem_cache *seeker_cachep = NULL;
 
 int init_seeker_cache(void)
 {
@@ -49,15 +49,18 @@ struct log_block * alloc_seeker(void)
 {
 	struct log_block *ent = 
 	(struct log_block *)kmem_cache_alloc(seeker_cachep, GFP_ATOMIC);
+	if(!ent){
+		warn("Allocation failed");
+		return NULL;
+	}
 	return ent;
 }
 
 
 void free_seeker(struct log_block * entry)
 {
-	if(!entry)
-		return;
 	kmem_cache_free(seeker_cachep,entry);
+	entry = NULL;
 }
 
 void finalize_seeker_cache(void)

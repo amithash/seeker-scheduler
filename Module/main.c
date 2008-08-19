@@ -27,46 +27,15 @@
 #include <linux/kernel.h>
 #include <linux/miscdevice.h>
 #include <linux/module.h>
-#include <linux/sched.h>
 #include <linux/moduleparam.h>
-#include <linux/version.h>
-#include <linux/time.h>
-#include <linux/random.h>
-#include <linux/fs.h>
 #include <linux/cpumask.h>
-#include <linux/kprobes.h>
-#include <linux/vmalloc.h>
-
-#if !defined(KERNEL_VERSION)
-# define KERNEL_VERSION(a,b,c) (LINUX_VERSION_CODE + 1)
-#endif
-
-/* Now, now, now, let me explain what exactly happened for you to realize what 
- * went on here. I developed all this on the linux 2.6.18 kernel for the core 2
- * duo, Tipp, the guy who made p4sample also used sched_exit to probe when a 
- * thread exited. Now, in linux-2.6.23, they pulled the rug. changed that 
- * function's name from sched_exit to release_thread. And hence the kernel
- * version check,
- */
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23))
-#define SCHED_EXIT_EXISTS 1
-#endif
+#include <linux/fs.h>
 
 #include <seeker-headers.h>
-
 #include "seeker.h"
-
-// Interrupt handling code
 #include "intr.h"
-
-// File handling code
 #include "io.h"
-
-// Kprobes using code
 #include "probe.h"
-
-// Code talking to pmu.
 #include "sample.h"
 #include "alloc.h"
 #include "log.h"
@@ -74,8 +43,6 @@
 
 
 #define SEEKER_SAMPLE_MINOR 240
-
-
 
 /************************* Parameter variables *******************************/
 

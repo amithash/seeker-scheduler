@@ -24,6 +24,9 @@
  *****************************************************/
 #ifndef __PROBE_H_
 #define __PROBE_H_
+
+#include <linux/kprobes.h>
+
 #ifdef LOCAL_PMU_VECTOR
 void inst_smp_apic_pmu_interrupt(struct pt_regs *regs);
 #endif

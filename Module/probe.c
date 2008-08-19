@@ -25,11 +25,24 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/kprobes.h>
+#include <linux/version.h>
 #include "probe.h"
 #include "intr.h"
 #include "sample.h"
 
 #define PMU_ISR "smp_apic_pmu_interrupt" 
+
+/* Now, now, now, let me explain what exactly happened for you to realize what 
+ * went on here. I developed all this on the linux 2.6.18 kernel for the core 2
+ * duo, Tipp, the guy who made p4sample also used sched_exit to probe when a 
+ * thread exited. Now, in linux-2.6.23, they pulled the rug. changed that 
+ * function's name from sched_exit to release_thread. And hence the kernel
+ * version check,
+ */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23))
+#define SCHED_EXIT_EXISTS 1
+#endif
+
 
 extern int dev_open;
 extern pid_t cpu_pid[NR_CPUS];

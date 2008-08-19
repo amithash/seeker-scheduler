@@ -61,6 +61,10 @@ typedef struct {
 	} u;
 } seeker_sampler_entry_t;
 
+#if !defined(KERNEL_VERSION)
+# define KERNEL_VERSION(a,b,c) (LINUX_VERSION_CODE + 1)
+#endif
+
 /* Error and warn hash defines kern meaning is increased on purpose... */
 #define error(str,a...) printk(KERN_EMERG "SEEKER ERROR[%s : %d]: " str "\n",__FILE__,__LINE__, ## a)
 #define warn(str,a...) printk(KERN_ERR "SEEKER WARN[%s : %d]: " str "\n",__FILE__,__LINE__, ## a)

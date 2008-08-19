@@ -26,21 +26,31 @@
 #include <signal.h>
 #include <sys/types.h>
 
+/* The following is included just so that the compiler does not complain abour c2d*.h files! */
+/* And all I need form those are the constants NUM_COUNTERS and NUM_FIXED_COUNTERS */
+typedef unsigned int u32;
+typedef unsigned long long u64;
+#define NR_CPUS 0
+
+#include <seeker-headers.h>
+#include "../Module/seeker.h"
+
 #define P_ASSERT_EXIT(t,i) if(!(t)) {perror((i)); exit(EXIT_FAILURE);}
-#define BUFFER_SIZE (4096*48)
+#define BUFFER_SIZE (4096*sizeof(seeker_sampler_entry_t))
 
 static char buf[BUFFER_SIZE];
 static FILE *infile, *outfile;
-char *infile_name, outfile_prefix[100], outfile_name[100];
+char infile_name[] = "seeker_samples"; 
+char outfile_prefix[100], outfile_name[100];
 int count = 0;
 char count_c[20];
 int do_sample = 1;
 
 void do_exit(void) 
 {
-  printf("Exiting generic_log_dump\n");
-  fflush(outfile);
-  exit(EXIT_SUCCESS);
+	printf("Exiting generic_log_dump\n");
+	fflush(outfile);
+	exit(EXIT_SUCCESS);
 }
 
 void catchSig()
@@ -79,15 +89,16 @@ void catchTerm()
 
 
 
-int main (int argc, char** argv) {
+int main (int argc, char** argv) 
+{
 	int sleep_time;
 	float sec_to_sleep;
 	int use_usleep = 1;
 	size_t bytes_read;
 	struct timeval tv;
   
-	if( argc < 4 ) {
-		printf("usage: %s <sleep time> <infile> <outfile>", argv[0]);
+	if( argc != 3 ) {
+		printf("usage: %s <sleep time> <outfile>", argv[0]);
 		do_exit();
 	}
 
@@ -104,7 +115,6 @@ int main (int argc, char** argv) {
 		sleep_time = 1;
 		use_usleep = 0;
 	}
-	infile_name = argv[2];
   
 	strcpy(outfile_prefix,argv[3]);
 	strcpy(outfile_name, outfile_prefix);
