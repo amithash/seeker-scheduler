@@ -23,7 +23,7 @@ CXX = g++
 ARCA := c2d
 
 all:
-	${CC} ${CFLAGS} generic_log_dump.c -o generic_log_dump -I../Module/$(ARCA)/
+	${CC} ${CFLAGS} seekerd.c -o seekerd -I../Module/$(ARCA)/
 	${CC} ${CFLAGS} decodelog.c -o decodelog -I../Module/$(ARCA)/
 	${CXX} ${CFLAGS} interp.C -o interp
 	${CXX} ${CFLAGS} maxmin.C -o maxmin

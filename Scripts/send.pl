@@ -35,7 +35,7 @@ my $sigterm = $signo{TERM} + 0;
 
 my $terminate = (defined($ARGV[0]) and $ARGV[0] eq "-t") ? 1 : 0;
 
-open PS,"ps -e | grep \"generic_log_dum\" |";
+open PS,"ps -e | grep \"seekerd\" |";
 my @ps = split(/\s+/,<PS>);
 
 my $pid = 0;
@@ -48,17 +48,17 @@ if(defined($ps[0])){
 	}
 }
 else{
-	print "generic_log_dump does not seem to be executing!\n";
+	print "seekerd does not seem to be executing!\n";
 	exit;
 }
 
 if($terminate == 0){
-	print "Requesting generic_log_dump to change logs\n";
+	print "Requesting seekerd to change logs\n";
 	print "Sending Signal:$sigusr1 to pid $ps[1]\n";
 	kill $sigusr1, $pid;
 }
 else{
-	print "Terminating generic_log_dump\n";
+	print "Terminating seekerd\n";
 	kill $sigterm, $pid;
 }
 
