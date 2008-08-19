@@ -30,5 +30,5 @@ all:
 	${CXX} ${CFLAGS} smooth.C -o smooth
 
 clean:
-	rm -f generic_log_dump decodelog interp maxmin smooth
+	rm -f seekerd decodelog interp maxmin smooth
 

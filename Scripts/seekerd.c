@@ -86,7 +86,11 @@ void catchTerm()
 	fclose(infile);
 	do_exit();
 }
-
+unsigned int usleep_wrapper(unsigned int time)
+{
+	int a = usleep(time);
+	return a;
+}
 
 
 int main (int argc, char** argv) 
@@ -96,24 +100,32 @@ int main (int argc, char** argv)
 	int use_usleep = 1;
 	size_t bytes_read;
 	struct timeval tv;
+	pid_t pid;
+	unsigned int (*seeker_sleep)(unsigned int);
   
 	if( argc != 3 ) {
 		printf("usage: %s <sleep time> <outfile>", argv[0]);
 		do_exit();
 	}
 
+	pid = fork();
+	if (pid < 0)
+		exit(EXIT_FAILURE);
+	if (pid > 0)
+		exit(EXIT_SUCCESS);
+	umask(0);
+
 	sec_to_sleep = atof(argv[1]);
+	if(sec_to_sleep <= 0)
+		sec_to_sleep = 1;
+	
 	if(sec_to_sleep >= 1.0){
-		use_usleep = 0;
 		sleep_time = (int)(sec_to_sleep + 0.5); // round to the nearst integer.
+		seeker_sleep = &sleep;
 	}
 	else{
-		use_usleep = 1;
 		sleep_time = (int)(sec_to_sleep * 1000000); // That many micro seconds...
-	}
-	if(sleep_time <= 0){
-		sleep_time = 1;
-		use_usleep = 0;
+		seeker_sleep = &usleep_wrapper;
 	}
   
 	strcpy(outfile_prefix,argv[3]);
@@ -125,7 +137,6 @@ int main (int argc, char** argv)
 	signal(SIGTERM, catchTerm);
 
 	P_ASSERT_EXIT(infile = fopen(infile_name, "r"), infile_name);
-
 	if( access(outfile_name, F_OK) == 0 ) {
 		fprintf(stderr, "generic_log_dump: file exists: %s\n", outfile_name);
 		exit(EXIT_FAILURE);
@@ -144,12 +155,7 @@ int main (int argc, char** argv)
 					do_exit();
 				}
 			}
-			if(use_usleep = 1){
-				usleep(sleep_time);
-			}
-			else{
-				sleep(sleep_time);
-			}
+			seeker_sleep(sleep_time);
 			if( ferror(infile) ) {
 				do_exit();
 			}
