@@ -24,7 +24,7 @@ ARCA := c2d
 
 all:
 	${CC} ${CFLAGS} seekerd.c -o seekerd -I../Module/$(ARCA)/
-	${CC} ${CFLAGS} decodelog.c -o decodelog -I../Module/$(ARCA)/
+	${CC} ${CFLAGS} decodelog.c -o decodelog -I../Module/$(ARCA)/ -g
 	${CXX} ${CFLAGS} interp.C -o interp
 	${CXX} ${CFLAGS} maxmin.C -o maxmin
 	${CXX} ${CFLAGS} smooth.C -o smooth

@@ -25,7 +25,7 @@
 /* And all I need form those are the constants NUM_COUNTERS and NUM_FIXED_COUNTERS */
 typedef unsigned int u32;
 typedef unsigned long long u64;
-#define NR_CPUS 0
+#define NR_CPUS 4
 
 #include <seeker-headers.h>
 #include "../Module/seeker.h"
@@ -34,13 +34,12 @@ int
 main(int argc, char **argv, char **envp){
 	int i;
 	int num_counters = -1;
-	unsigned long long total_cycles[2] = {0,0};
-	int first_sample[2] = {1,1};
+	unsigned long long total_cycles[NR_CPUS] = {0};
+	int first_sample[NR_CPUS] = {1};
 	const int bufsize = sizeof(seeker_sampler_entry_t);
 	char buf[bufsize];
-
 	while( fread(buf, 1, bufsize, stdin) == bufsize ) {
-		seeker_sampler_entry_t *entry = (seeker_sampler_entry_t *)(&buf);
+		seeker_sampler_entry_t *entry = (seeker_sampler_entry_t *)(buf);
 		switch(entry->type) {
 			seeker_sample_def_t *sampleDef;
 			seeker_sample_t *sample;
