@@ -40,7 +40,7 @@ typedef unsigned long long u64;
 
 static char buf[BUFFER_SIZE];
 static FILE *infile, *outfile;
-char infile_name[] = "seeker_samples"; 
+char infile_name[] = "/dev/seeker_samples"; 
 char outfile_prefix[100], outfile_name[100];
 int count = 0;
 char count_c[20];
@@ -104,18 +104,22 @@ int main (int argc, char** argv)
 	unsigned int (*seeker_sleep)(unsigned int);
   
 	if( argc != 3 ) {
-		printf("usage: %s <sleep time> <outfile>", argv[0]);
-		do_exit();
+		if(argc == 2){
+			/* Only 1 argument, time is assumed as 1 second */
+			sec_to_sleep = 1;
+			strcpy(outfile_prefix,argv[1]);
+		}
+		else{
+			sec_to_sleep = 1;
+			strcpy(outfile_prefix,"/var/log/seeker");
+		}		
+	}
+	else{
+		sec_to_sleep = atof(argv[1]);
+		strcpy(outfile_prefix,argv[2]);
 	}
 
-	pid = fork();
-	if (pid < 0)
-		exit(EXIT_FAILURE);
-	if (pid > 0)
-		exit(EXIT_SUCCESS);
-	umask(0);
 
-	sec_to_sleep = atof(argv[1]);
 	if(sec_to_sleep <= 0)
 		sec_to_sleep = 1;
 	
@@ -128,7 +132,6 @@ int main (int argc, char** argv)
 		seeker_sleep = &usleep_wrapper;
 	}
   
-	strcpy(outfile_prefix,argv[3]);
 	strcpy(outfile_name, outfile_prefix);
 	sprintf(count_c, "%d",count);
 	strcat(outfile_name,count_c);
@@ -143,6 +146,12 @@ int main (int argc, char** argv)
 	}
 
 	P_ASSERT_EXIT(outfile = fopen(outfile_name, "a"), outfile_name);
+	pid = fork();
+	if (pid < 0)
+		exit(EXIT_FAILURE);
+	if (pid > 0)
+		exit(EXIT_SUCCESS);
+	umask(0);
 
 	while(1) {
 		if(do_sample){
