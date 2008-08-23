@@ -16,36 +16,42 @@
  * You should have received a copy of the GNU General Public License      *
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  **************************************************************************/
-#ifndef _C2DFPMU_H_
-#define _C2DFPMU_H_
+#ifndef _FPMU_H_
+#define _FPMU_H_
 
 #include <asm/types.h>
 
 /********** Constants ********************************************************/
+#ifdef ARCH_C2D
+#	define FPMU_SUPPORTED 1
+#	define NUM_FIXED_COUNTERS 3
+#	define FIXSEL_RESERVED_BITS 0xFFFFF444
+#	define FIXED_CTR0_OVERFLOW_MASK 0x00000001
+#	define FIXED_CTR1_OVERFLOW_MASK 0x00000002
+#	define FIXED_CTR2_OVERFLOW_MASK 0x00000004
+#	define FIXED_CTR0_OVERFLOW_CLEAR_MASK 0xFFFFFFFE
+#	define FIXED_CTR1_OVERFLOW_CLEAR_MASK 0xFFFFFFFD
+#	define FIXED_CTR2_OVERFLOW_CLEAR_MASK 0xFFFFFFFB
+#endif
 
-#define NUM_FIXED_COUNTERS 3
-#define FIXSEL_RESERVED_BITS 0xFFFFF444
-#define FIXED_CTR0_OVERFLOW_MASK 0x00000001
-#define FIXED_CTR1_OVERFLOW_MASK 0x00000002
-#define FIXED_CTR2_OVERFLOW_MASK 0x00000004
-
-#define FIXED_CTR0_OVERFLOW_CLEAR_MASK 0xFFFFFFFE
-#define FIXED_CTR1_OVERFLOW_CLEAR_MASK 0xFFFFFFFD
-#define FIXED_CTR2_OVERFLOW_CLEAR_MASK 0xFFFFFFFB
+#if defined(ARCH_K8) || defined(ARCH_K10)
+#	define NUM_FIXED_COUNTERS 0
+#endif
 
 /********* MSR's *************************************************************/
 
-#define MSR_PERF_FIXED_CTR0 		0x00000309
-#define MSR_PERF_FIXED_CTR1 		0x0000030A
-#define MSR_PERF_FIXED_CTR2 		0x0000030B
-
-#define MSR_PERF_FIXED_CTR_CTRL 	0x0000038D
-#define MSR_PERF_GLOBAL_STATUS 		0x0000038E
-#define MSR_PERF_GLOBAL_CTRL		0x0000038F
-#define MSR_PERF_GLOBAL_OVF_CTRL	0x00000390
+#if defined(ARCH_C2D)
+#	define MSR_PERF_FIXED_CTR0 		0x00000309
+#	define MSR_PERF_FIXED_CTR1 		0x0000030A
+#	define MSR_PERF_FIXED_CTR2 		0x0000030B
+#	define MSR_PERF_FIXED_CTR_CTRL 	0x0000038D
+#	define MSR_PERF_GLOBAL_STATUS 		0x0000038E
+#	define MSR_PERF_GLOBAL_CTRL		0x0000038F
+#	define MSR_PERF_GLOBAL_OVF_CTRL	0x00000390
+#endif
 
 /********** Structure Definitions ********************************************/
-
+#ifdef ARCH_C2D
 typedef struct {
 	u32 pmi0:1;
 	u32 os0:1;
@@ -71,11 +77,11 @@ typedef struct {
 } fcounter_t;
 
 /********* Extern Vars *******************************************************/
-
 extern fixctrl_t fcontrol[NR_CPUS];
 extern fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS];
 extern char* fcounter_names[NUM_FIXED_COUNTERS];
 extern cleared_t cleared[NR_CPUS][NUM_FIXED_COUNTERS];
+#endif
 
 /********** Function Prototypes **********************************************/
 

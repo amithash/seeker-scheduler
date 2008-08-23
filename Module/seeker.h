@@ -24,7 +24,11 @@
  *****************************************************/
 #ifndef _SEEKER_SAMPLER_H_
 #define _SEEKER_SAMPLER_H_
-#include <seeker-headers.h>
+
+#include "pmu.h"
+#include "fpmu.h"
+#include "tsc.h"
+#include "therm.h"
 
 #define NUM_EXTRA_COUNTERS 1
 #define MAX_COUNTERS_PER_CPU NUM_COUNTERS + NUM_FIXED_COUNTERS + NUM_EXTRA_COUNTERS

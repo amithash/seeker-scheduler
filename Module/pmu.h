@@ -4,28 +4,50 @@
  ***************************************************************************/
 
 
-#ifndef _C2DPMU_H_
-#define _C2DPMU_H_
+#ifndef _PMU_H_
+#define _PMU_H_
 
 #include <asm/types.h>
 
 /********** Constants ********************************************************/
+#ifdef ARCH_C2D
+#	define NUM_COUNTERS 2
+#	define NUM_EVTSEL 2
+#	define EVTSEL_RESERVED_BITS 0x00200000
+#endif
 
-#define NUM_COUNTERS 2
-#define NUM_EVTSEL 2
-#define EVTSEL_RESERVED_BITS 0x00200000
+#ifdef ARCH_K8
+#	define NUM_COUNTERS 4
+#	define NUM_EVTSEL 4
+#	define EVTSEL_RESERVED_BITS 0x00200000
+#endif
 
+#ifdef ARCH_K10
+#	define NUM_COUNTERS 4
+#	define NUM_EVTSEL 4
+#	define EVTSEL_RESERVED_BITS 0x00200000
+#endif
 /********** MSR's ************************************************************/
+#ifdef ARCH_C2D
+#	define EVTSEL0 0x00000186
+#	define EVTSEL1 0x00000187
+#	define PMC0 0x000000C1
+#	define PMC1 0x000000C2
+#endif
 
-#define IA32_PERFEVTSEL0 0x00000186
-#define IA32_PERFEVTSEL1 0x00000187
-
-#define IA32_PMC0 0x000000C1
-#define IA32_PMC1 0x000000C2
-
+#if defined(ARCH_K8) || defined(ARCH_K10)
+#	define EVTSEL0 0xC0010000
+#	define EVTSEL1 0xC0010001
+#	define EVTSEL2 0xC0010002
+#	define EVTSEL3 0xC0010003
+#	define PMC0 0xC0010004
+#	define PMC1 0xC0010005
+#	define PMC2 0xC0010006
+#	define PMC3 0xC0010007
+#endif
 
 /********** Structure Definitions ********************************************/
-
+#if defined(ARCH_C2D) || defined(ARCH_K8) || defined(ARCH_K10)
 typedef struct {
 	u32 ev_select:8;
 	u32 ev_mask:8;
@@ -41,7 +63,6 @@ typedef struct {
 	u32 addr;
 }evtsel_t;
 
-
 typedef struct {
 	u32 low:32;
 	u32 high:32;
@@ -50,6 +71,7 @@ typedef struct {
 	u32 mask;
 	u32 enabled;
 }counter_t;
+#endif
 
 /********* Extern Vars *******************************************************/
 

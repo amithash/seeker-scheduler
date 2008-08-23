@@ -31,7 +31,6 @@
 #include <linux/cpumask.h>
 #include <linux/fs.h>
 
-#include <seeker-headers.h>
 #include "seeker.h"
 #include "intr.h"
 #include "io.h"

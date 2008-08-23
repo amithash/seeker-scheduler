@@ -17,32 +17,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  **************************************************************************/
 
-#ifndef _K8FPMU_H_
-#define _K8FPMU_H_
+
+#ifndef _THERM_H_
+#define _THERM_H_
 
 #include <asm/types.h>
 
 /********** Constants ********************************************************/
-
-#define NUM_FIXED_COUNTERS 0
-
-/********* MSR's *************************************************************/
-
-
-/********** Structure Definitions ********************************************/
-
-
+#if defined(ARCH_C2D)
+#	define IA32_THERM_STATUS 0x0000019C
+#	define THERM_VALID_MASK 0x80000000
+#	define THERM_SUPPORTED 1
+#endif
 /********* Extern Vars *******************************************************/
 
+extern int temperature[NR_CPUS];
+extern int TjMax[NR_CPUS];
 
 /********** Function Prototypes **********************************************/
 
-void fpmu_init_msrs(void);
-
-void fcounter_clear(u32 counter);
-void fcounter_read(void);
-u64 get_fcounter_data(u32 counter, u32 cpu_id);
-void fcounters_disable(void);
-void fcounters_enable(u32 os);
+void therm_init_msrs(void);
+int read_temp(void);
+int get_temp(int);
 
 #endif
+

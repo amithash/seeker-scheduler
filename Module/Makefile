@@ -19,25 +19,25 @@
 # You should have received a copy of the GNU General Public License      *
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
 #*************************************************************************/
-
-# ARCA must be set to the architecture in use.
-ARCA := c2d
+ifndef ARCA
+ARCA := C2D
+endif
 
 ifneq ($(KERNELRELEASE),)
 
-obj-m += seeker-sampler.o $(ARCA)/$(ARCA)pmu.o $(ARCA)/$(ARCA)fpmu.o $(ARCA)/$(ARCA)tsc.o $(ARCA)/$(ARCA)therm.o
+
+obj-m += seeker-sampler.o pmu.o fpmu.o tsc.o therm.o
 seeker-sampler-objs += alloc.o log.o probe.o sample.o io.o intr.o main.o
 
 else
 KDIR    := /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)
-MOD_FLAGS := -I$(PWD)/$(ARCA) -DMODULE -B$(PWD)/$(ARCA) -O3 -march=nocona
+MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA)
 
 default:
 	$(MAKE) -C $(KDIR) M=$(PWD) CFLAGS_MODULE="$(MOD_FLAGS)" modules
 	$(shell if ! test -d ../Build; then mkdir ../Build; fi )
 	cp *.ko ../Build
-	cp $(ARCA)/*.ko ../Build
 .PHONY: clean
 clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean

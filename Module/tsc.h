@@ -17,14 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  **************************************************************************/
 
-#ifndef _C2DTSC_H_
-#define _C2DTSC_H_
+#ifndef _TSC_H_
+#define _TSC_H_
 
 #include <asm/types.h>
 
 /********** MSR's ************************************************************/
-
-#define IA32_TIME_STAMP_COUNTER 0x000000010
+#if defined(ARCH_C2D) || defined(ARCH_K8) || defined(ARCH_K10)
+#define TIME_STAMP_COUNTER 0x000000010
+#endif
 
 /********** Structure Definitions ********************************************/
 

@@ -27,7 +27,6 @@
 #include <linux/module.h>
 #include <linux/types.h>
 #include <linux/sched.h>
-#include <seeker-headers.h>
 
 #include "seeker.h"
 #include "sample.h"

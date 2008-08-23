@@ -25,7 +25,6 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/module.h>
-#include <seeker-headers.h>
 #include <linux/fs.h>
 
 #include "seeker.h"

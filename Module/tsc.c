@@ -24,7 +24,7 @@
 #include <asm/msr.h>
 #include <linux/smp.h>
 
-#include "c2dtsc.h"
+#include "tsc.h"
 
 
 MODULE_LICENSE("GPL");
@@ -41,7 +41,7 @@ void read_time_stamp(void){
 	int cpu_id = smp_processor_id();
 	if (likely(cpu_id < NR_CPUS)){
 		// rdtsc is no longer supported by the linux kernel.
-		rdmsr(IA32_TIME_STAMP_COUNTER, low, high);
+		rdmsr(TIME_STAMP_COUNTER, low, high);
 		time_stamp[cpu_id].last_low = time_stamp[cpu_id].low;
 		time_stamp[cpu_id].last_high = time_stamp[cpu_id].high;
 		time_stamp[cpu_id].low = low;
