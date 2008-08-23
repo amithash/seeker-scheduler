@@ -4,58 +4,191 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.7	//
-KERNEL_VERSION	seeker.h	65;"	d
-MAX_COUNTERS_PER_CPU	seeker.h	30;"	d
-NUM_EXTRA_COUNTERS	seeker.h	29;"	d
-PIDTAB_ENTRY	seeker.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon1
+EVTSEL0	pmu.h	32;"	d
+EVTSEL0	pmu.h	39;"	d
+EVTSEL1	pmu.h	33;"	d
+EVTSEL1	pmu.h	40;"	d
+EVTSEL2	pmu.h	41;"	d
+EVTSEL3	pmu.h	42;"	d
+EVTSEL_RESERVED_BITS	pmu.h	16;"	d
+EVTSEL_RESERVED_BITS	pmu.h	22;"	d
+EVTSEL_RESERVED_BITS	pmu.h	28;"	d
+FIXED_CTR0_OVERFLOW_CLEAR_MASK	fpmu.h	32;"	d
+FIXED_CTR0_OVERFLOW_MASK	fpmu.h	29;"	d
+FIXED_CTR1_OVERFLOW_CLEAR_MASK	fpmu.h	33;"	d
+FIXED_CTR1_OVERFLOW_MASK	fpmu.h	30;"	d
+FIXED_CTR2_OVERFLOW_CLEAR_MASK	fpmu.h	34;"	d
+FIXED_CTR2_OVERFLOW_MASK	fpmu.h	31;"	d
+FIXSEL_RESERVED_BITS	fpmu.h	28;"	d
+FPMU_SUPPORTED	fpmu.h	26;"	d
+IA32_THERM_STATUS	therm.h	28;"	d
+KERNEL_VERSION	seeker.h	69;"	d
+MAX_COUNTERS_PER_CPU	seeker.h	34;"	d
+MSR_PERF_FIXED_CTR0	fpmu.h	44;"	d
+MSR_PERF_FIXED_CTR1	fpmu.h	45;"	d
+MSR_PERF_FIXED_CTR2	fpmu.h	46;"	d
+MSR_PERF_FIXED_CTR_CTRL	fpmu.h	47;"	d
+MSR_PERF_GLOBAL_CTRL	fpmu.h	49;"	d
+MSR_PERF_GLOBAL_OVF_CTRL	fpmu.h	50;"	d
+MSR_PERF_GLOBAL_STATUS	fpmu.h	48;"	d
+NUM_COUNTERS	pmu.h	14;"	d
+NUM_COUNTERS	pmu.h	20;"	d
+NUM_COUNTERS	pmu.h	26;"	d
+NUM_EVTSEL	pmu.h	15;"	d
+NUM_EVTSEL	pmu.h	21;"	d
+NUM_EVTSEL	pmu.h	27;"	d
+NUM_EXTRA_COUNTERS	seeker.h	33;"	d
+NUM_FIXED_COUNTERS	fpmu.h	27;"	d
+NUM_FIXED_COUNTERS	fpmu.h	38;"	d
+PIDTAB_ENTRY	seeker.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon6
+PMC0	pmu.h	34;"	d
+PMC0	pmu.h	43;"	d
+PMC1	pmu.h	35;"	d
+PMC1	pmu.h	44;"	d
+PMC2	pmu.h	45;"	d
+PMC3	pmu.h	46;"	d
 PMU_ISR	probe.c	33;"	d	file:
-SAMPLE_DEF	seeker.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon1
+SAMPLE_DEF	seeker.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon6
 SCHED_EXIT_EXISTS	probe.c	43;"	d	file:
-SEEKER_SAMPLE	seeker.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon1
-SEEKER_SAMPLE_MINOR	main.c	45;"	d	file:
+SEEKER_SAMPLE	seeker.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon6
+SEEKER_SAMPLE_MINOR	main.c	44;"	d	file:
+THERM_SUPPORTED	therm.h	30;"	d
+THERM_VALID_MASK	therm.h	29;"	d
+TIME_STAMP_COUNTER	tsc.h	27;"	d
+TjMax	therm.c	/^int TjMax[NR_CPUS] = {0};$/;"	v
+_FPMU_H_	fpmu.h	20;"	d
+_PMU_H_	pmu.h	8;"	d
 _SEEKER_SAMPLER_H_	seeker.h	26;"	d
+_THERM_H_	therm.h	22;"	d
+_TSC_H_	tsc.h	21;"	d
 __ALLOC_H_	alloc.h	26;"	d
 __EXIT_H_	exit.h	26;"	d
 __INTR_H_	intr.h	26;"	d
 __LOG_H_	log.h	27;"	d
 __PROBE_H_	probe.h	26;"	d
 __SAMPLE_H_	sample.h	26;"	d
+addr	fpmu.h	/^	u32 addr;$/;"	m	struct:__anon3
+addr	pmu.h	/^	u32 addr;$/;"	m	struct:__anon4
+addr	pmu.h	/^	u32 addr;$/;"	m	struct:__anon5
+all	fpmu.h	/^	u64 all;$/;"	m	struct:__anon2
 alloc_seeker	alloc.c	/^struct log_block * alloc_seeker(void)$/;"	f
 clear_counters	sample.c	/^void clear_counters(void)$/;"	f
+cleared	fpmu.c	/^cleared_t cleared[NR_CPUS][NUM_FIXED_COUNTERS] = {$/;"	v
+cleared_t	fpmu.h	/^}cleared_t;$/;"	t	typeref:struct:__anon2
+cnt_mask	pmu.h	/^	u32 cnt_mask:8;$/;"	m	struct:__anon4
 config_counters	sample.c	/^int config_counters(void)$/;"	f
 configure_disable_interrupts	intr.c	/^void configure_disable_interrupts(void){$/;"	f
 configure_enable_interrupts	intr.c	/^void configure_enable_interrupts(void){$/;"	f
-counters	seeker.h	/^	unsigned char counters[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon2
-counters	seeker.h	/^	unsigned long long counters[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon3
-cpu	seeker.h	/^	unsigned int cpu;$/;"	m	struct:__anon3
+control_clear	fpmu.c	/^EXPORT_SYMBOL_GPL(control_clear);$/;"	v
+control_clear	fpmu.c	/^inline void control_clear(void){$/;"	f
+control_read	fpmu.c	/^EXPORT_SYMBOL_GPL(control_read);$/;"	v
+control_read	fpmu.c	/^inline u32 control_read(void) {$/;"	f
+control_write	fpmu.c	/^EXPORT_SYMBOL_GPL(control_write);$/;"	v
+control_write	fpmu.c	/^inline void control_write(void){$/;"	f
+counter_clear	pmu.c	/^EXPORT_SYMBOL_GPL(counter_clear);$/;"	v
+counter_clear	pmu.c	/^inline void counter_clear(u32 counter){$/;"	f
+counter_disable	pmu.c	/^EXPORT_SYMBOL_GPL(counter_disable);$/;"	v
+counter_disable	pmu.c	/^inline void counter_disable(int counter) {$/;"	f
+counter_enable	pmu.c	/^EXPORT_SYMBOL_GPL(counter_enable);$/;"	v
+counter_enable	pmu.c	/^int counter_enable(u32 event, u32 ev_mask, u32 os){$/;"	f
+counter_names	pmu.c	/^char *counter_names[NUM_COUNTERS] = {$/;"	v
+counter_read	pmu.c	/^EXPORT_SYMBOL_GPL(counter_read);$/;"	v
+counter_read	pmu.c	/^void counter_read(void) {$/;"	f
+counter_t	pmu.h	/^}counter_t;$/;"	t	typeref:struct:__anon5
+counters	pmu.c	/^counter_t counters[NR_CPUS][NUM_COUNTERS] = {$/;"	v
+counters	seeker.h	/^	unsigned char counters[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon7
+counters	seeker.h	/^	unsigned long long counters[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon8
+cpu	seeker.h	/^	unsigned int cpu;$/;"	m	struct:__anon8
 cpu_counters	sample.c	/^int cpu_counters[NR_CPUS][MAX_COUNTERS_PER_CPU];$/;"	v
-cpu_cycles	seeker.h	/^	unsigned long long cpu_cycles;$/;"	m	struct:__anon4
+cpu_cycles	seeker.h	/^	unsigned long long cpu_cycles;$/;"	m	struct:__anon9
 cpu_pid	sample.c	/^pid_t cpu_pid[NR_CPUS] = {-1};$/;"	v
-cycles	seeker.h	/^	unsigned long long cycles;$/;"	m	struct:__anon3
-debug	seeker.h	71;"	d
+cycles	seeker.h	/^	unsigned long long cycles;$/;"	m	struct:__anon8
+debug	seeker.h	75;"	d
 delete_log	log.c	/^void delete_log(struct log_block *ent)$/;"	f
 dev_open	main.c	/^int dev_open = 0;$/;"	v
 do_pid_log	sample.c	/^void do_pid_log(struct task_struct *p) $/;"	f
 do_sample	sample.c	/^void do_sample(void) $/;"	f
 do_timer_sample	intr.c	/^void do_timer_sample(unsigned long param){$/;"	f
+edge	pmu.h	/^	u32 edge:1;$/;"	m	struct:__anon4
 enable_apic_pmu	intr.c	/^void enable_apic_pmu(void){$/;"	f
-error	seeker.h	69;"	d
+enabled	pmu.h	/^	u32 enabled:1;$/;"	m	struct:__anon4
+enabled	pmu.h	/^	u32 enabled;$/;"	m	struct:__anon5
+error	seeker.h	73;"	d
+ev_mask	pmu.h	/^	u32 ev_mask:8;$/;"	m	struct:__anon4
+ev_select	pmu.h	/^	u32 ev_select:8;$/;"	m	struct:__anon4
+event	pmu.h	/^	u32 event;$/;"	m	struct:__anon5
+evtsel	pmu.c	/^evtsel_t evtsel[NR_CPUS][NUM_COUNTERS] = {$/;"	v
+evtsel_clear	pmu.c	/^EXPORT_SYMBOL_GPL(evtsel_clear);$/;"	v
+evtsel_clear	pmu.c	/^inline void evtsel_clear(u32 evtsel_num){$/;"	f
+evtsel_names	pmu.c	/^char *evtsel_names[NUM_EVTSEL] = {$/;"	v
+evtsel_read	pmu.c	/^EXPORT_SYMBOL_GPL(evtsel_read);$/;"	v
+evtsel_read	pmu.c	/^inline u32 evtsel_read(u32 evtsel_num) {$/;"	f
+evtsel_t	pmu.h	/^}evtsel_t;$/;"	t	typeref:struct:__anon4
+evtsel_write	pmu.c	/^EXPORT_SYMBOL_GPL(evtsel_write);$/;"	v
+evtsel_write	pmu.c	/^inline void evtsel_write(u32 evtsel_num){$/;"	f
+fcontrol	fpmu.c	/^fixctrl_t fcontrol[NR_CPUS] = {$/;"	v
+fcounter_clear	fpmu.c	/^EXPORT_SYMBOL_GPL(fcounter_clear);$/;"	v
+fcounter_clear	fpmu.c	/^inline void fcounter_clear(u32 counter){$/;"	f
+fcounter_names	fpmu.c	/^char *fcounter_names[NUM_FIXED_COUNTERS] = {$/;"	v
+fcounter_read	fpmu.c	/^EXPORT_SYMBOL_GPL(fcounter_read);$/;"	v
+fcounter_read	fpmu.c	/^void fcounter_read(void){$/;"	f
+fcounter_t	fpmu.h	/^} fcounter_t;$/;"	t	typeref:struct:__anon3
+fcounters	fpmu.c	/^fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS] = {$/;"	v
+fcounters_disable	fpmu.c	/^EXPORT_SYMBOL_GPL(fcounters_disable);$/;"	v
+fcounters_disable	fpmu.c	/^inline void fcounters_disable(void){$/;"	f
+fcounters_enable	fpmu.c	/^EXPORT_SYMBOL_GPL(fcounters_enable);$/;"	v
+fcounters_enable	fpmu.c	/^void fcounters_enable(u32 os) {$/;"	f
 finalize_seeker_cache	alloc.c	/^void finalize_seeker_cache(void)$/;"	f
 first_read	log.c	/^static int first_read = 1;$/;"	v	file:
+fixctrl_t	fpmu.h	/^} fixctrl_t;$/;"	t	typeref:struct:__anon1
+fpmu_clear_ovf_status	fpmu.c	/^EXPORT_SYMBOL_GPL(fpmu_clear_ovf_status);$/;"	v
+fpmu_clear_ovf_status	fpmu.c	/^int fpmu_clear_ovf_status(int ctr){$/;"	f
+fpmu_configure_interrupt	fpmu.c	/^EXPORT_SYMBOL_GPL(fpmu_configure_interrupt);$/;"	v
+fpmu_configure_interrupt	fpmu.c	/^int fpmu_configure_interrupt(int ctr, u32 low, u32 high){$/;"	f
+fpmu_disable_interrupt	fpmu.c	/^EXPORT_SYMBOL_GPL(fpmu_disable_interrupt);$/;"	v
+fpmu_disable_interrupt	fpmu.c	/^int fpmu_disable_interrupt(int ctr){$/;"	f
+fpmu_enable_interrupt	fpmu.c	/^EXPORT_SYMBOL_GPL(fpmu_enable_interrupt);$/;"	v
+fpmu_enable_interrupt	fpmu.c	/^int fpmu_enable_interrupt(int ctr){$/;"	f
+fpmu_exit	fpmu.c	/^module_exit(fpmu_exit);$/;"	v
+fpmu_exit	fpmu.c	/^static void __exit fpmu_exit(void){$/;"	f	file:
+fpmu_init	fpmu.c	/^module_init(fpmu_init);$/;"	v
+fpmu_init	fpmu.c	/^static int __init fpmu_init(void){$/;"	f	file:
+fpmu_init_msrs	fpmu.c	/^EXPORT_SYMBOL_GPL(fpmu_init_msrs);$/;"	v
+fpmu_init_msrs	fpmu.c	/^inline void fpmu_init_msrs(void) {$/;"	f
+fpmu_is_interrupt	fpmu.c	/^EXPORT_SYMBOL_GPL(fpmu_is_interrupt);$/;"	v
+fpmu_is_interrupt	fpmu.c	/^int fpmu_is_interrupt(int ctr){$/;"	f
 free_seeker	alloc.c	/^void free_seeker(struct log_block * entry)$/;"	f
 generic_close	io.c	/^int generic_close(struct inode *i, struct file *f) $/;"	f
 generic_open	io.c	/^int generic_open(struct inode *i, struct file *f) $/;"	f
+get_counter_data	pmu.c	/^EXPORT_SYMBOL_GPL(get_counter_data);$/;"	v
+get_counter_data	pmu.c	/^u64 get_counter_data(u32 counter, u32 cpu_id){$/;"	f
+get_fcounter_data	fpmu.c	/^EXPORT_SYMBOL_GPL(get_fcounter_data);$/;"	v
+get_fcounter_data	fpmu.c	/^u64 get_fcounter_data(u32 counter, u32 cpu_id){$/;"	f
+get_last_time_stamp	tsc.c	/^EXPORT_SYMBOL_GPL(get_last_time_stamp);$/;"	v
+get_last_time_stamp	tsc.c	/^u64 get_last_time_stamp(u32 cpu_id){$/;"	f
+get_temp	therm.c	/^EXPORT_SYMBOL_GPL(get_temp);$/;"	v
+get_temp	therm.c	/^int get_temp(int cpu){$/;"	f
+get_time_stamp	tsc.c	/^EXPORT_SYMBOL_GPL(get_time_stamp);$/;"	v
+get_time_stamp	tsc.c	/^u64 get_time_stamp(u32 cpu_id){$/;"	f
+high	fpmu.h	/^	u32 high:32;$/;"	m	struct:__anon3
+high	fpmu.h	/^	u32 high;$/;"	m	struct:__anon2
+high	pmu.h	/^	u32 high:32;$/;"	m	struct:__anon5
+high	tsc.h	/^	u32 high;$/;"	m	struct:__anon12
 init_seeker_cache	alloc.c	/^int init_seeker_cache(void)$/;"	f
 inst___switch_to	probe.c	/^void inst___switch_to(struct task_struct *from, struct task_struct *to){$/;"	f
 inst_release_thread	probe.c	/^void inst_release_thread(struct task_struct *t){$/;"	f
 inst_schedule	probe.c	/^int inst_schedule(struct kprobe *p, struct pt_regs *regs){$/;"	f
 inst_smp_apic_pmu_interrupt	probe.c	/^void inst_smp_apic_pmu_interrupt(struct pt_regs *regs){$/;"	f
-instr_sum	seeker.h	/^	unsigned long long instr_sum;$/;"	m	struct:__anon4
+instr_sum	seeker.h	/^	unsigned long long instr_sum;$/;"	m	struct:__anon9
+int_flag	pmu.h	/^	u32 int_flag:1;$/;"	m	struct:__anon4
+inv_flag	pmu.h	/^	u32 inv_flag:1;$/;"	m	struct:__anon4
 jp___switch_to	probe.c	/^struct jprobe jp___switch_to = {$/;"	v	typeref:struct:jprobe
 jp_release_thread	probe.c	/^struct jprobe jp_release_thread = {$/;"	v	typeref:struct:jprobe
 jp_smp_pmu_interrupt	probe.c	/^struct jprobe jp_smp_pmu_interrupt = {$/;"	v	typeref:struct:jprobe
 kp_schedule	probe.c	/^struct kprobe kp_schedule = {$/;"	v	typeref:struct:kprobe
 kprobes_registered	main.c	/^static int kprobes_registered = 0;$/;"	v	file:
+last_high	tsc.h	/^	u32 last_high;$/;"	m	struct:__anon12
+last_low	tsc.h	/^	u32 last_low;$/;"	m	struct:__anon12
 log_block	alloc.h	/^struct log_block {$/;"	s
 log_create	log.c	/^struct log_block *log_create(void)$/;"	f
 log_ev_masks	main.c	/^unsigned int log_ev_masks[MAX_COUNTERS_PER_CPU];$/;"	v
@@ -66,19 +199,43 @@ log_link	log.c	/^void log_link(struct log_block * ent)$/;"	f
 log_lock	log.c	/^static spinlock_t log_lock;$/;"	v	file:
 log_num_events	main.c	/^int log_num_events = 0;$/;"	v
 log_read	log.c	/^int log_read(struct file* file_ptr, $/;"	f
-masks	seeker.h	/^	unsigned int masks[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon2
+low	fpmu.h	/^	u32 low:32;$/;"	m	struct:__anon3
+low	fpmu.h	/^	u32 low;$/;"	m	struct:__anon2
+low	pmu.h	/^	u32 low:32;$/;"	m	struct:__anon5
+low	tsc.h	/^	u32 low;$/;"	m	struct:__anon12
+mask	pmu.h	/^	u32 mask;$/;"	m	struct:__anon5
+masks	seeker.h	/^	unsigned int masks[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon7
 mdev_registered	main.c	/^static int mdev_registered = 0;$/;"	v	file:
 msrs_init	sample.c	/^int msrs_init(void)$/;"	f
-name	seeker.h	/^	char name[16];$/;"	m	struct:__anon4
+name	seeker.h	/^	char name[16];$/;"	m	struct:__anon9
 next	alloc.h	/^	struct log_block *next;$/;"	m	struct:log_block	typeref:struct:log_block::log_block
-num_counters	seeker.h	/^	unsigned char num_counters;$/;"	m	struct:__anon2
+num_counters	seeker.h	/^	unsigned char num_counters;$/;"	m	struct:__anon7
+os0	fpmu.h	/^	u32 os0:1;$/;"	m	struct:__anon1
+os1	fpmu.h	/^	u32 os1:1;$/;"	m	struct:__anon1
+os2	fpmu.h	/^	u32 os2:1;$/;"	m	struct:__anon1
 os_flag	main.c	/^int os_flag = 0;$/;"	v
-pid	seeker.h	/^	unsigned int pid;$/;"	m	struct:__anon3
-pid	seeker.h	/^	unsigned int pid;$/;"	m	struct:__anon4
-pidtab_entry	seeker.h	/^		pidtab_entry_t pidtab_entry;$/;"	m	union:__anon5::__anon6
-pidtab_entry_t	seeker.h	/^} pidtab_entry_t;$/;"	t	typeref:struct:__anon4
+os_flag	pmu.h	/^	u32 os_flag:1;$/;"	m	struct:__anon4
+pc_flag	pmu.h	/^	u32 pc_flag:1;$/;"	m	struct:__anon4
+pid	seeker.h	/^	unsigned int pid;$/;"	m	struct:__anon8
+pid	seeker.h	/^	unsigned int pid;$/;"	m	struct:__anon9
+pidtab_entry	seeker.h	/^		pidtab_entry_t pidtab_entry;$/;"	m	union:__anon10::__anon11
+pidtab_entry_t	seeker.h	/^} pidtab_entry_t;$/;"	t	typeref:struct:__anon9
+pmi0	fpmu.h	/^	u32 pmi0:1;$/;"	m	struct:__anon1
+pmi1	fpmu.h	/^	u32 pmi1:1;$/;"	m	struct:__anon1
+pmi2	fpmu.h	/^	u32 pmi2:1;$/;"	m	struct:__anon1
+pmu_exit	pmu.c	/^module_exit(pmu_exit);$/;"	v
+pmu_exit	pmu.c	/^static void __exit pmu_exit(void){$/;"	f	file:
+pmu_init	pmu.c	/^module_init(pmu_init);$/;"	v
+pmu_init	pmu.c	/^static int __init pmu_init(void){$/;"	f	file:
+pmu_init_msrs	pmu.c	/^EXPORT_SYMBOL_GPL(pmu_init_msrs);$/;"	v
+pmu_init_msrs	pmu.c	/^inline void pmu_init_msrs(void){$/;"	f
 pmu_intr	main.c	/^int pmu_intr = -1;$/;"	v
 purge_log	log.c	/^void purge_log(void)$/;"	f
+read_temp	therm.c	/^EXPORT_SYMBOL_GPL(read_temp);$/;"	v
+read_temp	therm.c	/^int read_temp(void){$/;"	f
+read_time_stamp	tsc.c	/^EXPORT_SYMBOL_GPL(read_time_stamp);$/;"	v
+read_time_stamp	tsc.c	/^void read_time_stamp(void){$/;"	f
+rsvd	pmu.h	/^	u32 rsvd:1;$/;"	m	struct:__anon4
 sample	alloc.h	/^	seeker_sampler_entry_t sample;$/;"	m	struct:log_block
 sample_freq	main.c	/^int sample_freq=100;$/;"	v
 sample_timer	intr.c	/^struct timer_list sample_timer;$/;"	v	typeref:struct:timer_list
@@ -86,23 +243,42 @@ sample_timer_started	intr.c	/^int sample_timer_started = 0;$/;"	v
 seeker_cachep	alloc.c	/^static struct kmem_cache *seeker_cachep = NULL;$/;"	v	typeref:struct:kmem_cache	file:
 seeker_log_current	log.c	/^struct log_block *seeker_log_current;$/;"	v	typeref:struct:log_block
 seeker_log_head	log.c	/^struct log_block *seeker_log_head;$/;"	v	typeref:struct:log_block
-seeker_sample	seeker.h	/^		seeker_sample_t seeker_sample;$/;"	m	union:__anon5::__anon6
+seeker_sample	seeker.h	/^		seeker_sample_t seeker_sample;$/;"	m	union:__anon10::__anon11
 seeker_sample_close	io.c	/^int seeker_sample_close(struct inode *in, struct file *f)$/;"	f
-seeker_sample_def	seeker.h	/^		seeker_sample_def_t seeker_sample_def;$/;"	m	union:__anon5::__anon6
-seeker_sample_def_t	seeker.h	/^} seeker_sample_def_t;$/;"	t	typeref:struct:__anon2
+seeker_sample_def	seeker.h	/^		seeker_sample_def_t seeker_sample_def;$/;"	m	union:__anon10::__anon11
+seeker_sample_def_t	seeker.h	/^} seeker_sample_def_t;$/;"	t	typeref:struct:__anon7
 seeker_sample_fops	main.c	/^static struct file_operations seeker_sample_fops;$/;"	v	typeref:struct:file_operations	file:
 seeker_sample_log_init	main.c	/^static int seeker_sample_log_init(void)$/;"	f	file:
 seeker_sample_log_read	io.c	/^ssize_t seeker_sample_log_read(struct file *file_ptr, char __user *buf, $/;"	f
 seeker_sample_mdev	main.c	/^static struct miscdevice seeker_sample_mdev;$/;"	v	typeref:struct:miscdevice	file:
 seeker_sample_open	io.c	/^int seeker_sample_open(struct inode *in, struct file * f)$/;"	f
-seeker_sample_t	seeker.h	/^} seeker_sample_t; $/;"	t	typeref:struct:__anon3
-seeker_sampler_entry_t	seeker.h	/^} seeker_sampler_entry_t;$/;"	t	typeref:struct:__anon5
+seeker_sample_t	seeker.h	/^} seeker_sample_t; $/;"	t	typeref:struct:__anon8
+seeker_sampler_entry_t	seeker.h	/^} seeker_sampler_entry_t;$/;"	t	typeref:struct:__anon10
 seeker_sampler_exit	main.c	/^module_exit(seeker_sampler_exit);$/;"	v
 seeker_sampler_exit	main.c	/^static void __exit seeker_sampler_exit(void)$/;"	f	file:
 seeker_sampler_exit_handler	main.c	/^void seeker_sampler_exit_handler(void)$/;"	f
 seeker_sampler_init	main.c	/^module_init(seeker_sampler_init);$/;"	v
 seeker_sampler_init	main.c	/^static int __init seeker_sampler_init(void)$/;"	f	file:
-total_cycles	seeker.h	/^	unsigned long long total_cycles;$/;"	m	struct:__anon4
-type	seeker.h	/^	int type;$/;"	m	struct:__anon5
-u	seeker.h	/^	} u;$/;"	m	struct:__anon5	typeref:union:__anon5::__anon6
-warn	seeker.h	70;"	d
+temperature	therm.c	/^int temperature[NR_CPUS] = {0};$/;"	v
+therm_exit	therm.c	/^module_exit(therm_exit);$/;"	v
+therm_exit	therm.c	/^static void __exit therm_exit(void){$/;"	f	file:
+therm_init	therm.c	/^module_init(therm_init);$/;"	v
+therm_init	therm.c	/^static int __init therm_init(void){$/;"	f	file:
+therm_init_msrs	therm.c	/^EXPORT_SYMBOL_GPL(therm_init_msrs);$/;"	v
+therm_init_msrs	therm.c	/^void therm_init_msrs(void){$/;"	f
+time_stamp	tsc.c	/^tstamp_t time_stamp[NR_CPUS] = {$/;"	v
+total_cycles	seeker.h	/^	unsigned long long total_cycles;$/;"	m	struct:__anon9
+tsc__exit	tsc.c	/^module_exit(tsc__exit);$/;"	v
+tsc__exit	tsc.c	/^static void __exit tsc__exit(void){$/;"	f	file:
+tsc__init	tsc.c	/^module_init(tsc__init);$/;"	v
+tsc__init	tsc.c	/^static int __init tsc__init(void){$/;"	f	file:
+tsc_init_msrs	tsc.c	/^EXPORT_SYMBOL_GPL(tsc_init_msrs);$/;"	v
+tsc_init_msrs	tsc.c	/^inline void tsc_init_msrs(void){$/;"	f
+tstamp_t	tsc.h	/^}tstamp_t;$/;"	t	typeref:struct:__anon12
+type	seeker.h	/^	int type;$/;"	m	struct:__anon10
+u	seeker.h	/^	} u;$/;"	m	struct:__anon10	typeref:union:__anon10::__anon11
+usr0	fpmu.h	/^	u32 usr0:1;$/;"	m	struct:__anon1
+usr1	fpmu.h	/^	u32 usr1:1;$/;"	m	struct:__anon1
+usr2	fpmu.h	/^	u32 usr2:1;$/;"	m	struct:__anon1
+usr_flag	pmu.h	/^	u32 usr_flag:1;$/;"	m	struct:__anon4
+warn	seeker.h	74;"	d
