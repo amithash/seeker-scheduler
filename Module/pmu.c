@@ -170,35 +170,39 @@ EXPORT_SYMBOL_GPL(pmu_disable_interrupt);
 
 int pmu_is_interrupt(int ctr){
 	#if NUM_COUNTERS > 0
+
+	/* XXXX: I could not find a register for AMD
+	 * processors which will tell the status
+	 * of pmu interrupts. So for it, this fun
+	 * ction will just return true. 
+	 */
+	#if defined(ARCH_K8) || defined(ARCH_K10)
+	return 1;
+	#endif
 	u32 ret = 0;
 	u32 low,high;
 	if(unlikely(ctr >= NUM_COUNTERS))
 		return -1;
-	/* 
-	 * XXX: Check if this is how it is done
-	 * for both C2D and K8. Else, this will
-	 * need a different approach
-	 */
 	rdmsr(MSR_PERF_GLOBAL_STATUS,low,high);
 	switch(ctr){
 		#if NUM_COUNTERS > 0
 		case 0:
-			ret = high & CTR0_OVERFLOW_MASK;
+			ret = low & CTR0_OVERFLOW_MASK;
 			break;
 		#endif
 		#if NUM_COUNTERS > 1
 		case 1:
-			ret = high & CTR1_OVERFLOW_MASK;
+			ret = low & CTR1_OVERFLOW_MASK;
 			break;
 		#endif
 		#if NUM_COUNTERS > 2
 		case 2:
-			ret = high & CTR2_OVERFLOW_MASK;
+			ret = low & CTR2_OVERFLOW_MASK;
 			break;
 		#endif
 		#if NUM_COUNTERS > 3
 		case 3:
-			ret = high & CTR3_OVERFLOW_MASK;
+			ret = low & CTR3_OVERFLOW_MASK;
 			break;
 		#endif
 		default:
@@ -212,37 +216,40 @@ int pmu_is_interrupt(int ctr){
 }
 EXPORT_SYMBOL_GPL(pmu_is_interrupt);
 
-int fpmu_clear_ovf_status(int ctr){
+int pmu_clear_ovf_status(int ctr){
 	#if NUM_COUNTERS > 0
 	u32 low,high;
 	int ret = 0;
 	if(unlikely(ctr > NUM_COUNTERS))
 		return -1;
-	/* 
-	 * XXX: Check if this is how it is done
-	 * for both C2D and K8. Else, this will
-	 * need a different approach
+	/* XXXX: I could not find a register for AMD
+	 * processors which will tell the status
+	 * of pmu interrupts. So for it, this fun
+	 * ction will just return true. 
 	 */
+	#if defined(ARCH_K8) || defined(ARCH_K10)
+	return 0;
+	#endif
 	rdmsr(MSR_PERF_GLOBAL_OVF_CTRL,low,high);
 	switch(ctr){
 		#if NUM_COUNTERS > 0
 		case 0:
-			high &= CTR0_OVERFLOW_CLEAR_MASK;
+			low &= CTR0_OVERFLOW_CLEAR_MASK;
 			break;
 		#endif
 		#if NUM_COUNTERS > 1
 		case 1:
-			high &= CTR1_OVERFLOW_CLEAR_MASK;
+			low &= CTR1_OVERFLOW_CLEAR_MASK;
 			break;
 		#endif
 		#if NUM_COUNTERS > 2
 		case 2:
-			high &= CTR2_OVERFLOW_CLEAR_MASK;
+			low &= CTR2_OVERFLOW_CLEAR_MASK;
 			break;
 		#endif
 		#if NUM_COUNTERS > 3
 		case 3:
-			high &= CTR3_OVERFLOW_CLEAR_MASK;
+			low &= CTR3_OVERFLOW_CLEAR_MASK;
 			break;
 		#endif
 		default:
