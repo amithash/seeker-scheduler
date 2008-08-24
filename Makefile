@@ -23,7 +23,7 @@ endif
 
 all:
 	+make -C Module ARCA=$(ARCA)
-	+make -C Scripts ARCA=$(ARCA)
+	+make -C Scripts ARCA=$(ARCA) CPUS=$(CPUS)
 
 clean:
 	+make -C Module clean

@@ -74,6 +74,7 @@ struct jprobe jp___switch_to = {
 	.kp.symbol_name = "__switch_to",
 };
 
+extern struct struct_int_callback int_callback;
 
 /*---------------------------------------------------------------------------*
  * Function: inst_smp_apic_pmu_interrupt
@@ -85,8 +86,8 @@ struct jprobe jp___switch_to = {
 #ifdef LOCAL_PMU_VECTOR
 void inst_smp_apic_pmu_interrupt(struct pt_regs *regs){
 	int i,ovf=0;
-	if(likely(fpmu_is_interrupt(pmu_intr) > 0)){
-		fpmu_clear_ovf_status(pmu_intr);
+	if(likely(int_callback->is_interrupt(pmu_intr) > 0)){
+		int_callback->clear_ovf_status(pmu_intr);
 		if(likely(dev_open == 1)){
 			do_sample();
 		}
@@ -95,8 +96,8 @@ void inst_smp_apic_pmu_interrupt(struct pt_regs *regs){
 		for(i=0;i<NUM_FIXED_COUNTERS;i++){
 			if(i == pmu_intr) 
 				continue;
-			if(fpmu_is_interrupt(i) > 0){
-				fpmu_clear_ovf_status(i);
+			if(int_callback->is_interrupt(i) > 0){
+				int_callback->clear_ovf_status(i);
 				warn("Counter %d overflowed. Check if your sample_freq is unresonably large.\n",i);
 				ovf=1;
 			}

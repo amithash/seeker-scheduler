@@ -1,21 +1,28 @@
-/**************************************************************************
- * Copyright 2008 Amithash Prasad                                         *
- *                                                                        *
- * This file is part of Seeker                                            *
- *                                                                        *
- * Seeker is free software: you can redistribute it and/or modify         *
- * it under the terms of the GNU General Public License as published by   *
- * the Free Software Foundation, either version 3 of the License, or      *
- * (at your option) any later version.                                    *
- *                                                                        *
- * This program is distributed in the hope that it will be useful,        *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of         *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
- * GNU General Public License for more details.                           *
- *                                                                        *
- * You should have received a copy of the GNU General Public License      *
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
- **************************************************************************/
+
+/*****************************************************
+ * Copyright 2008 Amithash Prasad                    *
+ *                                                   *
+ * This file is part of Seeker                       *
+ *                                                   *
+ * Seeker is free software: you can redistribute     *
+ * it and/or modify it under the terms of the        *
+ * GNU General Public License as published by        *
+ * the Free Software Foundation, either version      *
+ * 3 of the License, or (at your option) any         *
+ * later version.                                    *
+ *                                                   *
+ * This program is distributed in the hope that      *
+ * it will be useful, but WITHOUT ANY WARRANTY;      *
+ * without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR       *
+ * PURPOSE. See the GNU General Public License       *
+ * for more details.                                 *
+ *                                                   *
+ * You should have received a copy of the GNU        *
+ * General Public License along with this program.   *
+ * If not, see <http://www.gnu.org/licenses/>.       *
+ *****************************************************/
+
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
@@ -27,7 +34,7 @@
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
-MODULE_DESCRIPTION("Module provides an interface to access the Core2Duo PMU");
+MODULE_DESCRIPTION("Module provides an interface to access the PMU");
 
 evtsel_t evtsel[NR_CPUS][NUM_COUNTERS] = {
 	{
@@ -111,7 +118,8 @@ cleared_t cleared[NR_CPUS][NUM_COUNTERS] = {
 	}
 };
 
-int pmu_configure_interrupt(int ctr, u32 low, u32 high){
+int pmu_configure_interrupt(int ctr, u32 low, u32 high)
+{
 	#if NUM_COUNTERS > 0
 	int ret = 0;
 	int cpu = smp_processor_id();
@@ -130,7 +138,8 @@ int pmu_configure_interrupt(int ctr, u32 low, u32 high){
 }
 EXPORT_SYMBOL_GPL(pmu_configure_interrupt);
 
-int pmu_enable_interrupt(int ctr){
+int pmu_enable_interrupt(int ctr)
+{
 	#if NUM_COUNTERS > 0
 	int cpu_id = smp_processor_id();
 	if(likely(cpu_id < NR_CPUS && ctr < NUM_COUNTERS)){
@@ -147,7 +156,8 @@ int pmu_enable_interrupt(int ctr){
 }	
 EXPORT_SYMBOL_GPL(pmu_enable_interrupt);
 
-int pmu_disable_interrupt(int ctr){
+int pmu_disable_interrupt(int ctr)
+{
 	#if NUM_COUNTERS > 0
 	int cpu;
 	cpu = smp_processor_id();
@@ -168,7 +178,8 @@ int pmu_disable_interrupt(int ctr){
 }	
 EXPORT_SYMBOL_GPL(pmu_disable_interrupt);
 
-int pmu_is_interrupt(int ctr){
+int pmu_is_interrupt(int ctr)
+{
 	#if NUM_COUNTERS > 0
 
 	/* Unlike the C2D, the AMD Archs do not
@@ -216,7 +227,8 @@ int pmu_is_interrupt(int ctr){
 }
 EXPORT_SYMBOL_GPL(pmu_is_interrupt);
 
-int pmu_clear_ovf_status(int ctr){
+int pmu_clear_ovf_status(int ctr)
+{
 	#if NUM_COUNTERS > 0
 	u32 low,high;
 	int ret = 0;
@@ -280,7 +292,8 @@ EXPORT_SYMBOL_GPL(evtsel_read);
 
 
 //clears the event select registers
-inline void evtsel_clear(u32 evtsel_num){
+inline void evtsel_clear(u32 evtsel_num)
+{
 	#if NUM_COUNTERS > 0
 	u32 low, high;
 	rdmsr(evtsel[0][evtsel_num].addr, low, high);
@@ -291,7 +304,8 @@ inline void evtsel_clear(u32 evtsel_num){
 EXPORT_SYMBOL_GPL(evtsel_clear);
 
 //write to the respective evtsel register
-inline void evtsel_write(u32 evtsel_num){
+inline void evtsel_write(u32 evtsel_num)
+{
 	#if NUM_COUNTERS > 0
 	u32 low, high;
 	int cpu = smp_processor_id();
@@ -319,7 +333,8 @@ inline void evtsel_write(u32 evtsel_num){
 EXPORT_SYMBOL_GPL(evtsel_write);
 
 //must be called using on_each_cpu
-inline void counter_clear(u32 counter){
+inline void counter_clear(u32 counter)
+{
 	#if NUM_COUNTERS > 0
 	int cpu_id;
 	cpu_id = smp_processor_id();
@@ -331,7 +346,8 @@ inline void counter_clear(u32 counter){
 EXPORT_SYMBOL_GPL(counter_clear);
 
 //must be called using on_each_cpu
-void counter_read(void) {
+void counter_read(void)
+{
 	#if NUM_COUNTERS > 0
 	u32 low, high;
 	int cpu_id, i;
@@ -349,7 +365,8 @@ void counter_read(void) {
 EXPORT_SYMBOL_GPL(counter_read);
 
 //use this to get the counter data
-u64 get_counter_data(u32 counter, u32 cpu_id){
+u64 get_counter_data(u32 counter, u32 cpu_id)
+{
 	#if NUM_COUNTERS > 0
 	u64 counter_val;
 	if(unlikely(counter >= NUM_COUNTERS))
@@ -364,7 +381,8 @@ u64 get_counter_data(u32 counter, u32 cpu_id){
 EXPORT_SYMBOL_GPL(get_counter_data);
 
 //must be called using on_each_cpu
-inline void counter_disable(int counter) {
+inline void counter_disable(int counter) 
+{
 	#if NUM_COUNTERS > 0
 	int cpu_id = smp_processor_id(); 
 	if(unlikely(counter >= NUM_COUNTERS))
@@ -381,7 +399,8 @@ inline void counter_disable(int counter) {
 EXPORT_SYMBOL_GPL(counter_disable);
 
 //must be called using on_each_cpu
-int counter_enable(u32 event, u32 ev_mask, u32 os){
+int counter_enable(u32 event, u32 ev_mask, u32 os)
+{
 	#if NUM_COUNTERS > 0
 	u32 i;
 	int counter_num = -1;
@@ -430,7 +449,8 @@ EXPORT_SYMBOL_GPL(counter_enable);
 
 
 //must be called from on_each_cpu
-inline void pmu_init_msrs(void){
+inline void pmu_init_msrs(void)
+{
 	#if NUM_COUNTERS > 0
 	int i;
 	int cpu = smp_processor_id();
@@ -449,12 +469,14 @@ inline void pmu_init_msrs(void){
 }
 EXPORT_SYMBOL_GPL(pmu_init_msrs);
 
-static int __init pmu_init(void){
+static int __init pmu_init(void)
+{
 	pmu_init_msrs();
 	return 0;
 }
 
-static void __exit pmu_exit(void){
+static void __exit pmu_exit(void)
+{
 	int i,j;
 	for(i=0;i<NR_CPUS;i++){
 		for(j=0;j<NUM_COUNTERS;j++){

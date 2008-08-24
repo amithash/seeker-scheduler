@@ -38,6 +38,15 @@ extern int sample_freq;
 struct timer_list sample_timer;
 int sample_timer_started = 0;
 
+struct struct_int_callbacks{
+	int (*enable_interrupts)(int);
+	int (*disable_interrupts)(int);
+	int (*configure_interrupts)(int, u32, u32);
+	int (*clear_ovf_status)(int);
+	int (*is_interrupt)(int);
+} int_callbacks;
+
+
 /*---------------------------------------------------------------------------*
  * Function: do_timer_sample
  * Descreption: This is the timer ISR. Every time it goes off, a sample is taken
@@ -46,7 +55,8 @@ int sample_timer_started = 0;
  * Input Parameters: param -> not used,
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-void do_timer_sample(unsigned long param){
+void do_timer_sample(unsigned long param)
+{
 	if(dev_open){
 		if(unlikely(on_each_cpu((void*)do_sample, NULL, 1,1) < 0)){
 			error("could not sample on all cpu's\n");
@@ -64,13 +74,14 @@ void do_timer_sample(unsigned long param){
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-void configure_enable_interrupts(void){
+void configure_enable_interrupts(void)
+{
 		/* Configure the initial counter value as (-1) * sample_freq */
-		fpmu_configure_interrupt(pmu_intr,((u32)0xFFFFFFFF-(u32)sample_freq + 2),0xFFFFFFFF);
+		int_callbacks->configure_interrupt(pmu_intr,((u32)0xFFFFFFFF-(u32)sample_freq + 2),0xFFFFFFFF);
 		/* clear overflow flag, just to be sure. */
-		fpmu_clear_ovf_status(pmu_intr);
+		int_callbacks->clear_ovf_status(pmu_intr);
 		/* Now enable the interrupt */
-		fpmu_enable_interrupt(pmu_intr);
+		int_callbacks->enable_interrupt(pmu_intr);
 }
 	
 /*---------------------------------------------------------------------------*
@@ -79,13 +90,14 @@ void configure_enable_interrupts(void){
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-void configure_disable_interrupts(void){
+void configure_disable_interrupts(void)
+{
 		/* Configure the initial counter value as (-1) * sample_freq */
-		fpmu_configure_interrupt(pmu_intr,0,0);
+		int_callbacks->configure_interrupt(pmu_intr,0,0);
 		/* clear overflow flag, just to be sure. */
-		fpmu_clear_ovf_status(pmu_intr);
+		int_callbacks->clear_ovf_status(pmu_intr);
 		/* Now enable the interrupt */
-		fpmu_disable_interrupt(pmu_intr);
+		int_callbacks->disable_interrupt(pmu_intr);
 }
 
 /*---------------------------------------------------------------------------*
@@ -94,7 +106,8 @@ void configure_disable_interrupts(void){
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-void enable_apic_pmu(void){
+void enable_apic_pmu(void)
+{
 	apic_write_around(APIC_LVTPC, LOCAL_PMU_VECTOR);
 }
 #endif
