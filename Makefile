@@ -17,10 +17,13 @@
 # You should have received a copy of the GNU General Public License      *
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
 #*************************************************************************
+ifndef ARCA
+ARCA := C2D
+endif
 
 all:
-	+make -C Module
-	+make -C Scripts
+	+make -C Module ARCA=$(ARCA)
+	+make -C Scripts ARCA=$(ARCA)
 
 clean:
 	+make -C Module clean

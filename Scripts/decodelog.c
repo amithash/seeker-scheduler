@@ -20,15 +20,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <signal.h>
 
-/* The following is included just so that the compiler does not complain abour c2d*.h files! */
-/* And all I need form those are the constants NUM_COUNTERS and NUM_FIXED_COUNTERS */
-typedef unsigned int u32;
-typedef unsigned long long u64;
-#define NR_CPUS 4
+typedef __u32 u32;
+typedef __u64 u64;
 
-#include <seeker-headers.h>
 #include "../Module/seeker.h"
+
 
 int
 main(int argc, char **argv, char **envp){
