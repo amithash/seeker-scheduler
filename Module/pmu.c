@@ -31,65 +31,261 @@ MODULE_DESCRIPTION("Module provides an interface to access the Core2Duo PMU");
 
 evtsel_t evtsel[NR_CPUS][NUM_COUNTERS] = {
 	{
-		{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL0}, /*0*/
-		{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL1}  /*1*/
-		#if defined(ARCH_K8) || defined(ARCH_K10)
-		,{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL2}, /*2*/
-		{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL3}  /*3*/
+		#if NUM_COUNTERS > 0
+		{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL0} /*0*/
+		#endif
+		#if NUM_COUNTERS > 1
+		,{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL1}  /*1*/
+		#endif
+		#if NUM_COUNTERS > 2
+		,{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL2} /*2*/
+		#endif
+		#if NUM_COUNTERS > 3
+		,{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL3}  /*3*/
 		#endif
 	}
 };
 
 counter_t counters[NR_CPUS][NUM_COUNTERS] = {
 	{
-		{0, 0, PMC0, 0, 0, 0}, /* 0 */
-		{0, 0, PMC1, 1, 0, 0}  /* 1 */
-		#if defined(ARCH_K8) || defined(ARCH_K10)
-		,{0, 0, PMC2, 0, 0, 0}, /* 2 */
-		{0, 0, PMC3, 1, 0, 0}  /* 3 */
+
+		#if NUM_COUNTERS > 0
+		{0, 0, PMC0, 0, 0, 0} /* 0 */
+		#endif
+		#if NUM_COUNTERS > 1
+		,{0, 0, PMC1, 1, 0, 0}  /* 1 */
+		#endif
+		#if NUM_COUNTERS > 2
+		,{0, 0, PMC2, 2, 0, 0} /* 2 */
+		#endif
+		#if NUM_COUNTERS > 3
+		,{0, 0, PMC3, 3, 0, 0}  /* 3 */
 		#endif
 	}
 };
 
-char *evtsel_names[NUM_EVTSEL] = {
-	"EVTSEL0",
-	"EVTSEL1"
-	#if defined(ARCH_K8) || defined(ARCH_K10)
-	,"EVTSEL0",
-	"EVTSEL1"
+char *evtsel_names[NUM_COUNTERS] = {
+	#if NUM_COUNTERS > 0
+	"EVTSEL0"
+	#endif	
+	#if NUM_COUNTERS > 1
+	,"EVTSEL1"
+	#endif	
+	#if NUM_COUNTERS > 2
+	,"EVTSEL2"
+	#endif	
+	#if NUM_COUNTERS > 3
+	,"EVTSEL3"
 	#endif	
 };
 
 char *counter_names[NUM_COUNTERS] = {
-	"IA32_PMC0", 
-	"IA32_PMC1"
-	#if defined(ARCH_K8) || defined(ARCH_K10)
-	,"IA32_PMC0", 
-	"IA32_PMC1"
+	#if NUM_COUNTERS > 0
+	"PMC0" 
+	#endif
+	#if NUM_COUNTERS > 1
+	,"PMC1"
+	#endif
+	#if NUM_COUNTERS > 2
+	,"PMC2"
+	#endif
+	#if NUM_COUNTERS > 3
+	,"PMC3"
 	#endif
 };
 
+cleared_t cleared[NR_CPUS][NUM_COUNTERS] = {
+	{
+		#if NUM_COUNTERS > 0
+		{0,0,0} 
+		#endif
+		#if NUM_COUNTERS > 1
+		,{0,0,0}
+		#endif
+		#if NUM_COUNTERS > 2
+		,{0,0,0}
+		#endif
+		#if NUM_COUNTERS > 3
+		,{0,0,0}
+		#endif
+	}
+};
+
+int pmu_configure_interrupt(int ctr, u32 low, u32 high){
+	#if NUM_COUNTERS > 0
+	int ret = 0;
+	int cpu = smp_processor_id();
+	if(likely(ctr < NUM_COUNTERS)){
+		cleared[cpu][ctr].low = low;
+		cleared[cpu][ctr].high = high;
+		cleared[cpu][ctr].all = (u64)low | (((u64)high) << 32);
+	}
+	else{
+		ret =  -1;
+	}
+	return -1;
+	#else
+	return 0;
+	#endif
+}
+EXPORT_SYMBOL_GPL(pmu_configure_interrupt);
+
+int pmu_enable_interrupt(int ctr){
+	#if NUM_COUNTERS > 0
+	int cpu_id = smp_processor_id();
+	if(likely(cpu_id < NR_CPUS && ctr < NUM_COUNTERS)){
+		evtsel[cpu_id][ctr].int_flag = 1;
+		evtsel_write(ctr);
+	}
+	else{
+		return -1;
+	}
+	return 0;
+	#else
+	return -1;
+	#endif
+}	
+EXPORT_SYMBOL_GPL(pmu_enable_interrupt);
+
+int pmu_disable_interrupt(int ctr){
+	#if NUM_COUNTERS > 0
+	int cpu;
+	cpu = smp_processor_id();
+	if(likely(ctr < NUM_COUNTERS && cpu < NR_CPUS)){
+		cleared[cpu][ctr].low = 0;
+		cleared[cpu][ctr].high = 0;
+		cleared[cpu][ctr].all = 0;
+		evtsel[cpu][ctr].int_flag = 0;
+		evtsel_write(ctr);
+	}
+	else{
+		return -1;
+	}
+	return 0;
+	#else
+	return -1;
+	#endif
+}	
+EXPORT_SYMBOL_GPL(pmu_disable_interrupt);
+
+int pmu_is_interrupt(int ctr){
+	#if NUM_COUNTERS > 0
+	u32 ret = 0;
+	u32 low,high;
+	if(unlikely(ctr >= NUM_COUNTERS))
+		return -1;
+	/* 
+	 * XXX: Check if this is how it is done
+	 * for both C2D and K8. Else, this will
+	 * need a different approach
+	 */
+	rdmsr(MSR_PERF_GLOBAL_STATUS,low,high);
+	switch(ctr){
+		#if NUM_COUNTERS > 0
+		case 0:
+			ret = high & CTR0_OVERFLOW_MASK;
+			break;
+		#endif
+		#if NUM_COUNTERS > 1
+		case 1:
+			ret = high & CTR1_OVERFLOW_MASK;
+			break;
+		#endif
+		#if NUM_COUNTERS > 2
+		case 2:
+			ret = high & CTR2_OVERFLOW_MASK;
+			break;
+		#endif
+		#if NUM_COUNTERS > 3
+		case 3:
+			ret = high & CTR3_OVERFLOW_MASK;
+			break;
+		#endif
+		default:
+			ret = -1;
+			break;
+	}
+	return ret;
+	#else
+	return -1;
+	#endif
+}
+EXPORT_SYMBOL_GPL(pmu_is_interrupt);
+
+int fpmu_clear_ovf_status(int ctr){
+	#if NUM_COUNTERS > 0
+	u32 low,high;
+	int ret = 0;
+	if(unlikely(ctr > NUM_COUNTERS))
+		return -1;
+	/* 
+	 * XXX: Check if this is how it is done
+	 * for both C2D and K8. Else, this will
+	 * need a different approach
+	 */
+	rdmsr(MSR_PERF_GLOBAL_OVF_CTRL,low,high);
+	switch(ctr){
+		#if NUM_COUNTERS > 0
+		case 0:
+			high &= CTR0_OVERFLOW_CLEAR_MASK;
+			break;
+		#endif
+		#if NUM_COUNTERS > 1
+		case 1:
+			high &= CTR1_OVERFLOW_CLEAR_MASK;
+			break;
+		#endif
+		#if NUM_COUNTERS > 2
+		case 2:
+			high &= CTR2_OVERFLOW_CLEAR_MASK;
+			break;
+		#endif
+		#if NUM_COUNTERS > 3
+		case 3:
+			high &= CTR3_OVERFLOW_CLEAR_MASK;
+			break;
+		#endif
+		default:
+			ret = -1;
+			break;
+	}
+	if(likely(ret != -1)){
+		wrmsr(MSR_PERF_GLOBAL_OVF_CTRL,low,high);
+	}
+	#endif
+	return ret;
+}
+EXPORT_SYMBOL_GPL(pmu_clear_ovf_status);
+
 //read the evtsel reg and return the low 32 bits
 //the high are reserved anyway
-inline u32 evtsel_read(u32 evtsel_num) {
-  u32 low, high;
-  rdmsr(evtsel[0][evtsel_num].addr, low, high);
-  return low;
+inline u32 evtsel_read(u32 evtsel_num) 
+{
+	#if NUM_COUNTERS > 0
+	u32 low, high;
+	rdmsr(evtsel[0][evtsel_num].addr, low, high);
+	return low;
+	#else
+	return 0;
+	#endif
 }
 EXPORT_SYMBOL_GPL(evtsel_read);
 
 
 //clears the event select registers
 inline void evtsel_clear(u32 evtsel_num){
+	#if NUM_COUNTERS > 0
 	u32 low, high;
 	rdmsr(evtsel[0][evtsel_num].addr, low, high);
 	low &= EVTSEL_RESERVED_BITS;
 	wrmsr(evtsel[0][evtsel_num].addr, low, high);
+	#endif
 }
 EXPORT_SYMBOL_GPL(evtsel_clear);
 
 //write to the respective evtsel register
 inline void evtsel_write(u32 evtsel_num){
+	#if NUM_COUNTERS > 0
 	u32 low, high;
 	int cpu = smp_processor_id();
 	if(likely(cpu < NR_CPUS)){
@@ -111,21 +307,25 @@ inline void evtsel_write(u32 evtsel_num){
 
 		wrmsr(cur_evtsel->addr, low, high);
 	}
+	#endif
 }
 EXPORT_SYMBOL_GPL(evtsel_write);
 
 //must be called using on_each_cpu
 inline void counter_clear(u32 counter){
+	#if NUM_COUNTERS > 0
 	int cpu_id;
 	cpu_id = smp_processor_id();
 	if(likely(cpu_id < NR_CPUS)){
 		wrmsr(counters[cpu_id][counter].addr, 0, 0);
 	}
+	#endif
 }
 EXPORT_SYMBOL_GPL(counter_clear);
 
 //must be called using on_each_cpu
 void counter_read(void) {
+	#if NUM_COUNTERS > 0
 	u32 low, high;
 	int cpu_id, i;
 	cpu_id = smp_processor_id();
@@ -137,31 +337,45 @@ void counter_read(void) {
 			counters[cpu_id][i].low = low;
 		}
 	}
+	#endif
 }
 EXPORT_SYMBOL_GPL(counter_read);
 
 //use this to get the counter data
 u64 get_counter_data(u32 counter, u32 cpu_id){
-	u64 counter_val = (u64)counters[cpu_id][counter].low;
+	#if NUM_COUNTERS > 0
+	u64 counter_val;
+	if(unlikely(counter >= NUM_COUNTERS))
+		return 0;
+	counter_val = (u64)counters[cpu_id][counter].low;
 	counter_val = counter_val | ((u64)counters[cpu_id][counter].high << 32);
 	return counter_val;
+	#else
+	return 0;
+	#endif
 }
 EXPORT_SYMBOL_GPL(get_counter_data);
 
 //must be called using on_each_cpu
 inline void counter_disable(int counter) {
+	#if NUM_COUNTERS > 0
 	int cpu_id = smp_processor_id(); 
+	if(unlikely(counter >= NUM_COUNTERS))
+		return;
+
 	if(likely(cpu_id < NR_CPUS)){
 		evtsel_clear(counter);
 		counter_clear(counter);
 		evtsel[cpu_id][counter].enabled = 0;
 		evtsel_write(counter);
 	}
+	#endif
 }
 EXPORT_SYMBOL_GPL(counter_disable);
 
 //must be called using on_each_cpu
 int counter_enable(u32 event, u32 ev_mask, u32 os){
+	#if NUM_COUNTERS > 0
 	u32 i;
 	int counter_num = -1;
 	int cpu_id = smp_processor_id();
@@ -199,6 +413,9 @@ int counter_enable(u32 event, u32 ev_mask, u32 os){
 	else{
 		return -1;
 	}
+	#else
+	return -1;
+	#endif
 }
 EXPORT_SYMBOL_GPL(counter_enable);
 
@@ -207,6 +424,7 @@ EXPORT_SYMBOL_GPL(counter_enable);
 
 //must be called from on_each_cpu
 inline void pmu_init_msrs(void){
+	#if NUM_COUNTERS > 0
 	int i;
 	int cpu = smp_processor_id();
 	if(cpu != 0){
@@ -220,6 +438,7 @@ inline void pmu_init_msrs(void){
 		counter_disable(i);
 		counter_clear(i);
 	}
+	#endif
 }
 EXPORT_SYMBOL_GPL(pmu_init_msrs);
 

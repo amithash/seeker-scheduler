@@ -28,35 +28,56 @@
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
-MODULE_DESCRIPTION("Module provides an interface to access the fixed performance monitoring counters of the Core2Duo");
+MODULE_DESCRIPTION("Module provides an interface to access the " 
+		   "fixed performance monitoring counters");
 
-#ifdef FPMU_SUPPORTED
 fixctrl_t fcontrol[NR_CPUS] = {
 	{0,0,0,0,0,0,0,0,0}
 };
 
 fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS] = {
 	{
-		{0, 0, MSR_PERF_FIXED_CTR0}, /* 0 */
-		{0, 0, MSR_PERF_FIXED_CTR1}, /* 1 */
-		{0, 0, MSR_PERF_FIXED_CTR2}  /* 2 */
+		#if NUM_FIXED_COUNTERS > 0
+		{0, 0, MSR_PERF_FIXED_CTR0} /* 0 */
+		#endif
+		#if NUM_FIXED_COUNTERS > 1
+		,{0, 0, MSR_PERF_FIXED_CTR1} /* 1 */
+		#endif
+		#if NUM_FIXED_COUNTERS > 2
+		,{0, 0, MSR_PERF_FIXED_CTR2}  /* 2 */
+		#endif
 	}
 };
 
 char *fcounter_names[NUM_FIXED_COUNTERS] = {
-	"FIXED_CTR0", 
-	"FIXED_CTR1",
-	"FIXED_CTR2"
+	#if NUM_FIXED_COUNTERS > 0
+	"FIXED_CTR0"
+	#endif
+	#if NUM_FIXED_COUNTERS > 1
+	,"FIXED_CTR1"
+	#endif
+	#if NUM_FIXED_COUNTERS > 2
+	,"FIXED_CTR2"
+	#endif
 };
 
-cleared_t cleared[NR_CPUS][NUM_FIXED_COUNTERS] = {
-	{{0,0,0}, {0,0,0}, {0,0,0}}
+fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS] = {
+	{
+		#if NUM_FIXED_COUNTERS > 0
+		{0,0,0} 
+		#endif
+		#if NUM_FIXED_COUNTERS > 1
+		,{0,0,0}
+		#endif
+		#if NUM_FIXED_COUNTERS > 2
+		,{0,0,0}
+		#endif
+	}
 };
-#endif
 
 // Read the fixed counter control register.
 inline u32 control_read(void) {
-	#ifdef FPMU_SUPPORTED
+	#if NUM_FIXED_COUNTERS > 0
 	u32 low, high;
 	rdmsr(MSR_PERF_FIXED_CTR_CTRL, low, high);
 	return low;
@@ -66,139 +87,10 @@ inline u32 control_read(void) {
 }
 EXPORT_SYMBOL_GPL(control_read);
 
-int fpmu_configure_interrupt(int ctr, u32 low, u32 high){
-	#ifdef FPMU_SUPPORTED
-	int ret = 0;
-	int cpu = smp_processor_id();
-	if(likely(ctr < NUM_FIXED_COUNTERS)){
-		cleared[cpu][ctr].low = low;
-		cleared[cpu][ctr].high = high;
-		cleared[cpu][ctr].all = (u64)low | (((u64)high) << 32);
-	}
-	else{
-		ret =  -1;
-	}
-	return -1;
-	#else
-	return 0;
-	#endif
-}
-EXPORT_SYMBOL_GPL(fpmu_configure_interrupt);
-
-int fpmu_enable_interrupt(int ctr){
-	int ret = 0;
-	#ifdef FPMU_SUPPORTED
-	int cpu_id = smp_processor_id();
-	switch(ctr){
-		case 0:
-			fcontrol[cpu_id].pmi0 = 1;
-			break;
-		case 1:
-			fcontrol[cpu_id].pmi1 = 1;
-			break;
-		case 2:
-			fcontrol[cpu_id].pmi2 = 1;
-			break;
-		default:
-			ret = -1;
-			break;
-	}
-	if(likely(ret != -1)){
-		control_write();
-	}
-	#endif
-	return ret;
-}	
-EXPORT_SYMBOL_GPL(fpmu_enable_interrupt);
-
-int fpmu_disable_interrupt(int ctr){
-	int ret = 0;
-	#ifdef FPMU_SUPPORTED
-	int cpu = smp_processor_id();
-	if(likely(ctr < NUM_FIXED_COUNTERS)){
-		cleared[cpu][ctr].low = 0;
-		cleared[cpu][ctr].high = 0;
-		cleared[cpu][ctr].all = 0;
-	}
-	else{
-		ret =  -1;
-	}
-	switch(ctr){
-		case 0:
-			fcontrol[cpu].pmi0 = 0;
-			break;
-		case 1:
-			fcontrol[cpu].pmi1 = 0;
-			break;
-		case 2:
-			fcontrol[cpu].pmi2 = 0;
-			break;
-		default:
-			ret = -1;
-			break;
-	}
-	if(likely(ret != -1)){
-		control_write();
-	}
-	#endif
-	return ret;
-}	
-EXPORT_SYMBOL_GPL(fpmu_disable_interrupt);
-
-int fpmu_is_interrupt(int ctr){
-	u32 ret = 0;
-	#ifdef FPMU_SUPPORTED
-	u32 low,high;
-	rdmsr(MSR_PERF_GLOBAL_STATUS,low,high);
-	switch(ctr){
-		case 0:
-			ret = high & FIXED_CTR0_OVERFLOW_MASK;
-			break;
-		case 1:
-			ret = high & FIXED_CTR1_OVERFLOW_MASK;
-			break;
-		case 2:
-			ret = high & FIXED_CTR2_OVERFLOW_MASK;
-			break;
-		default:
-			ret = 0;
-			break;
-	}
-	#endif
-	return ret;
-}
-EXPORT_SYMBOL_GPL(fpmu_is_interrupt);
-
-int fpmu_clear_ovf_status(int ctr){
-	int ret = 0;
-	#ifdef FPMU_SUPPORTED
-	u32 low,high;
-	rdmsr(MSR_PERF_GLOBAL_OVF_CTRL,low,high);
-	switch(ctr){
-		case 0:
-			high &= FIXED_CTR0_OVERFLOW_CLEAR_MASK;
-			break;
-		case 1:
-			high &= FIXED_CTR1_OVERFLOW_CLEAR_MASK;
-			break;
-		case 2:
-			high &= FIXED_CTR2_OVERFLOW_CLEAR_MASK;
-			break;
-		default:
-			ret = -1;
-			break;
-	}
-	if(likely(ret != -1)){
-		wrmsr(MSR_PERF_GLOBAL_OVF_CTRL,low,high);
-	}
-	#endif
-	return ret;
-}
-EXPORT_SYMBOL_GPL(fpmu_clear_ovf_status);
 
 //clears the fixed counter control registers.
 inline void control_clear(void){
-	#ifdef FPMU_SUPPORTED
+	#if NUM_FIXED_COUNTERS > 0
 	u32 low, high;
 	rdmsr(MSR_PERF_FIXED_CTR_CTRL, low, high);
 	low &= FIXSEL_RESERVED_BITS;
@@ -209,7 +101,7 @@ EXPORT_SYMBOL_GPL(control_clear);
 
 //write to the fixed counter control registers.
 inline void control_write(void){
-	#ifdef FPMU_SUPPORTED
+	#if NUM_FIXED_COUNTERS > 0
 	u32 low, high;
 	int cpu_id = smp_processor_id();
 	if(likely(cpu_id < NR_CPUS)){
@@ -236,12 +128,12 @@ EXPORT_SYMBOL_GPL(control_write);
 
 //must be called using on_each_cpu
 inline void fcounter_clear(u32 counter){
-	#ifdef FPMU_SUPPORTED
+	#if NUM_FIXED_COUNTERS > 0
 	int cpu_id;
 	cpu_id = smp_processor_id();
 	if(likely(cpu_id < NR_CPUS)){
-		wrmsr(fcounters[cpu_id][counter].addr, cleared[cpu_id][counter].low, cleared[cpu_id][counter].high);
-		wrmsr(fcounters[cpu_id][counter].addr, cleared[cpu_id][counter].low, cleared[cpu_id][counter].high);
+		wrmsr(fcounters[cpu_id][counter].addr, fcleared[cpu_id][counter].low, fcleared[cpu_id][counter].high);
+		wrmsr(fcounters[cpu_id][counter].addr, fcleared[cpu_id][counter].low, fcleared[cpu_id][counter].high);
 	}
 	#endif
 }
@@ -249,7 +141,7 @@ EXPORT_SYMBOL_GPL(fcounter_clear);
 
 //must be called using on_each_cpu
 void fcounter_read(void){
-	#ifdef FPMU_SUPPORTED
+	#if NUM_FIXED_COUNTERS > 0
 	u32 low, high;
 	int cpu_id, i;
 	cpu_id = smp_processor_id();
@@ -267,12 +159,12 @@ EXPORT_SYMBOL_GPL(fcounter_read);
 
 //use this to get the counter data
 u64 get_fcounter_data(u32 counter, u32 cpu_id){
-	#ifdef FPMU_SUPPORTED
+	#if NUM_FIXED_COUNTERS > 0
 	u64 counter_val;
 	if(likely(counter < NUM_FIXED_COUNTERS && cpu_id < NR_CPUS)){
 		counter_val = (u64)fcounters[cpu_id][counter].low;
 		counter_val = counter_val | ((u64)fcounters[cpu_id][counter].high << 32);
-		return counter_val - cleared[cpu_id][counter].all;
+		return counter_val - fcleared[cpu_id][counter].all;
 	}
 	else{
 		return -1;
@@ -285,7 +177,7 @@ EXPORT_SYMBOL_GPL(get_fcounter_data);
 
 //must be called using on_each_cpu
 inline void fcounters_disable(void){
-	#ifdef FPMU_SUPPORTED
+	#if NUM_FIXED_COUNTERS > 0
 	int i;
 	int cpu_id = smp_processor_id(); 
 	if(likely(cpu_id < NR_CPUS)){
@@ -300,7 +192,7 @@ EXPORT_SYMBOL_GPL(fcounters_disable);
 
 //must be called using on_each_cpu
 void fcounters_enable(u32 os) {
-	#ifdef FPMU_SUPPORTED
+	#if NUM_FIXED_COUNTERS > 0
 	u32 i;
 	int cpu_id = smp_processor_id();
 	if(likely(cpu_id < NR_CPUS)){
@@ -324,14 +216,14 @@ EXPORT_SYMBOL_GPL(fcounters_enable);
 
 //must be called from on_each_cpu
 inline void fpmu_init_msrs(void) {
-	#ifdef FPMU_SUPPORTED
+	#if NUM_FIXED_COUNTERS > 0
 	int i;
 	int cpu_id = smp_processor_id();
 	if(likely(cpu_id < NR_CPUS)){
 		for(i=0;i<NUM_FIXED_COUNTERS;i++){
 			if(cpu_id != 0){
 				fcounters[cpu_id][i] = fcounters[0][i];
-				cleared[cpu_id][i] = cleared[0][i];
+				fcleared[cpu_id][i] = fcleared[0][i];
 			}
 			fcounter_clear(i);
 		}

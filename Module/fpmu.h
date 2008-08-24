@@ -23,7 +23,6 @@
 
 /********** Constants ********************************************************/
 #ifdef ARCH_C2D
-#	define FPMU_SUPPORTED 1
 #	define NUM_FIXED_COUNTERS 3
 #	define FIXSEL_RESERVED_BITS 0xFFFFF444
 #	define FIXED_CTR0_OVERFLOW_MASK 0x00000001
@@ -51,7 +50,6 @@
 #endif
 
 /********** Structure Definitions ********************************************/
-#ifdef ARCH_C2D
 typedef struct {
 	u32 pmi0:1;
 	u32 os0:1;
@@ -68,7 +66,7 @@ typedef struct {
 	u32 low;
 	u32 high;
 	u64 all;
-}cleared_t;
+}fcleared_t;
 
 typedef struct {
 	u32 low:32;
@@ -80,8 +78,7 @@ typedef struct {
 extern fixctrl_t fcontrol[NR_CPUS];
 extern fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS];
 extern char* fcounter_names[NUM_FIXED_COUNTERS];
-extern cleared_t cleared[NR_CPUS][NUM_FIXED_COUNTERS];
-#endif
+extern fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS];
 
 /********** Function Prototypes **********************************************/
 
