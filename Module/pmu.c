@@ -171,10 +171,10 @@ EXPORT_SYMBOL_GPL(pmu_disable_interrupt);
 int pmu_is_interrupt(int ctr){
 	#if NUM_COUNTERS > 0
 
-	/* XXXX: I could not find a register for AMD
-	 * processors which will tell the status
-	 * of pmu interrupts. So for it, this fun
-	 * ction will just return true. 
+	/* Unlike the C2D, the AMD Archs do not
+	 * have a way of indicating ovf status or
+	 * control. And hence just return success
+	 * (1)
 	 */
 	#if defined(ARCH_K8) || defined(ARCH_K10)
 	return 1;
@@ -222,10 +222,10 @@ int pmu_clear_ovf_status(int ctr){
 	int ret = 0;
 	if(unlikely(ctr > NUM_COUNTERS))
 		return -1;
-	/* XXXX: I could not find a register for AMD
-	 * processors which will tell the status
-	 * of pmu interrupts. So for it, this fun
-	 * ction will just return true. 
+	/* Unlike the C2D, the AMD Archs do not
+	 * have a way of indicating ovf status or
+	 * control. And hence just return success
+	 * (0)
 	 */
 	#if defined(ARCH_K8) || defined(ARCH_K10)
 	return 0;
