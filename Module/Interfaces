@@ -27,12 +27,12 @@ writing the drivers for ther performance monitoring counters etc etc.
 General Instructions:
 
 Your drivers must be multi-core aware even if your architecture supports only 1 core.
-Use NR_CPUS to create arrays of data structures to make them per cpu.
+Use NR_CPUS to create arrays of data structures to make them per cpu. Reuse existing, 
+and add your ARCH to the list or create your own sticking to the naming convection. 
+
 Use smp_processor_id() to index into these data structures whether to write or read them.
-
-When you are done with all of them, in seeker-sampler-src.c change the header names to
-your dirver's headers.
-
+You do not have to disable preemption as this has already been disabled in the calling
+function.
 
 -------------------------------------------------------------------------------------------
 			PERFORMANCE MONITORING COUNTERS:
@@ -41,14 +41,19 @@ your dirver's headers.
 Naming convenction:
 -------------------
 
-The name of the driver files must start with a max 3 letter short architecture descreption 
-(c2d -> core2duo k8 -> opteron) And end with pmu.
+pmu.c/pmu.h
 
 Defines:
 --------
 
-#define MAX_COUNTERS -> This should reflect the number of performance monitoring counters 
+#define NUM_COUNTERS -> This should reflect the number of performance monitoring counters 
 which exist per cpu for your architecture.
+
+#define EVTSELx 0xNNNNNNNN (0 >= x < NUM_COUNTERS)
+#define PMCx    0xNNNNNNNN (0 >= x < NUM_COUNTERS)
+
+Other regs as required.
+If structs are not as required, create new ones.
 
 Interface Methods:
 ------------------
@@ -91,11 +96,7 @@ MUST use if you do not want to noodle around in seeker-sampler-src.c.
 ----------------------------------------------------------------------------------------------
 
 
-Naming convenction:
--------------------
-
-The name of the driver files must start with a max 3 letter short architecture descreption 
-(c2d -> core2duo k8 -> opteron) And end with tsc.
+tsc.c / tsc.h
 
 Defines/Data structures
 -----------------------
@@ -126,15 +127,15 @@ Returns the previous time stamp value as a 64 bit integer.
 				FIXED PERFORMANCE COUNTERS
 ----------------------------------------------------------------------------------------------
 
+fpmu.c / fpmu.h
 
-Naming convenction:
--------------------
+If your arch does not support this feature just set
 
-The name of the driver files must start with a max 3 letter short architecture descreption 
-(c2d -> core2duo k8 -> opteron) And end with fpmu.
-This must still exist even though your architecture does not have fixed performance counters
-in which case all the functions are stubs.
+#if defined(ARCH_yourARCH)
+#	NUM_FIXED_COUNTERS 0
+#endif
 
+This will make all the functions stubs at compile time.
 
 Defines/Data structures
 -----------------------
@@ -173,14 +174,7 @@ Called on each cpu.
 				TEMPERATURE SENSOR DRIVERS
 ----------------------------------------------------------------------------------------------
 
-Naming convenction:
--------------------
-
-The name of the driver files must start with a max 3 letter short architecture descreption 
-(c2d -> core2duo k8 -> opteron) And end with therm.
-This must still exist even though your architecture does not have fixed performance counters
-in which case all the functions are stubs.
-
+therm.c / therm.h
 
 Defines/Data structures
 -----------------------
@@ -210,11 +204,12 @@ Returns the temperature for the provided cpu id.
 ----------------------------------------------------------------------------------------------
 
 Ok, if you are adding something new than the ones above, then you will HAVE TO edit 
-seeker-sampler-src.c. But it is not all bad as I have clearly documented what and where
-new counter calls must be inserted
+sample.c But it is not all bad as I have clearly documented what and where
+new counter calls must be inserted. 
 
-Shoot me an email about this. I could probably integrate this when you are done. Or if you
-get confused.
+// Do XXXX to new counters here...
+
+Shoot me an email about this. I could probably integrate this when you are done. 
 
 
 ----------------------------------------------------------------------------------------------
