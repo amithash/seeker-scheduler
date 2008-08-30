@@ -42,13 +42,14 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
 MODULE_DESCRIPTION("Module provides an interface to change "
 		   "the P-States of specific cores");
-
+/* The file operations and the mdev structures */
 static struct file_operations dvfs_fops[NR_CPUS];
 static struct miscdevice dvfs_mdev[NR_CPUS];
 static int mdev_registered[NR_CPUS] = {0};
 
 unsigned int pstate[NR_CPUS] = {0};
 
+/* Array of func pointers for the read and write funcs */
 ssize_t (*dvfs_read[50])(struct file *, char __user *, size_t, loff_t *) = {
 	MAKE_RCB_10()
 	,MAKE_RCB_10(1)
@@ -66,6 +67,7 @@ ssize_t (*dvfs_write[50])(struct file *, const char __user *, size_t, loff_t *) 
 	,MAKE_WCB_10(4)
 };
 
+/* Open and close are stubs */
 int generic_open(struct inode *i, struct file *f) 
 {
 	return 0;
@@ -75,12 +77,14 @@ int generic_close(struct inode *i, struct file *f)
 	return 0;
 }
 
+/* Defining read and write funcs from dvfs_*0 to dvfs_*49 */
 MAKE_10()
 MAKE_10(1)
 MAKE_10(2)
 MAKE_10(3)
 MAKE_10(4)
 
+/* dvfs_readX calls this with cpu = X */
 ssize_t dvfs_read_cpu(struct file *file_ptr, char __user *buf, 
 			size_t count, loff_t *offset, int cpu)
 {
@@ -89,6 +93,7 @@ ssize_t dvfs_read_cpu(struct file *file_ptr, char __user *buf,
 	return 0;
 }
 
+/* dvfs_writeX calls this with cpu = X */
 ssize_t dvfs_write_cpu(struct file *file_ptr, const char __user *buf,	
 			      size_t count, loff_t *offset, int cpu){
 	pstate[cpu] = (unsigned int) buf[0];
@@ -96,6 +101,7 @@ ssize_t dvfs_write_cpu(struct file *file_ptr, const char __user *buf,
 	return 1;
 }
 
+/* Read pstate on cpu */
 void pstate_read(int cpu)
 {
 	int this_cpu = smp_processor_id();
@@ -106,6 +112,7 @@ void pstate_read(int cpu)
 }
 EXPORT_SYMBOL(pstate_read);
 
+/* Write pstate on cpu */
 void pstate_write(int cpu)
 {
 	int this_cpu = smp_processor_id();
@@ -116,6 +123,7 @@ void pstate_write(int cpu)
 }
 EXPORT_SYMBOL(pstate_write);
 
+/* called by pstate_read */
 void __pstate_read(void *info)
 {
 	u32 low,high;
@@ -125,18 +133,8 @@ void __pstate_read(void *info)
 	put_cpu();
 }
 
-unsigned int get_pstate(int cpu)
-{
-	return pstate[cpu];
-}
-EXPORT_SYMBOL(get_pstate);
 
-void put_pstate(int cpu, unsigned int state)
-{
-	pstate[cpu] = state | PERF_MASK;
-}
-EXPORT_SYMBOL(put_pstate);
-
+/* called by pstate_write */
 void __pstate_write(void *info)
 {
 	u32 high = 0;
@@ -147,6 +145,21 @@ void __pstate_write(void *info)
 	put_cpu();
 }
 
+/* Return the current pstate */
+unsigned int get_pstate(int cpu)
+{
+	return pstate[cpu];
+}
+EXPORT_SYMBOL(get_pstate);
+
+/* set the current pstate */
+void put_pstate(int cpu, unsigned int state)
+{
+	pstate[cpu] = state | PERF_MASK;
+}
+EXPORT_SYMBOL(put_pstate);
+
+/* Initialize the mdev */
 static int mdev_node_init(void)
 {
 	int i;
@@ -175,6 +188,7 @@ static int mdev_node_init(void)
 	return 0;
 }
 
+/* Un-initialize the mdev */
 static int mdev_node_exit(void)
 {
 	int i;
@@ -187,6 +201,7 @@ static int mdev_node_exit(void)
 	return 0;
 }
 
+/* Init and exit Funcs */
 static int __init dvfs_init(void)
 {
 	mdev_node_init();
