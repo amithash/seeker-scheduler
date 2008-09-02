@@ -68,6 +68,8 @@ ssize_t (*dvfs_write[50])(struct file *, const char __user *, size_t, loff_t *) 
 	,MAKE_WCB_10(4)
 };
 
+int stoi(char *str);
+
 /* Open and close are stubs */
 int generic_open(struct inode *i, struct file *f) 
 {
@@ -89,15 +91,25 @@ MAKE_10(4)
 ssize_t dvfs_read_cpu(struct file *file_ptr, char __user *buf, 
 			size_t count, loff_t *offset, int cpu)
 {
+	int val;
 	pstate_read(cpu);
-	buf[0] = pstate[cpu];
+	val = pstate[cpu];
+	if(val < 10){
+		buf[0] = val + 48; /*Char it */
+		buf[1] = '\0';
+	} else {
+		buf[1] = val % 10;
+		buf[0] = ((val / 10) % 10)+48;
+		buf[2] = '\0';
+	}
+
 	return 0;
 }
 
 /* dvfs_writeX calls this with cpu = X */
 ssize_t dvfs_write_cpu(struct file *file_ptr, const char __user *buf,	
 			      size_t count, loff_t *offset, int cpu){
-	pstate[cpu] = (unsigned int) buf[0];
+	pstate[cpu] = (unsigned int) stoi((char *)buf);
 	pstate_write(cpu);
 	return 1;
 }
@@ -159,6 +171,22 @@ void put_pstate(int cpu, unsigned int state)
 	pstate[cpu] = state | PERF_MASK;
 }
 EXPORT_SYMBOL(put_pstate);
+
+int stoi(char *str)
+{
+	int val = 0;
+	int i=0;
+	while(str[i] != '\0'){
+		if(str[i] >= 48 && str[i]<= 57){
+			val = val * 10;
+			val += (str[i] - 48);
+		} else {
+			warn("Non decimal char ignored: %c\n",str[i]);
+		}
+		i++;
+	}
+	return val;
+}
 
 /* Initialize the mdev */
 static int mdev_node_init(void)
