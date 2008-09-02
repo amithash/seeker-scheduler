@@ -32,6 +32,7 @@
 #include <linux/smp.h>
 #include <linux/fs.h>
 #include <linux/miscdevice.h>
+#include <linux/slab.h>
 
 #include "seeker.h"
 #include "dvfs.h"
@@ -177,6 +178,7 @@ static int mdev_node_init(void)
 		dvfs_fops[i].write = dvfs_write[i];
 		dvfs_mdev[i].minor = i;
 		dvfs_mdev[i].fops = &(dvfs_fops[i]);
+		dvfs_mdev[i].name = (const char *)kmalloc(sizeof(const char) * 20, GFP_ATOMIC);
 		sprintf(name,"pstate%d",i);
 		strcpy((char *)dvfs_mdev[i].name,name);
 		if(unlikely(misc_register(&dvfs_mdev[i]) < 0)) {

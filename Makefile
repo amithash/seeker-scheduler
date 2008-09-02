@@ -21,6 +21,10 @@ ifndef ARCA
 ARCA := C2D
 endif
 
+ifndef CPUS
+CPUS := $(shell cat /proc/cpuinfo | grep processor | wc -l)
+endif
+
 all:
 	+make -C Module ARCA=$(ARCA)
 	+make -C Scripts ARCA=$(ARCA) CPUS=$(CPUS)
