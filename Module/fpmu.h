@@ -39,10 +39,11 @@
 #	define FIXED_CTR0_OVERFLOW_CLEAR_MASK 0xFFFFFFFE
 #	define FIXED_CTR1_OVERFLOW_CLEAR_MASK 0xFFFFFFFD
 #	define FIXED_CTR2_OVERFLOW_CLEAR_MASK 0xFFFFFFFB
-#endif
-
-#if defined(ARCH_K8) || defined(ARCH_K10)
+#elif defined(ARCH_K8) || defined(ARCH_K10)
 #	define NUM_FIXED_COUNTERS 0
+#else
+#	define NUM_FIXED_COUNTERS 0
+#	error "Architecture Not supported"
 #endif
 
 /********* MSR's *************************************************************/

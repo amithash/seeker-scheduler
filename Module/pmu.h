@@ -37,9 +37,7 @@
 #	define CTR1_OVERFLOW_MASK 0x00000002
 #	define CTR0_OVERFLOW_CLEAR_MASK 0xFFFFFFFE
 #	define CTR1_OVERFLOW_CLEAR_MASK 0xFFFFFFFD
-#endif
-
-#if defined(ARCH_K8) || defined(ARCH_K10)
+#elif defined(ARCH_K8) || defined(ARCH_K10)
 #	define NUM_COUNTERS 4
 #	define EVTSEL_RESERVED_BITS 0x00200000
 #	define CTR0_OVERFLOW_MASK 0x00000001
@@ -50,6 +48,8 @@
 #	define CTR1_OVERFLOW_CLEAR_MASK 0xFFFFFFFD
 #	define CTR2_OVERFLOW_CLEAR_MASK 0xFFFFFFFE
 #	define CTR3_OVERFLOW_CLEAR_MASK 0xFFFFFFFD
+#else
+#error "Architecture not supported."
 #endif
 
 /********** MSR's ************************************************************/
@@ -61,9 +61,7 @@
 #	define MSR_PERF_GLOBAL_STATUS 		0x0000038E
 #	define MSR_PERF_GLOBAL_CTRL		0x0000038F
 #	define MSR_PERF_GLOBAL_OVF_CTRL	0x00000390
-#endif
-
-#if defined(ARCH_K8) || defined(ARCH_K10)
+#elif defined(ARCH_K8) || defined(ARCH_K10)
 #	define EVTSEL0 0xC0010000
 #	define EVTSEL1 0xC0010001
 #	define EVTSEL2 0xC0010002
@@ -75,10 +73,12 @@
 #	define MSR_PERF_GLOBAL_STATUS 		0x0000038E
 #	define MSR_PERF_GLOBAL_CTRL		0x0000038F
 #	define MSR_PERF_GLOBAL_OVF_CTRL	0x00000390
+#else
+#define NUM_COUNTERS 0
+#error "Architecture Not supported"
 #endif
 
 /********** Structure Definitions ********************************************/
-#if defined(ARCH_C2D) || defined(ARCH_K8) || defined(ARCH_K10)
 typedef struct {
 	u32 ev_select:8;
 	u32 ev_mask:8;
@@ -108,7 +108,6 @@ typedef struct {
 	u32 mask;
 	u32 enabled;
 }counter_t;
-#endif
 
 /********* Extern Vars *******************************************************/
 

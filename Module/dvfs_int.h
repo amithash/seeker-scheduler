@@ -29,7 +29,15 @@
 #	define PERF_STATUS 0x00000198
 #	define PERF_CTL 0x00000199
 #	define PERF_MASK 0x0000FFFF
+#elif defined(ARCH_K8) || defined(ARCH_K10)
+#	define PERF_STATUS 0xC0010042
+#	define PERF_CTL 0xC0010041
+#	define PERF_MASK 0x0000FFFF
+#else
+#error "Architecture Not Supported."
 #endif
+
+
 #define eval(i) i
 
 #define MAKE_READ(i) 							\
