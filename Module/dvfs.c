@@ -109,10 +109,11 @@ ssize_t dvfs_read_cpu(struct file *file_ptr, char __user *buf,
 /* dvfs_writeX calls this with cpu = X */
 ssize_t dvfs_write_cpu(struct file *file_ptr, const char __user *buf,	
 			      size_t count, loff_t *offset, int cpu){
+	debug("Count = %d",count);
 	pstate[cpu] = (unsigned int) stoi((char *)buf);
 	debug("Writing pstate value of %d to cpu %d",pstate[cpu],cpu);
 	pstate_write(cpu);
-	return 1;
+	return count;
 }
 
 /* Read pstate on cpu */
@@ -237,6 +238,12 @@ static int mdev_node_exit(void)
 /* Init and exit Funcs */
 static int __init dvfs_init(void)
 {
+#if	defined(ARCH_K8) || defined(ARCH_K10)
+	if(cpuid_edx(0x80000007) == 0){
+		error("This PC Does not support P-State Transitions");
+		return -1;
+	}
+#endif
 	mdev_node_init();
 	return 0;
 }

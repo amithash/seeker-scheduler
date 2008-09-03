@@ -182,6 +182,9 @@ int pmu_is_interrupt(int ctr)
 {
 	#if NUM_COUNTERS > 0
 
+	u32 ret = 0;
+	u32 low,high;
+
 	/* Unlike the C2D, the AMD Archs do not
 	 * have a way of indicating ovf status or
 	 * control. And hence just return success
@@ -190,8 +193,7 @@ int pmu_is_interrupt(int ctr)
 	#if defined(ARCH_K8) || defined(ARCH_K10)
 	return 1;
 	#endif
-	u32 ret = 0;
-	u32 low,high;
+
 	if(unlikely(ctr >= NUM_COUNTERS))
 		return -1;
 	rdmsr(MSR_PERF_GLOBAL_STATUS,low,high);
