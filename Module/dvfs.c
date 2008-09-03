@@ -92,24 +92,25 @@ ssize_t dvfs_read_cpu(struct file *file_ptr, char __user *buf,
 			size_t count, loff_t *offset, int cpu)
 {
 	int val;
+	char sval[20];
+	int i = 0;
 	pstate_read(cpu);
 	val = pstate[cpu];
-	if(val < 10){
-		buf[0] = val + 48; /*Char it */
-		buf[1] = '\0';
-	} else {
-		buf[1] = val % 10;
-		buf[0] = ((val / 10) % 10)+48;
-		buf[2] = '\0';
+	sprintf(sval,"%d",val);
+	while(i < 20 && i < count-2 && sval[i] != '\0'){
+		buf[i] = sval[i];
+		i++;
 	}
-
-	return 0;
+	buf[i++] = '\n';
+	buf[i++] = '\0';
+	return i;
 }
 
 /* dvfs_writeX calls this with cpu = X */
 ssize_t dvfs_write_cpu(struct file *file_ptr, const char __user *buf,	
 			      size_t count, loff_t *offset, int cpu){
 	pstate[cpu] = (unsigned int) stoi((char *)buf);
+	debug("Writing pstate value of %d to cpu %d",pstate[cpu],cpu);
 	pstate_write(cpu);
 	return 1;
 }
@@ -180,6 +181,8 @@ int stoi(char *str)
 		if(str[i] >= 48 && str[i]<= 57){
 			val = val * 10;
 			val += (str[i] - 48);
+		} else if(str[i] == '\n'){
+			break;
 		} else {
 			warn("Non decimal char ignored: %c\n",str[i]);
 		}
