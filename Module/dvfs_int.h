@@ -28,10 +28,12 @@
 #if defined(ARCH_C2D)
 #	define PERF_STATUS 0x00000198
 #	define PERF_CTL 0x00000199
+#	define MISC_ENABLE 0x000001A0
 #	define PERF_MASK 0x0000FFFF
 #elif defined(ARCH_K8) || defined(ARCH_K10)
 #	define PERF_STATUS 0xC0010042
 #	define PERF_CTL 0xC0010041
+#	define MISC_ENABLE 0xC0000000
 #	define PERF_MASK 0x0000FFFF
 #else
 #error "Architecture Not Supported."
@@ -104,6 +106,7 @@ ssize_t dvfs_write_cpu(struct file *file_ptr, const char __user *buf,		\
 
 void __pstate_write(void *info);
 void __pstate_read(void *info);
+void __enable_speedstep(void *info);
 
 int generic_open(struct inode *i, struct file *f);
 int generic_close(struct inode *i, struct file *f);
