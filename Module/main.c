@@ -43,6 +43,24 @@
 
 #define SEEKER_SAMPLE_MINOR 240
 
+/* Stop compilation early if unknown or more than
+ * one architectures are provided.
+ */
+#if !(defined(ARCH_C2D) || defined(ARCH_K8) || defined(ARCH_K10))
+#	error Unknown Architecture
+#endif
+
+#if defined(ARCH_C2D) && !(defined(ARCH_K8)) && !(defined(ARCH_K10))
+#	define ARCHITECTURE "Intel Core 2 Duo Architecture"
+#elif defined(ARCH_K8) && !(defined(ARCH_K10)) && !(defined(ARCH_C2D))
+#	define ARCHITECTURE "AMD Opteron (Hammer) Architecture"
+#elif defined(ARCH_K10) && !(defined(ARCH_K8)) && !(defined(ARCH_C2D))
+#	define ARCHITECTURE "AMD Opteron (Barcelona) Architecture"
+#else
+#	error "Unknown Architecture"
+#endif
+
+
 /************************* Parameter variables *******************************/
 
 int log_events[MAX_COUNTERS_PER_CPU];
@@ -113,6 +131,7 @@ static int __init seeker_sampler_init(void)
 	int probe_ret;
 
 	printk("---------------------------------------\n");
+	printk("Initializing seeker kernel Module for the " ARCHITECTURE "\n");
 	if( log_num_events <= 0 ) {
 		printk("Monitoring only fixed counters and "
 		       "temperature. PMU NOT CONFIGURED\n");
