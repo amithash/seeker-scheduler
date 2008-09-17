@@ -29,12 +29,13 @@
 #	define PERF_STATUS 0x00000198
 #	define PERF_CTL 0x00000199
 #	define MISC_ENABLE 0x000001A0
-#	define PERF_MASK 0x0000FFFF
+#	define PERF_MASK 0x000000FF
 #elif defined(ARCH_K8) || defined(ARCH_K10)
-#	define PERF_STATUS 0xC0010042
-#	define PERF_CTL 0xC0010041
-#	define MISC_ENABLE 0xC0000000
-#	define PERF_MASK 0x0000FFFF
+#	define PERF_STATUS 0xC0010063
+#	define PERF_CTL 0xC0010062
+#	define PERL_LIMIT 0xC0010061
+#	define MISC_ENABLE 0xC0000080
+#	define PERF_MASK 0x000000FF
 #else
 #error "Architecture Not Supported."
 #endif

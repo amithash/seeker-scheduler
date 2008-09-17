@@ -145,7 +145,7 @@ void __pstate_read(void *info)
 	u32 low,high;
 	int cpu = get_cpu();
 	rdmsr(PERF_STATUS,low,high);
-	pstate[cpu] = low | PERF_MASK;
+	pstate[cpu] = low & PERF_MASK;
 	put_cpu();
 }
 
@@ -193,7 +193,7 @@ EXPORT_SYMBOL(get_pstate);
 /* set the current pstate */
 void put_pstate(int cpu, unsigned int state)
 {
-	pstate[cpu] = state | PERF_MASK;
+	pstate[cpu] = state & PERF_MASK;
 }
 EXPORT_SYMBOL(put_pstate);
 
@@ -261,18 +261,20 @@ static int mdev_node_exit(void)
 /* Init and exit Funcs */
 static int __init dvfs_init(void)
 {
-	int i;
 #if	defined(ARCH_K8) || defined(ARCH_K10)
 	if(cpuid_edx(0x80000007) == 0){
 		error("This PC Does not support P-State Transitions");
 		return -1;
 	}
 #endif
+#if	defined(ARCH_C2D)
+	int i;
 	on_each_cpu(__enable_speedstep, NULL, 1, 1);
 	for(i=0;i<NR_CPUS;i++){
 		if(__DVFS_SEEKER_ERROR[i])
 			return -1;
 	}
+#endif
 
 	mdev_node_init();
 	return 0;
