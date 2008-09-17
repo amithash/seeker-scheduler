@@ -31,7 +31,11 @@ seeker-sampler-objs += alloc.o log.o probe.o sample.o io.o intr.o main.o
 else
 KDIR    := /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)
+ifndef DEBUG
 MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA)
+else
+MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA) -DDEBUG
+endif
 
 default:
 	$(MAKE) -C $(KDIR) M=$(PWD) CFLAGS_MODULE="$(MOD_FLAGS)" modules
