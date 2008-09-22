@@ -178,12 +178,12 @@ static int __init seeker_sampler_init(void)
 			return -1;
 		}
 		if((probe_ret = register_jprobe(&jp_smp_pmu_interrupt)) < 0){
-			printk(KERN_ALERT "Could not find %s to probe, returned %d\n",
+			error("Could not find %s to probe, returned %d\n",
 			       PMU_ISR,probe_ret);
 			return -1;
 		}
 		if(on_each_cpu((void *)enable_apic_pmu, NULL, 1, 1) < 0){
-			printk("Could not enable local pmu interrupt on all cpu's\n");
+			error("Could not enable local pmu interrupt on all cpu's\n");
 		}
 		#else
 		error("An attempt is made to use the pmu_intr "

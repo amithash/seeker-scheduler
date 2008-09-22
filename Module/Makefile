@@ -25,7 +25,7 @@ endif
 ifneq ($(KERNELRELEASE),)
 
 
-obj-m += seeker-sampler.o pmu.o fpmu.o tsc.o therm.o dvfs.o
+obj-m += seeker-sampler.o pmu.o fpmu.o tsc.o therm.o dvfs.o sched_probe.o
 seeker-sampler-objs += alloc.o log.o probe.o sample.o io.o intr.o main.o
 
 else
