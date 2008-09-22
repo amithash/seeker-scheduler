@@ -49,6 +49,28 @@ struct jprobe jp___switch_to = {
 	.kp.symbol_name = "__switch_to",
 };
 
+// resched_task(struct task_struct *p)
+// static void enqueue_task(struct rq *rq, struct task_struct *p, int wakeup)
+// static void activate_task(struct rq *rq, struct task_struct *p, int wakeup)
+//
+// returns if the task is currently executing.
+// inline int task_curr(const struct task_struct *p)
+//
+// returns the weight of load on cpu
+// unsigned long weighted_cpuload(const int cpu)
+//
+// make task p to run on new_cpu
+// void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
+//
+// start task
+// void sched_fork(struct task_struct *p, int clone_flags)
+//
+// wake up newly created task
+// void fastcall wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
+//
+// struct task_struct *p
+// p->cpu_allowed = mask
+//
 
 inline unsigned int __mask_to_cpu(unsigned int mask)
 {

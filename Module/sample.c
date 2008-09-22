@@ -229,8 +229,7 @@ void do_pid_log(struct task_struct *p)
 		return;
 	}
 	pentry->sample.type = PIDTAB_ENTRY;
-	//pentry->sample.u.pidtab_entry.pid = (u32)(p->pid);
-	pentry->sample.u.pidtab_entry.pid = (u32)0;
+	pentry->sample.u.pidtab_entry.pid = (u32)(p->pid);
 	pentry->sample.u.pidtab_entry.total_cycles = 0;
 	memcpy(&(pentry->sample.u.pidtab_entry.name),
 	       p->comm, 
