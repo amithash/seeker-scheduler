@@ -25,12 +25,13 @@
 #ifndef _SEEKER_SAMPLER_H_
 #define _SEEKER_SAMPLER_H_
 
-#include "pmu.h"
-#include "fpmu.h"
-#include "tsc.h"
-#include "therm.h"
+#include "pmu_public.h"
+#include "fpmu_public.h"
+#include "tsc_public.h"
+#include "therm_public.h"
 
-#define NUM_EXTRA_COUNTERS 1
+#define NUM_EXTRA_COUNTERS THERM_SUPPORTED
+
 #define MAX_COUNTERS_PER_CPU NUM_COUNTERS + NUM_FIXED_COUNTERS + NUM_EXTRA_COUNTERS
 
 enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};

@@ -22,9 +22,6 @@
 #include <stdio.h>
 #include <signal.h>
 
-typedef __u32 u32;
-typedef __u64 u64;
-
 #include "../Module/seeker.h"
 
 

@@ -28,17 +28,16 @@
 #define _PMU_H_
 
 #include <asm/types.h>
+#include "pmu_public.h"
 
 /********** Constants ********************************************************/
 #if defined(ARCH_C2D)
-#	define NUM_COUNTERS 2
 #	define EVTSEL_RESERVED_BITS 0x00200000
 #	define CTR0_OVERFLOW_MASK 0x00000001
 #	define CTR1_OVERFLOW_MASK 0x00000002
 #	define CTR0_OVERFLOW_CLEAR_MASK 0xFFFFFFFE
 #	define CTR1_OVERFLOW_CLEAR_MASK 0xFFFFFFFD
 #elif defined(ARCH_K8) || defined(ARCH_K10)
-#	define NUM_COUNTERS 4
 #	define EVTSEL_RESERVED_BITS 0x00200000
 #	define CTR0_OVERFLOW_MASK 0x00000001
 #	define CTR1_OVERFLOW_MASK 0x00000002

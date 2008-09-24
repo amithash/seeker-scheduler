@@ -28,10 +28,10 @@
 #define _FPMU_H_
 
 #include <asm/types.h>
+#include "fpmu_public.h"
 
 /********** Constants ********************************************************/
 #ifdef ARCH_C2D
-#	define NUM_FIXED_COUNTERS 3
 #	define FIXSEL_RESERVED_BITS 0xFFFFF444
 #	define FIXED_CTR0_OVERFLOW_MASK 0x00000001
 #	define FIXED_CTR1_OVERFLOW_MASK 0x00000002
@@ -40,9 +40,7 @@
 #	define FIXED_CTR1_OVERFLOW_CLEAR_MASK 0xFFFFFFFD
 #	define FIXED_CTR2_OVERFLOW_CLEAR_MASK 0xFFFFFFFB
 #elif defined(ARCH_K8) || defined(ARCH_K10)
-#	define NUM_FIXED_COUNTERS 0
 #else
-#	define NUM_FIXED_COUNTERS 0
 #	error "Architecture Not supported"
 #endif
 
