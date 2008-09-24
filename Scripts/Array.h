@@ -16,6 +16,11 @@
  * You should have received a copy of the GNU General Public License      *
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  **************************************************************************/
+
+/* Yeah, I could have used STL. But what's the fun in that?
+ * This way, I get to learn templates, and have a library 
+ * which exactly fit my needs */
+
 #ifndef ARRAY_H_
 #define ARRAY_H_
 #include <iostream>
