@@ -49,7 +49,6 @@ static struct miscdevice dvfs_mdev[NR_CPUS];
 static int mdev_registered[NR_CPUS] = {0};
 
 unsigned int pstate[NR_CPUS] = {0};
-int __DVFS_SEEKER_ERROR[NR_CPUS] = {0};
 
 /* Array of func pointers for the read and write funcs */
 ssize_t (*dvfs_read[50])(struct file *, char __user *, size_t, loff_t *) = {
@@ -161,28 +160,6 @@ void __pstate_write(void *info)
 	put_cpu();
 }
 
-void __enable_speedstep(void *info)
-{
-	u32 low, high;
-	int cpu = get_cpu();
-
-	rdmsr(MISC_ENABLE,low,high);
-	if (!(low & (1<<16))) {
-		low |= (1<<16);
-		warn("CPU %d: Enhanced SpeedStep was not enabled, trying to enable it", cpu);
-		wrmsr(MISC_ENABLE, low,high);
-		rdmsr(MISC_ENABLE, low,high);
-		if (!(low & (1<<16))) {
-			error("CPU %d:Could not enable Enhanced SpeedStep. Too bad, get a CPU which allows this!",cpu);
-			__DVFS_SEEKER_ERROR[cpu] = 1;
-			goto __enable_speedstep_out;
-		}
-		debug("CPU %d: Successfully enabled Enhanced SpeedStep", cpu);
-	}
-	__enable_speedstep_out:
-	put_cpu();
-}
-
 /* Return the current pstate */
 unsigned int get_pstate(int cpu)
 {
@@ -261,28 +238,6 @@ static int mdev_node_exit(void)
 /* Init and exit Funcs */
 static int __init dvfs_init(void)
 {
-#if	defined(ARCH_K8) || defined(ARCH_K10)
-	if(cpuid_edx(0x80000007) == 0){
-		error("This PC Does not support P-State Transitions");
-		return -ENODEV;
-	}
-#endif
-#if	defined(ARCH_C2D)
-	int i;
-	if((cpuid_ecx(0x1) & (1<<7)) == 1){
-		debug("Enhanced Speed Step Avaliable");
-	}
-	else{
-		error("CPUID Says enhanced speed step is not avaliable");
-		return -ENODEV;
-	}
-	on_each_cpu(__enable_speedstep, NULL, 1, 1);
-	for(i=0;i<NR_CPUS;i++){
-		if(__DVFS_SEEKER_ERROR[i])
-			return -ENODEV;
-	}
-#endif
-
 	mdev_node_init();
 	return 0;
 }
