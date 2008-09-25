@@ -166,7 +166,7 @@ void __enable_speedstep(void *info)
 	u32 low, high;
 	int cpu = get_cpu();
 
-	rdmsr(MISC_ENABLE, low,high);
+	rdmsr(MISC_ENABLE,low,high);
 	if (!(low & (1<<16))) {
 		low |= (1<<16);
 		warn("CPU %d: Enhanced SpeedStep was not enabled, trying to enable it", cpu);
@@ -264,15 +264,22 @@ static int __init dvfs_init(void)
 #if	defined(ARCH_K8) || defined(ARCH_K10)
 	if(cpuid_edx(0x80000007) == 0){
 		error("This PC Does not support P-State Transitions");
-		return -1;
+		return -ENODEV;
 	}
 #endif
 #if	defined(ARCH_C2D)
 	int i;
+	if((cpuid_ecx(0x1) & (1<<7)) == 1){
+		debug("Enhanced Speed Step Avaliable");
+	}
+	else{
+		error("CPUID Says enhanced speed step is not avaliable");
+		return -ENODEV;
+	}
 	on_each_cpu(__enable_speedstep, NULL, 1, 1);
 	for(i=0;i<NR_CPUS;i++){
 		if(__DVFS_SEEKER_ERROR[i])
-			return -1;
+			return -ENODEV;
 	}
 #endif
 
