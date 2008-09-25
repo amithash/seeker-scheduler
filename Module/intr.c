@@ -40,7 +40,7 @@ extern int pmu_intr;
 struct timer_list sample_timer;
 int sample_timer_started = 0;
 
-struct struct_int_callbacks int_callbacks;
+struct struct_int_callbacks int_callbacks = {NULL,NULL,NULL,NULL,NULL};
 
 
 /*---------------------------------------------------------------------------*
