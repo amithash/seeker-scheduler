@@ -30,6 +30,7 @@
 #include <linux/moduleparam.h>
 #include <linux/cpumask.h>
 #include <linux/fs.h>
+#include <asm/hw_irq.h>
 
 #include "seeker.h"
 #include "intr.h"
@@ -39,6 +40,9 @@
 #include "alloc.h"
 #include "log.h"
 #include "exit.h"
+
+#include "pmu.h"
+#include "fpmu.h"
 
 
 #define SEEKER_SAMPLE_MINOR 240
@@ -88,7 +92,6 @@ extern struct jprobe jp_smp_pmu_interrupt;
 #endif
 extern struct jprobe jp_release_thread;
 extern struct jprobe jp___switch_to;
-
 
 /*---------------------------------------------------------------------------*
  * Function: seeker_sample_log_init
@@ -158,30 +161,51 @@ static int __init seeker_sampler_init(void)
 	printk("Fixed pmu 1,2,3 and temperature also monitored\n");
 
 	if(pmu_intr == -1){
-		printk("Timer is used as sampling interrupt source");
-		if( sample_freq ) {
-			sample_freq = HZ/sample_freq;
-			printk("seeker sampler sampling every %d jiffies, HZ is %d\n",
-				sample_freq, HZ);
+		printk("Timer is used as sampling interrupt source\n");
+		if(sample_freq <= 0)
+			sample_freq = 100;
 
-			init_timer(&sample_timer);
-			sample_timer.function = &do_timer_sample;
-			mod_timer(&sample_timer, jiffies + sample_freq);
-			sample_timer_started = 1;
-		}
+		sample_freq = HZ/sample_freq;
+		printk("seeker sampler sampling every %d jiffies, HZ is %d\n",
+			sample_freq, HZ);
+		init_timer(&sample_timer);
+		sample_timer.function = &do_timer_sample;
+		mod_timer(&sample_timer, jiffies + sample_freq);
+		sample_timer_started = 1;
 	}
 	else{
 		#ifdef LOCAL_PMU_VECTOR
-		printk("Fixed counter %d used as the sampling interrupt source, "
-		       "sampling every %d events\n",pmu_intr,sample_freq);
-		if(sample_freq<=0){
+		if(sample_freq<=0)
+			sample_freq = 1000000;
+		if(pmu_intr < NUM_FIXED_COUNTERS){
+			int_callbacks.enable_interrupts = &fpmu_enable_interrupt;
+			int_callbacks.disable_interrupts = &fpmu_disable_interrupt;
+			int_callbacks.configure_interrupts = &fpmu_configure_interrupt;
+			int_callbacks.clear_ovf_status = &fpmu_clear_ovf_status;
+			int_callbacks.is_interrupt = &fpmu_is_interrupt;
+		}
+		else if(pmu_intr < (NUM_FIXED_COUNTERS + NUM_COUNTERS)){
+			pmu_intr = pmu_intr - NUM_FIXED_COUNTERS;
+			int_callbacks.enable_interrupts = &pmu_enable_interrupt;
+			int_callbacks.disable_interrupts = &pmu_disable_interrupt;
+			int_callbacks.configure_interrupts = &pmu_configure_interrupt;
+			int_callbacks.clear_ovf_status = &pmu_clear_ovf_status;
+			int_callbacks.is_interrupt = &pmu_is_interrupt;
+		}
+		else{
+			error("pmu_intr=%d is invalid, max supported is %d",pmu_intr,NUM_FIXED_COUNTERS+NUM_COUNTERS);
 			return -1;
 		}
+
+		printk("Fixed counter %d used as the sampling interrupt source, "
+		       "sampling every %d events\n",pmu_intr,sample_freq);
+
 		if((probe_ret = register_jprobe(&jp_smp_pmu_interrupt)) < 0){
 			error("Could not find %s to probe, returned %d\n",
 			       PMU_ISR,probe_ret);
 			return -1;
 		}
+
 		if(on_each_cpu((void *)enable_apic_pmu, NULL, 1, 1) < 0){
 			error("Could not enable local pmu interrupt on all cpu's\n");
 		}

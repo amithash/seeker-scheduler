@@ -68,7 +68,7 @@ ssize_t (*dvfs_write[50])(struct file *, const char __user *, size_t, loff_t *) 
 	,MAKE_WCB_10(4)
 };
 
-int stoi(char *str);
+int stoi(const char __user *str);
 
 /* Open and close are stubs */
 int generic_open(struct inode *i, struct file *f) 
@@ -96,13 +96,11 @@ ssize_t dvfs_read_cpu(struct file *file_ptr, char __user *buf,
 	int i = 0;
 	pstate_read(cpu);
 	val = pstate[cpu];
-	sprintf(sval,"%d",val);
-	while(i < 20 && i < count-2 && sval[i] != '\0'){
+	sprintf(sval,"%d\n",val);
+	while(i < 20 && i < count){
 		buf[i] = sval[i];
 		i++;
 	}
-	buf[i++] = '\n';
-	buf[i++] = '\0';
 	return i;
 }
 
@@ -110,7 +108,7 @@ ssize_t dvfs_read_cpu(struct file *file_ptr, char __user *buf,
 ssize_t dvfs_write_cpu(struct file *file_ptr, const char __user *buf,	
 			      size_t count, loff_t *offset, int cpu){
 	debug("Count = %d",count);
-	pstate[cpu] = (unsigned int) stoi((char *)buf);
+	pstate[cpu] = (unsigned int) stoi((const char __user *)buf);
 	debug("Writing pstate value of %d to cpu %d",pstate[cpu],cpu);
 	pstate_write(cpu);
 	return count;
@@ -174,7 +172,7 @@ void put_pstate(int cpu, unsigned int state)
 }
 EXPORT_SYMBOL(put_pstate);
 
-int stoi(char *str)
+int stoi(const char __user *str)
 {
 	int val = 0;
 	int i=0;

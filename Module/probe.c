@@ -26,11 +26,14 @@
 #include <linux/init.h>
 #include <linux/kprobes.h>
 #include <linux/version.h>
+
+#include <asm/hw_irq.h>
+
+#include "seeker.h"
 #include "probe.h"
 #include "intr.h"
 #include "sample.h"
 
-#define PMU_ISR "smp_apic_pmu_interrupt" 
 
 /* Now, now, now, let me explain what exactly happened for you to realize what 
  * went on here. I developed all this on the linux 2.6.18 kernel for the core 2
@@ -74,7 +77,7 @@ struct jprobe jp___switch_to = {
 	.kp.symbol_name = "__switch_to",
 };
 
-extern struct struct_int_callback int_callback;
+extern int pmu_intr;
 
 /*---------------------------------------------------------------------------*
  * Function: inst_smp_apic_pmu_interrupt
@@ -84,10 +87,11 @@ extern struct struct_int_callback int_callback;
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
 #ifdef LOCAL_PMU_VECTOR
-void inst_smp_apic_pmu_interrupt(struct pt_regs *regs){
+void inst_smp_apic_pmu_interrupt(struct pt_regs *regs)
+{
 	int i,ovf=0;
-	if(likely(int_callback->is_interrupt(pmu_intr) > 0)){
-		int_callback->clear_ovf_status(pmu_intr);
+	if(likely(int_callbacks.is_interrupt(pmu_intr) > 0)){
+		int_callbacks.clear_ovf_status(pmu_intr);
 		if(likely(dev_open == 1)){
 			do_sample();
 		}
@@ -96,8 +100,8 @@ void inst_smp_apic_pmu_interrupt(struct pt_regs *regs){
 		for(i=0;i<NUM_FIXED_COUNTERS;i++){
 			if(i == pmu_intr) 
 				continue;
-			if(int_callback->is_interrupt(i) > 0){
-				int_callback->clear_ovf_status(i);
+			if(int_callbacks.is_interrupt(i) > 0){
+				int_callbacks.clear_ovf_status(i);
 				warn("Counter %d overflowed. Check if your sample_freq is unresonably large.\n",i);
 				ovf=1;
 			}
@@ -117,7 +121,8 @@ void inst_smp_apic_pmu_interrupt(struct pt_regs *regs){
  * Input Parameters: kprobes parameter and regs. Not used.
  * Output Parameters: always returns 0
  *---------------------------------------------------------------------------*/
-int inst_schedule(struct kprobe *p, struct pt_regs *regs){
+int inst_schedule(struct kprobe *p, struct pt_regs *regs)
+{
 	if(dev_open){
 		do_sample();
 	}
@@ -130,7 +135,8 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs){
  * Input Parameters: exiting tasks struct.
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-void inst_release_thread(struct task_struct *t){
+void inst_release_thread(struct task_struct *t)
+{
 	if(dev_open){
 		do_pid_log(t);
 	}
@@ -145,8 +151,10 @@ void inst_release_thread(struct task_struct *t){
  * Input Parameters: "from" task struct, "to" task struct
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-void inst___switch_to(struct task_struct *from, struct task_struct *to){
+void inst___switch_to(struct task_struct *from, struct task_struct *to)
+{
 	cpu_pid[smp_processor_id()] = to->pid;
 	jprobe_return();
 }
+
 

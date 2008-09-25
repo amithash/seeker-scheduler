@@ -24,6 +24,18 @@
  *****************************************************/
 #ifndef __INTR_H_
 #define __INTR_H_
+
+
+struct struct_int_callbacks{
+	int (*enable_interrupts)(int);
+	int (*disable_interrupts)(int);
+	int (*configure_interrupts)(int, u32, u32);
+	int (*clear_ovf_status)(int);
+	int (*is_interrupt)(int);
+};
+
+extern struct struct_int_callbacks int_callbacks;
+
 void do_timer_sample(unsigned long param);
 #ifdef LOCAL_PMU_VECTOR
 void configure_enable_interrupts(void);

@@ -100,6 +100,7 @@ void fcounter_read(void);
 u64 get_fcounter_data(u32 counter, u32 cpu_id);
 void fcounters_disable(void);
 void fcounters_enable(u32 os);
+
 int fpmu_configure_interrupt(int ctr, u32 low, u32 high);
 int fpmu_enable_interrupt(int ctr);
 int fpmu_disable_interrupt(int ctr);

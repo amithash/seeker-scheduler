@@ -32,7 +32,7 @@ else
 KDIR    := /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)
 ifndef DEBUG
-MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA)
+MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA) -Wall
 else
 MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA) -DDEBUG
 endif

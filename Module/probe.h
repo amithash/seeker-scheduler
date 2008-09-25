@@ -27,6 +27,8 @@
 
 #include <linux/kprobes.h>
 
+#define PMU_ISR "smp_apic_pmu_interrupt" 
+
 #ifdef LOCAL_PMU_VECTOR
 void inst_smp_apic_pmu_interrupt(struct pt_regs *regs);
 #endif
