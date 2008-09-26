@@ -70,6 +70,11 @@ int seeker_sample_open(struct inode *in, struct file * f)
 	struct log_block *pentry;
 	log_init();	
 	pentry = log_create();
+	if(!pentry){
+		error("Creating log failed\n");
+		return -1;
+	}
+
 	pentry->sample.type = SAMPLE_DEF;
 	pentry->sample.u.seeker_sample_def.num_counters = log_num_events + NUM_FIXED_COUNTERS + NUM_EXTRA_COUNTERS;
 	for(i = 0; i < log_num_events; i++) {

@@ -45,6 +45,7 @@ extern int log_num_events;
 extern int sample_freq;
 extern int os_flag;
 extern int pmu_intr;
+extern int dev_open;
 
 int cpu_counters[NR_CPUS][MAX_COUNTERS_PER_CPU];
 pid_t cpu_pid[NR_CPUS] = {-1};
@@ -85,7 +86,11 @@ void do_sample(void)
 	struct log_block *pentry;
 	unsigned long long now, period;
 	unsigned long long last_ts;
-	int cpu = get_cpu();
+	int cpu;
+	if(!dev_open)
+		return;
+
+	cpu = get_cpu();
 
 	read_time_stamp();  
 	counter_read();
@@ -226,7 +231,12 @@ int msrs_init(void)
  *---------------------------------------------------------------------------*/
 void do_pid_log(struct task_struct *p) 
 {
-	struct log_block *pentry = log_create();
+	struct log_block *pentry;
+
+	if(!dev_open)
+		return;
+		
+	pentry = log_create();
 	if(unlikely(!pentry)){
 		warn("Allocation failed!!! Either you are closing your "
 		      "Buffers or something bad is happening");

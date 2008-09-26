@@ -70,7 +70,7 @@
 int log_events[MAX_COUNTERS_PER_CPU];
 unsigned int log_ev_masks[MAX_COUNTERS_PER_CPU];
 int log_num_events = 0;
-int sample_freq=100;
+int sample_freq=-1;
 int os_flag = 0;
 int pmu_intr = -1;
 
@@ -178,6 +178,7 @@ static int __init seeker_sampler_init(void)
 		if(sample_freq<=0)
 			sample_freq = 1000000;
 		if(pmu_intr < NUM_FIXED_COUNTERS){
+			printk("Sampling every %d events of fixed counter %d\n",sample_freq,pmu_intr);
 			int_callbacks.enable_interrupts = &fpmu_enable_interrupt;
 			int_callbacks.disable_interrupts = &fpmu_disable_interrupt;
 			int_callbacks.configure_interrupts = &fpmu_configure_interrupt;
@@ -186,6 +187,7 @@ static int __init seeker_sampler_init(void)
 		}
 		else if(pmu_intr < (NUM_FIXED_COUNTERS + NUM_COUNTERS)){
 			pmu_intr = pmu_intr - NUM_FIXED_COUNTERS;
+			printk("Sampling every %d events of counter %d\n",sample_freq,pmu_intr);
 			int_callbacks.enable_interrupts = &pmu_enable_interrupt;
 			int_callbacks.disable_interrupts = &pmu_disable_interrupt;
 			int_callbacks.configure_interrupts = &pmu_configure_interrupt;

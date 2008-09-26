@@ -153,7 +153,7 @@ void __pstate_write(void *info)
 	u32 high = 0;
 	u32 low;
 	int cpu = get_cpu();
-	low = pstate[cpu];
+	low = (pstate[cpu] & 0xFFFF)>>8;
 	wrmsr(PERF_CTL,low,high);
 	put_cpu();
 }
@@ -195,7 +195,6 @@ static int mdev_node_init(void)
 {
 	int i;
 	int cpus = num_online_cpus();
-	char name[20];
 	if(cpus >= 50){
 		error("%d CPUS NOT SUPPORTED\n",NR_CPUS);
 		return -1;
@@ -206,11 +205,10 @@ static int mdev_node_init(void)
 		dvfs_fops[i].release = generic_close;
 		dvfs_fops[i].read = dvfs_read[i];
 		dvfs_fops[i].write = dvfs_write[i];
-		dvfs_mdev[i].minor = i;
+		dvfs_mdev[i].minor = i+10;
 		dvfs_mdev[i].fops = &(dvfs_fops[i]);
 		dvfs_mdev[i].name = (const char *)kmalloc(sizeof(const char) * 20, GFP_ATOMIC);
-		sprintf(name,"pstate%d",i);
-		strcpy((char *)dvfs_mdev[i].name,name);
+		sprintf((char *)dvfs_mdev[i].name,"pstate%d",i);
 		if(unlikely(misc_register(&dvfs_mdev[i]) < 0)) {
 			error("Device %s register failed",dvfs_mdev[i].name);
 		} else {
@@ -236,6 +234,7 @@ static int mdev_node_exit(void)
 /* Init and exit Funcs */
 static int __init dvfs_init(void)
 {
+
 	mdev_node_init();
 	return 0;
 }
