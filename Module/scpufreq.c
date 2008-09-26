@@ -27,34 +27,16 @@
 #include <linux/init.h>
 #include <linux/cpufreq.h>
 #include <asm/types.h>
+#include <linux/moduleparam.h>
+#include "seeker.h"
 #include "scpufreq.h"
+
+unsigned int freqs[NR_CPUS];
+unsigned int freq_count = -1;
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
 MODULE_DESCRIPTION("Provides abstracted access to the cpufreq driver");
-
-// struct cpufreq_policy {
-//        cpumask_t               cpus;   /* affected CPUs */
-//        unsigned int            shared_type; /* ANY or ALL affected CPUs
-//                                                should set cpufreq */
-//        unsigned int            cpu;    /* cpu nr of registered CPU */
-//        struct cpufreq_cpuinfo  cpuinfo;/* see above */
-//
-//        unsigned int            min;    /* in kHz */
-//        unsigned int            max;    /* in kHz */
-//        unsigned int            cur;    /* in kHz, only needed if cpufreq
-//                                         * governors are used */
-//        unsigned int            policy; /* see above */
-//        struct cpufreq_governor *governor; /* see below */
-//
-//        struct work_struct      update; /* if update_policy() needs to be
-//                                         * called, but you're in IRQ context */
-//
-//        struct cpufreq_real_policy      user_policy;
-//
-//        struct kobject          kobj;
-//        struct completion       kobj_unregister;
-//};
 
 struct freq_info_t freq_info[NR_CPUS];
 
@@ -143,6 +125,18 @@ static int __init seeker_cpufreq_init(void)
 	}
 	/* From now on frequency refered by the index from freq_info. */
 
+	if(freq_count != -1){
+		if(freq_count > cpus){
+			warn("There are only %d cpus online. Ignoring the rest.",cpus);
+			freq_count = cpus;
+		}
+		for(i=0;i<freq_count;i++){
+			if(set_freq(i,freqs[i]))
+				warn("Param for cpu %d = %d is not valid (avaliable=0,...%d). "
+					"CPU speed is left unchanged.\n",i,freq_info[i].num_states-1,freqs[i]);
+		}
+	}
+
 	return 0;
 }
 
@@ -152,6 +146,9 @@ static void __exit seeker_cpufreq_exit(void)
 	 * user process again */
 	;
 }
+
+module_param_array(freqs,int, &freq_count, 0444);
+MODULE_PARM_DESC(freqs, "Optional, sets the cpus with the current freq_index: 0,1,... Num states in increasing frequencies");
 
 module_init(seeker_cpufreq_init);
 module_exit(seeker_cpufreq_exit);
