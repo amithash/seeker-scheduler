@@ -9,6 +9,7 @@ struct freq_info_t{
 };
 
 int set_freq(unsigned int cpu,unsigned int freq_ind);
+unsigned int get_freq(unsigned int cpu);
 int inc_freq(unsigned int cpu);
 int dec_freq(unsigned int cpu);
 

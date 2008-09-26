@@ -27,7 +27,7 @@
 #include <linux/init.h>
 #include <linux/cpufreq.h>
 #include <asm/types.h>
-#include "seeker-cpufreq.h"
+#include "scpufreq.h"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
@@ -57,6 +57,16 @@ MODULE_DESCRIPTION("Provides abstracted access to the cpufreq driver");
 //};
 
 struct freq_info_t freq_info[NR_CPUS];
+
+unsigned int get_freq(unsigned int cpu)
+{
+	if(freq_info[cpu].cpu >= 0){
+		if(freq_info[cpu].cur_freq != -1)
+			return freq_info[cpu].cur_freq;
+	}
+	return -1;
+}
+EXPORT_SYMBOL_GPL(get_freq);
 
 int set_freq(unsigned int cpu, unsigned int freq_ind)
 {
