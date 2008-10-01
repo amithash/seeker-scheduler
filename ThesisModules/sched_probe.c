@@ -29,7 +29,7 @@
 #include <linux/kallsyms.h>
 #include <linux/sched.h>
 #include <linux/interrupt.h>
-#include "seeker.h"
+#include "../Module/seeker.h"
 
 #define SIG_IRQ 0x10
 
