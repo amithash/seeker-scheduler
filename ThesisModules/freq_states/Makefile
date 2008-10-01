@@ -1,4 +1,5 @@
 
+
 #*************************************************************************
 # Copyright 2008 Amithash Prasad                                         *
 #                                                                        *
@@ -16,16 +17,34 @@
 #                                                                        *
 # You should have received a copy of the GNU General Public License      *
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
-#*************************************************************************
+#*************************************************************************/
 ifndef ARCA
 ARCA := C2D
 endif
 
-all:
-	+make -C freq_states ARCA=$(ARCA)
-	+make -C freq_schedule ARCA=$(ARCA)
+ifneq ($(KERNELRELEASE),)
 
+
+obj-m += freq-states.o
+freq-states-objs += main.o
+
+else
+KDIR    := /lib/modules/$(shell uname -r)/build
+PWD     := $(shell pwd)
+ifndef DEBUG
+MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA) -Wall
+else
+MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA) -DDEBUG
+endif
+
+default:
+	$(MAKE) -C $(KDIR) M=$(PWD) CFLAGS_MODULE="$(MOD_FLAGS)" modules
+	$(shell if ! test -d ../../Build; then mkdir ../../Build; fi )
+	cp *.ko ../../Build
+.PHONY: clean
 clean:
-	+make -C freq_states clean
-	+make -C freq_schedule clean
+	$(MAKE) -C $(KDIR) M=$(PWD) clean
+	rm -f Module.symvers modules.order Module.markers
+	rm -f ../../Build/freq-states.ko
 
+endif
