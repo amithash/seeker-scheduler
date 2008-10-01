@@ -45,6 +45,11 @@ default:
 clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
 	rm -f Module.symvers modules.order Module.markers
-	rm -f ../Build/*
-
+	rm -f ../Build/pmu.ko
+	rm -f ../Build/fpmu.ko
+	rm -f ../Build/tsc.ko
+	rm -f ../Build/therm.ko
+	rm -f ../Build/scpufreq.ko
+	rm -f ../Build/seeker-sampler.ko
+	
 endif
