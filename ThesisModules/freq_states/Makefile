@@ -26,7 +26,7 @@ ifneq ($(KERNELRELEASE),)
 
 
 obj-m += freq-states.o
-freq-states-objs += main.o
+freq-states-objs += main.o state.o
 
 else
 KDIR    := /lib/modules/$(shell uname -r)/build

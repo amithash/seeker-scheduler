@@ -33,6 +33,7 @@
 #include "../../Module/seeker.h"
 
 #define SIG_IRQ 0x10
+#define TOTAL_STATES 2
 
 #define INIT_CPU_MASK ~(0xFFFFFFFF << NR_CPUS)
 #define CPU_TO_MASK(cpu) 1 << (cpu)
@@ -40,10 +41,31 @@
 
 pid_t cpu_pid[NR_CPUS];
 struct task_struct *ts[NR_CPUS];
+int hint[TOTAL_STATES] = {0};
 
 static irqreturn_t int_90_handler(int a, void *info);
 inline unsigned int __mask_to_cpu(unsigned int mask);
 void inst___switch_to(struct task_struct *from, struct task_struct *to);
+
+void clear_hint(void)
+{
+	int i;
+	for(i=0;i<TOTAL_STATES;i++)
+		hint[i] = 0;
+}
+EXPORT_GPL(clear_hint);
+
+int hint_count(void)
+{
+	int i,count=0;
+	for(i=0;i<TOTAL_STATES;i++)
+		if(hint[i] > 0)
+			count++;
+	return count;
+}
+EXPORT_GPL(hint_count);
+
+
 
 struct jprobe jp___switch_to = {
 	.entry = (kprobe_opcode_t *)inst___switch_to,
