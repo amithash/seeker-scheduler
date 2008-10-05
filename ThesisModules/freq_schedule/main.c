@@ -31,41 +31,11 @@
 #include <linux/interrupt.h>
 
 #include "../../Module/seeker.h"
-
-#define SIG_IRQ 0x10
-#define TOTAL_STATES 2
-
-#define INIT_CPU_MASK ~(0xFFFFFFFF << NR_CPUS)
-#define CPU_TO_MASK(cpu) 1 << (cpu)
-#define MASK_TO_CPU(mask) __mask_to_cpu((mask))
+#include "hint.h"
 
 pid_t cpu_pid[NR_CPUS];
 struct task_struct *ts[NR_CPUS];
-int hint[TOTAL_STATES] = {0};
-
-static irqreturn_t int_90_handler(int a, void *info);
-inline unsigned int __mask_to_cpu(unsigned int mask);
-void inst___switch_to(struct task_struct *from, struct task_struct *to);
-
-void clear_hint(void)
-{
-	int i;
-	for(i=0;i<TOTAL_STATES;i++)
-		hint[i] = 0;
-}
-EXPORT_GPL(clear_hint);
-
-int hint_count(void)
-{
-	int i,count=0;
-	for(i=0;i<TOTAL_STATES;i++)
-		if(hint[i] > 0)
-			count++;
-	return count;
-}
-EXPORT_GPL(hint_count);
-
-
+extern int hint[TOTAL_STATES];
 
 struct jprobe jp___switch_to = {
 	.entry = (kprobe_opcode_t *)inst___switch_to,
@@ -95,29 +65,16 @@ struct jprobe jp___switch_to = {
 // p->cpu_allowed = mask
 //
 
-inline unsigned int __mask_to_cpu(unsigned int mask)
-{
-	unsigned int cpu = -1;
-	while(mask){
-		cpu++;
-		mask >>= 1;
-	}
-	return cpu;
-}
 
 void inst___switch_to(struct task_struct *from, struct task_struct *to)
 {
+	cpumask_t mask;
+	mask = get_stats(from);
+	from->cpu_allowed = mask;
 	cpu_pid[smp_processor_id()] = to->pid;
 	ts[smp_processor_id()] = to;
 	jprobe_return();
 }
-
-static irqreturn_t int_90_handler(int a, void *dev_id)
-{
-	warn("Testing Interrupt %x handling",SIG_IRQ);
-	return IRQ_HANDLED;
-}
-
 
 static int __init scheduler_init(void)
 {
@@ -131,17 +88,12 @@ static int __init scheduler_init(void)
 		error("Could not find __switch_to to probe, returned %d",probe_ret);
 		return probe_ret;
 	}
-	if(unlikely(probe_ret = request_irq(SIG_IRQ, int_90_handler, IRQF_DISABLED, "int90", NULL))){
-		error("Could not assign int %x, return=%d",SIG_IRQ,probe_ret);
-		return probe_ret;
-	}
 	return 0;
 }
 
 static void __exit scheduler_exit(void)
 {
 	unregister_jprobe(&jp___switch_to);
-	free_irq(90, NULL);
 }
 
 module_init(scheduler_init);

@@ -37,6 +37,7 @@
 #include "alloc.h"
 #include "log.h"
 #include "exit.h"
+#include "../ThesisModules/freq_schedule/stats.h"
 
 
 extern int log_events[MAX_COUNTERS_PER_CPU];
@@ -49,6 +50,7 @@ extern int dev_open;
 
 int cpu_counters[NR_CPUS][MAX_COUNTERS_PER_CPU];
 pid_t cpu_pid[NR_CPUS] = {-1};
+struct task_struct *ts[NR_CPUS] = {NULL};
 
 
 /*---------------------------------------------------------------------------*
@@ -86,6 +88,7 @@ void do_sample(void)
 	struct log_block *pentry;
 	unsigned long long now, period;
 	unsigned long long last_ts;
+	unsigned long long temp[3];
 	int cpu;
 	if(!dev_open)
 		return;
@@ -122,13 +125,13 @@ void do_sample(void)
 	/* log the pmu counters */
 	for(i = 0; i < log_num_events; i++) {
 		pentry->sample.u.seeker_sample.counters[i] = get_counter_data(cpu_counters[cpu][i], cpu);
-		
+		if(NUM_FIXED_COUNTERS == 0 && i<3)
+			temp[i] = pentry->sample.u.seeker_sample.counters[i];
 	}
 	/* log the fixed counters */
 	for(j=0;j<NUM_FIXED_COUNTERS;j++){
-		pentry->sample.u.seeker_sample.counters[i++] = get_fcounter_data(j,cpu);
+		temp[j] = pentry->sample.u.seeker_sample.counters[i++] = get_fcounter_data(j,cpu);
 	}
-
 	pentry->sample.u.seeker_sample.counters[i++] = get_temp(cpu);
 	
 	/* GETTING DATA FROM OTHER COUNTERS GO HERE */
@@ -137,6 +140,7 @@ void do_sample(void)
   
 	out:
 	clear_counters();
+	update_stats(ts[cpu],temp[0],temp[1],temp[2]);
 	put_cpu();
 }
 

@@ -26,6 +26,7 @@
 #include <linux/init.h>
 #include <linux/kprobes.h>
 #include <linux/version.h>
+#include <linux/sched.h>
 
 #include <asm/hw_irq.h>
 
@@ -49,6 +50,7 @@
 
 extern int dev_open;
 extern pid_t cpu_pid[NR_CPUS];
+extern struct task_struct *ts[NR_CPUS];
 
 struct kprobe kp_schedule = {
 	.pre_handler = inst_schedule,
@@ -153,7 +155,9 @@ void inst_release_thread(struct task_struct *t)
  *---------------------------------------------------------------------------*/
 void inst___switch_to(struct task_struct *from, struct task_struct *to)
 {
-	cpu_pid[smp_processor_id()] = to->pid;
+	int cpu = smp_processor_id();
+	cpu_pid[cpu] = to->pid;
+	ts[cpu] = to;
 	jprobe_return();
 }
 

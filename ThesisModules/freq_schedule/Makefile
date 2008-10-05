@@ -26,7 +26,7 @@ ifneq ($(KERNELRELEASE),)
 
 
 obj-m += freq-schedule.o
-freq-schedule-objs += main.o
+freq-schedule-objs += main.o stats.o hint.o
 
 else
 KDIR    := /lib/modules/$(shell uname -r)/build

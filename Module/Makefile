@@ -50,6 +50,7 @@ clean:
 	rm -f ../Build/tsc.ko
 	rm -f ../Build/therm.ko
 	rm -f ../Build/scpufreq.ko
+	rm -f ../Build/power.ko
 	rm -f ../Build/seeker-sampler.ko
 	
 endif
