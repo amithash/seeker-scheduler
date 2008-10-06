@@ -15,4 +15,5 @@ Currently, the following are the basic changes going on:
    (When executed, it runs in the background) and it has changable defaults
    thus you can start it with Scripts/seekerd and a default of 1 sec and op 
    file format of /var/log/seeker is used.
+6. Lots of work in ThesisModules.... Plz, let me graduate!
 

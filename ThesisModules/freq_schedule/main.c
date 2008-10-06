@@ -32,10 +32,10 @@
 
 #include "../../Module/seeker.h"
 #include "hint.h"
+#include "estimate.h"
 
-pid_t cpu_pid[NR_CPUS];
-struct task_struct *ts[NR_CPUS];
 extern int hint[TOTAL_STATES];
+void inst___switch_to(struct task_struct *from, struct task_struct *to);
 
 struct jprobe jp___switch_to = {
 	.entry = (kprobe_opcode_t *)inst___switch_to,
@@ -68,11 +68,7 @@ struct jprobe jp___switch_to = {
 
 void inst___switch_to(struct task_struct *from, struct task_struct *to)
 {
-	cpumask_t mask;
-	mask = get_stats(from);
-	from->cpu_allowed = mask;
-	cpu_pid[smp_processor_id()] = to->pid;
-	ts[smp_processor_id()] = to;
+	put_mask_from_stats(from);
 	jprobe_return();
 }
 
@@ -80,10 +76,6 @@ static int __init scheduler_init(void)
 {
 	int i;
 	int probe_ret;
-	for(i=0;i<NR_CPUS;i++){
-		ts[i] = NULL;
-		cpu_pid[i] = -1;
-	}
 	if(unlikely((probe_ret = register_jprobe(&jp___switch_to)))){
 		error("Could not find __switch_to to probe, returned %d",probe_ret);
 		return probe_ret;

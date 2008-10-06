@@ -19,4 +19,15 @@ int hint_count(void)
 }
 EXPORT_GPL(hint_count);
 
+void hint_inc(int state)
+{
+	hint[state]++;
+}
+
+void hint_dec(int state)
+{
+	hint[state]--;
+}
+
+
 
