@@ -74,7 +74,6 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 
 static int __init scheduler_init(void)
 {
-	int i;
 	int probe_ret;
 	if(unlikely((probe_ret = register_jprobe(&jp___switch_to)))){
 		error("Could not find __switch_to to probe, returned %d",probe_ret);

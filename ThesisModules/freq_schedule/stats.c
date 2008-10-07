@@ -16,9 +16,10 @@ void update_stats(struct task_struct *t,
 		 u64 re_cy,
 		 u64 ref_cy)
 {
+#ifndef NOPATCH
 	if(t->interval == interval_count){
 		t->inst   += inst;
-		t->re_cy  += cy;
+		t->re_cy  += re_cy;
 		t->ref_cy += ref_cy;
 	}
 	else{
@@ -27,15 +28,18 @@ void update_stats(struct task_struct *t,
 		t->re_cy    = re_cy;
 		t->ref_cy   = ref_cy;
 	}
+#endif
 }
 EXPORT_SYMBOL_GPL(update_stats);
 
 void init_stats(struct task_struct *t)
 {
+#ifndef NOPATCH
 	t->interval = interval_count;
 	t->inst    = 0;
 	t->re_cy   = 0;
 	t->ref_cy  = 0;
+#endif
 }
 
 void increment_interval(void)

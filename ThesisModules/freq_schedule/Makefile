@@ -41,6 +41,9 @@ default:
 	$(MAKE) -C $(KDIR) M=$(PWD) CFLAGS_MODULE="$(MOD_FLAGS)" modules
 	$(shell if ! test -d ../../Build; then mkdir ../../Build; fi )
 	cp *.ko ../../Build
+test:
+	$(MAKE) -C $(KDIR) M=$(PWD) CFLAGS_MODULE="$(MOD_FLAGS) -DNOPATCH" modules
+
 .PHONY: clean
 clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
