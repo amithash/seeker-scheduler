@@ -141,6 +141,10 @@ void do_sample(void)
 	out:
 	clear_counters();
 	update_stats(ts[cpu],temp[0],temp[1],temp[2]);
+#ifdef THESIS
+	if(ts[cpu]->inst > MAX_INSTRUCTIONS_BEFORE_SCHEDULE)
+		set_tsk_need_resched(ts[cpu]);
+#endif
 	put_cpu();
 }
 

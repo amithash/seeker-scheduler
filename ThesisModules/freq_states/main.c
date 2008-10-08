@@ -29,10 +29,13 @@
 #include <linux/version.h>
 #include <linux/moduleparam.h>
 #include <asm/hw_irq.h>
+#include <linux/timer.h>
 
 
 #include "../../Module/seeker.h"
 #include "../../Module/scpufreq.h"
+
+#include "state.h"
 
 MODULE_AUTHOR("Amithash Prasad <amithash.prasad@colorado.edu>");
 MODULE_DESCRIPTION("module to peridocally change the cpu configuration based on external parameters");
@@ -45,6 +48,7 @@ void destroy_timer(void);
 
 int change_interval = 5; /* In seconds */
 int change_type = 0;
+int init = ALL_HIGH;
 
 u32 interval_jiffies;
 struct timer_list state_change_timer;
@@ -72,6 +76,7 @@ void destroy_timer(void)
 
 static int __init state_init(void)
 {
+	init_cpu_states(init);
 	create_timer();
 	return 0;
 }
@@ -86,6 +91,9 @@ module_exit(state_exit);
 
 module_param(change_interval,int,0444);
 MODULE_PARM_DESC(change_interval, "Interval in seconds to try and change the global state (Default 5 seconds)");
+
+module_param(init,int,0444);
+MODULE_PARM_DESC(init,"Starting state of cpus: 1 - All high, 2 - half high, half low, 3 - All low");
 
 module_param(change_type,int,0444);
 MODULE_PARM_DESC(change_type,"Type of state machine to use 0,1,2,.. default:0");

@@ -31,15 +31,22 @@
 #include <linux/interrupt.h>
 
 #include "../../Module/seeker.h"
+#include "../../Module/scpufreq.h"
 #include "hint.h"
+#include "stats.h"
 #include "estimate.h"
 
-extern int hint[TOTAL_STATES];
+extern int hint[MAX_STATES];
 void inst___switch_to(struct task_struct *from, struct task_struct *to);
-
+void inst_sched_fork(struct task_struct *new, int clone_flags);
 struct jprobe jp___switch_to = {
 	.entry = (kprobe_opcode_t *)inst___switch_to,
 	.kp.symbol_name = "__switch_to",
+};
+
+struct jprobe jp_sched_fork = {
+	.entry = (kprobe_opcode_t *)inst_sched_fork,
+	.kp.symbol_name = "sched_fork",
 };
 
 // resched_task(struct task_struct *p)
@@ -62,13 +69,19 @@ struct jprobe jp___switch_to = {
 // void fastcall wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
 //
 // struct task_struct *p
-// p->cpu_allowed = mask
+// p->cpus_allowed = mask
 //
 
+void inst_sched_fork(struct task_struct *new, int clone_flags){
+	init_stats(new);
+	debug("task %s starting",new->comm);
+	jprobe_return();
+}
 
 void inst___switch_to(struct task_struct *from, struct task_struct *to)
 {
 	put_mask_from_stats(from);
+	debug("Task switching from %s to %s",from->comm,to->comm);
 	jprobe_return();
 }
 
@@ -79,12 +92,17 @@ static int __init scheduler_init(void)
 		error("Could not find __switch_to to probe, returned %d",probe_ret);
 		return probe_ret;
 	}
+	if(unlikely((probe_ret = register_jprobe(&jp_sched_fork)))){
+		error("Could not find sched_fork to probe, returned %d",probe_ret);
+		return probe_ret;
+	}
 	return 0;
 }
 
 static void __exit scheduler_exit(void)
 {
 	unregister_jprobe(&jp___switch_to);
+	unregister_jprobe(&jp_sched_fork);
 }
 
 module_init(scheduler_init);

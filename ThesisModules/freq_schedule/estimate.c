@@ -3,6 +3,7 @@
 #include <linux/module.h>
 #include <linux/cpumask.h>
 #include <linux/sched.h>
+#include "../../Module/scpufreq.h"
 #include "hint.h"
 
 int state_of_cpu[NR_CPUS] = {0};
@@ -27,6 +28,7 @@ void get_state_of_cpu(int *state)
 	write_lock(&state_of_cpu_lock);
 	state = state_of_cpu;
 }
+EXPORT_SYMBOL_GPL(get_state_of_cpu);
 
 /* Once freq_state is done, it MUST
  * call this to release the lock.
@@ -35,6 +37,7 @@ void put_state_of_cpu(void)
 {
 	write_unlock(&state_of_cpu_lock);
 }
+EXPORT_SYMBOL_GPL(put_state_of_cpu);
 
 void put_mask_from_stats(struct task_struct *ts)
 {
@@ -61,7 +64,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	if(ts->inst >= ts->ipc_ref){
 #endif
 		new_state = state + 1;
-		if(new_state >= TOTAL_STATES)
+		if(new_state >= MAX_STATES)
 			new_state--;
 #ifndef NOPATCH
 	}

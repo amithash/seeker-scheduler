@@ -86,7 +86,11 @@ int dec_freq(unsigned int cpu)
 }
 EXPORT_SYMBOL_GPL(dec_freq);
 
-
+int get_max_states(int cpu)
+{
+	return freq_info[cpu].num_states;
+}
+EXPORT_SYMBOL_GPL(get_max_states);
 
 
 static int __init seeker_cpufreq_init(void)
