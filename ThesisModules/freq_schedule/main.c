@@ -49,6 +49,10 @@ struct jprobe jp_sched_fork = {
 	.kp.symbol_name = "sched_fork",
 };
 
+int change_interval = 5; /* In seconds */
+int change_type = 0;
+int init = ALL_HIGH;
+
 // resched_task(struct task_struct *p)
 // static void enqueue_task(struct rq *rq, struct task_struct *p, int wakeup)
 // static void activate_task(struct rq *rq, struct task_struct *p, int wakeup)
@@ -96,6 +100,8 @@ static int __init scheduler_init(void)
 		error("Could not find sched_fork to probe, returned %d",probe_ret);
 		return probe_ret;
 	}
+	init_cpu_states(init);
+	create_timer();
 	return 0;
 }
 
@@ -103,10 +109,20 @@ static void __exit scheduler_exit(void)
 {
 	unregister_jprobe(&jp___switch_to);
 	unregister_jprobe(&jp_sched_fork);
+	destroy_timer();
 }
 
 module_init(scheduler_init);
 module_exit(scheduler_exit);
+
+module_param(change_interval,int,0444);
+MODULE_PARM_DESC(change_interval, "Interval in seconds to try and change the global state (Default 5 seconds)");
+
+module_param(init,int,0444);
+MODULE_PARM_DESC(init,"Starting state of cpus: 1 - All high, 2 - half high, half low, 3 - All low");
+
+module_param(change_type,int,0444);
+MODULE_PARM_DESC(change_type,"Type of state machine to use 0,1,2,.. default:0");
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
