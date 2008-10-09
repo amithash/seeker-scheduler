@@ -25,8 +25,14 @@ endif
 ifneq ($(KERNELRELEASE),)
 
 
-obj-m += seeker-sampler.o pmu.o fpmu.o tsc.o therm.o scpufreq.o power.o
+obj-m += dschedule.o seeker-sampler.o pmu.o fpmu.o tsc.o therm.o scpufreq.o power.o
 seeker-sampler-objs += alloc.o log.o probe.o sample.o io.o intr.o main.o
+dschedule-objs += dschedule/main.o     \
+		  dschedule/estimate.o \
+		  dschedule/hint.o     \
+		  dschedule/quanta.o   \
+		  dschedule/state.o    \
+		  dschedule/stats.o
 
 else
 KDIR    := /lib/modules/$(shell uname -r)/build
