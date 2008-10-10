@@ -1,3 +1,4 @@
+#define abs(i) ((i) >= 0 ? (i) : (-1*(i)))
 
 extern int total_states;
 extern int max_allowed_states[NR_CPUS];
@@ -29,6 +30,7 @@ void choose_layout(int delta)
 	int cpus_in_state[MAX_STATES];
 	int req_cpus = 0;
 	int cpu_state[NR_CPUS] = {-1};
+	int dt = delta;
 
 	for(i=0;i<count;i++)
 		total += hint[i];
@@ -58,8 +60,6 @@ void choose_layout(int delta)
 		if(cpus_in_state[cur_cpu_state[i]] > 0){
 			cpus_in_state[cur_cpu_state[i]]--;
 			req_cpus--;
-		} else {
-			cur_cpu_state[i] = -1;
 		}
 	}
 	/* XXX FIXME */
@@ -70,6 +70,8 @@ void choose_layout(int delta)
 	for(i=0;i<cpus;i++){
 		if(cur_cpu_state[i] > -1)
 			continue;
+		if(delta == 0)
+			return;
 
 		/* Prefer to increase a state by 1 */
 		if(cur_cpu_state[i] < count)
@@ -77,6 +79,7 @@ void choose_layout(int delta)
 				cur_cpu_state[i]++;
 				cpus_in_state[cur_cpu_state[i]]--;
 				set_freq(i,cur_cpu_state[i]);
+				delta--;
 				continue;
 			}
 		}
@@ -86,16 +89,22 @@ void choose_layout(int delta)
 				cur_cpu_state[i]--;
 				cpus_in_state[cur_cpu_state[i]]--;
 				set_freq(i,cur_cpu_state[i]);
+				delta--;
 				continue;
 			}
 		}
-		/* Else assign any avaliable state to it */
+		/* Else assign any available proc
+		 * with the new state as long as 
+		 * it honors the remaining delta
+		 */
 		for(j=0;j<count;j++){
 			if(cpus_in_state[j] > 0){
-				cur_cpu_state[i] = j;
-				cpus_in_state[j]--;
-				set_freq(i,j);
-				break;
+				if(abs(cur_cpu_state[i]-j)<=delta){
+					cur_cpu_state[i] = j;
+					cpus_in_state[j]--;
+					set_freq(i,j);
+					break;
+				}
 			}
 		}
 	}
