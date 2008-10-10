@@ -2,19 +2,20 @@
 #include <linux/init.h>
 #include <linux/module.h>
 
-#include "../../Module/scpufreq.h"
+#include "../scpufreq.h"
 #include "hint.h"
 
 
 int hint[MAX_STATES] = {0};
 
-int get_hint(int *ht, int count)
+int get_hint(int *ht)
 {
 	int i;
-	for(i=0;i<count&&i<MAX_STATES;i++){
+	int total = get_total_states();
+	for(i=0;i<=total;i++){
 		ht[i] = hint[i];
 	}
-	return i;
+	return total;
 }
 
 
@@ -29,7 +30,8 @@ EXPORT_SYMBOL_GPL(clear_hint);
 int hint_count(void)
 {
 	int i,count=0;
-	for(i=0;i<MAX_STATES;i++)
+	int total = get_total_states();
+	for(i=0;i<total;i++)
 		if(hint[i] > 0)
 			count++;
 	return count;
@@ -47,6 +49,4 @@ void hint_dec(int state)
 	hint[state]--;
 }
 EXPORT_SYMBOL_GPL(hint_dec);
-
-
 
