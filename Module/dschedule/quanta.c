@@ -4,10 +4,12 @@
 #include <linux/timer.h>
 #include "../seeker.h"
 #include "quanta.h"
+#include "state.h"
 
 u32 interval_jiffies;
 extern int change_interval;
 struct timer_list state_change_timer;
+extern int delta;
 
 void destroy_timer(void)
 {
@@ -26,6 +28,7 @@ int create_timer(void)
 void state_change(unsigned long param)
 {
 	debug("State change now.");
+	freq_delta(delta);
 	mod_timer(&state_change_timer, jiffies + interval_jiffies);
 }
 

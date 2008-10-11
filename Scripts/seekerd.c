@@ -44,9 +44,17 @@ int count = 0;
 char count_c[20];
 int do_sample = 1;
 
+void usage(char *argv[])
+{
+	printf("Usage:\n");
+	printf("\t%s LogFormat SampleTime\n",argv[0]);
+	printf("\t%s LogFormat\t(SampleTime is assumed as 1 second)\n",argv[0]);
+	printf("\t%s\t(LogFormat is assumed to be /var/log/seeker, SampleTime is assumed to be 1 second\n",argv[0]);
+}
+
 void do_exit(void) 
 {
-	printf("Exiting generic_log_dump\n");
+	printf("Exiting seekerd\n");
 	fflush(outfile);
 	exit(EXIT_SUCCESS);
 }
@@ -101,8 +109,12 @@ int main (int argc, char** argv)
 	pid_t pid;
 	unsigned int (*seeker_sleep)(unsigned int);
   
-	if( argc != 3 ) {
+	if( argc < 3 ) {
 		if(argc == 2){
+			if(strcmp(argv[1],"--help") == 0 || strcmp(argv[1],"-h") == 0){
+				usage(argv);
+				return 0;
+			}
 			/* Only 1 argument, time is assumed as 1 second */
 			sec_to_sleep = 1;
 			strcpy(outfile_prefix,argv[1]);
@@ -112,9 +124,13 @@ int main (int argc, char** argv)
 			strcpy(outfile_prefix,"/var/log/seeker");
 		}		
 	}
-	else{
+	else if(argc == 3){
 		sec_to_sleep = atof(argv[1]);
 		strcpy(outfile_prefix,argv[2]);
+	}
+	else{
+		usage(argv);
+		return -1;
 	}
 
 
@@ -139,7 +155,7 @@ int main (int argc, char** argv)
 
 	P_ASSERT_EXIT(infile = fopen(infile_name, "r"), infile_name);
 	if( access(outfile_name, F_OK) == 0 ) {
-		fprintf(stderr, "generic_log_dump: file exists: %s\n", outfile_name);
+		fprintf(stderr, "seekerd: file exists: %s\n", outfile_name);
 		exit(EXIT_FAILURE);
 	}
 
@@ -175,7 +191,7 @@ int main (int argc, char** argv)
 			sprintf(count_c, "%d",count);
 			strcat(outfile_name,count_c);
 			if( access(outfile_name, F_OK) == 0 ) {
-				fprintf(stderr, "generic_log_dump: file exists: %s\n", outfile_name);
+				fprintf(stderr, "seekerd: file exists: %s\n", outfile_name);
 				exit(EXIT_FAILURE);
 			}
 			P_ASSERT_EXIT(outfile = fopen(outfile_name, "a"), outfile_name);	

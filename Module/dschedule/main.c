@@ -52,7 +52,7 @@ struct jprobe jp_sched_fork = {
 };
 
 int change_interval = 5; /* In seconds */
-int change_type = 0;
+int delta=1;
 int init = ALL_HIGH;
 
 // resched_task(struct task_struct *p)
@@ -123,8 +123,8 @@ MODULE_PARM_DESC(change_interval, "Interval in seconds to try and change the glo
 module_param(init,int,0444);
 MODULE_PARM_DESC(init,"Starting state of cpus: 1 - All high, 2 - half high, half low, 3 - All low");
 
-module_param(change_type,int,0444);
-MODULE_PARM_DESC(change_type,"Type of state machine to use 0,1,2,.. default:0");
+module_param(delta,int,0444);
+MODULE_PARM_DESC(delta,"Type of state machine to use 1,2,.. default:1");
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");

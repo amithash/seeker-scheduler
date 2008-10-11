@@ -8,7 +8,7 @@
 #define ABS(i) ((i) >= 0 ? (i) : (-1*(i)))
 
 extern int max_allowed_states[NR_CPUS];
-int cur_cpu_state[NR_CPUS];
+extern int cur_cpu_states[NR_CPUS];
 
 inline int procs(int hints,int total, int proc);
 
@@ -61,9 +61,9 @@ void choose_layout(int dt)
 	 * in 
 	 */
 	for(i=0;i<cpus;i++){
-		if(cpus_in_state[cur_cpu_state[i]] > 0){
+		if(cpus_in_state[cur_cpu_states[i]] > 0){
 			cpus_bitmask[i] = 1;
-			cpus_in_state[cur_cpu_state[i]]--;
+			cpus_in_state[cur_cpu_states[i]]--;
 			req_cpus--;
 		}
 	}
@@ -79,20 +79,20 @@ void choose_layout(int dt)
 
 		/* Prefer to increase a state by 1 then
 		 * to decrease the state by 1 */
-		if(cur_cpu_state[i] < count && 
-		   cpus_in_state[cur_cpu_state[i]+1] > 0){
+		if(cur_cpu_states[i] < count && 
+		   cpus_in_state[cur_cpu_states[i]+1] > 0){
 			cpus_bitmask[i] = 1;
-			cur_cpu_state[i]++;
-			cpus_in_state[cur_cpu_state[i]]--;
-			set_freq(i,cur_cpu_state[i]);
+			cur_cpu_states[i]++;
+			cpus_in_state[cur_cpu_states[i]]--;
+			set_freq(i,cur_cpu_states[i]);
 			req_cpus--;
 			delta--;
-		} else if(cur_cpu_state[i] > 0 && 
-			  cpus_in_state[cur_cpu_state[i]-1] > 0){
+		} else if(cur_cpu_states[i] > 0 && 
+			  cpus_in_state[cur_cpu_states[i]-1] > 0){
 			cpus_bitmask[i] = 1;
-			cur_cpu_state[i]--;
-			cpus_in_state[cur_cpu_state[i]]--;
-			set_freq(i,cur_cpu_state[i]);
+			cur_cpu_states[i]--;
+			cpus_in_state[cur_cpu_states[i]]--;
+			set_freq(i,cur_cpu_states[i]);
 			req_cpus--;
 			delta--;
 		}
@@ -115,19 +115,19 @@ void choose_layout(int dt)
 				continue;
 
 			/* Will this change honor delta? */
-			if((cur_cpu_state[i]-j) <= delta || (j - cur_cpu_state[i]) <= delta){
-				cur_cpu_state[i] = j;
+			if((cur_cpu_states[i]-j) <= delta || (j - cur_cpu_states[i]) <= delta){
+				cur_cpu_states[i] = j;
 				cpus_in_state[j]--;
-				delta -= ABS(cur_cpu_state[i]-j);
+				delta -= ABS(cur_cpu_states[i]-j);
 				req_cpus--;
 				set_freq(i,j);
 				break;
 			} else{
 				/* Will not honor. Fix allow a change of what is allowed.*/
-				if(j > cur_cpu_state[i]){
-					cur_cpu_state[i] += delta;
+				if(j > cur_cpu_states[i]){
+					cur_cpu_states[i] += delta;
 				} else {
-					cur_cpu_state[i] -= delta;
+					cur_cpu_states[i] -= delta;
 				}
 				req_cpus--;
 				delta = 0;
