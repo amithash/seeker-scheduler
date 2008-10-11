@@ -37,7 +37,7 @@
 #include "alloc.h"
 #include "log.h"
 #include "exit.h"
-#include "dschedule/stats.h"
+#include "seeker-schedule/stats.h"
 
 
 extern int log_events[MAX_COUNTERS_PER_CPU];

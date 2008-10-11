@@ -25,7 +25,7 @@ endif
 ifneq ($(KERNELRELEASE),)
 
 
-obj-m += dschedule.o seeker-sampler.o pmu.o fpmu.o tsc.o therm.o scpufreq.o power.o
+obj-m += seeker-schedule.o seeker-sampler.o pmu.o fpmu.o tsc.o therm.o scpufreq.o power.o
 seeker-sampler-objs += alloc.o   \
 		       log.o     \
 		       probe.o   \
@@ -34,13 +34,13 @@ seeker-sampler-objs += alloc.o   \
 		       intr.o    \
 		       main.o
 
-dschedule-objs += dschedule/main.o     \
-		  dschedule/estimate.o \
-		  dschedule/compute.o  \
-		  dschedule/hint.o     \
-		  dschedule/quanta.o   \
-		  dschedule/state.o    \
-		  dschedule/stats.o
+seeker-schedule-objs += seeker-schedule/main.o    \
+		       seeker-schedule/estimate.o \
+		       seeker-schedule/compute.o  \
+		       seeker-schedule/hint.o     \
+		       seeker-schedule/quanta.o   \
+		       seeker-schedule/state.o    \
+		       seeker-schedule/stats.o
 
 else
 KDIR    := /lib/modules/$(shell uname -r)/build
@@ -66,6 +66,6 @@ clean:
 	rm -f ../Build/scpufreq.ko
 	rm -f ../Build/power.ko
 	rm -f ../Build/seeker-sampler.ko
-	rm -f ../Build/dschedule.ko
+	rm -f ../Build/seeker-schedule.ko
 	
 endif
