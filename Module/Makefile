@@ -66,5 +66,6 @@ clean:
 	rm -f ../Build/scpufreq.ko
 	rm -f ../Build/power.ko
 	rm -f ../Build/seeker-sampler.ko
+	rm -f ../Build/dschedule.ko
 	
 endif

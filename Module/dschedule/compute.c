@@ -8,7 +8,8 @@
 #define ABS(i) ((i) >= 0 ? (i) : (-1*(i)))
 
 extern int max_allowed_states[NR_CPUS];
-extern int cur_cpu_state[NR_CPUS];
+int cur_cpu_state[NR_CPUS];
+
 inline int procs(int hints,int total, int proc);
 
 inline int procs(int hints,int total, int proc)
