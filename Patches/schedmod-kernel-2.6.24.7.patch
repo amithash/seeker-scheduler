@@ -1,0 +1,25 @@
+diff -Naur linux-2.6.24.7/include/linux/sched.h linux-2.6.24_sched_patch/include/linux/sched.h
+--- linux-2.6.24.7/include/linux/sched.h	2008-05-06 16:22:34.000000000 -0700
++++ linux-2.6.24_sched_patch/include/linux/sched.h	2008-10-11 15:48:59.000000000 -0700
+@@ -1,6 +1,8 @@
+ #ifndef _LINUX_SCHED_H
+ #define _LINUX_SCHED_H
+ 
++#define SEEKER_PLUGIN_PATCH 1
++
+ /*
+  * cloning flags:
+  */
+@@ -1178,6 +1180,12 @@
+ 	int make_it_fail;
+ #endif
+ 	struct prop_local_single dirties;
++
++	/* Seeker Patch Additions */
++	u64 interval;
++	u64 inst;
++	u64 re_cy;
++	u64 ref_cy;
+ };
+ 
+ /*

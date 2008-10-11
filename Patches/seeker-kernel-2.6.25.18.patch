@@ -1,7 +1,7 @@
-diff -uNr linux-2.6.24.4_CLEAN/arch/x86/kernel/apic_32.c linux-2.6.24.4_WORKING/arch/x86/kernel/apic_32.c
---- linux-2.6.24.4_CLEAN/arch/x86/kernel/apic_32.c	2008-03-24 18:49:18.000000000 +0000
-+++ linux-2.6.24.4_WORKING/arch/x86/kernel/apic_32.c	2008-04-21 07:05:47.000000000 +0000
-@@ -598,6 +599,31 @@
+diff -Naur linux-2.6.25.18/arch/x86/kernel/apic_32.c linux-2.6.25.18_Seeker/arch/x86/kernel/apic_32.c
+--- linux-2.6.25.18/arch/x86/kernel/apic_32.c	2008-10-08 19:58:32.000000000 -0700
++++ linux-2.6.25.18_Seeker/arch/x86/kernel/apic_32.c	2008-10-11 16:17:35.000000000 -0700
+@@ -615,6 +615,31 @@
  	set_irq_regs(old_regs);
  }
  
@@ -10,7 +10,7 @@ diff -uNr linux-2.6.24.4_CLEAN/arch/x86/kernel/apic_32.c linux-2.6.24.4_WORKING/
 + * ack'ing the interrupt. Its main use is from the seeker module
 + * which uses jprobe to execute the remaining of the handler. 
 + */
-+void fastcall smp_apic_pmu_interrupt(struct pt_regs *regs)
++void smp_apic_pmu_interrupt(struct pt_regs *regs)
 +{
 +	struct pt_regs *old_regs = set_irq_regs(regs);
 +
@@ -33,7 +33,7 @@ diff -uNr linux-2.6.24.4_CLEAN/arch/x86/kernel/apic_32.c linux-2.6.24.4_WORKING/
  int setup_profiling_timer(unsigned int multiplier)
  {
  	return -EINVAL;
-@@ -1321,6 +1347,7 @@
+@@ -1298,6 +1323,7 @@
  #endif
  	/* self generated IPI for local APIC timer */
  	set_intr_gate(LOCAL_TIMER_VECTOR, apic_timer_interrupt);
@@ -41,10 +41,10 @@ diff -uNr linux-2.6.24.4_CLEAN/arch/x86/kernel/apic_32.c linux-2.6.24.4_WORKING/
  
  	/* IPI vectors for APIC spurious and error interrupts */
  	set_intr_gate(SPURIOUS_APIC_VECTOR, spurious_interrupt);
-diff -uNr linux-2.6.24.4_CLEAN/arch/x86/kernel/apic_64.c linux-2.6.24.4_WORKING/arch/x86/kernel/apic_64.c
---- linux-2.6.24.4_CLEAN/arch/x86/kernel/apic_64.c	2008-03-24 18:49:18.000000000 +0000
-+++ linux-2.6.24.4_WORKING/arch/x86/kernel/apic_64.c	2008-04-21 07:05:46.000000000 +0000
-@@ -1090,6 +1090,31 @@
+diff -Naur linux-2.6.25.18/arch/x86/kernel/apic_64.c linux-2.6.25.18_Seeker/arch/x86/kernel/apic_64.c
+--- linux-2.6.25.18/arch/x86/kernel/apic_64.c	2008-10-08 19:58:32.000000000 -0700
++++ linux-2.6.25.18_Seeker/arch/x86/kernel/apic_64.c	2008-10-11 16:21:31.000000000 -0700
+@@ -505,6 +505,31 @@
  	set_irq_regs(old_regs);
  }
  
@@ -73,13 +73,13 @@ diff -uNr linux-2.6.24.4_CLEAN/arch/x86/kernel/apic_64.c linux-2.6.24.4_WORKING/
 +	set_irq_regs(old_regs);
 +}
 +	
- /*
-  * apic_is_clustered_box() -- Check if we can expect good TSC
-  *
-diff -uNr linux-2.6.24.4_CLEAN/arch/x86/kernel/entry_64.S linux-2.6.24.4_WORKING/arch/x86/kernel/entry_64.S
---- linux-2.6.24.4_CLEAN/arch/x86/kernel/entry_64.S	2008-03-24 18:49:18.000000000 +0000
-+++ linux-2.6.24.4_WORKING/arch/x86/kernel/entry_64.S	2008-04-21 07:05:47.000000000 +0000
-@@ -688,6 +688,10 @@
+ int setup_profiling_timer(unsigned int multiplier)
+ {
+ 	return -EINVAL;
+diff -Naur linux-2.6.25.18/arch/x86/kernel/entry_64.S linux-2.6.25.18_Seeker/arch/x86/kernel/entry_64.S
+--- linux-2.6.25.18/arch/x86/kernel/entry_64.S	2008-10-08 19:58:32.000000000 -0700
++++ linux-2.6.25.18_Seeker/arch/x86/kernel/entry_64.S	2008-10-11 16:13:17.000000000 -0700
+@@ -722,6 +722,10 @@
  	apicinterrupt LOCAL_TIMER_VECTOR,smp_apic_timer_interrupt
  END(apic_timer_interrupt)
  
@@ -90,10 +90,10 @@ diff -uNr linux-2.6.24.4_CLEAN/arch/x86/kernel/entry_64.S linux-2.6.24.4_WORKING
  ENTRY(error_interrupt)
  	apicinterrupt ERROR_APIC_VECTOR,smp_error_interrupt
  END(error_interrupt)
-diff -uNr linux-2.6.24.4_CLEAN/arch/x86/kernel/i8259_64.c linux-2.6.24.4_WORKING/arch/x86/kernel/i8259_64.c
---- linux-2.6.24.4_CLEAN/arch/x86/kernel/i8259_64.c	2008-03-24 18:49:18.000000000 +0000
-+++ linux-2.6.24.4_WORKING/arch/x86/kernel/i8259_64.c	2008-04-21 07:05:46.000000000 +0000
-@@ -492,6 +492,7 @@
+diff -Naur linux-2.6.25.18/arch/x86/kernel/i8259_64.c linux-2.6.25.18_Seeker/arch/x86/kernel/i8259_64.c
+--- linux-2.6.25.18/arch/x86/kernel/i8259_64.c	2008-10-08 19:58:32.000000000 -0700
++++ linux-2.6.25.18_Seeker/arch/x86/kernel/i8259_64.c	2008-10-11 16:13:17.000000000 -0700
+@@ -502,6 +502,7 @@
  
  	/* self generated IPI for local APIC timer */
  	set_intr_gate(LOCAL_TIMER_VECTOR, apic_timer_interrupt);
@@ -101,9 +101,9 @@ diff -uNr linux-2.6.24.4_CLEAN/arch/x86/kernel/i8259_64.c linux-2.6.24.4_WORKING
  
  	/* IPI vectors for APIC spurious and error interrupts */
  	set_intr_gate(SPURIOUS_APIC_VECTOR, spurious_interrupt);
-diff -uNr linux-2.6.24.4_CLEAN/include/asm-x86/hw_irq_32.h linux-2.6.24.4_WORKING/include/asm-x86/hw_irq_32.h
---- linux-2.6.24.4_CLEAN/include/asm-x86/hw_irq_32.h	2008-03-24 18:49:18.000000000 +0000
-+++ linux-2.6.24.4_WORKING/include/asm-x86/hw_irq_32.h	2008-04-21 07:02:59.000000000 +0000
+diff -Naur linux-2.6.25.18/include/asm-x86/hw_irq_32.h linux-2.6.25.18_Seeker/include/asm-x86/hw_irq_32.h
+--- linux-2.6.25.18/include/asm-x86/hw_irq_32.h	2008-10-08 19:58:32.000000000 -0700
++++ linux-2.6.25.18_Seeker/include/asm-x86/hw_irq_32.h	2008-10-11 16:14:50.000000000 -0700
 @@ -36,6 +36,7 @@
  
  #ifdef CONFIG_X86_LOCAL_APIC
@@ -112,9 +112,9 @@ diff -uNr linux-2.6.24.4_CLEAN/include/asm-x86/hw_irq_32.h linux-2.6.24.4_WORKIN
  void error_interrupt(void);
  void spurious_interrupt(void);
  void thermal_interrupt(void);
-diff -uNr linux-2.6.24.4_CLEAN/include/asm-x86/hw_irq_64.h linux-2.6.24.4_WORKING/include/asm-x86/hw_irq_64.h
---- linux-2.6.24.4_CLEAN/include/asm-x86/hw_irq_64.h	2008-03-24 18:49:18.000000000 +0000
-+++ linux-2.6.24.4_WORKING/include/asm-x86/hw_irq_64.h	2008-04-21 07:02:59.000000000 +0000
+diff -Naur linux-2.6.25.18/include/asm-x86/hw_irq_64.h linux-2.6.25.18_Seeker/include/asm-x86/hw_irq_64.h
+--- linux-2.6.25.18/include/asm-x86/hw_irq_64.h	2008-10-08 19:58:32.000000000 -0700
++++ linux-2.6.25.18_Seeker/include/asm-x86/hw_irq_64.h	2008-10-11 16:13:17.000000000 -0700
 @@ -84,20 +84,22 @@
   * sources per level' errata.
   */
@@ -140,9 +140,9 @@ diff -uNr linux-2.6.24.4_CLEAN/include/asm-x86/hw_irq_64.h linux-2.6.24.4_WORKIN
  void spurious_interrupt(void);
  void error_interrupt(void);
  void reschedule_interrupt(void);
-diff -uNr linux-2.6.24.4_CLEAN/include/asm-x86/irq_64.h linux-2.6.24.4_WORKING/include/asm-x86/irq_64.h
---- linux-2.6.24.4_CLEAN/include/asm-x86/irq_64.h	2008-03-24 18:49:18.000000000 +0000
-+++ linux-2.6.24.4_WORKING/include/asm-x86/irq_64.h	2008-04-21 07:02:59.000000000 +0000
+diff -Naur linux-2.6.25.18/include/asm-x86/irq_64.h linux-2.6.25.18_Seeker/include/asm-x86/irq_64.h
+--- linux-2.6.25.18/include/asm-x86/irq_64.h	2008-10-08 19:58:32.000000000 -0700
++++ linux-2.6.25.18_Seeker/include/asm-x86/irq_64.h	2008-10-11 16:13:17.000000000 -0700
 @@ -29,7 +29,7 @@
   */
  #define NR_VECTORS 256
@@ -152,9 +152,9 @@ diff -uNr linux-2.6.24.4_CLEAN/include/asm-x86/irq_64.h linux-2.6.24.4_WORKING/i
  
  #define NR_IRQS (NR_VECTORS + (32 *NR_CPUS))
  #define NR_IRQ_VECTORS NR_IRQS
-diff -uNr linux-2.6.24.4_CLEAN/include/asm-x86/mach-default/entry_arch.h linux-2.6.24.4_WORKING/include/asm-x86/mach-default/entry_arch.h
---- linux-2.6.24.4_CLEAN/include/asm-x86/mach-default/entry_arch.h	2008-03-24 18:49:18.000000000 +0000
-+++ linux-2.6.24.4_WORKING/include/asm-x86/mach-default/entry_arch.h	2008-04-21 07:02:59.000000000 +0000
+diff -Naur linux-2.6.25.18/include/asm-x86/mach-default/entry_arch.h linux-2.6.25.18_Seeker/include/asm-x86/mach-default/entry_arch.h
+--- linux-2.6.25.18/include/asm-x86/mach-default/entry_arch.h	2008-10-08 19:58:32.000000000 -0700
++++ linux-2.6.25.18_Seeker/include/asm-x86/mach-default/entry_arch.h	2008-10-11 16:13:17.000000000 -0700
 @@ -30,5 +30,6 @@
  #ifdef CONFIG_X86_MCE_P4THERMAL
  BUILD_INTERRUPT(thermal_interrupt,THERMAL_APIC_VECTOR)
@@ -162,9 +162,9 @@ diff -uNr linux-2.6.24.4_CLEAN/include/asm-x86/mach-default/entry_arch.h linux-2
 +BUILD_INTERRUPT(apic_pmu_interrupt,LOCAL_PMU_VECTOR)
  
  #endif
-diff -uNr linux-2.6.24.4_CLEAN/include/asm-x86/mach-default/irq_vectors.h linux-2.6.24.4_WORKING/include/asm-x86/mach-default/irq_vectors.h
---- linux-2.6.24.4_CLEAN/include/asm-x86/mach-default/irq_vectors.h	2008-03-24 18:49:18.000000000 +0000
-+++ linux-2.6.24.4_WORKING/include/asm-x86/mach-default/irq_vectors.h	2008-04-21 07:02:59.000000000 +0000
+diff -Naur linux-2.6.25.18/include/asm-x86/mach-default/irq_vectors.h linux-2.6.25.18_Seeker/include/asm-x86/mach-default/irq_vectors.h
+--- linux-2.6.25.18/include/asm-x86/mach-default/irq_vectors.h	2008-10-08 19:58:32.000000000 -0700
++++ linux-2.6.25.18_Seeker/include/asm-x86/mach-default/irq_vectors.h	2008-10-11 16:13:17.000000000 -0700
 @@ -56,14 +56,15 @@
   * sources per level' errata.
   */
@@ -183,10 +183,10 @@ diff -uNr linux-2.6.24.4_CLEAN/include/asm-x86/mach-default/irq_vectors.h linux-
  
  #define TIMER_IRQ 0
  
-diff -uNr linux-2.6.24.4_CLEAN/kernel/kallsyms.c linux-2.6.24.4_WORKING/kernel/kallsyms.c
---- linux-2.6.24.4_CLEAN/kernel/kallsyms.c	2008-03-24 18:49:18.000000000 +0000
-+++ linux-2.6.24.4_WORKING/kernel/kallsyms.c	2008-04-21 07:02:24.000000000 +0000
-@@ -169,6 +169,7 @@
+diff -Naur linux-2.6.25.18/kernel/kallsyms.c linux-2.6.25.18_Seeker/kernel/kallsyms.c
+--- linux-2.6.25.18/kernel/kallsyms.c	2008-10-08 19:58:32.000000000 -0700
++++ linux-2.6.25.18_Seeker/kernel/kallsyms.c	2008-10-11 16:13:17.000000000 -0700
+@@ -160,6 +160,7 @@
  	}
  	return module_kallsyms_lookup_name(name);
  }

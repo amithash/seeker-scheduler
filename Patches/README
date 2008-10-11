@@ -1,10 +1,19 @@
 Patches:
 --------
 
-seeker-kernel-2.6.18.5.patch -> Patch for the 2.6.18.x kernel
-seeker-kernel-2.6.24.4.patch -> Patch for the 2.6.24.x kernel
+Patches to get pmu interrupt feature:
 
-Things have changed a lot between these kernels, and I'd go with 2.6.24 it is more roburst.
+seeker-kernel-2.6.18.5.patch -> Patch for the 2.6.18.x kernel
+seeker-kernel-2.6.24.7.patch -> Patch for the 2.6.24.x kernel
+seeker-kernel-2.6.25.18.patch-> Patch for the 2.6.25.x kernel and above
+
+Patches modifying sched.h to do the scheduling:
+
+< 2.6.18 is not supported.
+schedmod-kernel-2.6.24.7.patch -> Patch for the 2.6.24.x kernel
+schedmod-kernel-2.6.25.18.patch-> Patch for the 2.6.25.x kernel
+
+Things have changed a lot between these kernels, and I'd go with 2.6.25 it is more roburst and mature. 2.6.24 got a lot of changes and 2.6.25 saw those things stabalizing. 
 
 PATCHING THE KERNEL:
 --------------------
@@ -20,7 +29,7 @@ SIDE NOTES:
 
 Kernel versions vary a lot. The 2.6.18 is completely different from the 2.6.24.
 And I'd really recommend using a 2.6.18 kernel for the 2.6.18 patch and the 
-2.6.24 patch to the 2.6.24 kernel. 
+2.6.24 patch to the 2.6.24 kernel. And of course to use the 2.6.24 and greater kernels.
 
 If you really want to use another kernel not mentioned here, here are some notes:
 1. Use the 2.6.18 patch on anything less than 2.6.24 
@@ -41,7 +50,7 @@ If you really want to use another kernel not mentioned here, here are some notes
 		include/asm-x86_64/apic.h
 		include/asm-x86_64/hw_irq.h
 		include/asm-x86_64/irq.h
-	2.6.18:
+	>= 2.6.24:
 		x86:
 		arch/x86/kernel/apic_32.c
 		include/asm-x86/apic_32.h
@@ -62,4 +71,6 @@ If you really want to use another kernel not mentioned here, here are some notes
 	
 7. If you do not want to do these things, send me an email with the kernel
    version number. I will send you a patch.
+8. the schedmod patch is very *very* simple. All it does is add a few more variables to task_struct so I can keep track of each task without having my own list and lookups!
+
 
