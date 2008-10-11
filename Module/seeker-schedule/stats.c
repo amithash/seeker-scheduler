@@ -8,6 +8,10 @@
 #include "../../Module/seeker.h"
 #include "stats.h"
 
+#ifndef SEEKER_PLUGIN_PATCH
+#define NOPATCH
+#endif
+
 u64 interval_count = 0;
 
 /* Seeker is responsible of calling this */

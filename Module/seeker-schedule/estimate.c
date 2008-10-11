@@ -5,6 +5,9 @@
 #include <linux/sched.h>
 #include "../../Module/scpufreq.h"
 #include "hint.h"
+#ifndef SEEKER_PLUGIN_PATCH
+#define NOPATCH
+#endif
 
 int state_of_cpu[NR_CPUS] = {0};
 

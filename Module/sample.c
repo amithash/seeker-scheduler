@@ -39,6 +39,15 @@
 #include "exit.h"
 #include "seeker-schedule/stats.h"
 
+/* Define the default max instructions before schedule
+ * to be 1 million instructions
+ */
+#ifdef SEEKER_PLUGIN_PATCH
+#	ifndef MAX_INSTRUCTIONS_BEFORE_SCHEDULE
+#		define MAX_INSTRUCTIONS_BEFORE_SCHEDULE 1000000
+#	endif
+#endif
+
 
 extern int log_events[MAX_COUNTERS_PER_CPU];
 extern unsigned int log_ev_masks[MAX_COUNTERS_PER_CPU];
@@ -125,12 +134,17 @@ void do_sample(void)
 	/* log the pmu counters */
 	for(i = 0; i < log_num_events; i++) {
 		pentry->sample.u.seeker_sample.counters[i] = get_counter_data(cpu_counters[cpu][i], cpu);
+#ifdef SEEKER_PLUGIN_PATCH
 		if(NUM_FIXED_COUNTERS == 0 && i<3)
 			temp[i] = pentry->sample.u.seeker_sample.counters[i];
+#endif
 	}
 	/* log the fixed counters */
 	for(j=0;j<NUM_FIXED_COUNTERS;j++){
 		temp[j] = pentry->sample.u.seeker_sample.counters[i++] = get_fcounter_data(j,cpu);
+#ifdef SEEKER_PLUGIN_PATCH
+		temp[j] = pentry->sample.u.seeker_sample.counters[i-1];
+#endif
 	}
 	pentry->sample.u.seeker_sample.counters[i++] = get_temp(cpu);
 	
@@ -141,7 +155,7 @@ void do_sample(void)
 	out:
 	clear_counters();
 	update_stats(ts[cpu],temp[0],temp[1],temp[2]);
-#ifdef THESIS
+#ifdef SEEKER_PLUGIN_PATCH
 	if(ts[cpu]->inst > MAX_INSTRUCTIONS_BEFORE_SCHEDULE)
 		set_tsk_need_resched(ts[cpu]);
 #endif

@@ -133,6 +133,16 @@ static int __init seeker_sampler_init(void)
 	int i;
 	int probe_ret;
 
+#ifdef SEEKER_PLUGIN_PATCH
+	if(NUM_FIXED_COUNTERS == 0){
+		warn("Please note that the first 3 counters MUST BE retired instructions,real cycles, ref cycles");
+	}
+	if(NUM_FIXED_COUNTERS == 0 && log_num_events <= 0){
+		error("You need to configure at least the first 3 counters. Refer the warning above");
+		return -ENODEV;
+	}
+#endif
+
 	printk("---------------------------------------\n");
 	printk("Initializing seeker kernel Module for the " ARCHITECTURE "\n");
 	if( log_num_events <= 0 ) {

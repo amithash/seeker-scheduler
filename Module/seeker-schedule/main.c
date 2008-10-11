@@ -93,6 +93,7 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 
 static int __init scheduler_init(void)
 {
+#ifdef SEEKER_PLUGIN_PATCH
 	int probe_ret;
 	if(unlikely((probe_ret = register_jprobe(&jp___switch_to)))){
 		error("Could not find __switch_to to probe, returned %d",probe_ret);
@@ -105,6 +106,10 @@ static int __init scheduler_init(void)
 	init_cpu_states(init);
 	create_timer();
 	return 0;
+#else
+	error("You are trying to use this module without patching the kernel with schedmod. Refer to the seeker/Patches/README for details");
+	return -ENODEV;
+#endif
 }
 
 static void __exit scheduler_exit(void)
