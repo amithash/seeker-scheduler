@@ -1,6 +1,14 @@
-#define abs(i) ((i) >= 0 ? (i) : (-1*(i)))
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <linux/module.h>
+#include "../seeker.h"
+#include "../scpufreq.h"
+#include "hint.h"
+
+#define ABS(i) ((i) >= 0 ? (i) : (-1*(i)))
 
 extern int max_allowed_states[NR_CPUS];
+extern int cur_cpu_state[NR_CPUS];
 inline int procs(int hints,int total, int proc);
 
 inline int procs(int hints,int total, int proc)
@@ -18,17 +26,17 @@ inline int procs(int hints,int total, int proc)
 	return i;
 }
 
-void choose_layout(int delta)
+void choose_layout(int dt)
 {
 	int cpus;
 	int hint[MAX_STATES];
 	int count;
-	int i;
+	int i,j;
 	int total = 0;
 	int cpus_in_state[MAX_STATES];
 	short cpus_bitmask[NR_CPUS]={0};
 	int req_cpus = 0;
-	int dt = delta;
+	int delta = dt;
 
 	/* RAM is not a problem, cpu cycles are.
 	 * so use actual values here rather than
@@ -109,7 +117,7 @@ void choose_layout(int delta)
 			if((cur_cpu_state[i]-j) <= delta || (j - cur_cpu_state[i]) <= delta){
 				cur_cpu_state[i] = j;
 				cpus_in_state[j]--;
-				delta -= abs(cur_cpu_state[i]-j);
+				delta -= ABS(cur_cpu_state[i]-j);
 				req_cpus--;
 				set_freq(i,j);
 				break;

@@ -50,6 +50,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	int i;
 
 	cpus_clear(mask);
+	cpus_clear(tmp_mask);
 	/*XXX FIXME 
 	 * I am doing something very simple. 
 	 * Checking for IPC >= 1.
@@ -61,7 +62,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	read_lock(&state_of_cpu_lock);
 	state = state_of_cpu[any_online_cpu(ts->cpus_allowed)];
 #ifndef NOPATCH
-	if(ts->inst >= ts->ipc_ref){
+	if(ts->inst >= ts->ref_cy){
 #endif
 		new_state = state + 1;
 		if(new_state >= MAX_STATES)
@@ -71,7 +72,7 @@ void put_mask_from_stats(struct task_struct *ts)
 #endif
 
 #ifndef NOPATCH
-	if(ts->inst <= (ts->ipc_ref >> 1)){
+	if(ts->inst <= (ts->ref_cy >> 1)){
 #endif
 		new_state = state - 1;
 		if(new_state < 0)

@@ -1,7 +1,13 @@
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/timer.h>
+#include "../seeker.h"
+#include "quanta.h"
 
 u32 interval_jiffies;
+extern int change_interval;
 struct timer_list state_change_timer;
-
 
 void destroy_timer(void)
 {

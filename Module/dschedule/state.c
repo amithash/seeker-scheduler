@@ -4,12 +4,12 @@
 
 
 #include "state.h"
-#include "../../Module/scpufreq.h"
-#include "../../Module/seeker.h"
+#include "../scpufreq.h"
+#include "../seeker.h"
 
-#include "../freq_schedule/hint.h"
-#include "../freq_schedule/estimate.h"
-#include "../freq_schedule/stats.h"
+#include "hint.h"
+#include "estimate.h"
+#include "stats.h"
 
 int max_state_possible[NR_CPUS] = {0};
 int max_state_in_system = -1;
@@ -20,8 +20,9 @@ int freq_delta(int delta)
 	int *cpu_state = NULL;
 	int hint[MAX_STATES];
 	int cpus = num_online_cpus();
+	int states;
 	warn("total online cpus = %d",cpus);	
-	get_hint(hint,max_state_in_system+1);
+	states = get_hint(hint);
 
 	/* Process hint */
 
