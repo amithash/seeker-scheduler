@@ -97,18 +97,18 @@ static int __init scheduler_init(void)
 	int probe_ret;
 	if(unlikely((probe_ret = register_jprobe(&jp___switch_to)))){
 		error("Could not find __switch_to to probe, returned %d",probe_ret);
-		return probe_ret;
+		return -ENOSYS;
 	}
 	if(unlikely((probe_ret = register_jprobe(&jp_sched_fork)))){
 		error("Could not find sched_fork to probe, returned %d",probe_ret);
-		return probe_ret;
+		return -ENOSYS;
 	}
 	init_cpu_states(init);
 	create_timer();
 	return 0;
 #else
 	error("You are trying to use this module without patching the kernel with schedmod. Refer to the seeker/Patches/README for details");
-	return -ENODEV;
+	return -ENOTSUPP;
 #endif
 }
 

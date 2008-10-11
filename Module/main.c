@@ -139,7 +139,7 @@ static int __init seeker_sampler_init(void)
 	}
 	if(NUM_FIXED_COUNTERS == 0 && log_num_events <= 0){
 		error("You need to configure at least the first 3 counters. Refer the warning above");
-		return -ENODEV;
+		return -ENOTSUPP;
 	}
 #endif
 
@@ -152,13 +152,13 @@ static int __init seeker_sampler_init(void)
 
 	if(unlikely(msrs_init() < 0)) {
 		error("msrs_init failure\n");
-		return -1;
+		return -ENODEV;
 	}
 
 	if(unlikely(seeker_sample_log_init()  <0)) {
 		error("seeker_sample_log_init failure\n");
 		seeker_sampler_exit_handler();
-		return -1;
+		return -ENODEV;
 	}
 
 	printk("seeker sampler module loaded logging %d events\n", 
@@ -206,7 +206,7 @@ static int __init seeker_sampler_init(void)
 		}
 		else{
 			error("pmu_intr=%d is invalid, max supported is %d",pmu_intr,NUM_FIXED_COUNTERS+NUM_COUNTERS);
-			return -1;
+			return -ENOSYS;
 		}
 
 		printk("Fixed counter %d used as the sampling interrupt source, "
@@ -215,7 +215,7 @@ static int __init seeker_sampler_init(void)
 		if((probe_ret = register_jprobe(&jp_smp_pmu_interrupt)) < 0){
 			error("Could not find %s to probe, returned %d\n",
 			       PMU_ISR,probe_ret);
-			return -1;
+			return -ENODEV;
 		}
 
 		if(on_each_cpu((void *)enable_apic_pmu, NULL, 1, 1) < 0){
@@ -224,7 +224,7 @@ static int __init seeker_sampler_init(void)
 		#else
 		error("An attempt is made to use the pmu_intr "
 		"facility without applying a seeker patch to the kernel. Exiting");
-		return -1;
+		return -ENOTSUPP;
 		#endif
 	}
 
@@ -232,15 +232,15 @@ static int __init seeker_sampler_init(void)
 
 	if((unlikely(probe_ret = register_kprobe(&kp_schedule)) < 0)){
 		error("Could not find schededule to probe, returned %d",probe_ret);
-		return -1;
+		return -ENOSYS;
 	}
 	if(unlikely((probe_ret = register_jprobe(&jp_release_thread)) < 0)){
 		error("Could not find release_thread to probe, returned %d",probe_ret);
-		return -1;
+		return -ENOSYS;
 	}
 	if(unlikely((probe_ret = register_jprobe(&jp___switch_to)) < 0)){
 		error("Could not find __switch_to to probe, returned %d",probe_ret);
-		return -1;
+		return -ENOSYS;
 	}
 	kprobes_registered = 1;
 	printk("kprobe registered\n");
