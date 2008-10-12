@@ -56,6 +56,7 @@ void do_exit(void)
 {
 	printf("Exiting seekerd\n");
 	fflush(outfile);
+	fclose(outfile);
 	exit(EXIT_SUCCESS);
 }
 
