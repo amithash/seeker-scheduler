@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
 #*************************************************************************
 
-for MOD in "seeker_sampler" "c2dpmu" "c2dfpmu" "c2dtsc" "c2dtherm"; do
+for MOD in "seeker_sampler" "pmu" "fpmu" "tsc" "therm"; do
 	lsmod | grep $MOD &> /dev/null
 	if [ "$?" != "0" ]; then
 		echo "$MOD does not seem to be loaded."
