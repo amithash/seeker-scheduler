@@ -55,8 +55,6 @@ FIXED_CTR1_OVERFLOW_MASK	Module/fpmu.h	37;"	d
 FIXED_CTR2_OVERFLOW_CLEAR_MASK	Module/fpmu.h	41;"	d
 FIXED_CTR2_OVERFLOW_MASK	Module/fpmu.h	38;"	d
 FIXSEL_RESERVED_BITS	Module/fpmu.h	35;"	d
-HASH_MASK	Module/seeker-schedule/pid_hash.c	3;"	d	file:
-HASH_SIZE	Module/seeker-schedule/pid_hash.c	2;"	d	file:
 IA32_THERM_STATUS	Module/therm.h	35;"	d
 IA32_THERM_STATUS	Module/therm.h	38;"	d
 IA32_THERM_STATUS	Module/therm.h	41;"	d
@@ -64,6 +62,7 @@ INPUT_FORMAT	Scripts/iconfig.h	33;"	d
 KDIR	Module/Makefile	/^KDIR    := \/lib\/modules\/$(shell uname -r)\/build$/;"	m
 KERNEL_VERSION	Module/seeker.h	70;"	d
 MAX_COUNTERS_PER_CPU	Module/seeker.h	35;"	d
+MAX_INSTRUCTIONS_BEFORE_SCHEDULE	Module/sample.c	47;"	d	file:
 MAX_INSTRUCTIONS_BEFORE_SCHEDULE	Module/seeker-schedule/stats.h	1;"	d
 MAX_STATES	Module/scpufreq.h	2;"	d
 MOD_FLAGS	Module/Makefile	/^MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA) -DDEBUG$/;"	m
@@ -81,6 +80,8 @@ MSR_PERF_GLOBAL_OVF_CTRL	Module/pmu.h	74;"	d
 MSR_PERF_GLOBAL_STATUS	Module/fpmu.h	54;"	d
 MSR_PERF_GLOBAL_STATUS	Module/pmu.h	60;"	d
 MSR_PERF_GLOBAL_STATUS	Module/pmu.h	72;"	d
+NOPATCH	Module/seeker-schedule/estimate.c	9;"	d	file:
+NOPATCH	Module/seeker-schedule/stats.c	12;"	d	file:
 NUM_COUNTERS	Module/pmu.h	76;"	d
 NUM_COUNTERS	Module/pmu_public.h	6;"	d
 NUM_COUNTERS	Module/pmu_public.h	8;"	d
@@ -198,8 +199,6 @@ dec_freq	Module/scpufreq.c	/^EXPORT_SYMBOL_GPL(dec_freq);$/;"	v
 dec_freq	Module/scpufreq.c	/^int dec_freq(unsigned int cpu)$/;"	f
 delete_log	Module/log.c	/^void delete_log(struct log_block *ent)$/;"	f
 delta	Module/seeker-schedule/main.c	/^int delta=1;$/;"	v
-destroy_task_stats	Module/seeker-schedule/pid_hash.c	/^void destroy_task_stats(struct task_stats *ts)$/;"	f
-destroy_task_stats_pid	Module/seeker-schedule/pid_hash.c	/^void destroy_task_stats_pid(pid_t p)$/;"	f
 destroy_timer	Module/seeker-schedule/quanta.c	/^void destroy_timer(void)$/;"	f
 dev_open	Module/main.c	/^int dev_open = 0;$/;"	v
 disable_interrupts	Module/intr.h	/^	int (*disable_interrupts)(int);$/;"	m	struct:struct_int_callbacks
@@ -292,7 +291,6 @@ get_max_states	Module/scpufreq.c	/^int get_max_states(int cpu)$/;"	f
 get_power	Module/power.c	/^void get_power(void)$/;"	f
 get_state_of_cpu	Module/seeker-schedule/estimate.c	/^EXPORT_SYMBOL_GPL(get_state_of_cpu);$/;"	v
 get_state_of_cpu	Module/seeker-schedule/estimate.c	/^void get_state_of_cpu(int **state)$/;"	f
-get_task_stats	Module/seeker-schedule/pid_hash.c	/^struct task_stats *get_task_stats(pid_t p)$/;"	f
 get_temp	Module/therm.c	/^EXPORT_SYMBOL_GPL(get_temp);$/;"	v
 get_temp	Module/therm.c	/^int get_temp(int cpu)$/;"	f
 get_time_stamp	Module/tsc.c	/^EXPORT_SYMBOL_GPL(get_time_stamp);$/;"	v
@@ -327,7 +325,6 @@ init_power	Module/power.c	/^static int __init init_power(void)$/;"	f	file:
 init_seeker_cache	Module/alloc.c	/^int init_seeker_cache(void)$/;"	f
 init_stats	Module/seeker-schedule/stats.c	/^void init_stats(struct task_struct *t)$/;"	f
 init_system	Module/seeker-schedule/estimate.c	/^void init_system(void)$/;"	f
-inst	Module/seeker-schedule/pid_hash.c	/^	u64 inst;$/;"	m	struct:task_stats	file:
 inst___switch_to	Module/probe.c	/^void inst___switch_to(struct task_struct *from, struct task_struct *to)$/;"	f
 inst___switch_to	Module/seeker-schedule/main.c	/^void inst___switch_to(struct task_struct *from, struct task_struct *to)$/;"	f
 inst_release_thread	Module/probe.c	/^void inst_release_thread(struct task_struct *t)$/;"	f
@@ -337,7 +334,6 @@ inst_smp_apic_pmu_interrupt	Module/probe.c	/^void inst_smp_apic_pmu_interrupt(st
 instr_sum	Module/seeker.h	/^	unsigned long long instr_sum;$/;"	m	struct:__anon11
 int_callbacks	Module/intr.c	/^struct struct_int_callbacks int_callbacks = {NULL,NULL,NULL,NULL,NULL};$/;"	v	typeref:struct:struct_int_callbacks
 int_flag	Module/pmu.h	/^	u32 int_flag:1;$/;"	m	struct:__anon5
-interval	Module/seeker-schedule/pid_hash.c	/^	u64 interval;$/;"	m	struct:task_stats	file:
 interval_count	Module/seeker-schedule/stats.c	/^u64 interval_count = 0;$/;"	v
 interval_jiffies	Module/seeker-schedule/quanta.c	/^u32 interval_jiffies;$/;"	v
 inv_flag	Module/pmu.h	/^	u32 inv_flag:1;$/;"	m	struct:__anon5
@@ -387,7 +383,6 @@ mva	Scripts/smooth.C	/^Array<T> mva(Array<Array<T> > * data, int ind, int window
 n	Scripts/Array.h	/^		int n;$/;"	m	class:Array
 name	Module/seeker.h	/^	char name[16];$/;"	m	struct:__anon11
 next	Module/alloc.h	/^	struct log_block *next;$/;"	m	struct:log_block	typeref:struct:log_block::log_block
-next	Module/seeker-schedule/pid_hash.c	/^	struct task_stats *next;$/;"	m	struct:task_stats	typeref:struct:task_stats::task_stats	file:
 num_counters	Module/seeker.h	/^	unsigned char num_counters;$/;"	m	struct:__anon9
 num_states	Module/scpufreq.h	/^	unsigned int num_states;$/;"	m	struct:freq_info_t
 oper	Scripts/iconfig.h	/^	char oper;$/;"	m	struct:__anon14
@@ -438,7 +433,6 @@ outfile	Scripts/seekerd.c	/^static FILE *infile, *outfile;$/;"	v	file:
 outfile_name	Scripts/seekerd.c	/^char outfile_prefix[100], outfile_name[100];$/;"	v
 outfile_prefix	Scripts/seekerd.c	/^char outfile_prefix[100], outfile_name[100];$/;"	v
 pc_flag	Module/pmu.h	/^	u32 pc_flag:1;$/;"	m	struct:__anon5
-pid	Module/seeker-schedule/pid_hash.c	/^	int pid;$/;"	m	struct:task_stats	file:
 pid	Module/seeker.h	/^	unsigned int pid;$/;"	m	struct:__anon10
 pid	Module/seeker.h	/^	unsigned int pid;$/;"	m	struct:__anon11
 pidtab_entry	Module/seeker.h	/^		pidtab_entry_t pidtab_entry;$/;"	m	union:__anon12::__anon13
@@ -464,7 +458,6 @@ pmu_intr	Module/main.c	/^int pmu_intr = -1;$/;"	v
 pmu_is_interrupt	Module/pmu.c	/^EXPORT_SYMBOL_GPL(pmu_is_interrupt);$/;"	v
 pmu_is_interrupt	Module/pmu.c	/^int pmu_is_interrupt(int ctr)$/;"	f
 predict	Scripts/iconfig.h	/^		Array<double> predict(double X){$/;"	f	class:SPLINE
-prev	Module/seeker-schedule/pid_hash.c	/^	struct task_stats *prev;$/;"	m	struct:task_stats	typeref:struct:task_stats::task_stats	file:
 print	Scripts/Array.h	/^void Array<T>::print(int col){$/;"	f	class:Array
 print	Scripts/Array.h	/^void Array<T>::print(void){$/;"	f	class:Array
 procs	Module/seeker-schedule/compute.c	/^inline int procs(int hints,int total, int proc)$/;"	f
@@ -472,14 +465,12 @@ purge_log	Module/log.c	/^void purge_log(void)$/;"	f
 put_mask_from_stats	Module/seeker-schedule/estimate.c	/^void put_mask_from_stats(struct task_struct *ts)$/;"	f
 put_state_of_cpu	Module/seeker-schedule/estimate.c	/^EXPORT_SYMBOL_GPL(put_state_of_cpu);$/;"	v
 put_state_of_cpu	Module/seeker-schedule/estimate.c	/^void put_state_of_cpu(void)$/;"	f
-re_cy	Module/seeker-schedule/pid_hash.c	/^	u64 re_cy;$/;"	m	struct:task_stats	file:
 read_temp	Module/therm.c	/^EXPORT_SYMBOL_GPL(read_temp);$/;"	v
 read_temp	Module/therm.c	/^int read_temp(void)$/;"	f
 read_time_stamp	Module/tsc.c	/^EXPORT_SYMBOL_GPL(read_time_stamp);$/;"	v
 read_time_stamp	Module/tsc.c	/^void read_time_stamp(void)$/;"	f
 real_index	Scripts/Array.h	/^int Array<T>::real_index(int ind){$/;"	f	class:Array
 receive_message	Module/power.c	/^void receive_message(struct ipmi_recv_msg *msg, void *msg_data)$/;"	f
-ref_cy	Module/seeker-schedule/pid_hash.c	/^	u64 ref_cy;$/;"	m	struct:task_stats	file:
 resize	Scripts/Array.h	/^void Array<T>::resize(int nsize){$/;"	f	class:Array
 rsvd	Module/pmu.h	/^	u32 rsvd:1;$/;"	m	struct:__anon5
 sample	Module/alloc.h	/^	seeker_sampler_entry_t sample;$/;"	m	struct:log_block
@@ -525,7 +516,6 @@ state_of_cpu	Module/seeker-schedule/estimate.c	/^int state_of_cpu[NR_CPUS] = {0}
 state_of_cpu_lock	Module/seeker-schedule/estimate.c	/^rwlock_t state_of_cpu_lock;$/;"	v
 struct_int_callbacks	Module/intr.h	/^struct struct_int_callbacks{$/;"	s
 table	Module/scpufreq.h	/^	unsigned int table[MAX_STATES];$/;"	m	struct:freq_info_t
-task_stats	Module/seeker-schedule/pid_hash.c	/^struct task_stats{$/;"	s	file:
 temperature	Module/therm.c	/^int temperature[NR_CPUS] = {0};$/;"	v
 therm_exit	Module/therm.c	/^module_exit(therm_exit);$/;"	v
 therm_exit	Module/therm.c	/^static void __exit therm_exit(void)$/;"	f	file:
@@ -536,7 +526,6 @@ therm_init_msrs	Module/therm.c	/^void therm_init_msrs(void)$/;"	f
 time_stamp	Module/tsc.c	/^tstamp_t time_stamp[NR_CPUS] = {$/;"	v
 total_cycles	Module/seeker.h	/^	unsigned long long total_cycles;$/;"	m	struct:__anon11
 ts	Module/sample.c	/^struct task_struct *ts[NR_CPUS] = {NULL};$/;"	v	typeref:struct:task_struct
-ts_hash	Module/seeker-schedule/pid_hash.c	/^struct task_stats *ts_hash[HASH_SIZE] = {NULL};$/;"	v	typeref:struct:task_stats
 tsc__exit	Module/tsc.c	/^module_exit(tsc__exit);$/;"	v
 tsc__exit	Module/tsc.c	/^static void __exit tsc__exit(void)$/;"	f	file:
 tsc__init	Module/tsc.c	/^module_init(tsc__init);$/;"	v
