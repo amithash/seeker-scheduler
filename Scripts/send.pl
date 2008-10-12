@@ -36,29 +36,35 @@ my $sigterm = $signo{TERM} + 0;
 my $terminate = (defined($ARGV[0]) and $ARGV[0] eq "-t") ? 1 : 0;
 
 open PS,"ps -e | grep \"seekerd\" |";
-my @ps = split(/\s+/,<PS>);
-
-my $pid = 0;
-if(defined($ps[0])){
-	foreach my $element (@ps){
-		if($element =~ /(\d+)/){
-			$pid = $1 + 0;
-			last;
+my @list = split(/\n/,join("",<PS>));
+my @pid = (0,0);
+$i = 0;
+foreach my $entry (@list){
+	my @ps = split(/\s+/,<PS>);
+	if(defined($ps[0])){
+		foreach my $element (@ps){
+			if($element =~ /(\d+)/){
+				$pid[$i] = $1 + 0;
+				$i++;
+				last;
+			}
 		}
 	}
-}
-else{
-	print "seekerd does not seem to be executing!\n";
-	exit;
+	else{
+		print "seekerd does not seem to be executing!\n";
+		exit;
+	}
 }
 
 if($terminate == 0){
 	print "Requesting seekerd to change logs\n";
-	print "Sending Signal:$sigusr1 to pid $ps[1]\n";
-	kill $sigusr1, $pid;
+	print "Sending Signal:$sigusr1 to pid $pid[1] and $pid[0]\n";
+	kill $sigusr1, $pid[0];
+	kill $sigusr1, $pid[1];
 }
 else{
 	print "Terminating seekerd\n";
-	kill $sigterm, $pid;
+	kill $sigterm, $pid[0];
+	kill $sigterm, $pid[1];
 }
 

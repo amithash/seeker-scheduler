@@ -150,8 +150,6 @@ int main (int argc, char** argv)
 	sprintf(count_c, "%d",count);
 	strcat(outfile_name,count_c);
 
-	signal(SIGUSR1, catchSig);
-	signal(SIGTERM, catchTerm);
 
 	P_ASSERT_EXIT(infile = fopen(infile_name, "r"), infile_name);
 	if( access(outfile_name, F_OK) == 0 ) {
@@ -166,6 +164,9 @@ int main (int argc, char** argv)
 	if (pid > 0)
 		exit(EXIT_SUCCESS);
 	umask(0);
+
+	signal(SIGUSR1, catchSig);
+	signal(SIGTERM, catchTerm);
 
 	while(1) {
 		if(do_sample){
