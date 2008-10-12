@@ -159,6 +159,7 @@ int main (int argc, char** argv)
 	}
 
 	P_ASSERT_EXIT(outfile = fopen(outfile_name, "a"), outfile_name);
+
 	pid = fork();
 	if (pid < 0)
 		exit(EXIT_FAILURE);
@@ -168,6 +169,7 @@ int main (int argc, char** argv)
 
 	signal(SIGUSR1, catchSig);
 	signal(SIGTERM, catchTerm);
+
 
 	while(1) {
 		if(do_sample){

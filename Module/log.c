@@ -54,6 +54,7 @@ struct log_block *log_create(void)
 		warn("Allocation failed");
 		return NULL;
 	}
+	p->next = NULL;
 	return p;
 }
 
@@ -83,6 +84,11 @@ void delete_log(struct log_block *ent)
 void purge_log(void)
 {
 	struct log_block *c1,*c2;
+	/* First of all take the lock so no
+	 * one will try to access while the
+	 * purge is going on
+	 */
+	spin_lock(&log_lock);
 	c1 = seeker_log_head;
 	seeker_log_head = NULL;
 	seeker_log_current = NULL;
@@ -91,6 +97,7 @@ void purge_log(void)
 		delete_log(c1);
 		c1 = c2;
 	}
+	spin_unlock(&log_lock);
 }
 
 int log_read(struct file* file_ptr, 
@@ -139,9 +146,6 @@ int log_read(struct file* file_ptr,
 
 void log_finalize(void)
 {
-	/* First make sure there are not going to be any writers...
-	 * This is done by setting seeker_log_current and seeker_log_head to NULL.
-	 */
 	purge_log();
 	finalize_seeker_cache();
 }
