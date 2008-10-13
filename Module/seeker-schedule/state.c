@@ -13,7 +13,7 @@
 #include "stats.h"
 
 int max_state_possible[NR_CPUS] = {0};
-int max_state_in_system = -1;
+unsigned int max_state_in_system = -1;
 int cur_cpu_states[NR_CPUS] = {0};
 
 int get_total_states(void)
