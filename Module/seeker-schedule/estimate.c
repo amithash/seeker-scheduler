@@ -66,6 +66,8 @@ void put_mask_from_stats(struct task_struct *ts)
 
 	read_lock(&state_of_cpu_lock);
 	state = state_of_cpu[any_online_cpu(ts->cpus_allowed)];
+	read_unlock(&state_of_cpu_lock);
+
 #ifndef NOPATCH
 	if(ts->inst >= ts->ref_cy){
 #endif
@@ -124,7 +126,6 @@ void put_mask_from_stats(struct task_struct *ts)
 		}
 	}
 	cpus_or(ts->cpus_allowed,ts->cpus_allowed,mask);
-	read_unlock(&state_of_cpu_lock);
 }
 
 

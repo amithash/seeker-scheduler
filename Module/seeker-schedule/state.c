@@ -31,6 +31,11 @@ int freq_delta(int delta)
 	choose_layout(delta);	
 
 	get_state_of_cpu(cpu_state);
+	if(!cpu_state){
+		error("Could not get cpu_state... something is wrong.");
+		return -1;
+	}
+		
 	for(i=0;i<cpus;i++)
 		(*cpu_state)[i] = cur_cpu_states[i];
 	put_state_of_cpu();

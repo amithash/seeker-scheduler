@@ -93,7 +93,7 @@ static int __init scheduler_init(void)
 	int probe_ret;
 
 	init_system();
-	seeker_set_callback(inst___switch_to);
+	seeker_set_callback(&inst___switch_to);
 	if(unlikely((probe_ret = register_jprobe(&jp_sched_fork)))){
 		error("Could not find sched_fork to probe, returned %d",probe_ret);
 		return -ENOSYS;
