@@ -37,14 +37,11 @@
 #include "state.h"
 #include "estimate.h"
 #include "quanta.h"
+#include "../callback.h"
 
 extern int hint[MAX_STATES];
 void inst___switch_to(struct task_struct *from, struct task_struct *to);
 void inst_sched_fork(struct task_struct *new, int clone_flags);
-struct jprobe jp___switch_to = {
-	.entry = (kprobe_opcode_t *)inst___switch_to,
-	.kp.symbol_name = "__switch_to",
-};
 
 struct jprobe jp_sched_fork = {
 	.entry = (kprobe_opcode_t *)inst_sched_fork,
@@ -88,17 +85,14 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 {
 	put_mask_from_stats(from);
 	debug("Task switching from %s to %s",from->comm,to->comm);
-	jprobe_return();
 }
 
 static int __init scheduler_init(void)
 {
 #ifdef SEEKER_PLUGIN_PATCH
 	int probe_ret;
-	if(unlikely((probe_ret = register_jprobe(&jp___switch_to)))){
-		error("Could not find __switch_to to probe, returned %d",probe_ret);
-		return -ENOSYS;
-	}
+
+	seeker_set_callback(inst___switch_to);
 	if(unlikely((probe_ret = register_jprobe(&jp_sched_fork)))){
 		error("Could not find sched_fork to probe, returned %d",probe_ret);
 		return -ENOSYS;
@@ -114,7 +108,7 @@ static int __init scheduler_init(void)
 
 static void __exit scheduler_exit(void)
 {
-	unregister_jprobe(&jp___switch_to);
+	seeker_clear_callback();
 	unregister_jprobe(&jp_sched_fork);
 	destroy_timer();
 }

@@ -24,6 +24,7 @@
  *****************************************************/
 #include <linux/kernel.h>
 #include <linux/init.h>
+#include <linux/module.h>
 #include <linux/kprobes.h>
 #include <linux/version.h>
 #include <linux/sched.h>
@@ -34,6 +35,7 @@
 #include "probe.h"
 #include "intr.h"
 #include "sample.h"
+#include "callback.h"
 
 
 /* Now, now, now, let me explain what exactly happened for you to realize what 
@@ -47,6 +49,7 @@
 #define SCHED_EXIT_EXISTS 1
 #endif
 
+switch_to_callback_t extern_callback;
 
 extern int dev_open;
 extern pid_t cpu_pid[NR_CPUS];
@@ -158,7 +161,22 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	int cpu = smp_processor_id();
 	cpu_pid[cpu] = to->pid;
 	ts[cpu] = to;
+	if(extern_callback)
+		extern_callback(from,to);
 	jprobe_return();
 }
+
+
+void seeker_set_callback(switch_to_callback_t callback)
+{
+	extern_callback = callback;
+}
+EXPORT_SYMBOL_GPL(seeker_set_callback);
+
+void seeker_clear_callback(void)
+{
+	extern_callback = NULL;
+}
+EXPORT_SYMBOL_GPL(seeker_clear_callback);
 
 
