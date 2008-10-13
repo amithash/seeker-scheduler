@@ -33,7 +33,7 @@
 
 struct log_block *seeker_log_head;
 struct log_block *seeker_log_current;
-static spinlock_t log_lock;
+static spinlock_t log_lock = SPIN_LOCK_UNLOCKED;
 static int first_read = 1;
 
 void log_init(void)
