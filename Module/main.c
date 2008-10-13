@@ -137,7 +137,7 @@ static int __init seeker_sampler_init(void)
 	if(NUM_FIXED_COUNTERS == 0){
 		warn("Please note that the first 3 counters MUST BE retired instructions,real cycles, ref cycles");
 	}
-	if(NUM_FIXED_COUNTERS == 0 && log_num_events <= 0){
+	if(NUM_FIXED_COUNTERS == 0 && log_num_events <= 3){
 		error("You need to configure at least the first 3 counters. Refer the warning above");
 		return -ENOTSUPP;
 	}
