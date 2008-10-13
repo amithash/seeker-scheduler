@@ -3,6 +3,7 @@
 #include <linux/module.h>
 #include <linux/cpumask.h>
 #include <linux/sched.h>
+#include <linux/spinlock.h>
 #include "../../Module/scpufreq.h"
 #include "hint.h"
 #ifndef SEEKER_PLUGIN_PATCH
@@ -62,6 +63,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	/* XXX FIXME
 	 * Find out what to use... cy_re or cy_ref 
 	 */
+
 	read_lock(&state_of_cpu_lock);
 	state = state_of_cpu[any_online_cpu(ts->cpus_allowed)];
 #ifndef NOPATCH
