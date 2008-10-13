@@ -26,7 +26,7 @@ int freq_delta(int delta)
 {
 	int i;
 	int cpus = num_online_cpus();
-	warn("total online cpus = %d",cpus);	
+	debug("total online cpus = %d",cpus);	
 
 	choose_layout(delta);	
 
