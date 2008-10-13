@@ -27,10 +27,9 @@ void init_system(void)
 /* freq_state module MUST Call this
  * to get the state of cpu ds
  */
-void get_state_of_cpu(int **state)
+void get_state_of_cpu(void)
 {
 //	write_lock(&state_of_cpu_lock);
-	*state = state_of_cpu;
 }
 EXPORT_SYMBOL_GPL(get_state_of_cpu);
 
