@@ -18,7 +18,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
 #*************************************************************************
 ifndef ARCA
+ARCA := $(shell cat /proc/cpuinfo | grep AMD | wc -l)
+ifeq ($(ARCA), 1)
+ARCA := K10
+else
+ARCA := $(shell cat /proc/cpuinfo | grep -i Intel | wc -l)
+ifeq ($(ARCA), 1)
 ARCA := C2D
+else 
+ARCA := C2D
+endif
+endif
+#ARCA := C2D
 endif
 
 ifndef CPUS

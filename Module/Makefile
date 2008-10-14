@@ -26,13 +26,13 @@ ifneq ($(KERNELRELEASE),)
 
 
 obj-m += seeker-schedule.o seeker-sampler.o pmu.o fpmu.o tsc.o therm.o scpufreq.o power.o
-seeker-sampler-objs += alloc.o   \
-		       log.o     \
-		       probe.o   \
-		       sample.o  \
-		       io.o      \
-		       intr.o    \
-		       main.o
+seeker-sampler-objs += seeker-sampler/alloc.o   \
+		       seeker-sampler/log.o     \
+		       seeker-sampler/probe.o   \
+		       seeker-sampler/sample.o  \
+		       seeker-sampler/io.o      \
+		       seeker-sampler/intr.o    \
+		       seeker-sampler/main.o
 
 seeker-schedule-objs += seeker-schedule/main.o    \
 		       seeker-schedule/estimate.o \

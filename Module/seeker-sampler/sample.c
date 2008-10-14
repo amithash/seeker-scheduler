@@ -37,7 +37,6 @@
 #include "alloc.h"
 #include "log.h"
 #include "exit.h"
-#include "seeker-schedule/stats.h"
 
 /* Define the default max instructions before schedule
  * to be 1 million instructions
