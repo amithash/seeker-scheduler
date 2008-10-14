@@ -6,9 +6,6 @@
 #include <linux/spinlock.h>
 #include "../../Module/scpufreq.h"
 #include "hint.h"
-#ifndef SEEKER_PLUGIN_PATCH
-#define NOPATCH
-#endif
 
 int state_of_cpu[NR_CPUS] = {0};
 
@@ -46,6 +43,7 @@ void put_mask_from_stats(struct task_struct *ts)
 {
 	unsigned int pot_states[NR_CPUS];
 	int cpus = num_online_cpus();
+	int cpu = smp_processor_id();
 	cpumask_t mask,tmp_mask;
 	int state = 0;
 	int new_state = 0;
@@ -64,26 +62,26 @@ void put_mask_from_stats(struct task_struct *ts)
 	 */
 
 	read_lock(&state_of_cpu_lock);
-	state = state_of_cpu[any_online_cpu(ts->cpus_allowed)];
+	state = state_of_cpu[cpu];
 	read_unlock(&state_of_cpu_lock);
 
-#ifndef NOPATCH
+#ifdef SEEKER_PLUGIN_PATCH
 	if(ts->inst >= ts->ref_cy){
 #endif
 		new_state = state + 1;
 		if(new_state >= MAX_STATES)
 			new_state--;
-#ifndef NOPATCH
+#ifdef SEEKER_PLUGIN_PATCH
 	}
 #endif
 
-#ifndef NOPATCH
+#ifdef SEEKER_PLUGIN_PATCH
 	if(ts->inst <= (ts->ref_cy >> 1)){
 #endif
 		new_state = state - 1;
 		if(new_state < 0)
 			new_state = 0;
-#ifndef NOPATCH
+#ifdef SEEKER_PLUGIN_PATCH
 	}
 #endif
 	
@@ -94,6 +92,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	if(new_state == state)
 		return;
 
+	/* Update hint */
 	hint_dec(state);
 	hint_inc(new_state);
 
@@ -106,9 +105,9 @@ void put_mask_from_stats(struct task_struct *ts)
 			cpus_or(mask,mask,tmp_mask);
 	}
 	/* Targetted cpus with such a state exists */
-	cpus_clear(ts->cpus_allowed);
 
 	if(!cpus_empty(mask)){
+		cpus_clear(ts->cpus_allowed);
 		cpus_or(ts->cpus_allowed,ts->cpus_allowed,mask);
 		return;
 	}
@@ -124,7 +123,17 @@ void put_mask_from_stats(struct task_struct *ts)
 			cpus_or(mask,mask,tmp_mask);
 		}
 	}
-	cpus_or(ts->cpus_allowed,ts->cpus_allowed,mask);
+	if(!cpus_empty(mask)){
+		cpus_clear(ts->cpus_allowed);
+		cpus_or(ts->cpus_allowed,ts->cpus_allowed,mask);
+		return;
+	}
+	/* If mask is sill empty, Leave the cpus_allowed
+	 * allowed. This will never happen, but even if it
+	 * does at worst, the processes does not benifit from
+	 * the dynamic scheduling, rather than make it processor
+	 * -less
+	 */
 }
 
 

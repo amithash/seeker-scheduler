@@ -40,13 +40,13 @@ EXPORT_SYMBOL_GPL(hint_count);
 
 void hint_inc(int state)
 {
-	hint[state]++;
+	atomic_inc((void *)&(hint[state]));
 }
 EXPORT_SYMBOL_GPL(hint_inc);
 
 void hint_dec(int state)
 {
-	hint[state]--;
+	atomic_dec((void *)&(hint[state]));
 }
 EXPORT_SYMBOL_GPL(hint_dec);
 
