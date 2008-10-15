@@ -2,7 +2,7 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include "../seeker.h"
-#include "../scpufreq.h"
+#include "scpufreq.h"
 #include "hint.h"
 
 #define ABS(i) ((i) >= 0 ? (i) : (-1*(i)))

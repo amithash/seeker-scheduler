@@ -4,7 +4,7 @@
 #include <linux/cpumask.h>
 #include <linux/sched.h>
 #include <linux/spinlock.h>
-#include "../../Module/scpufreq.h"
+#include "scpufreq.h"
 #include "hint.h"
 
 int state_of_cpu[NR_CPUS] = {0};

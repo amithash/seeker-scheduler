@@ -25,7 +25,15 @@ endif
 ifneq ($(KERNELRELEASE),)
 
 
-obj-m += seeker-schedule.o seeker-sampler.o pmu.o fpmu.o tsc.o therm.o scpufreq.o power.o
+obj-m += seeker-scheduler.o           \
+	 seeker-sampler.o             \
+	 seeker-sampler/pmu.o         \
+	 seeker-sampler/fpmu.o        \
+	 seeker-sampler/tsc.o         \
+	 seeker-sampler/therm.o       \
+	 seeker-scheduler/scpufreq.o  \
+	 seeker-sampler/power.o
+
 seeker-sampler-objs += seeker-sampler/alloc.o   \
 		       seeker-sampler/log.o     \
 		       seeker-sampler/probe.o   \
@@ -34,13 +42,13 @@ seeker-sampler-objs += seeker-sampler/alloc.o   \
 		       seeker-sampler/intr.o    \
 		       seeker-sampler/main.o
 
-seeker-schedule-objs += seeker-schedule/main.o    \
-		       seeker-schedule/estimate.o \
-		       seeker-schedule/compute.o  \
-		       seeker-schedule/hint.o     \
-		       seeker-schedule/quanta.o   \
-		       seeker-schedule/state.o    \
-		       seeker-schedule/stats.o
+seeker-scheduler-objs += seeker-scheduler/main.o    \
+		       seeker-scheduler/estimate.o \
+		       seeker-scheduler/compute.o  \
+		       seeker-scheduler/hint.o     \
+		       seeker-scheduler/quanta.o   \
+		       seeker-scheduler/state.o    \
+		       seeker-scheduler/stats.o
 
 else
 KDIR    := /lib/modules/$(shell uname -r)/build
@@ -66,6 +74,6 @@ clean:
 	rm -f ../Build/scpufreq.ko
 	rm -f ../Build/power.ko
 	rm -f ../Build/seeker-sampler.ko
-	rm -f ../Build/seeker-schedule.ko
+	rm -f ../Build/seeker-scheduler.ko
 	
 endif

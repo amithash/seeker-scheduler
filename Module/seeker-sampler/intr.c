@@ -30,7 +30,7 @@
 #include <asm/hw_irq.h>
 #include <linux/timer.h>
 
-#include "seeker.h"
+#include "../seeker.h"
 #include "intr.h"
 #include "sample.h"
 

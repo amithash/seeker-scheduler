@@ -26,7 +26,7 @@
 #include <linux/list.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
-#include "seeker.h"
+#include "../seeker.h"
 #include "alloc.h"
 #include "log.h"
 

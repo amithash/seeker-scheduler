@@ -3,7 +3,7 @@
 #include <linux/init.h>
 #include <linux/ipmi.h>
 
-#include "seeker.h"
+#include "../seeker.h"
 #include "power.h"
 
 MODULE_LICENSE("GPL");

@@ -27,7 +27,7 @@
 #define _TSC_H_
 
 #include <asm/types.h>
-#include "tsc_public.h"
+#include "../tsc_public.h"
 
 /********** MSR's ************************************************************/
 #if defined(ARCH_C2D) || defined(ARCH_K8) || defined(ARCH_K10)

@@ -28,7 +28,7 @@
 #define _THERM_H_
 
 #include <asm/types.h>
-#include "therm_public.h"
+#include "../therm_public.h"
 
 /********** Constants ********************************************************/
 #if defined(ARCH_C2D)

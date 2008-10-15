@@ -31,7 +31,7 @@
 #include <linux/interrupt.h>
 
 #include "../seeker.h"
-#include "../scpufreq.h"
+#include "scpufreq.h"
 #include "hint.h"
 #include "stats.h"
 #include "state.h"

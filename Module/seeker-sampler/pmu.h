@@ -28,7 +28,7 @@
 #define _PMU_H_
 
 #include <asm/types.h>
-#include "pmu_public.h"
+#include "../pmu_public.h"
 
 /********** Constants ********************************************************/
 #if defined(ARCH_C2D)

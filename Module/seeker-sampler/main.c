@@ -32,7 +32,7 @@
 #include <linux/fs.h>
 #include <asm/hw_irq.h>
 
-#include "seeker.h"
+#include "../seeker.h"
 #include "intr.h"
 #include "io.h"
 #include "probe.h"

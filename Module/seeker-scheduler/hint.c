@@ -2,7 +2,7 @@
 #include <linux/init.h>
 #include <linux/module.h>
 
-#include "../scpufreq.h"
+#include "scpufreq.h"
 #include "hint.h"
 
 

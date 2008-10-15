@@ -4,7 +4,7 @@
 
 
 #include "state.h"
-#include "../scpufreq.h"
+#include "scpufreq.h"
 #include "../seeker.h"
 
 #include "hint.h"
