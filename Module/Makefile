@@ -27,12 +27,12 @@ ifneq ($(KERNELRELEASE),)
 
 obj-m += seeker-scheduler.o           	\
 	 seeker-sampler.o             	\
-	 arch/pmu.o         		\
-	 arch/fpmu.o        		\
-	 arch/tsc.o         		\
-	 arch/therm.o       		\
-	 seeker-scheduler/scpufreq.o  	\
-	 seeker-sampler/power.o
+	 pmu/pmu.o         		\
+	 fpmu/fpmu.o        		\
+	 tsc/tsc.o         		\
+	 therm/therm.o       		\
+	 scpufreq/scpufreq.o  		\
+	 power/power.o
 
 seeker-sampler-objs += seeker-sampler/alloc.o   \
 		       seeker-sampler/log.o     \
@@ -52,7 +52,14 @@ seeker-scheduler-objs += seeker-scheduler/main.o    \
 else
 KDIR    := /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)
-INCLUDE_DIRS := -I$(PWD)/include -I$(PWD)/arch
+INCLUDE_DIRS := -I$(PWD)/include	\
+		-I$(PWD)/pmu		\
+		-I$(PWD)/fpmu		\
+		-I$(PWD)/tsc		\
+		-I$(PWD)/therm		\
+		-I$(PWD)/scpufreq	\
+		-I$(PWD)/power
+
 ifndef DEBUG
 MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall
 else

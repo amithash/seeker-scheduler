@@ -31,11 +31,11 @@
 #include <asm/hw_irq.h>
 
 #include <seeker.h>
+#include <callback.h>
 
 #include "probe.h"
 #include "intr.h"
 #include "sample.h"
-#include "callback.h"
 
 
 /* Now, now, now, let me explain what exactly happened for you to realize what 
