@@ -107,12 +107,13 @@ void choose_layout(int dt)
 	 * the remaining delta.
 	 */
 	for(j=0;j<count;j++){
+		if(cpus_in_state[j] == 0)
+			continue;
+
 		for(i=0;i<cpus;i++){
 			if(req_cpus == 0 || delta == 0)
 				return;
 	
-			if(cpus_in_state[j] == 0)
-				continue;
 			if(cpus_bitmask[i])
 				continue;
 

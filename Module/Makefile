@@ -58,7 +58,6 @@ INCLUDE_DIRS := -I$(PWD)/include	\
 		-I$(PWD)/tsc		\
 		-I$(PWD)/therm		\
 		-I$(PWD)/scpufreq	\
-		-I$(PWD)/power
 
 ifndef DEBUG
 MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall

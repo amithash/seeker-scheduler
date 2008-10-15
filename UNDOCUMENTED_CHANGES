@@ -5,8 +5,9 @@ will be added when the revamp is over.
 Currently, the following are the basic changes going on:
 
 1. No Modules/c2d Modules/k8
-2. <arch><mod> is now just <mod> and present in Module/ and seperations
-   are in codes with #if defined(ARCH_<arch>) -- Removing duplicated code.
+2. <arch><mod> is now just <mod> and present in Module/ in their own directories
+   and seperations are in codes with #if defined(ARCH_<arch>) -- 
+   Removing duplicated code.
 3. Added scpufreq an interface to cpufreq.
 4. no Module/seeker-sampler-src.c This has split into a lot of pieces 
    into objs which do one thing (io, inter, probe etc). 

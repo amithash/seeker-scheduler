@@ -26,7 +26,7 @@ void init_system(void)
  */
 void get_state_of_cpu(void)
 {
-//	write_lock(&state_of_cpu_lock);
+	write_lock(&state_of_cpu_lock);
 }
 EXPORT_SYMBOL_GPL(get_state_of_cpu);
 
@@ -35,7 +35,7 @@ EXPORT_SYMBOL_GPL(get_state_of_cpu);
  */
 void put_state_of_cpu(void)
 {
-//	write_unlock(&state_of_cpu_lock);
+	write_unlock(&state_of_cpu_lock);
 }
 EXPORT_SYMBOL_GPL(put_state_of_cpu);
 
