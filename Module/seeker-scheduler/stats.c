@@ -5,12 +5,9 @@
 #include <linux/sched.h>
 #include <asm/types.h>
 
-#include "../../Module/seeker.h"
-#include "stats.h"
+#include <seeker.h>
 
-#ifndef SEEKER_PLUGIN_PATCH
-#define NOPATCH
-#endif
+#include "stats.h"
 
 u64 interval_count = 0;
 
@@ -20,7 +17,7 @@ void update_stats(struct task_struct *t,
 		 u64 re_cy,
 		 u64 ref_cy)
 {
-#ifndef NOPATCH
+#ifdef SEEKER_PLUGIN_PATCH
 	if(t->interval == interval_count){
 		t->inst   += inst;
 		t->re_cy  += re_cy;
@@ -38,7 +35,7 @@ EXPORT_SYMBOL_GPL(update_stats);
 
 void init_stats(struct task_struct *t)
 {
-#ifndef NOPATCH
+#ifdef SEEKER_PLUGIN_PATCH
 	t->interval = interval_count;
 	t->inst    = 0;
 	t->re_cy   = 0;

@@ -28,7 +28,7 @@
 #define _FPMU_H_
 
 #include <asm/types.h>
-#include "../fpmu_public.h"
+#include <fpmu_public.h>
 
 /********** Constants ********************************************************/
 #ifdef ARCH_C2D

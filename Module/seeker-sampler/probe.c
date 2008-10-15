@@ -28,10 +28,10 @@
 #include <linux/kprobes.h>
 #include <linux/version.h>
 #include <linux/sched.h>
-
 #include <asm/hw_irq.h>
 
-#include "seeker.h"
+#include <seeker.h>
+
 #include "probe.h"
 #include "intr.h"
 #include "sample.h"

@@ -9,7 +9,8 @@
 #include <linux/module.h>
 #include <linux/fs.h>
 
-#include "../seeker.h"
+#include <seeker.h>
+
 #include "debug.h"
 
 static struct file_operations seeker_debug_fops;

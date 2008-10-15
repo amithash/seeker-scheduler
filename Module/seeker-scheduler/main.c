@@ -30,14 +30,15 @@
 #include <linux/sched.h>
 #include <linux/interrupt.h>
 
-#include "../seeker.h"
+#include <seeker.h>
+#include <callback.h>
+
 #include "scpufreq.h"
 #include "hint.h"
 #include "stats.h"
 #include "state.h"
 #include "estimate.h"
 #include "quanta.h"
-#include "../callback.h"
 
 extern int hint[MAX_STATES];
 void inst___switch_to(struct task_struct *from, struct task_struct *to);

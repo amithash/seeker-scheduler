@@ -2,15 +2,15 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 
+#include <seeker.h>
 
 #include "state.h"
 #include "scpufreq.h"
-#include "../seeker.h"
-
 #include "hint.h"
 #include "estimate.h"
 #include "compute.h"
 #include "stats.h"
+
 extern int state_of_cpu[NR_CPUS];
 int max_state_possible[NR_CPUS] = {0};
 unsigned int max_state_in_system = -1;

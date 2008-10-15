@@ -25,13 +25,13 @@ endif
 ifneq ($(KERNELRELEASE),)
 
 
-obj-m += seeker-scheduler.o           \
-	 seeker-sampler.o             \
-	 seeker-sampler/pmu.o         \
-	 seeker-sampler/fpmu.o        \
-	 seeker-sampler/tsc.o         \
-	 seeker-sampler/therm.o       \
-	 seeker-scheduler/scpufreq.o  \
+obj-m += seeker-scheduler.o           	\
+	 seeker-sampler.o             	\
+	 arch/pmu.o         		\
+	 arch/fpmu.o        		\
+	 arch/tsc.o         		\
+	 arch/therm.o       		\
+	 seeker-scheduler/scpufreq.o  	\
 	 seeker-sampler/power.o
 
 seeker-sampler-objs += seeker-sampler/alloc.o   \
@@ -49,14 +49,14 @@ seeker-scheduler-objs += seeker-scheduler/main.o    \
 		       seeker-scheduler/quanta.o   \
 		       seeker-scheduler/state.o    \
 		       seeker-scheduler/stats.o
-
 else
 KDIR    := /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)
+INCLUDE_DIRS := -I$(PWD)/include -I$(PWD)/arch
 ifndef DEBUG
-MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA) -Wall
+MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall
 else
-MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA) -DDEBUG
+MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA) $(INCLUDE_DIRS) -DDEBUG
 endif
 
 default:

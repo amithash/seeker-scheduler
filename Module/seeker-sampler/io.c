@@ -27,7 +27,7 @@
 #include <linux/module.h>
 #include <linux/fs.h>
 
-#include "../seeker.h"
+#include <seeker.h>
 
 #include "alloc.h"
 #include "log.h"

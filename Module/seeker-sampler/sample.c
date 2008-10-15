@@ -28,11 +28,12 @@
 #include <linux/types.h>
 #include <linux/sched.h>
 
-#include "seeker.h"
-#include "pmu.h"
-#include "fpmu.h"
-#include "therm.h"
-#include "tsc.h"
+#include <seeker.h>
+#include <pmu.h>
+#include <fpmu.h>
+#include <therm.h>
+#include <tsc.h>
+
 #include "sample.h"
 #include "alloc.h"
 #include "log.h"

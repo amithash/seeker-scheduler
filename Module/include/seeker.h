@@ -25,10 +25,10 @@
 #ifndef _SEEKER_SAMPLER_H_
 #define _SEEKER_SAMPLER_H_
 
-#include "pmu_public.h"
-#include "fpmu_public.h"
-#include "tsc_public.h"
-#include "therm_public.h"
+#include <pmu_public.h>
+#include <fpmu_public.h>
+#include <tsc_public.h>
+#include <therm_public.h>
 
 #define NUM_EXTRA_COUNTERS THERM_SUPPORTED
 

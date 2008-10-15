@@ -27,7 +27,9 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/spinlock.h>
-#include "../seeker.h"
+
+#include <seeker.h>
+
 #include "alloc.h"
 #include "log.h"
 

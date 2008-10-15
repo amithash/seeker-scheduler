@@ -28,7 +28,9 @@
 #include <linux/cpufreq.h>
 #include <asm/types.h>
 #include <linux/moduleparam.h>
-#include "../seeker.h"
+
+#include <seeker.h>
+
 #include "scpufreq.h"
 
 unsigned int freqs[NR_CPUS];

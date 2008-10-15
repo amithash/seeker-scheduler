@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <signal.h>
 
-#include "../Module/seeker.h"
+#include <seeker.h>
 
 
 int

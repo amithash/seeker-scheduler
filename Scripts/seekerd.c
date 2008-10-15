@@ -30,7 +30,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-#include "../Module/seeker.h"
+#include <seeker.h>
 
 
 #define P_ASSERT_EXIT(t,i) if(!(t)) {perror((i)); exit(EXIT_FAILURE);}

@@ -32,7 +32,10 @@
 #include <linux/fs.h>
 #include <asm/hw_irq.h>
 
-#include "../seeker.h"
+#include <seeker.h>
+#include <pmu.h>
+#include <fpmu.h>
+
 #include "intr.h"
 #include "io.h"
 #include "probe.h"
@@ -41,8 +44,6 @@
 #include "log.h"
 #include "exit.h"
 
-#include "pmu.h"
-#include "fpmu.h"
 
 
 #define SEEKER_SAMPLE_MINOR 240

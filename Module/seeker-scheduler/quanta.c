@@ -2,7 +2,9 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/timer.h>
-#include "../seeker.h"
+
+#include <seeker.h>
+
 #include "quanta.h"
 #include "state.h"
 
