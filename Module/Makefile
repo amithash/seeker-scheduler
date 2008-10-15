@@ -74,5 +74,6 @@ clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
 	rm -f Module.symvers modules.order Module.markers
 	rm -f ../Build/*.ko
+	rm -f ../Build/.*.ko*
 	
 endif
