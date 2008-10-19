@@ -125,8 +125,9 @@ EXPORT_SYMBOL_GPL(fpmu_enable_interrupt);
 
 int fpmu_disable_interrupt(int ctr)
 {
-	int cpu = smp_processor_id();
 	int ret = 0;
+#if NUM_FIXED_COUNTERS > 0
+	int cpu = smp_processor_id();
 	if(likely(ctr < NUM_FIXED_COUNTERS)){
 		fcleared[cpu][ctr].low = 0;
 		fcleared[cpu][ctr].high = 0;
@@ -152,14 +153,16 @@ int fpmu_disable_interrupt(int ctr)
 	if(likely(ret != -1)){
 		control_write();
 	}
+#endif
 	return ret;
 }       
 EXPORT_SYMBOL_GPL(fpmu_disable_interrupt);
 
 int fpmu_is_interrupt(int ctr)
 {
-	u32 low,high;
 	u32 ret = 0;
+#if NUM_FIXED_COUNTERS > 0
+	u32 low,high;
 	rdmsr(MSR_PERF_GLOBAL_STATUS,low,high);
 	switch(ctr){
 		case 0:
@@ -175,6 +178,7 @@ int fpmu_is_interrupt(int ctr)
 			ret = 0;
 			break;
 	}
+#endif
 	return ret;
 }
 EXPORT_SYMBOL_GPL(fpmu_is_interrupt);
@@ -182,8 +186,9 @@ EXPORT_SYMBOL_GPL(fpmu_is_interrupt);
 
 int fpmu_clear_ovf_status(int ctr)
 {
-	u32 low,high;
 	int ret = 0;
+#if NUM_FIXED_COUNTERS > 0
+	u32 low,high;
 	rdmsr(MSR_PERF_GLOBAL_OVF_CTRL,low,high);
 	switch(ctr){
 		case 0:
@@ -202,6 +207,7 @@ int fpmu_clear_ovf_status(int ctr)
 	if(likely(ret != -1)){
 		wrmsr(MSR_PERF_GLOBAL_OVF_CTRL,low,high);
 	}
+#endif
 	return ret;
 }
 EXPORT_SYMBOL_GPL(fpmu_clear_ovf_status);

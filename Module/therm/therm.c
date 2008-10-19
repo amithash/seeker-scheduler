@@ -71,7 +71,9 @@ EXPORT_SYMBOL_GPL(get_temp);
 void therm_init_msrs(void)
 {
 	#ifdef THERM_SUPPORTED
+#ifdef ARCH_C2D
 	u32 low,high;
+#endif
 	int cpu = smp_processor_id();
 	temperature[cpu] = 0;
 	

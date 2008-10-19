@@ -51,7 +51,7 @@ void choose_layout(int dt)
 	/* Total Hint */
 	for(i=0;i<count;i++){
 		total += hint[i];
-		debug("Interval: %ld, HINT[%d] = %d",interval_count,i,hint[i]);
+		debug("Interval: %lld, HINT[%d] = %d",interval_count,i,hint[i]);
 	}
 	for(i=0;i<cpus;i++)
 		load += weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0;
@@ -86,7 +86,7 @@ void choose_layout(int dt)
 	if(req_cpus <= 0)
 		return;
 
-	debug("Interval %d: STAGE 2 Reached",interval_count);
+	debug("Interval %lld: STAGE 2 Reached",interval_count);
 
 	/* --- Stage 2: Demand and supply --- */
 	/* Demand = total delta required. XXX
