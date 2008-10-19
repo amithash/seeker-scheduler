@@ -1,6 +1,7 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/module.h>
+#include <linux/sched.h>
 
 #include <seeker.h>
 
@@ -13,21 +14,15 @@
 extern int max_allowed_states[NR_CPUS];
 extern int cur_cpu_states[NR_CPUS];
 
-inline int procs(int hints,int total, int proc);
+inline int procs(int hints,int total, int proc, int total_load);
 
-inline int procs(int hints,int total, int proc)
+inline int procs(int hints,int total, int proc, int total_load)
 {
-	int i;
-	int hp = hints * proc;
 	if(hints == 0)
 		return 0;
 	if(hints == total)
-		return proc;
-	for(i=1;i<proc;i++){
-		if((hp <= i*total) && (hp > (i-1)*total))
-			break;
-	}
-	return i;
+		return total_load;
+	return (hints * total) / total;
 }
 
 void choose_layout(int dt)
@@ -41,6 +36,7 @@ void choose_layout(int dt)
 	short cpus_bitmask[NR_CPUS]={0};
 	int req_cpus = 0;
 	int delta = dt;
+	int load = 0;
 
 	/* RAM is not a problem, cpu cycles are.
 	 * so use actual values here rather than
@@ -48,15 +44,18 @@ void choose_layout(int dt)
 	 */
 	increment_interval();
 	cpus = num_online_cpus();
-	count = get_hint(hint);
+	count = get_total_states();
 	req_cpus = cpus;
 
 	/* Total Hint */
 	for(i=0;i<count;i++)
 		total += hint[i];
+	for(i=0;i<cpus;i++)
+		load += weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0;
+
 	/* Num of cpus required for this state */
 	for(j=0;j<count;j++){
-		cpus_in_state[j] = procs(hint[j],total,cpus);
+		cpus_in_state[j] = procs(hint[j],total,cpus,load);
 		debug("required cpus for state %d = %d",j,cpus_in_state[j]);
 	}
 	
