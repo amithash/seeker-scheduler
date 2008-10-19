@@ -57,6 +57,8 @@ typedef struct {
 		debug_scheduler_t sch;
 		debug_mutator_t mut;
 	}u;
+} debug_t;
+
 
 typedef struct {
 	unsigned char num_counters;

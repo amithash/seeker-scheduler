@@ -25,11 +25,11 @@ CXX = g++
 ifndef ARCA
 ARCA := C2D
 endif
-INCLUDE := $(shell pwd)/../Module/include
+INCLUDE := -I$(shell pwd)/../Module/include -I$(shell pwd)/../Module/scpufreq
 
 all:
-	${CC} ${CFLAGS} seekerd.c -o seekerd -DARCH_$(ARCA) -I$(INCLUDE) -DNR_CPUS=$(CPUS)
-	${CC} ${CFLAGS} decodelog.c -o decodelog -DARCH_$(ARCA) -I$(INCLUDE) -DNR_CPUS=$(CPUS)
+	${CC} ${CFLAGS} seekerd.c -o seekerd -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS)
+	${CC} ${CFLAGS} decodelog.c -o decodelog -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS)
 	${CXX} ${CFLAGS} interp.C -o interp
 	${CXX} ${CFLAGS} maxmin.C -o maxmin
 	${CXX} ${CFLAGS} smooth.C -o smooth

@@ -1,4 +1,8 @@
 
+#ifndef __SCPUFREQ_H_
+#define __SCPUFREQ_H_
+
+
 #define MAX_STATES 16
 
 struct freq_info_t{
@@ -15,3 +19,4 @@ int dec_freq(unsigned int cpu);
 int get_total_states(void);
 int get_max_states(int cpu);
 
+#endif
