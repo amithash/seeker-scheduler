@@ -4,6 +4,9 @@
 #include <linux/cpumask.h>
 #include <linux/sched.h>
 #include <linux/spinlock.h>
+
+#include <seeker.h>
+
 #include "scpufreq.h"
 #include "hint.h"
 
@@ -101,8 +104,10 @@ void put_mask_from_stats(struct task_struct *ts)
 	 * just continue 
 	 */
 
-	if(new_state == state)
+	if(new_state == state){
+		debug("PID %d prefers what it has",ts->pid);
 		return;
+	}
 
 	/* Update hint */
 	hint_dec(state);
@@ -121,6 +126,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	if(!cpus_empty(mask)){
 		cpus_clear(ts->cpus_allowed);
 		cpus_or(ts->cpus_allowed,ts->cpus_allowed,mask);
+		debug("PID %d, cpumask %d",ts->pid,(unsigned int)ts->cpus_allowed);
 		return;
 	}
 
@@ -138,8 +144,10 @@ void put_mask_from_stats(struct task_struct *ts)
 	if(!cpus_empty(mask)){
 		cpus_clear(ts->cpus_allowed);
 		cpus_or(ts->cpus_allowed,ts->cpus_allowed,mask);
+		debug("PID %d, cpumask %d",ts->pid,(unsigned int)ts->cpus_allowed);
 		return;
 	}
+	debug("PID %d, cpumask %d (Unchanged)",ts->pid,(unsigned int)ts->cpus_allowed);
 	/* If mask is sill empty, Leave the cpus_allowed
 	 * allowed. This will never happen, but even if it
 	 * does at worst, the processes does not benifit from

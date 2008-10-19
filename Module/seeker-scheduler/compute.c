@@ -13,6 +13,7 @@
 
 extern int max_allowed_states[NR_CPUS];
 extern int cur_cpu_states[NR_CPUS];
+extern u64 interval_count;
 
 inline int procs(int hints,int total, int proc, int total_load);
 
@@ -45,24 +46,35 @@ void choose_layout(int dt)
 	increment_interval();
 	cpus = num_online_cpus();
 	count = get_total_states();
-	req_cpus = cpus;
+	req_cpus = 0;
 
 	/* Total Hint */
-	for(i=0;i<count;i++)
+	for(i=0;i<count;i++){
 		total += hint[i];
+		debug("Interval: %ld, HINT[%d] = %d",interval_count,i,hint[i]);
+	}
 	for(i=0;i<cpus;i++)
 		load += weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0;
 
-	/* Num of cpus required for this state */
+	/* Num of cpus required for this state 
+	 * SUM(cpus_in_state[]) could be < cpus. 
+	 * Make sure to bring down their states. */
 	for(j=0;j<count;j++){
-		cpus_in_state[j] = procs(hint[j],total,cpus,load);
+		req_cpus += cpus_in_state[j] = procs(hint[j],total,cpus,load);
 		debug("required cpus for state %d = %d",j,cpus_in_state[j]);
 	}
+
+	debug("req_cpus=%d\n",req_cpus);
+	if(req_cpus > cpus)
+		req_cpus = cpus;
+
+	/* --- STAGE 1 --- */
 	
 	/* For each cpu. Check if it can
 	 * get away with the state it is
 	 * in 
 	 */
+
 	for(i=0;i<cpus;i++){
 		if(cpus_in_state[cur_cpu_states[i]] > 0){
 			cpus_bitmask[i] = 1;
@@ -71,8 +83,16 @@ void choose_layout(int dt)
 		}
 	}
 
-	if(req_cpus == 0)
+	if(req_cpus <= 0)
 		return;
+
+	debug("Interval %d: STAGE 2 Reached",interval_count);
+
+	/* --- Stage 2: Demand and supply --- */
+	/* Demand = total delta required. XXX
+	 * Supply = delta
+	 * cash   = XXX
+	 */
 
 	for(i=0;i<cpus;i++){
 		if(req_cpus == 0 || delta == 0)
@@ -107,6 +127,7 @@ void choose_layout(int dt)
 	 * to decrease by 1. Now we assign 
 	 * the remaining delta.
 	 */
+
 	for(j=0;j<count;j++){
 		if(cpus_in_state[j] == 0)
 			continue;
