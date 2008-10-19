@@ -6,6 +6,7 @@
 
 #include "scpufreq.h"
 #include "hint.h"
+#include "stats.h"
 
 #define ABS(i) ((i) >= 0 ? (i) : (-1*(i)))
 
@@ -45,6 +46,7 @@ void choose_layout(int dt)
 	 * so use actual values here rather than
 	 * NR_CPUS or MAX_STATES
 	 */
+	increment_interval();
 	cpus = num_online_cpus();
 	count = get_hint(hint);
 	req_cpus = cpus;

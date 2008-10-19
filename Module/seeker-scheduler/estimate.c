@@ -7,6 +7,8 @@
 #include "scpufreq.h"
 #include "hint.h"
 
+#define INST_THRESHOLD 1000000
+
 int state_of_cpu[NR_CPUS] = {0};
 
 /* Many people can read the ds.
@@ -49,6 +51,16 @@ void put_mask_from_stats(struct task_struct *ts)
 	int new_state = 0;
 	unsigned int new_select = -1;
 	int i;
+
+#ifdef SEEKER_PLUGIN_PATCH
+	/* Do not try to estimate anything
+	 * till INST_THRESHOLD insts are 
+	 * executed. Hopefully avoids messing
+	 * with short lived tasks.
+	 */
+	if(ts->inst < INST_THRESHOLD)
+		return;
+#endif
 
 	cpus_clear(mask);
 	cpus_clear(tmp_mask);
