@@ -47,6 +47,7 @@ typedef struct {
 
 typedef struct {
 	unsigned long long interval;
+	unsigned int count;
 	unsigned int hint[MAX_STATES];
 	short cpustates[NR_CPUS];
 } debug_mutator_t;

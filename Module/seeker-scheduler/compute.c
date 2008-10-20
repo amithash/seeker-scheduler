@@ -45,19 +45,22 @@ void choose_layout(int dt)
 	 * so use actual values here rather than
 	 * NR_CPUS or MAX_STATES
 	 */
-	p = get_debug();
-	if(p){
-		p->entry.type = DEBUG_MUT;
-		p->entry.u.mut.interval = interval_count;
-	}
 	
 
 	increment_interval();
 	cpus = num_online_cpus();
 	count = get_total_states();
 	req_cpus = 0;
+	
+	p = get_debug();
+	if(p){
+		p->entry.type = DEBUG_MUT;
+		p->entry.u.mut.interval = interval_count;
+		p->entry.u.mut.count = count;
+	}
 
 	/* Total Hint */
+	
 	for(i=0;i<count;i++){
 		total += hint[i];
 		if(p)
