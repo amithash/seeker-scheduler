@@ -7,9 +7,8 @@
 #include "state.h"
 #include "scpufreq.h"
 #include "hint.h"
-#include "estimate.h"
-#include "compute.h"
-#include "stats.h"
+#include "assigncpu.h"
+#include "mutate.h"
 
 extern int state_of_cpu[NR_CPUS];
 int max_state_possible[NR_CPUS] = {0};

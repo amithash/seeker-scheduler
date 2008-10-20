@@ -7,14 +7,13 @@
 
 #include "scpufreq.h"
 #include "hint.h"
-#include "stats.h"
 #include "debug.h"
 
 #define ABS(i) ((i) >= 0 ? (i) : (-1*(i)))
 
 extern int max_allowed_states[NR_CPUS];
 extern int cur_cpu_states[NR_CPUS];
-extern u64 interval_count;
+u64 interval_count;
 
 inline int procs(int hints,int total, int proc, int total_load);
 
@@ -46,8 +45,7 @@ void choose_layout(int dt)
 	 * NR_CPUS or MAX_STATES
 	 */
 	
-
-	increment_interval();
+	interval_count++;
 	cpus = num_online_cpus();
 	count = get_total_states();
 	req_cpus = 0;

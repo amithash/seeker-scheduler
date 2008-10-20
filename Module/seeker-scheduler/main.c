@@ -35,9 +35,8 @@
 
 #include "scpufreq.h"
 #include "hint.h"
-#include "stats.h"
 #include "state.h"
-#include "estimate.h"
+#include "assigncpu.h"
 #include "quanta.h"
 #include "debug.h"
 
@@ -78,7 +77,12 @@ int init = ALL_HIGH;
 //
 
 void inst_sched_fork(struct task_struct *new, int clone_flags){
-	init_stats(new);
+#ifdef SEEKER_PLUGIN_PATCH
+	new->interval = interval_count;
+	new->inst = 0;
+	new->ref_cy = 0;
+	new->re_cy = 0;
+#endif
 	jprobe_return();
 }
 
