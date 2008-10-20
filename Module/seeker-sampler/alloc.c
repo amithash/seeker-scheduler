@@ -40,7 +40,7 @@ int init_seeker_cache(void)
 	seeker_cachep = kmem_cache_create("seeker_cache",
 					  sizeof(struct log_block),
 					  0,
-					  SLAB_PANIC,
+					  SLAB_PANIC | SLAB_CACHE_DMA,
 					  NULL);
 	if(!seeker_cachep)
 		return -1;
@@ -50,7 +50,7 @@ int init_seeker_cache(void)
 struct log_block * alloc_seeker(void)
 {
 	struct log_block *ent = 
-	(struct log_block *)kmem_cache_alloc(seeker_cachep, GFP_ATOMIC);
+	(struct log_block *)kmem_cache_alloc(seeker_cachep, GFP_ATOMIC | GFP_DMA);
 	if(!ent){
 		warn("Allocation failed");
 		return NULL;
