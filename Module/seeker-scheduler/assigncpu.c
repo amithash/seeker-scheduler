@@ -12,6 +12,7 @@
 #include "debug.h"
 
 #define CPUMASK_TO_UINT(x) (*((unsigned int *)&(x)))
+#define IPC(inst,cy) ((cy)>0) ? ((inst) * 100)/(cy) : 0
 
 #define INST_THRESHOLD 1000000
 
