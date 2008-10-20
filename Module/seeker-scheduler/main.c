@@ -79,14 +79,12 @@ int init = ALL_HIGH;
 
 void inst_sched_fork(struct task_struct *new, int clone_flags){
 	init_stats(new);
-	debug("task %s starting",new->comm);
 	jprobe_return();
 }
 
 void inst___switch_to(struct task_struct *from, struct task_struct *to)
 {
 	put_mask_from_stats(from);
-	debug("Task switching from %s to %s",from->comm,to->comm);
 }
 
 static int __init scheduler_init(void)

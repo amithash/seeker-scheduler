@@ -32,10 +32,11 @@ all:
 	${CC} ${CFLAGS} debugd.c -o debugd -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS)
 	${CC} ${CFLAGS} decodelog.c -o decodelog -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS)
 	${CC} ${CFLAGS} decodedebug.c -o decodedebug -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS)
+	${CC} ${CFLAGS} powersample.c -o powersample
 	${CXX} ${CFLAGS} interp.C -o interp
 	${CXX} ${CFLAGS} maxmin.C -o maxmin
 	${CXX} ${CFLAGS} smooth.C -o smooth
 
 clean:
-	rm -f seekerd decodelog interp maxmin smooth debugd decodedebug
+	rm -f seekerd decodelog interp maxmin smooth debugd decodedebug powersampler
 

@@ -26,7 +26,7 @@ rwlock_t state_of_cpu_lock = RW_LOCK_UNLOCKED;
 /* MUST be called by the init module */
 void init_system(void)
 {
-	rwlock_init(&state_of_cpu_lock);
+//	rwlock_init(&state_of_cpu_lock);
 }
 
 /* freq_state module MUST Call this
@@ -34,7 +34,7 @@ void init_system(void)
  */
 void get_state_of_cpu(void)
 {
-	write_lock(&state_of_cpu_lock);
+//	write_lock(&state_of_cpu_lock);
 }
 EXPORT_SYMBOL_GPL(get_state_of_cpu);
 
@@ -43,7 +43,7 @@ EXPORT_SYMBOL_GPL(get_state_of_cpu);
  */
 void put_state_of_cpu(void)
 {
-	write_unlock(&state_of_cpu_lock);
+//	write_unlock(&state_of_cpu_lock);
 }
 EXPORT_SYMBOL_GPL(put_state_of_cpu);
 
@@ -80,9 +80,9 @@ void put_mask_from_stats(struct task_struct *ts)
 	 * Find out what to use... cy_re or cy_ref 
 	 */
 
-	read_lock(&state_of_cpu_lock);
+//	read_lock(&state_of_cpu_lock);
 	state = state_of_cpu[cpu];
-	read_unlock(&state_of_cpu_lock);
+//	read_unlock(&state_of_cpu_lock);
 
 #ifdef SEEKER_PLUGIN_PATCH
 	if(ts->inst >= ts->ref_cy){
