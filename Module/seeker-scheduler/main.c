@@ -39,6 +39,7 @@
 #include "state.h"
 #include "estimate.h"
 #include "quanta.h"
+#include "debug.h"
 
 extern int hint[MAX_STATES];
 void inst___switch_to(struct task_struct *from, struct task_struct *to);
@@ -95,6 +96,7 @@ static int __init scheduler_init(void)
 
 	init_system();
 	seeker_set_callback(&inst___switch_to);
+	seeker_init_debug();
 	if(unlikely((probe_ret = register_jprobe(&jp_sched_fork)))){
 		error("Could not find sched_fork to probe, returned %d",probe_ret);
 		return -ENOSYS;
@@ -110,6 +112,7 @@ static int __init scheduler_init(void)
 
 static void __exit scheduler_exit(void)
 {
+	debug_exit();
 	seeker_clear_callback();
 	unregister_jprobe(&jp_sched_fork);
 	destroy_timer();

@@ -48,7 +48,8 @@ seeker-scheduler-objs += seeker-scheduler/main.o    \
 		       seeker-scheduler/hint.o     \
 		       seeker-scheduler/quanta.o   \
 		       seeker-scheduler/state.o    \
-		       seeker-scheduler/stats.o
+		       seeker-scheduler/stats.o	   \
+		       seeker-scheduler/debug.o
 else
 KDIR    := /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)

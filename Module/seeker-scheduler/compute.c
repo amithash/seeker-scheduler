@@ -8,6 +8,7 @@
 #include "scpufreq.h"
 #include "hint.h"
 #include "stats.h"
+#include "debug.h"
 
 #define ABS(i) ((i) >= 0 ? (i) : (-1*(i)))
 
@@ -38,11 +39,19 @@ void choose_layout(int dt)
 	int req_cpus = 0;
 	int delta = dt;
 	int load = 0;
+	struct debug_block *p = NULL;
 
 	/* RAM is not a problem, cpu cycles are.
 	 * so use actual values here rather than
 	 * NR_CPUS or MAX_STATES
 	 */
+	p = get_debug();
+	if(p){
+		p->entry.type = DEBUG_MUT;
+		p->entry.u.mut.interval = interval_count;
+	}
+	
+
 	increment_interval();
 	cpus = num_online_cpus();
 	count = get_total_states();
@@ -51,7 +60,8 @@ void choose_layout(int dt)
 	/* Total Hint */
 	for(i=0;i<count;i++){
 		total += hint[i];
-		debug("Interval: %lld, HINT[%d] = %d",interval_count,i,hint[i]);
+		if(p)
+			p->entry.u.mut.hint[i] = hint[i];
 	}
 	for(i=0;i<cpus;i++)
 		load += weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0;
@@ -159,6 +169,11 @@ void choose_layout(int dt)
 			}
 
 		}
+	}
+	if(p){
+		for(i=0;i<cpus;i++)
+			p->entry.u.mut.cpustates[i] = cur_cpu_states[i];
+		debug_link(p);
 	}
 }
 

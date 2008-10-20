@@ -9,6 +9,7 @@
 
 #include "scpufreq.h"
 #include "hint.h"
+#include "debug.h"
 
 #define CPUMASK_TO_UINT(x) (*((unsigned int *)&(x)))
 
@@ -55,6 +56,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	int state = 0;
 	int new_state = 0;
 	unsigned int new_select = -1;
+	struct debug_block *p;
 	int i;
 
 #ifdef SEEKER_PLUGIN_PATCH
@@ -107,8 +109,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	 */
 
 	if(new_state == state){
-		debug("PID %d prefers what it has",ts->pid);
-		return;
+		goto exit;
 	}
 
 	/* Update hint */
@@ -129,7 +130,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		cpus_clear(ts->cpus_allowed);
 		cpus_or(ts->cpus_allowed,ts->cpus_allowed,mask);
 		debug("PID %d, cpumask %x",ts->pid,CPUMASK_TO_UINT(ts->cpus_allowed));
-		return;
+		goto exit;
 	}
 
 	/* Nope, take min */
@@ -146,16 +147,25 @@ void put_mask_from_stats(struct task_struct *ts)
 	if(!cpus_empty(mask)){
 		cpus_clear(ts->cpus_allowed);
 		cpus_or(ts->cpus_allowed,ts->cpus_allowed,mask);
-		debug("PID %d, cpumask %d",ts->pid,CPUMASK_TO_UINT(ts->cpus_allowed));
-		return;
 	}
-	debug("PID %d, cpumask %d (Unchanged)",ts->pid,CPUMASK_TO_UINT(ts->cpus_allowed));
 	/* If mask is sill empty, Leave the cpus_allowed
 	 * allowed. This will never happen, but even if it
 	 * does at worst, the processes does not benifit from
 	 * the dynamic scheduling, rather than make it processor
 	 * -less
 	 */
+
+	exit:
+	p = get_debug();
+	if(p){
+		p->entry.type = DEBUG_SCH;
+		#ifdef SEEKER_PLUGIN_PATCH
+		p->entry.u.sch.interval = ts->interval;
+		#endif
+		p->entry.u.sch.pid = ts->pid;
+		p->entry.u.sch.cpumask = CPUMASK_TO_UINT(ts->cpus_allowed);
+		debug_link(p);
+	}
 }
 
 
