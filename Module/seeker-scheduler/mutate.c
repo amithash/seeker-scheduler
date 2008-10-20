@@ -10,6 +10,7 @@
 #include "debug.h"
 
 #define ABS(i) ((i) >= 0 ? (i) : (-1*(i)))
+#define div(a,b) ((a) / (b)) + (((a)%(b))<<1 >= (b) ? 1 : 0)
 
 extern int max_allowed_states[NR_CPUS];
 extern int cur_cpu_states[NR_CPUS];
@@ -23,7 +24,7 @@ inline int procs(int hints,int total, int proc, int total_load)
 		return 0;
 	if(hints == total)
 		return total_load;
-	return (hints * total) / total;
+	return div((hints * total_load),total);
 }
 
 void choose_layout(int dt)
