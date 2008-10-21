@@ -5,6 +5,7 @@
 
 #include <seeker.h>
 
+#include "state.h"
 #include "scpufreq.h"
 #include "hint.h"
 #include "debug.h"
@@ -13,7 +14,7 @@
 #define div(a,b) ((a) / (b)) + (((a)%(b))<<1 >= (b) ? 1 : 0)
 
 extern int max_allowed_states[NR_CPUS];
-extern int cur_cpu_states[NR_CPUS];
+extern int cur_cpu_state[NR_CPUS];
 u64 interval_count;
 
 inline int procs(int hints,int total, int proc, int total_load);
@@ -34,7 +35,7 @@ void choose_layout(int dt)
 	int count;
 	int i,j;
 	int total = 0;
-	int cpus_in_state[MAX_STATES];
+	int demand[MAX_STATES];
 	short cpus_bitmask[NR_CPUS]={0};
 	int req_cpus = 0;
 	int delta = dt;
@@ -69,112 +70,39 @@ void choose_layout(int dt)
 		load += weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0;
 
 	/* Num of cpus required for this state 
-	 * SUM(cpus_in_state[]) could be < cpus. 
+	 * SUM(demand[]) could be < cpus. 
 	 * Make sure to bring down their states. */
 	for(j=0;j<count;j++){
-		req_cpus += cpus_in_state[j] = procs(hint[j],total,cpus,load);
-		debug("required cpus for state %d = %d",j,cpus_in_state[j]);
+		req_cpus += demand[j] = procs(hint[j],total,cpus,load);
+		debug("required cpus for state %d = %d",j,demand[j]);
 	}
 
 	debug("req_cpus=%d\n",req_cpus);
 	if(req_cpus > cpus)
 		req_cpus = cpus;
 
-	/* --- STAGE 1 --- */
-	
-	/* For each cpu. Check if it can
-	 * get away with the state it is
-	 * in 
-	 */
-
-	for(i=0;i<cpus;i++){
-		if(cpus_in_state[cur_cpu_states[i]] > 0){
-			cpus_bitmask[i] = 1;
-			cpus_in_state[cur_cpu_states[i]]--;
-			req_cpus--;
+	/* Each state computes the cost of each cpu 
+	 * cost = |cpu_cur_state - state |*/
+	short cost[MAX_STATES][NR_CPUS];
+	for(i=0;i<count;i++){
+		for(j=0;j<cpus;j++){
+			cost[i][j] = abs(cur_cpu_state[j]-i);
 		}
 	}
 
-	if(req_cpus <= 0)
-		return;
+	/* Generate a PDF Matrix */
 
-	debug("Interval %lld: STAGE 2 Reached",interval_count);
+	/* Pick delta points out of random from this */
 
-	/* --- Stage 2: Demand and supply --- */
-	/* Demand = total delta required. XXX
-	 * Supply = delta
-	 * cash   = XXX
+	/* After choosing cpus, set the states description
+	 * to the new cpumask of that state, the number of
+	 * cpus etc, so that assigncpu does not have to do
+	 * much work.
 	 */
 
-	for(i=0;i<cpus;i++){
-		if(req_cpus == 0 || delta == 0)
-			return;
-		if(cpus_bitmask[i])
-			continue;
-
-		/* Prefer to increase a state by 1 then
-		 * to decrease the state by 1 */
-		if(cur_cpu_states[i] < count && 
-		   cpus_in_state[cur_cpu_states[i]+1] > 0){
-			cpus_bitmask[i] = 1;
-			cur_cpu_states[i]++;
-			cpus_in_state[cur_cpu_states[i]]--;
-			set_freq(i,cur_cpu_states[i]);
-			req_cpus--;
-			delta--;
-		} else if(cur_cpu_states[i] > 0 && 
-			  cpus_in_state[cur_cpu_states[i]-1] > 0){
-			cpus_bitmask[i] = 1;
-			cur_cpu_states[i]--;
-			cpus_in_state[cur_cpu_states[i]]--;
-			set_freq(i,cur_cpu_states[i]);
-			req_cpus--;
-			delta--;
-		}
-	}
-
-	/* We have kept required procs.
-	 * We have choosen to prefer to
-	 * increase cpu state by 1 then
-	 * to decrease by 1. Now we assign 
-	 * the remaining delta.
-	 */
-
-	for(j=0;j<count;j++){
-		if(cpus_in_state[j] == 0)
-			continue;
-
-		for(i=0;i<cpus;i++){
-			if(req_cpus == 0 || delta == 0)
-				return;
-	
-			if(cpus_bitmask[i])
-				continue;
-
-			/* Will this change honor delta? */
-			if((cur_cpu_states[i]-j) <= delta || (j - cur_cpu_states[i]) <= delta){
-				cur_cpu_states[i] = j;
-				cpus_in_state[j]--;
-				delta -= ABS(cur_cpu_states[i]-j);
-				req_cpus--;
-				set_freq(i,j);
-				break;
-			} else{
-				/* Will not honor. Fix allow a change of what is allowed.*/
-				if(j > cur_cpu_states[i]){
-					cur_cpu_states[i] += delta;
-				} else {
-					cur_cpu_states[i] -= delta;
-				}
-				req_cpus--;
-				delta = 0;
-			}
-
-		}
-	}
 	if(p){
 		for(i=0;i<cpus;i++)
-			p->entry.u.mut.cpustates[i] = cur_cpu_states[i];
+			p->entry.u.mut.cpustates[i] = cur_cpu_state[i];
 		debug_link(p);
 	}
 }

@@ -7,16 +7,34 @@
 
 #include <seeker.h>
 
+#include "state.h"
 #include "scpufreq.h"
 #include "hint.h"
 #include "debug.h"
 
+/* Works for a max of 32 processors */
 #define CPUMASK_TO_UINT(x) (*((unsigned int *)&(x)))
-#define IPC(inst,cy) ((cy)>0) ? ((inst) * 100)/(cy) : 0
 
+/* IPC of 8 Corrospondents to IPC of 1.0. */
+#define IPC(inst,cy) ((cy)>0) ? ((inst) << 3)/(cy) : 0
+#define IPC_0_000 0
+#define IPC_0_125 1
+#define IPC_0_250 2
+#define IPC_0_375 3
+#define IPC_0_500 4
+#define IPC_0_625 5
+#define IPC_0_750 6
+#define IPC_0_875 7
+#define IPC_1_000 8
+
+/* Keep the threshold at 1M Instructions
+ * This removes artifcats from IPC and 
+ * removes IPC Computation for small tasks
+ */
 #define INST_THRESHOLD 1000000
 
 int state_of_cpu[NR_CPUS] = {0};
+extern struct state_desc states[MAX_STATES];
 
 /* Many people can read the ds.
  * but have to stay off reading 
@@ -50,17 +68,14 @@ EXPORT_SYMBOL_GPL(put_state_of_cpu);
 
 void put_mask_from_stats(struct task_struct *ts)
 {
-	unsigned int pot_states[NR_CPUS];
-	int cpus = num_online_cpus();
-	int cpu = smp_processor_id();
-	cpumask_t mask,tmp_mask;
-	int state = 0;
-	int new_state = 0;
-	unsigned int new_select = -1;
-	struct debug_block *p;
+	int new_state;
+	struct debug_block *p = NULL;
 	int i;
+	short ipc = 0;
+	short max_states = get_total_states();
 
 #ifdef SEEKER_PLUGIN_PATCH
+	int state = ts->cpustate;
 	/* Do not try to estimate anything
 	 * till INST_THRESHOLD insts are 
 	 * executed. Hopefully avoids messing
@@ -68,46 +83,37 @@ void put_mask_from_stats(struct task_struct *ts)
 	 */
 	if(ts->inst < INST_THRESHOLD)
 		return;
+#else
+	int state = 0;
 #endif
 
-	cpus_clear(mask);
-	cpus_clear(tmp_mask);
-	/*XXX FIXME 
-	 * I am doing something very simple. 
-	 * Checking for IPC >= 1.
-	 * Because I do not want to divide.
-	 */
-	/* XXX FIXME
-	 * Find out what to use... cy_re or cy_ref 
-	 */
-
-//	read_lock(&state_of_cpu_lock);
-	state = state_of_cpu[cpu];
-//	read_unlock(&state_of_cpu_lock);
+	new_state = state;
 
 #ifdef SEEKER_PLUGIN_PATCH
-	if(ts->inst >= ts->ref_cy){
+	ipc = IPC(ts->inst,ts->re_cy);
 #endif
-		new_state = state + 1;
-		if(new_state >= MAX_STATES)
-			new_state--;
-#ifdef SEEKER_PLUGIN_PATCH
+	/*up*/
+	if(ipc >= IPC_0_750){
+		for(i=state+1;i<max_states;i++){
+			if(states[i].cpus > 0){
+				new_state = i;
+				break;
+			}
+			if(i-state > 2)
+				break;
+		}
 	}
-#endif
-
-#ifdef SEEKER_PLUGIN_PATCH
-	if(ts->inst <= (ts->ref_cy >> 1)){
-#endif
-		new_state = state - 1;
-		if(new_state < 0)
-			new_state = 0;
-#ifdef SEEKER_PLUGIN_PATCH
+	/*down*/
+	if(ipc <= IPC_0_500){
+		for(i=state-1;i>=0;i--){
+			if(states[i].cpus > 0){
+				new_state = i;
+				break;
+			}
+			if(state-i > 2)
+				break;
+		}
 	}
-#endif
-	
-	/* No change needed or possible. 
-	 * just continue 
-	 */
 
 	if(new_state == state){
 		goto exit;
@@ -116,46 +122,10 @@ void put_mask_from_stats(struct task_struct *ts)
 	/* Update hint */
 	hint_dec(state);
 	hint_inc(new_state);
-
-	for(i=0;i<cpus;i++){
-		pot_states[i] = (state_of_cpu[i] - state) * \
-			(state_of_cpu[i]-state);
-
-		if(pot_states[i] == 0)
-			tmp_mask = cpumask_of_cpu(i);
-			cpus_or(mask,mask,tmp_mask);
-	}
-	/* Targetted cpus with such a state exists */
-
-	if(!cpus_empty(mask)){
-		cpus_clear(ts->cpus_allowed);
-		cpus_or(ts->cpus_allowed,ts->cpus_allowed,mask);
-		debug("PID %d, cpumask %x",ts->pid,CPUMASK_TO_UINT(ts->cpus_allowed));
-		goto exit;
-	}
-
-	/* Nope, take min */
-	for(i=0;i<cpus;i++){
-		if(new_select > pot_states[i]){
-			new_select = pot_states[i];
-			mask = cpumask_of_cpu(i);
-		}
-		else if(new_select == pot_states[i]){
-			tmp_mask = cpumask_of_cpu(i);
-			cpus_or(mask,mask,tmp_mask);
-		}
-	}
-	if(!cpus_empty(mask)){
-		cpus_clear(ts->cpus_allowed);
-		cpus_or(ts->cpus_allowed,ts->cpus_allowed,mask);
-	}
-	/* If mask is sill empty, Leave the cpus_allowed
-	 * allowed. This will never happen, but even if it
-	 * does at worst, the processes does not benifit from
-	 * the dynamic scheduling, rather than make it processor
-	 * -less
-	 */
-
+	cpus_clear(ts->cpus_allowed);
+	cpus_or(ts->cpus_allowed,
+		ts->cpus_allowed,
+		states[new_state].cpumask);
 	exit:
 	p = get_debug();
 	if(p){
