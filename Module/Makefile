@@ -45,7 +45,6 @@ seeker-sampler-objs += seeker-sampler/alloc.o   \
 seeker-scheduler-objs += seeker-scheduler/main.o    \
 		       seeker-scheduler/assigncpu.o \
 		       seeker-scheduler/mutate.o  \
-		       seeker-scheduler/hint.o     \
 		       seeker-scheduler/quanta.o   \
 		       seeker-scheduler/state.o    \
 		       seeker-scheduler/debug.o
