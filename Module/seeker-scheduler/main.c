@@ -47,6 +47,7 @@ struct jprobe jp_sched_fork = {
 	.entry = (kprobe_opcode_t *)inst_sched_fork,
 	.kp.symbol_name = "sched_fork",
 };
+int total_online_cpus = 0;
 
 int change_interval = 5; /* In seconds */
 int delta=1;
@@ -94,6 +95,7 @@ static int __init scheduler_init(void)
 {
 #ifdef SEEKER_PLUGIN_PATCH
 	int probe_ret;
+	total_online_cpus = num_online_cpus();
 
 	init_system();
 	seeker_set_callback(&inst___switch_to);
