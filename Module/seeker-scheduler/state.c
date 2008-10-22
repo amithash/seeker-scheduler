@@ -22,6 +22,18 @@ int get_total_states(void)
 	return max_state_in_system;
 }
 
+void hint_inc(int state)
+{
+	atomic_inc((void *)&(states[state].demand));
+}
+EXPORT_SYMBOL_GPL(hint_inc);
+
+void hint_dec(int state)
+{
+	atomic_dec((void *)&(states[state].demand));
+}
+EXPORT_SYMBOL_GPL(hint_dec);
+
 int freq_delta(int delta)
 {
 	int i;
@@ -50,6 +62,7 @@ int init_cpu_states(unsigned int how)
 	for(i=0;i<max_state_in_system;i++){
 		states[i].state = i;
 		states[i].cpus = 0;
+		states[i].demand = 0;
 		cpus_clear(states[i].cpumask);
 	}
 

@@ -10,8 +10,11 @@ struct state_desc{
 	short state;
 	cpumask_t cpumask;
 	short cpus;
+	unsigned int demand;
 };
 
+void hint_inc(int state);
+void hint_dec(int state);
 int get_total_states(void);
 int freq_delta(int delta);
 int init_cpu_states(unsigned int how);
