@@ -9,7 +9,6 @@
 
 #include "state.h"
 #include "scpufreq.h"
-#include "hint.h"
 #include "debug.h"
 
 /* Works for a max of 32 processors */

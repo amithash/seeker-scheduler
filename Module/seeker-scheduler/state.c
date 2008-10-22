@@ -6,7 +6,6 @@
 
 #include "state.h"
 #include "scpufreq.h"
-#include "hint.h"
 #include "assigncpu.h"
 #include "mutate.h"
 

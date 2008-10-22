@@ -34,7 +34,6 @@
 #include <callback.h>
 
 #include "scpufreq.h"
-#include "hint.h"
 #include "state.h"
 #include "assigncpu.h"
 #include "quanta.h"

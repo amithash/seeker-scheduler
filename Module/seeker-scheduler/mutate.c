@@ -7,7 +7,6 @@
 
 #include "state.h"
 #include "scpufreq.h"
-#include "hint.h"
 #include "debug.h"
 
 #define ABS(i) ((i) >= 0 ? (i) : (-1*(i)))
