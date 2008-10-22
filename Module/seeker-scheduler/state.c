@@ -16,12 +16,6 @@ unsigned int max_state_in_system = -1;
 int cur_cpu_state[NR_CPUS] = {0};
 struct state_desc states[MAX_STATES];
 
-
-int get_total_states(void)
-{
-	return max_state_in_system;
-}
-
 void hint_inc(int state)
 {
 	atomic_inc((void *)&(states[state].demand));
