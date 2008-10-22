@@ -17,6 +17,7 @@ diff -Naur linux-2.6.25.18/include/linux/sched.h linux-2.6.25.18_sched/include/l
 +
 +	/* Seeker Patch Additions */
 +	u64 interval;
++	short cpustate;
 +	u64 inst;
 +	u64 re_cy;
 +	u64 ref_cy;
