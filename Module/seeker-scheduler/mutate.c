@@ -40,12 +40,17 @@ void choose_layout(int delta)
 	int demand[MAX_STATES];
 	int load = 0;
 	struct debug_block *p = NULL;
-	int i,j,l;
-	int winner=0;
-	int winner_val = 0;
-	int best_proc = 0;
-	int best_proc_val = 0;
+	unsigned int i,j,l;
+	unsigned int winner=0;
+	unsigned int winner_val = 0;
+	unsigned int winner_best_proc = 0;
+	unsigned int winner_best_proc_value = 0;
+	unsigned int winner_best_low_proc_value = 0;
+	unsigned int best_proc = 0;
+	unsigned int best_proc_value = 0;
+	unsigned int best_low_proc_value = 0;
 	int sum;
+	short poison[NR_CPUS] = {1};
 	int new_cpu_state[NR_CPUS] = {-1};
 	cpumask_t mask;
 
@@ -53,7 +58,7 @@ void choose_layout(int delta)
 
 	/* Create a state matrix such that, the cell which
 	 * indicates a processors current state, gets the highest
-	 * value = max_state_in_system^2, and parabolically decreases on either side.
+	 * value = iax_state_in_system^2, and parabolically decreases on either side.
 	 */
 	for(i=0;i<total_online_cpus;i++){
 		l=0;
@@ -98,8 +103,9 @@ void choose_layout(int delta)
 	while(delta > 0){
 		winner = 0;
 		winner_val = 0;
-		best_proc = 0;
-		best_proc_val = 0;
+		winner_best_proc = 0;
+		winner_best_proc_value = 0;
+		winner_best_low_proc_value = 0;
 
 		/* There is an optimization here, so do not get confused.
 		 * Technically, each column in the state matrix is supposed
@@ -110,12 +116,21 @@ void choose_layout(int delta)
 		/* For each state, */
 		for(i=0;i<max_state_in_system;i++){
 			sum = 0;
+			best_proc = 0;
+			best_proc_value = 0;
+			best_low_proc_value = -1;
 			/* Do not pointlessly sum N 0's to get 0 
 			 * It is going to get rejected anyway */
 			if(demand[i] == 0)
 				continue;
 			/* Sum the cost over all rows */
 			for(j=0;j<total_online_cpus;j++){
+				if(state_matrix[j][i] * poison[j] > best_proc_value){
+					best_proc_value = state_matrix[j][i] * poison[j];
+					best_proc = j;
+				} else if(state_matrix[j][i] < best_low_proc_value){
+					best_low_proc_value = state_matrix[j][i];
+				}
 				sum += state_matrix[j][i];
 			}
 			sum = sum * demand[i];
@@ -125,6 +140,25 @@ void choose_layout(int delta)
 			if(sum > winner_val){
 				winner = i;
 				winner_val = sum;
+				winner_best_proc= best_proc;
+				winner_best_proc_value = best_proc_value;
+				winner_best_low_proc_value = best_low_proc_value;
+			} else if(sum == winner_val){
+				if(best_proc_value > winner_best_proc_value){
+					winner = i;
+					winner_val = sum;
+					winner_best_proc= best_proc;
+					winner_best_proc_value = best_proc_value;
+					winner_best_low_proc_value = best_low_proc_value;
+				} else if(best_proc_value == winner_best_proc_value){
+					if(best_low_proc_value > winner_best_low_proc_value){
+						winner = i;
+						winner_val = sum;
+						winner_best_proc= best_proc;
+						winner_best_proc_value = best_proc_value;
+						winner_best_low_proc_value = best_low_proc_value;
+					}
+				}
 			}
 		}
 		/* A winning val of 0 indicated a failed auction.
@@ -135,30 +169,38 @@ void choose_layout(int delta)
 		/* Now the winning state, reduces its demand */
 		demand[winner]--;
 	
-		/* The winning state chooses the best deal (Higer state value
-		 * but it won it! so might as well get the most expensive one!*/
-		for(i=0;i<total_online_cpus;i++){
-			if(state_matrix[i][winner] > best_proc_val){
-				best_proc_val = state_matrix[i][winner];
-				best_proc = i;
-			}
-		}
 		/* The best processor is best_proc */
+		/* Poison the choosen processor */
+		poison[winner_best_proc] = 0;
 
 		/* Subtract that from the delta */
-		delta -= abs(cur_cpu_state[best_proc] - winner);
+		delta -= abs(cur_cpu_state[winner_best_proc] - winner);
+
+		/* If the new state of the CPU is different,
+		 * change the state matrix to reflect it */
+		if(cur_cpu_state[winner_best_proc] != winner){
+			l = 0;
+			for(j=cur_cpu_state[winner_best_proc];j<max_state_in_system;j++){
+				state_matrix[winner_best_proc][j] = (max_state_in_system - l)*(max_state_in_system - l);
+				l++;
+			}
+			l = 1;
+			for(j=cur_cpu_state[winner_best_proc]-1;j>=0;j++){
+				state_matrix[winner_best_proc][j] = (max_state_in_system - l)*(max_state_in_system-l);
+				l++;
+			}
+		}
 
 		/* Assign the new cpus state to be the winner */
-		new_cpu_state[best_proc] = winner;
-
-		/* Set the state_matrix row to 0 as sold! */
-		for(i=0;i<max_state_in_system;i++)
-			state_matrix[best_proc][i] = 0;
+		new_cpu_state[winner_best_proc] = winner;
 		
 		/* Continue the auction if delta > 0 */
 	}	
 
 	for(i=0;i<total_online_cpus;i++){
+		/* XXX This violates DELTA. But this 
+		 * also makes sure that unused processors 
+		 * to be in the lowest cpu state */
 		if(new_cpu_state[i] == -1)
 			new_cpu_state[i] = 0;
 		
@@ -167,6 +209,10 @@ void choose_layout(int delta)
 			set_freq(i,new_cpu_state[i]);
 		}
 	}
+	/* XXX Explicit locking is required. 
+	 * Not done right now. This can cause certain
+	 * apps processorless.
+	 */
 	for(i=0;i<max_state_in_system;i++){
 		states[i].cpus = 0;
 		cpus_clear(states[i].cpumask);

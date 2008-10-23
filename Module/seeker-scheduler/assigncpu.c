@@ -32,8 +32,8 @@
  */
 #define INST_THRESHOLD 1000000
 
-int state_of_cpu[NR_CPUS] = {0};
 extern struct state_desc states[MAX_STATES];
+extern int max_state_in_system;
 
 /* Many people can read the ds.
  * but have to stay off reading 
@@ -71,7 +71,6 @@ void put_mask_from_stats(struct task_struct *ts)
 	struct debug_block *p = NULL;
 	int i;
 	short ipc = 0;
-	short max_states = get_total_states();
 
 #ifdef SEEKER_PLUGIN_PATCH
 	int state = ts->cpustate;
@@ -93,7 +92,7 @@ void put_mask_from_stats(struct task_struct *ts)
 #endif
 	/*up*/
 	if(ipc >= IPC_0_750){
-		for(i=state+1;i<max_states;i++){
+		for(i=state+1;i<max_state_in_system;i++){
 			if(states[i].cpus > 0){
 				new_state = i;
 				break;

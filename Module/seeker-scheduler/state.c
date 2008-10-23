@@ -9,7 +9,6 @@
 #include "assigncpu.h"
 #include "mutate.h"
 
-extern int state_of_cpu[NR_CPUS];
 extern int total_online_cpus;
 int max_state_possible[NR_CPUS] = {0};
 unsigned int max_state_in_system = -1;
@@ -30,15 +29,8 @@ EXPORT_SYMBOL_GPL(hint_dec);
 
 int freq_delta(int delta)
 {
-	int i;
-	int cpus = total_online_cpus;
-
-	choose_layout(delta);	
-
 	get_state_of_cpu();
-		
-	for(i=0;i<cpus;i++)
-		state_of_cpu[i] = cur_cpu_state[i];
+	choose_layout(delta);	
 	put_state_of_cpu();
 	return 0;
 }
