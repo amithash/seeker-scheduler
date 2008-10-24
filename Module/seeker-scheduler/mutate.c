@@ -33,6 +33,25 @@ inline int procs(int hints,int total, int proc, int total_load)
 	return div((hints * total_load),total);
 }
 
+void update_state_matrix(int *cpu_state, int delta)
+{
+	int i,j,l;
+	for(i=0;i<total_online_cpus;i++){
+		l=0;
+		for(j=cpu_state[i];j<max_state_in_system;j++){
+			if(l>delta)
+				state_matrix[i][j] = 0;
+			else
+				state_matrix[i][j] = (max_state_in_system-l)*(max_state_in_system-l);
+			l++;
+		}
+		l=1;
+		for(j=cpu_state[i]-1;j>=0;j--){
+			state_matrix[i][j] = (max_state_in_system-l)*(max_state_in_system-l);
+			l++;
+		}
+	}
+}
 
 void choose_layout(int delta)
 {
@@ -40,7 +59,7 @@ void choose_layout(int delta)
 	int demand[MAX_STATES];
 	int load = 0;
 	struct debug_block *p = NULL;
-	unsigned int i,j,l;
+	unsigned int i,j;
 	unsigned int winner=0;
 	unsigned int winner_val = 0;
 	unsigned int winner_best_proc = 0;
@@ -61,18 +80,11 @@ void choose_layout(int delta)
 	 * value = iax_state_in_system^2, and parabolically decreases on either side.
 	 */
 	for(i=0;i<total_online_cpus;i++){
-		l=0;
-		for(j=cur_cpu_state[i];j<max_state_in_system;j++){
-			state_matrix[i][j] = (max_state_in_system-l)*(max_state_in_system-l);
-			l++;
-		}
-		l=1;
-		for(j=cur_cpu_state[i]-1;j>=0;j--){
-			state_matrix[i][j] = (max_state_in_system-l)*(max_state_in_system-l);
-			l++;
-		}
+		new_cpu_state[i] = cur_cpu_state[i];
+		load += weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0;
 	}
 
+	update_state_matrix(new_cpu_state,delta);
 	
 	p = get_debug();
 	if(p){
@@ -88,8 +100,6 @@ void choose_layout(int delta)
 		if(p)
 			p->entry.u.mut.hint[i] = states[i].demand;
 	}
-	for(i=0;i<total_online_cpus;i++)
-		load += weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0;
 
 	/* Num of cpus required for this state 
 	 * SUM(demand[]) could be < cpus. 
@@ -119,10 +129,7 @@ void choose_layout(int delta)
 			best_proc = 0;
 			best_proc_value = 0;
 			best_low_proc_value = -1;
-			/* Do not pointlessly sum N 0's to get 0 
-			 * It is going to get rejected anyway */
-			if(demand[i] == 0)
-				continue;
+
 			/* Sum the cost over all rows */
 			for(j=0;j<total_online_cpus;j++){
 				if(state_matrix[j][i] * poison[j] > best_proc_value){
@@ -133,7 +140,7 @@ void choose_layout(int delta)
 				}
 				sum += state_matrix[j][i];
 			}
-			sum = sum * demand[i];
+			sum = sum * (demand[i]+1);
 
 			/* if this is the max, make a note of the 
 			 * potential winner */
@@ -176,39 +183,18 @@ void choose_layout(int delta)
 		/* Subtract that from the delta */
 		delta -= abs(cur_cpu_state[winner_best_proc] - winner);
 
+		/* Assign the new cpus state to be the winner */
+		new_cpu_state[winner_best_proc] = winner;
+
 		/* If the new state of the CPU is different,
 		 * change the state matrix to reflect it */
 		if(cur_cpu_state[winner_best_proc] != winner){
-			l = 0;
-			for(j=cur_cpu_state[winner_best_proc];j<max_state_in_system;j++){
-				state_matrix[winner_best_proc][j] = (max_state_in_system - l)*(max_state_in_system - l);
-				l++;
-			}
-			l = 1;
-			for(j=cur_cpu_state[winner_best_proc]-1;j>=0;j++){
-				state_matrix[winner_best_proc][j] = (max_state_in_system - l)*(max_state_in_system-l);
-				l++;
-			}
+			update_state_matrix(new_cpu_state,delta);
 		}
 
-		/* Assign the new cpus state to be the winner */
-		new_cpu_state[winner_best_proc] = winner;
-		
 		/* Continue the auction if delta > 0 */
 	}	
 
-	for(i=0;i<total_online_cpus;i++){
-		/* XXX This violates DELTA. But this 
-		 * also makes sure that unused processors 
-		 * to be in the lowest cpu state */
-		if(new_cpu_state[i] == -1)
-			new_cpu_state[i] = 0;
-		
-		if(new_cpu_state[i] != cur_cpu_state[i]){
-			cur_cpu_state[i] = new_cpu_state[i];
-			set_freq(i,new_cpu_state[i]);
-		}
-	}
 	/* XXX Explicit locking is required. 
 	 * Not done right now. This can cause certain
 	 * apps processorless.
@@ -217,18 +203,30 @@ void choose_layout(int delta)
 		states[i].cpus = 0;
 		cpus_clear(states[i].cpumask);
 	}
+
+
 	for(i=0;i<total_online_cpus;i++){
+		/* XXX This violates DELTA. But this 
+		 * also makes sure that unused processors 
+		 * are in the lowest cpu state */
+		if(poison[i] == 1)
+			new_cpu_state[i] = 0;
+		
+		if(new_cpu_state[i] != cur_cpu_state[i]){
+			cur_cpu_state[i] = new_cpu_state[i];
+			set_freq(i,new_cpu_state[i]);
+		}
 		states[cur_cpu_state[i]].cpus++;
 		mask = cpumask_of_cpu(i);
 		cpus_or(states[cur_cpu_state[i]].cpumask,
 			states[cur_cpu_state[i]].cpumask,
 			mask);
+		if(p)
+			p->entry.u.mut.cpustates[i] = cur_cpu_state[i];
 	}
 
-	if(p){
-		for(i=0;i<total_online_cpus;i++)
-			p->entry.u.mut.cpustates[i] = cur_cpu_state[i];
+	if(p)
 		debug_link(p);
-	}
 }
+
 
