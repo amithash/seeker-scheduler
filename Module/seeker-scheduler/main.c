@@ -83,6 +83,7 @@ void inst_sched_fork(struct task_struct *new, int clone_flags){
 	new->inst = 0;
 	new->ref_cy = 0;
 	new->re_cy = 0;
+	new->cpustate = cur_cpu_state[smp_processor_id()];
 #endif
 	jprobe_return();
 }
