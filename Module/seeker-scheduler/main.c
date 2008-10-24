@@ -53,6 +53,7 @@ int change_interval = 5; /* In seconds */
 int delta=1;
 int init = ALL_HIGH;
 extern u64 interval_count;
+extern int cur_cpu_state[MAX_STATES];
 
 // resched_task(struct task_struct *p)
 // static void enqueue_task(struct rq *rq, struct task_struct *p, int wakeup)
