@@ -34,6 +34,7 @@
 
 extern struct state_desc states[MAX_STATES];
 extern int max_state_in_system;
+extern u64 interval_count;
 
 /* Many people can read the ds.
  * but have to stay off reading 
@@ -67,13 +68,13 @@ EXPORT_SYMBOL_GPL(put_state_of_cpu);
 
 void put_mask_from_stats(struct task_struct *ts)
 {
-	int new_state;
+	int new_state = -1;
 	struct debug_block *p = NULL;
 	int i;
 	short ipc = 0;
 
 #ifdef SEEKER_PLUGIN_PATCH
-	int state = ts->cpustate;
+	int state;
 	/* Do not try to estimate anything
 	 * till INST_THRESHOLD insts are 
 	 * executed. Hopefully avoids messing
@@ -81,11 +82,14 @@ void put_mask_from_stats(struct task_struct *ts)
 	 */
 	if(ts->inst < INST_THRESHOLD)
 		return;
+	if(ts->interval == interval_count)
+		state = ts->cpustate;
+	else 
+		state = -1;
+
 #else
 	int state = 0;
 #endif
-
-	new_state = state;
 
 #ifdef SEEKER_PLUGIN_PATCH
 	ipc = IPC(ts->inst,ts->re_cy);
@@ -113,18 +117,18 @@ void put_mask_from_stats(struct task_struct *ts)
 		}
 	}
 
-	if(new_state == state){
-		goto exit;
+
+	hint_inc(new_state);
+
+	if(new_state != state){
+		if(new_state == -1)
+			new_state = state;
+
+		set_cpus_allowed(ts,states[new_state].cpumask);
 	}
 
 	/* Update hint */
-	hint_dec(state);
-	hint_inc(new_state);
-	cpus_clear(ts->cpus_allowed);
-	cpus_or(ts->cpus_allowed,
-		ts->cpus_allowed,
-		states[new_state].cpumask);
-	exit:
+
 	p = get_debug();
 	if(p){
 		p->entry.type = DEBUG_SCH;
