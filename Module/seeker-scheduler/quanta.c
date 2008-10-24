@@ -7,6 +7,7 @@
 
 #include "quanta.h"
 #include "state.h"
+#include "mutate.h"
 
 u32 interval_jiffies;
 extern int change_interval;
@@ -24,13 +25,13 @@ int create_timer(void)
 	debug("Interval set to every %d jiffies",interval_jiffies);
 	init_timer(&state_change_timer);
 	state_change_timer.function = &state_change;
-	state_change(0);
+	mod_timer(&state_change_timer,jiffies + interval_jiffies);
 	return 0;
 }
 void state_change(unsigned long param)
 {
 	debug("State change now.");
-	freq_delta(delta);
+	choose_layout(delta);
 	mod_timer(&state_change_timer, jiffies + interval_jiffies);
 }
 

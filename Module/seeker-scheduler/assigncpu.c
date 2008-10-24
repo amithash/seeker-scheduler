@@ -35,36 +35,7 @@
 extern struct state_desc states[MAX_STATES];
 extern int max_state_in_system;
 extern u64 interval_count;
-
-/* Many people can read the ds.
- * but have to stay off reading 
- * if it is being written
- */
-rwlock_t state_of_cpu_lock = RW_LOCK_UNLOCKED;
-
-/* MUST be called by the init module */
-void init_system(void)
-{
-//	rwlock_init(&state_of_cpu_lock);
-}
-
-/* freq_state module MUST Call this
- * to get the state of cpu ds
- */
-void get_state_of_cpu(void)
-{
-//	write_lock(&state_of_cpu_lock);
-}
-EXPORT_SYMBOL_GPL(get_state_of_cpu);
-
-/* Once freq_state is done, it MUST
- * call this to release the lock.
- */
-void put_state_of_cpu(void)
-{
-//	write_unlock(&state_of_cpu_lock);
-}
-EXPORT_SYMBOL_GPL(put_state_of_cpu);
+extern rwlock_t states_lock;
 
 void put_mask_from_stats(struct task_struct *ts)
 {
@@ -72,6 +43,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	struct debug_block *p = NULL;
 	int i;
 	short ipc = 0;
+
 
 #ifdef SEEKER_PLUGIN_PATCH
 	int state;
@@ -90,6 +62,10 @@ void put_mask_from_stats(struct task_struct *ts)
 #else
 	int state = 0;
 #endif
+	/* If a write lock is held, do not
+	 * waste time spinning, just return. */
+	if(!read_trylock(&states_lock))
+		return;
 
 #ifdef SEEKER_PLUGIN_PATCH
 	ipc = IPC(ts->inst,ts->re_cy);
@@ -139,6 +115,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		p->entry.u.sch.cpumask = CPUMASK_TO_UINT(ts->cpus_allowed);
 		debug_link(p);
 	}
+	read_unlock(&states_lock);
 }
 
 

@@ -1,5 +1,7 @@
 
-void init_system(void);
+#ifndef __ASSIGNCPU_H_
+#define __ASSIGNCPU_H_
+
 void put_mask_from_stats(struct task_struct *ts);
-void get_state_of_cpu(void);
-void put_state_of_cpu(void);
+
+#endif

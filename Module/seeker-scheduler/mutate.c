@@ -19,6 +19,7 @@ extern int cur_cpu_state[NR_CPUS];
 extern unsigned int max_state_in_system;
 int state_matrix[NR_CPUS][MAX_STATES];
 extern struct state_desc states[MAX_STATES];
+extern rwlock_t states_lock;
 
 u64 interval_count;
 
@@ -195,10 +196,12 @@ void choose_layout(int delta)
 		/* Continue the auction if delta > 0 */
 	}	
 
-	/* XXX Explicit locking is required. 
-	 * Not done right now. This can cause certain
-	 * apps processorless.
+	/* The next few statements mommentaraly leaves
+	 * the states array in an undefined state.
+	 * if a task reads it in this state, it might 
+	 * become processor-less! so lock it 
 	 */
+	write_lock(&states_lock);
 	for(i=0;i<max_state_in_system;i++){
 		states[i].cpus = 0;
 		cpus_clear(states[i].cpumask);
@@ -224,6 +227,7 @@ void choose_layout(int delta)
 		if(p)
 			p->entry.u.mut.cpustates[i] = cur_cpu_state[i];
 	}
+	write_unlock(&states_lock);
 
 	if(p)
 		debug_link(p);

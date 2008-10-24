@@ -15,7 +15,6 @@ struct state_desc{
 
 void hint_inc(int state);
 void hint_dec(int state);
-int freq_delta(int delta);
 int init_cpu_states(unsigned int how);
 
 #endif

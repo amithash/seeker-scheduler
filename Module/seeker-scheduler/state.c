@@ -14,6 +14,7 @@ int max_state_possible[NR_CPUS] = {0};
 unsigned int max_state_in_system = -1;
 int cur_cpu_state[NR_CPUS] = {0};
 struct state_desc states[MAX_STATES];
+rwlock_t states_lock = RW_LOCK_UNLOCKED;
 
 void hint_inc(int state)
 {
@@ -27,19 +28,14 @@ void hint_dec(int state)
 }
 EXPORT_SYMBOL_GPL(hint_dec);
 
-int freq_delta(int delta)
-{
-	get_state_of_cpu();
-	choose_layout(delta);	
-	put_state_of_cpu();
-	return 0;
-}
-
 int init_cpu_states(unsigned int how)
 {
 	int cpus = total_online_cpus;
 	cpumask_t mask;
 	int i;
+	rwlock_init(&states_lock);
+	write_lock(&states_lock);
+
 	for(i=0;i<cpus;i++){
 		max_state_possible[i] = get_max_states(i);
 		if(max_state_in_system < max_state_possible[i])
@@ -107,6 +103,7 @@ int init_cpu_states(unsigned int how)
 			}
 			break;
 	}
+	write_unlock(&states_lock);
 	return 0;
 }
 

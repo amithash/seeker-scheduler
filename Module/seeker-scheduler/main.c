@@ -76,14 +76,13 @@ static int __init scheduler_init(void)
 	int probe_ret;
 	total_online_cpus = num_online_cpus();
 
-	init_system();
-	seeker_set_callback(&inst___switch_to);
+	init_cpu_states(init);
 	debug_init();
 	if(unlikely((probe_ret = register_jprobe(&jp_sched_fork)))){
 		error("Could not find sched_fork to probe, returned %d",probe_ret);
 		return -ENOSYS;
 	}
-	init_cpu_states(init);
+	seeker_set_callback(&inst___switch_to);
 	create_timer();
 	return 0;
 #else
