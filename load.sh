@@ -19,7 +19,7 @@
 #*************************************************************************
 
 for MOD in "pmu" "fpmu" "tsc" "therm" "seeker-sampler"; do
-	lsmod | grep $MOD &> /dev/null
+	lsmod | grep "$MOD " &> /dev/null
 	if [ "$?" != "0" ]; then
 		if [ -f $SEEKER_HOME/Build/$MOD.ko ]; then
 			echo "Trying to load $MOD";
