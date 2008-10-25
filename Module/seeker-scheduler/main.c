@@ -59,7 +59,6 @@ extern int cur_cpu_state[MAX_STATES];
 
 void inst_sched_fork(struct task_struct *new, int clone_flags)
 {
-	warn("%s loading",new->comm);
 #ifdef SEEKER_PLUGIN_PATCH
 	new->interval = interval_count;
 	new->inst = 0;
