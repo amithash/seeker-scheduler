@@ -21,6 +21,7 @@ static struct debug_block *start_debug = NULL;
 static struct debug_block *current_debug = NULL;
 
 static int first_read = 1;
+static int dev_created = 0;
 
 static struct file_operations seeker_debug_fops;
 static struct miscdevice seeker_debug_mdev;
@@ -40,11 +41,17 @@ struct debug_block *get_debug(void)
 
 void debug_free(struct debug_block *p)
 {
+	if(!p)
+		return;
+
 	kmem_cache_free(debug_cachep,p);
 }
 
 void debug_link(struct debug_block *p)
 {
+	if(!p)
+		return;
+
 	if(!current_debug){
 		warn("Current or ent is null");
 		return;
@@ -84,7 +91,7 @@ ssize_t seeker_debug_read(struct file *file_ptr, char __user *buf,
 	}
 	if(unlikely(first_read)){
 		if(unlikely(!start_debug->next))
-			return -1;
+			return 0;
 		log = start_debug;
 		start_debug = start_debug->next;
 		debug_free(log);
@@ -140,21 +147,31 @@ void debug_init(void)
 					 0,
 					 SLAB_PANIC,
 					 NULL);
+	/* If creating the cache failed, then do not enable
+	 * the read interface. 
+	 */
 	if(!debug_cachep){
-		error("Could not create debug cache");
-		return;
+		error("Could not create debug cache, Debug unit will not be avaliable");
+		goto out;
 	}
 	current_debug = kmem_cache_alloc(debug_cachep, GFP_ATOMIC);
 	start_debug = current_debug;
 	spin_lock_init(&debug_lock);
 	seeker_init_debug();
 	first_read = 1;
+	dev_created = 1;
+out:
+	return;
 }
 
 void debug_exit(void)
 {
-	purge_debug();
-	kmem_cache_destroy(debug_cachep);
-	misc_deregister(&seeker_debug_mdev);
+	if(dev_created){
+		debug_close();
+		misc_deregister(&seeker_debug_mdev);
+		purge_debug();
+		kmem_cache_destroy(debug_cachep);
+		dev_created = 0;
+	}
 }
 
