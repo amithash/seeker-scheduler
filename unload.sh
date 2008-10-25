@@ -19,13 +19,13 @@
 #*************************************************************************
 
 for MOD in "seeker_sampler" "pmu" "fpmu" "tsc" "therm"; do
-	lsmod | grep "$MOD " > /dev/null &> /dev/null
+	lsmod | grep "$MOD "
 	if [ "$?" != "0" ]; then
 		echo "$MOD does not seem to be loaded."
 	else
 		rmmod $MOD;
 		sleep 1;
-		lsmod | grep $MOD > /dev/null &> /dev/null
+		lsmod | grep $MOD
 		if [ "$?" != "0" ]; then
 			echo "Successfully unloaded $MOD."
 		else

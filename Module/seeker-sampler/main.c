@@ -261,8 +261,13 @@ static int __init seeker_sampler_init(void)
  *---------------------------------------------------------------------------*/
 void seeker_sampler_exit_handler(void)
 {
-	if(dev_open)
+	if(dev_open){
+		if( mdev_registered ) {
+			misc_deregister(&seeker_sample_mdev);
+			mdev_registered = 0;
+		}
 		seeker_sample_close(NULL,NULL);
+	}
 	
 	if( sample_timer_started ) {
 		del_timer_sync(&sample_timer);
@@ -282,11 +287,6 @@ void seeker_sampler_exit_handler(void)
 		kprobes_registered = 0;
 	}
 
-	if( mdev_registered ) {
-		misc_deregister(&seeker_sample_mdev);
-		mdev_registered = 0;
-	}
-	log_finalize();
 	/* Just incase something happens when the device and interrupts are enabled.... */
 	#ifdef LOCAL_PMU_VECTOR
 	if(dev_open == 1){
