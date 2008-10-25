@@ -31,7 +31,6 @@
 #include <linux/interrupt.h>
 
 #include <seeker.h>
-#include <callback.h>
 
 #include "scpufreq.h"
 #include "state.h"
@@ -39,12 +38,16 @@
 #include "quanta.h"
 #include "debug.h"
 
-void inst___switch_to(struct task_struct *from, struct task_struct *to);
+void inst_inst___switch_to(struct task_struct *from, struct task_struct *to);
 void inst_sched_fork(struct task_struct *new, int clone_flags);
 
 struct jprobe jp_sched_fork = {
 	.entry = (kprobe_opcode_t *)inst_sched_fork,
 	.kp.symbol_name = "sched_fork",
+};
+struct jprobe jp_inst___switch_to = {
+	.entry = (kprobe_opcode_t *)inst_inst___switch_to,
+	.kp.symbol_name = "inst___switch_to",
 };
 int total_online_cpus = 0;
 
@@ -67,9 +70,10 @@ void inst_sched_fork(struct task_struct *new, int clone_flags)
 	jprobe_return();
 }
 
-void inst___switch_to(struct task_struct *from, struct task_struct *to)
+void inst_inst___switch_to(struct task_struct *from, struct task_struct *to)
 {
 	put_mask_from_stats(from);
+	jprobe_return();
 }
 
 static int __init scheduler_init(void)
@@ -84,7 +88,11 @@ static int __init scheduler_init(void)
 		error("Could not find sched_fork to probe, returned %d",probe_ret);
 		return -ENOSYS;
 	}
-	seeker_set_callback(inst___switch_to);
+	if(unlikely(probe_ret = register_jprobe(&jp_inst___switch_to))){
+		error("Could not find sched_fork to probe, returned %d",probe_ret);
+		return -ENOSYS;
+	}
+
 	create_timer();
 	return 0;
 #else
@@ -96,8 +104,8 @@ static int __init scheduler_init(void)
 static void __exit scheduler_exit(void)
 {
 	debug_exit();
-	seeker_clear_callback();
 	unregister_jprobe(&jp_sched_fork);
+	unregister_jprobe(&jp_inst___switch_to);
 	destroy_timer();
 }
 

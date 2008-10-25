@@ -31,7 +31,6 @@
 #include <asm/hw_irq.h>
 
 #include <seeker.h>
-#include <callback.h>
 
 #include "probe.h"
 #include "intr.h"
@@ -48,8 +47,6 @@
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23))
 #define SCHED_EXIT_EXISTS 1
 #endif
-
-switch_to_callback_t extern_callback;
 
 extern int dev_open;
 extern pid_t cpu_pid[NR_CPUS];
@@ -161,22 +158,8 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	int cpu = smp_processor_id();
 	cpu_pid[cpu] = to->pid;
 	ts[cpu] = to;
-	if(extern_callback)
-		extern_callback(from,to);
 	jprobe_return();
 }
-
-
-void seeker_set_callback(switch_to_callback_t callback)
-{
-	extern_callback = callback;
-}
-EXPORT_SYMBOL_GPL(seeker_set_callback);
-
-void seeker_clear_callback(void)
-{
-	extern_callback = NULL;
-}
-EXPORT_SYMBOL_GPL(seeker_clear_callback);
+EXPORT_SYMBOL_GPL(inst___switch_to);
 
 
