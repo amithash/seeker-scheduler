@@ -33,7 +33,7 @@ struct debug_block *get_debug(void)
 	if(!dev_open)
 		return NULL;
 
-	p = (struct debug_block *)kmem_cache_alloc(debug_cachep, GFP_ATOMIC | GFP_DMA);
+	p = (struct debug_block *)kmem_cache_alloc(debug_cachep, GFP_ATOMIC);
 	p->next = NULL;
 	return p;
 }
@@ -138,7 +138,7 @@ void debug_init(void)
 	debug_cachep = kmem_cache_create("seeker_debug_cache",
 					 sizeof(struct debug_block),
 					 0,
-					 SLAB_PANIC | SLAB_CACHE_DMA,
+					 SLAB_PANIC,
 					 NULL);
 	if(!debug_cachep){
 		error("Could not create debug cache");

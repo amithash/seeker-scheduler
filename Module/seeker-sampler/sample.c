@@ -158,8 +158,9 @@ void do_sample(void)
 	ts[cpu]->inst += temp[0];
 	ts[cpu]->re_cy += temp[1];
 	ts[cpu]->ref_cy += temp[2];
-	if(ts[cpu]->inst > MAX_INSTRUCTIONS_BEFORE_SCHEDULE)
+	/*if(ts[cpu]->inst > MAX_INSTRUCTIONS_BEFORE_SCHEDULE)
 		set_tsk_need_resched(ts[cpu]);
+	*/
 #endif
 	put_cpu();
 }

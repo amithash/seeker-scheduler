@@ -54,7 +54,9 @@ int init = ALL_HIGH;
 extern u64 interval_count;
 extern int cur_cpu_state[MAX_STATES];
 
-void inst_sched_fork(struct task_struct *new, int clone_flags){
+void inst_sched_fork(struct task_struct *new, int clone_flags)
+{
+	warn("%s loading",new->comm);
 #ifdef SEEKER_PLUGIN_PATCH
 	new->interval = interval_count;
 	new->inst = 0;
@@ -82,7 +84,7 @@ static int __init scheduler_init(void)
 		error("Could not find sched_fork to probe, returned %d",probe_ret);
 		return -ENOSYS;
 	}
-	seeker_set_callback(&inst___switch_to);
+	seeker_set_callback(inst___switch_to);
 	create_timer();
 	return 0;
 #else

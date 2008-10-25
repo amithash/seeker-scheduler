@@ -56,8 +56,13 @@ void put_mask_from_stats(struct task_struct *ts)
 		return;
 	if(ts->interval == interval_count)
 		state = ts->cpustate;
-	else 
+	else{
 		state = -1;
+		ts->interval = interval_count;
+		ts->inst = 0;
+		ts->ref_cy = 0;
+		ts->re_cy = 0;
+	}
 
 #else
 	int state = 0;
