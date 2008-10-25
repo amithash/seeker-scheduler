@@ -1,6 +1,7 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/module.h>
+#include <asm/irq.h>
 #include <linux/cpumask.h>
 #include <linux/sched.h>
 #include <linux/spinlock.h>
@@ -35,7 +36,7 @@
 extern struct state_desc states[MAX_STATES];
 extern int max_state_in_system;
 extern u64 interval_count;
-extern rwlock_t states_lock;
+extern spinlock_t states_lock;
 
 void put_mask_from_stats(struct task_struct *ts)
 {
@@ -43,7 +44,6 @@ void put_mask_from_stats(struct task_struct *ts)
 	struct debug_block *p = NULL;
 	int i;
 	short ipc = 0;
-
 
 #ifdef SEEKER_PLUGIN_PATCH
 	int state;
@@ -67,9 +67,7 @@ void put_mask_from_stats(struct task_struct *ts)
 #else
 	int state = 0;
 #endif
-	/* If a write lock is held, do not
-	 * waste time spinning, just return. */
-	if(!read_trylock(&states_lock))
+	if(spin_is_locked(&states_lock))
 		return;
 
 #ifdef SEEKER_PLUGIN_PATCH
@@ -104,7 +102,8 @@ void put_mask_from_stats(struct task_struct *ts)
 	if(new_state != state){
 		if(new_state == -1)
 			new_state = state;
-
+		if(spin_is_locked(&states_lock))
+			return;
 		set_cpus_allowed(ts,states[new_state].cpumask);
 	}
 
@@ -120,7 +119,6 @@ void put_mask_from_stats(struct task_struct *ts)
 		p->entry.u.sch.cpumask = CPUMASK_TO_UINT(ts->cpus_allowed);
 		debug_link(p);
 	}
-	read_unlock(&states_lock);
 }
 
 

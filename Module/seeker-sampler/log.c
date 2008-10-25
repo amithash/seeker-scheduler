@@ -26,7 +26,7 @@
 #include <linux/slab.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/spinlock.h>
+#include <asm/spinlock.h>
 
 #include <seeker.h>
 
@@ -62,14 +62,15 @@ struct log_block *log_create(void)
 
 void log_link(struct log_block * ent)
 {
+	unsigned long flags;
 	if(!seeker_log_current || !ent){
 		warn("Current of ent is NULL");
 		return;
 	}
-	spin_lock(&log_lock);
+	spin_lock_irqsave(&log_lock,flags);
 	seeker_log_current->next = ent;
 	seeker_log_current = ent;
-	spin_unlock(&log_lock);
+	spin_unlock_irqrestore(&log_lock,flags);
 }
 
 
