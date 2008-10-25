@@ -19,7 +19,6 @@ extern int cur_cpu_state[NR_CPUS];
 extern unsigned int max_state_in_system;
 int state_matrix[NR_CPUS][MAX_STATES];
 extern struct state_desc states[MAX_STATES];
-extern rwlock_t states_lock;
 
 u64 interval_count;
 
@@ -69,7 +68,6 @@ void choose_layout(int delta)
 	unsigned int best_proc = 0;
 	unsigned int best_proc_value = 0;
 	unsigned int best_low_proc_value = 0;
-	unsigned long flags;
 	int sum;
 	short poison[NR_CPUS] = {1};
 	int new_cpu_state[NR_CPUS] = {-1};
@@ -197,12 +195,6 @@ void choose_layout(int delta)
 		/* Continue the auction if delta > 0 */
 	}	
 
-	/* The next few statements mommentaraly leaves
-	 * the states array in an undefined state.
-	 * if a task reads it in this state, it might 
-	 * become processor-less! so lock it 
-	 */
-	write_lock_irqsave(&states_lock,flags);
 	for(i=0;i<max_state_in_system;i++){
 		states[i].cpus = 0;
 		cpus_clear(states[i].cpumask);
@@ -228,7 +220,6 @@ void choose_layout(int delta)
 		if(p)
 			p->entry.u.mut.cpustates[i] = cur_cpu_state[i];
 	}
-	write_unlock_irqrestore(&states_lock,flags);
 
 	if(p)
 		debug_link(p);

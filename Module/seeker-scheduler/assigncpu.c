@@ -36,7 +36,6 @@
 extern struct state_desc states[MAX_STATES];
 extern int max_state_in_system;
 extern u64 interval_count;
-extern spinlock_t states_lock;
 
 void put_mask_from_stats(struct task_struct *ts)
 {
@@ -44,6 +43,8 @@ void put_mask_from_stats(struct task_struct *ts)
 	struct debug_block *p = NULL;
 	int i;
 	short ipc = 0;
+	cpumask_t mask;
+
 
 #ifdef SEEKER_PLUGIN_PATCH
 	int state;
@@ -67,8 +68,7 @@ void put_mask_from_stats(struct task_struct *ts)
 #else
 	int state = 0;
 #endif
-	if(spin_is_locked(&states_lock))
-		return;
+	cpus_clear(mask);
 
 #ifdef SEEKER_PLUGIN_PATCH
 	ipc = IPC(ts->inst,ts->re_cy);
@@ -102,9 +102,13 @@ void put_mask_from_stats(struct task_struct *ts)
 	if(new_state != state){
 		if(new_state == -1)
 			new_state = state;
-		if(spin_is_locked(&states_lock))
+		cpus_or(mask,mask,states[new_state].cpumask);
+		/* Done here without a lock. If cpumask has become
+		 * empty in the process, then return.
+		 */
+		if(cpus_empty(mask))
 			return;
-		set_cpus_allowed(ts,states[new_state].cpumask);
+		set_cpus_allowed(ts,mask);
 	}
 
 	/* Update hint */
