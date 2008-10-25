@@ -25,7 +25,7 @@ for MOD in "seeker_sampler" "pmu" "fpmu" "tsc" "therm"; do
 	else
 		rmmod $MOD;
 		sleep 1;
-		lsmod | grep $MOD
+		lsmod | grep "$MOD "
 		if [ "$?" != "0" ]; then
 			echo "Successfully unloaded $MOD."
 		else
