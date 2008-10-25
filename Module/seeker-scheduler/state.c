@@ -53,9 +53,7 @@ int init_cpu_states(unsigned int how)
 			states[max_state_in_system-1].cpus = cpus;
 			for(i=0;i<cpus;i++){
 				mask = cpumask_of_cpu(i);
-				cpus_or(states[max_state_in_system-1].cpumask,
-					states[max_state_in_system-1].cpumask,
-					mask);
+				cpus_or(states[max_state_in_system-1].cpumask,states[max_state_in_system-1].cpumask,mask);
 				cur_cpu_state[i] = max_state_possible[i];
 				set_freq(i,cur_cpu_state[i]);
 			}
@@ -64,9 +62,7 @@ int init_cpu_states(unsigned int how)
 			states[0].cpus = cpus;
 			for(i=0;i<cpus;i++){
 				mask = cpumask_of_cpu(i);
-				cpus_or(states[0].cpumask,
-					states[0].cpumask,
-					mask);
+				cpus_or(states[0].cpumask,states[0].cpumask,mask);
 				cur_cpu_state[i] = 0;
 				set_freq(i,cur_cpu_state[i]);
 			}
@@ -76,17 +72,13 @@ int init_cpu_states(unsigned int how)
 			states[0].cpus = cpus - (cpus>>1);
 			for(i=0;i<(cpus>>1);i++){
 				mask = cpumask_of_cpu(i);
-				cpus_or(states[max_state_in_system-1].cpumask,
-					states[max_state_in_system-1].cpumask,
-					mask);
+				cpus_or(states[max_state_in_system-1].cpumask,states[max_state_in_system-1].cpumask,mask);
 				cur_cpu_state[i] = 0;
 				set_freq(i,cur_cpu_state[i]);
 			}
 			for(;i<cpus;i++){
 				mask = cpumask_of_cpu(i);
-				cpus_or(states[0].cpumask,
-					states[0].cpumask,
-					mask);
+				cpus_or(states[0].cpumask,states[0].cpumask,mask);
 				cur_cpu_state[i] = max_state_possible[i];
 				set_freq(i,cur_cpu_state[i]);
 			}
@@ -95,9 +87,7 @@ int init_cpu_states(unsigned int how)
 			states[max_state_in_system-1].cpus = cpus;
 			for(i=0;i<cpus;i++){
 				mask = cpumask_of_cpu(i);
-				cpus_or(states[max_state_in_system-1].cpumask,
-					states[max_state_in_system-1].cpumask,
-					mask);
+				cpus_or(states[max_state_in_system-1].cpumask,states[max_state_in_system-1].cpumask,mask);
 				cur_cpu_state[i] = max_state_possible[i];
 				set_freq(i,cur_cpu_state[i]);
 			}
