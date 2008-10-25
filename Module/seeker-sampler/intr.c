@@ -28,7 +28,6 @@
 #include <asm/apic.h>
 #include <asm/apicdef.h>
 #include <asm/hw_irq.h>
-#include <linux/timer.h>
 
 #include <seeker.h>
 
