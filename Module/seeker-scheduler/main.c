@@ -71,6 +71,7 @@ void inst_sched_fork(struct task_struct *new, int clone_flags)
 
 void inst_inst___switch_to(struct task_struct *from, struct task_struct *to)
 {
+	warn("from %s to %s",from->comm,to->comm);
 	put_mask_from_stats(from);
 	jprobe_return();
 }

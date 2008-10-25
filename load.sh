@@ -18,8 +18,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
 #*************************************************************************
 
-for MOD in "pmu" "fpmu" "tsc" "therm" "seeker-sampler"; do
-	lsmod | grep "$MOD " &> /dev/null
+for MOD in "pmu" "fpmu" "tsc" "therm" "seeker_sampler"; do
+	lsmod | grep "${MOD} " > /dev/null &> /dev/null
 	if [ "$?" != "0" ]; then
 		if [ -f $SEEKER_HOME/Build/$MOD.ko ]; then
 			echo "Trying to load $MOD";
@@ -27,7 +27,7 @@ for MOD in "pmu" "fpmu" "tsc" "therm" "seeker-sampler"; do
 			echo "Please build seeker (make) before trying to load the modules";
 			exit;
 		fi
-		if [[ "${MOD}" = "seeker-sampler" ]]; then
+		if [ "${MOD}" = "seeker_sampler" ]; then
 			insmod $SEEKER_HOME/Build/$MOD.ko $@;
 		else
 			insmod $SEEKER_HOME/Build/$MOD.ko;

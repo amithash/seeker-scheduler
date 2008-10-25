@@ -25,8 +25,8 @@ endif
 ifneq ($(KERNELRELEASE),)
 
 
-obj-m += seeker-scheduler.o           	\
-	 seeker-sampler.o             	\
+obj-m += seeker_scheduler.o           	\
+	 seeker_sampler.o             	\
 	 pmu/pmu.o         		\
 	 fpmu/fpmu.o        		\
 	 tsc/tsc.o         		\
@@ -34,7 +34,7 @@ obj-m += seeker-scheduler.o           	\
 	 scpufreq/scpufreq.o  		\
 	 power/power.o
 
-seeker-sampler-objs += seeker-sampler/alloc.o   \
+seeker_sampler-objs += seeker-sampler/alloc.o   \
 		       seeker-sampler/log.o     \
 		       seeker-sampler/probe.o   \
 		       seeker-sampler/sample.o  \
@@ -42,7 +42,7 @@ seeker-sampler-objs += seeker-sampler/alloc.o   \
 		       seeker-sampler/intr.o    \
 		       seeker-sampler/main.o
 
-seeker-scheduler-objs += seeker-scheduler/main.o    \
+seeker_scheduler-objs += seeker-scheduler/main.o    \
 		       seeker-scheduler/assigncpu.o \
 		       seeker-scheduler/mutate.o  \
 		       seeker-scheduler/quanta.o   \
