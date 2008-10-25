@@ -11,7 +11,7 @@
 
 extern int total_online_cpus;
 int max_state_possible[NR_CPUS] = {0};
-unsigned int max_state_in_system = -1;
+unsigned int max_state_in_system = 0;
 int cur_cpu_state[NR_CPUS] = {0};
 struct state_desc states[MAX_STATES];
 rwlock_t states_lock = RW_LOCK_UNLOCKED;
