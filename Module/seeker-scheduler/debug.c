@@ -28,6 +28,11 @@ static struct miscdevice seeker_debug_mdev;
 static int dev_open = 0;
 static struct kmem_cache *debug_cachep = NULL;
 
+int seeker_debug_close(struct inode *in, struct file *f);
+int seeker_debug_open(struct inode *in, struct file *f);
+ssize_t seeker_debug_read(struct file *file_ptr, char __user *buf, size_t count, loff_t *offset);
+
+
 struct debug_block *get_debug(void)
 {
 	struct debug_block *p;
@@ -167,7 +172,7 @@ out:
 void debug_exit(void)
 {
 	if(dev_created){
-		debug_close();
+		seeker_debug_close(NULL,NULL);
 		misc_deregister(&seeker_debug_mdev);
 		purge_debug();
 		kmem_cache_destroy(debug_cachep);
