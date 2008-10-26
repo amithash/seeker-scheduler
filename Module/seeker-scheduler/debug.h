@@ -9,7 +9,7 @@ struct debug_block{
 	struct debug_block *next;
 };
 
-void debug_init(void);
+int debug_init(void);
 void debug_exit(void);
 
 struct debug_block *get_debug(void);

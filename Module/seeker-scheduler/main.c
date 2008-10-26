@@ -87,8 +87,8 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	ts[cpu]->inst   = pmu_val[cpu][0];
 	ts[cpu]->re_cy  = pmu_val[cpu][1];
 	ts[cpu]->ref_cy = pmu_val[cpu][2];
-	if(ts[cpu]->inst > MAX_INSTRUCTIONS_BEFORE_SCHEDULE)
-		set_tsk_need_resched(ts[cpu]);
+//	if(ts[cpu]->inst > MAX_INSTRUCTIONS_BEFORE_SCHEDULE)
+//		set_tsk_need_resched(ts[cpu]);
 #endif
 	return 0;
 }
@@ -124,7 +124,9 @@ static int __init scheduler_init(void)
 	total_online_cpus = num_online_cpus();
 
 	init_cpu_states(init);
-	debug_init();
+	if(debug_init() != 0)
+		return -ENODEV;
+
 	if(unlikely((probe_ret = register_jprobe(&jp_sched_fork)))){
 		error("Could not find sched_fork to probe, returned %d",probe_ret);
 		return -ENOSYS;
@@ -138,10 +140,10 @@ static int __init scheduler_init(void)
 			return -ENOSYS;
 		}
 	} else {
-//		if(unlikely((probe_ret = register_kprobe(&kp_schedule))<0)){
-//			error("__switch_to register successful, but schedule failed");
-//			return -ENOSYS;
-//		}
+		if(unlikely((probe_ret = register_kprobe(&kp_schedule))<0)){
+			error("schedule register successful, but schedule failed");
+			return -ENOSYS;
+		}
 		configure_counters();
 	}
 
@@ -162,8 +164,8 @@ static void __exit scheduler_exit(void)
 	debug_exit();
 	unregister_jprobe(&jp_sched_fork);
 	unregister_jprobe(&jp___switch_to);
-//	if(!using_seeker)
-//		unregister_kprobe(&kp_schedule);
+	if(!using_seeker)
+		unregister_kprobe(&kp_schedule);
 
 	destroy_timer();
 }

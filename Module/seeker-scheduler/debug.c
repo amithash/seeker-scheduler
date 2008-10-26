@@ -145,7 +145,7 @@ int seeker_init_debug(void)
 	return 0;
 }
 
-void debug_init(void)
+int debug_init(void)
 {
 	debug_cachep = kmem_cache_create("seeker_debug_cache",
 					 sizeof(struct debug_block),
@@ -157,26 +157,29 @@ void debug_init(void)
 	 */
 	if(!debug_cachep){
 		error("Could not create debug cache, Debug unit will not be avaliable");
-		goto out;
+		return -1;
 	}
 	current_debug = kmem_cache_alloc(debug_cachep, GFP_ATOMIC);
 	start_debug = current_debug;
 	spin_lock_init(&debug_lock);
-	seeker_init_debug();
-	first_read = 1;
-	dev_created = 1;
-out:
-	return;
+	if(!seeker_init_debug()){
+		first_read = 1;
+		dev_created = 1;
+		return 0;
+	}
+	return -1;
 }
 
 void debug_exit(void)
 {
-	if(dev_created){
-		seeker_debug_close(NULL,NULL);
+	if(dev_open)
+		dev_open = 0;
+
+	if(dev_created)
 		misc_deregister(&seeker_debug_mdev);
-		purge_debug();
-		kmem_cache_destroy(debug_cachep);
-		dev_created = 0;
-	}
+
+	purge_debug();
+	kmem_cache_destroy(debug_cachep);
+	dev_created = 0;
 }
 
