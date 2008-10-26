@@ -32,23 +32,56 @@
 
 #include <seeker.h>
 
+#include <pmu.h>
+#include <fpmu.h>
+
 #include "scpufreq.h"
 #include "state.h"
 #include "assigncpu.h"
 #include "quanta.h"
 #include "debug.h"
 
-void inst_inst___switch_to(struct task_struct *from, struct task_struct *to);
+/* Definations of the evtsel and mask 
+ * for instructions retired,
+ * real unhalted cycles
+ * reference unhalted cycles 
+ * for the AMD as it does not have fixed counters
+ */
+#define PMU_INST_EVTSEL 0x00000000
+#define PMU_INST_MASK 0x00000000
+#define PMU_RECY_EVTSEL 0x00000000
+#define PMU_RECY_MASK 0x00000000
+#define PMU_RFCY_EVTSEL 0x00000000
+#define PMU_RFCY_MASK 0x00000000
+
+
+void inst___switch_to(struct task_struct *from, struct task_struct *to);
 void inst_sched_fork(struct task_struct *new, int clone_flags);
+int inst_schedule(struct kprobe *p, struct pt_regs *regs);
+
+struct task_struct *ts[NR_CPUS] = {NULL};
 
 struct jprobe jp_sched_fork = {
 	.entry = (kprobe_opcode_t *)inst_sched_fork,
 	.kp.symbol_name = "sched_fork",
 };
-struct jprobe jp_inst___switch_to = {
-	.entry = (kprobe_opcode_t *)inst_inst___switch_to,
-	.kp.symbol_name = "inst___switch_to",
+struct jprobe jp___switch_to = {
+	.entry = (kprobe_opcode_t *)inst___switch_to,
+	.kp.symbol_name = "__switch_to",
 };
+
+struct jprobe jp_inst_schedule = {
+	.entry = (kprobe_opcode_t *)inst_schedule,
+	.kp.symbol_name = "inst_schedule",
+};
+
+struct kprobe kp_schedule = {
+	.pre_handler = inst_schedule,
+	.post_handler = NULL,
+	.fault_handler = NULL,
+	.addr = (kprobe_opcode_t *) schedule,
+};
+
 int total_online_cpus = 0;
 
 int change_interval = 5; /* In seconds */
@@ -56,6 +89,78 @@ int delta=1;
 int init = ALL_HIGH;
 extern u64 interval_count;
 extern int cur_cpu_state[MAX_STATES];
+int sys_counters[NR_CPUS][3];
+u64 pmu_val[NR_CPUS][3];
+
+
+void enable_pmu_counters(void);
+int configure_counters(void);
+inline void read_counters(int cpu);
+
+void enable_pmu_counters(void)
+{
+	int cpu = smp_processor_id();
+	if(NUM_FIXED_COUNTERS > 0){
+		fpmu_init_msrs();
+		fcounters_enable(0);
+		fcounter_clear(0);
+		fcounter_clear(1);
+		fcounter_clear(2);
+	} else {
+		pmu_init_msrs();
+		sys_counters[cpu][0] = counter_enable(PMU_INST_EVTSEL,PMU_INST_MASK,0);
+		sys_counters[cpu][1] = counter_enable(PMU_RECY_EVTSEL,PMU_RECY_MASK,0);
+		sys_counters[cpu][2] = counter_enable(PMU_RFCY_EVTSEL,PMU_RFCY_MASK,0);
+		counter_clear(sys_counters[cpu][0]);
+		counter_clear(sys_counters[cpu][1]);
+		counter_clear(sys_counters[cpu][2]);
+	}
+}
+
+int configure_counters(void)
+{
+	if(on_each_cpu((void *)enable_pmu_counters,NULL,1,1) < 0){
+		error("Counters could not be configured");
+		return -1;
+	}
+	return 0;
+}
+
+inline void read_counters(int cpu)
+{
+#if NUM_FIXED_COUNTERS > 0
+	fcounter_read();
+	pmu_val[cpu][0] = get_fcounter_data(0,cpu);
+	pmu_val[cpu][1] = get_fcounter_data(1,cpu);
+	pmu_val[cpu][2] = get_fcounter_data(2,cpu);
+#else
+	counter_read();
+	pmu_val[cpu][0] = get_counter_data(sys_counters[cpu][0],cpu);
+	pmu_val[cpu][1] = get_counter_data(sys_counters[cpu][0],cpu);
+	pmu_val[cpu][2] = get_counter_data(sys_counters[cpu][0],cpu);
+#endif
+}	
+
+int inst_schedule(struct kprobe *p, struct pt_regs *regs)
+{
+	int cpu = smp_processor_id();
+	read_counters(cpu);
+#ifdef SEEKER_PLUGIN_PATCH
+	if(ts[cpu]->interval == interval_count){
+		ts[cpu]->inst += pmu_val[0];
+		ts[cpu]->re_cy += pmu_val[1];
+		ts[cpu]->ref_cy += pmu_val[2];
+		if(ts[cpu]->inst > MAX_INSTRUCTIONS_BEFORE_SCHEDULE)
+			set_tsk_need_resched(ts[cpu]);
+	} else {
+		ts[cpu]->interval = interval_count;
+		ts[cpu]->inst = pmu_val[0];
+		ts[cpu]->re_cy = pmu_val[1];
+		ts[cpu]->ref_cy = pmu_val[2];
+	}	
+#endif
+	return 0;
+}
 
 void inst_sched_fork(struct task_struct *new, int clone_flags)
 {
@@ -69,8 +174,10 @@ void inst_sched_fork(struct task_struct *new, int clone_flags)
 	jprobe_return();
 }
 
-void inst_inst___switch_to(struct task_struct *from, struct task_struct *to)
+void inst___switch_to(struct task_struct *from, struct task_struct *to)
 {
+	int cpu = smp_processor_id();
+	ts[cpu] = to;
 	warn("from %s to %s",from->comm,to->comm);
 	put_mask_from_stats(from);
 	jprobe_return();
@@ -88,10 +195,26 @@ static int __init scheduler_init(void)
 		error("Could not find sched_fork to probe, returned %d",probe_ret);
 		return -ENOSYS;
 	}
-	if(unlikely(probe_ret = register_jprobe(&jp_inst___switch_to))){
-		error("Could not find sched_fork to probe, returned %d",probe_ret);
-		return -ENOSYS;
+	if(unlikely((probe_ret = register_jprobe(&jp___switch_to))<0)){
+		/* Seeker is loaded. Now probe its instrumentation functions */
+		jp___switch_to.kp.symbol_name = "inst___switch_to";
+		if(unlikely((probe_ret = register_jprobe(&jp___switch_to))<0)){
+			error("Register __switch_to probe failed with %d",probe_ret);
+			return -ENOSYS;
+		}
+		if(unlikely((probe_ret = register_jprobe(&jp_schedule))<0)){
+			error("Register inst_schedule failed with %s",probe_ret);
+			return -ENOSYS;
+		}
+		configure_counters();
+
+	} else {
+		if(unlikely((probe_ret = register_kprobe(&kp_schedule))<0)){
+			error("__switch_to register successful, but schedule failed");
+			return -ENOSYS;
+		}
 	}
+
 
 	create_timer();
 	return 0;
@@ -105,7 +228,7 @@ static void __exit scheduler_exit(void)
 {
 	debug_exit();
 	unregister_jprobe(&jp_sched_fork);
-	unregister_jprobe(&jp_inst___switch_to);
+	unregister_jprobe(&jp___switch_to);
 	destroy_timer();
 }
 

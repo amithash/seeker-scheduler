@@ -130,6 +130,7 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	}
 	return 0;
 }
+EXPORT_SYMBOL_GPL(inst_schedule);
 
 /*---------------------------------------------------------------------------*
  * Function: inst_release_thread
