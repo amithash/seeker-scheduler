@@ -42,11 +42,12 @@ seeker_sampler-objs += seeker-sampler/alloc.o   \
 		       seeker-sampler/intr.o    \
 		       seeker-sampler/main.o
 
-seeker_scheduler-objs += seeker-scheduler/main.o    \
-		       seeker-scheduler/assigncpu.o \
-		       seeker-scheduler/mutate.o  \
-		       seeker-scheduler/quanta.o   \
-		       seeker-scheduler/state.o    \
+seeker_scheduler-objs += seeker-scheduler/main.o     \
+		       seeker-scheduler/assigncpu.o  \
+		       seeker-scheduler/mutate.o     \
+		       seeker-scheduler/quanta.o     \
+		       seeker-scheduler/state.o      \
+		       seeker-scheduler/hwcounters.o \
 		       seeker-scheduler/debug.o
 else
 KDIR    := /lib/modules/$(shell uname -r)/build
