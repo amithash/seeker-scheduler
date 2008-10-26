@@ -60,6 +60,10 @@ struct jprobe jp___switch_to = {
 	.entry = (kprobe_opcode_t *)inst___switch_to,
 	.kp.symbol_name = "__switch_to",
 };
+struct jprobe jp_inst___switch_to = {
+	.entry = (kprobe_opcode_t *)inst___switch_to,
+	.kp.symbol_name = "inst___switch_to",
+};
 
 struct kprobe kp_schedule = {
 	.pre_handler = inst_schedule,
@@ -87,8 +91,8 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	ts[cpu]->inst   = pmu_val[cpu][0];
 	ts[cpu]->re_cy  = pmu_val[cpu][1];
 	ts[cpu]->ref_cy = pmu_val[cpu][2];
-//	if(ts[cpu]->inst > MAX_INSTRUCTIONS_BEFORE_SCHEDULE)
-//		set_tsk_need_resched(ts[cpu]);
+	if(ts[cpu]->inst > MAX_INSTRUCTIONS_BEFORE_SCHEDULE)
+		set_tsk_need_resched(ts[cpu]);
 #endif
 	return 0;
 }
@@ -134,8 +138,7 @@ static int __init scheduler_init(void)
 	if((probe_ret = register_jprobe(&jp___switch_to)) < 0){
 		/* Seeker is loaded. probe its instrumentation functions instead */
 		using_seeker = 1;
-		jp___switch_to.kp.symbol_name = "inst___switch_to";
-		if(unlikely((probe_ret = register_jprobe(&jp___switch_to)) < 0)){
+		if(unlikely((probe_ret = register_jprobe(&jp_inst___switch_to)) < 0)){
 			error("Register inst___switch_to probe failed with %d",probe_ret);
 			return -ENOSYS;
 		}
@@ -163,10 +166,12 @@ static void __exit scheduler_exit(void)
 {
 	debug_exit();
 	unregister_jprobe(&jp_sched_fork);
-	unregister_jprobe(&jp___switch_to);
-	if(!using_seeker)
+	if(using_seeker){
+		unregister_jprobe(&jp_inst___switch_to);
+	} else {
+		unregister_jprobe(&jp___switch_to);
 		unregister_kprobe(&kp_schedule);
-
+	}
 	destroy_timer();
 }
 

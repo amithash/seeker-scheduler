@@ -47,8 +47,8 @@ void read_counters(int cpu)
 #else
 	counter_read();
 	pmu_val[cpu][0] = get_counter_data(sys_counters[cpu][0],cpu);
-	pmu_val[cpu][1] = get_counter_data(sys_counters[cpu][0],cpu);
-	pmu_val[cpu][2] = get_counter_data(sys_counters[cpu][0],cpu);
+	pmu_val[cpu][1] = get_counter_data(sys_counters[cpu][1],cpu);
+	pmu_val[cpu][2] = get_counter_data(sys_counters[cpu][2],cpu);
 #endif
 }
 
