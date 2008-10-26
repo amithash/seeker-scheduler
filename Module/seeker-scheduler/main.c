@@ -138,10 +138,10 @@ static int __init scheduler_init(void)
 			return -ENOSYS;
 		}
 	} else {
-		if(unlikely((probe_ret = register_kprobe(&kp_schedule))<0)){
-			error("__switch_to register successful, but schedule failed");
-			return -ENOSYS;
-		}
+//		if(unlikely((probe_ret = register_kprobe(&kp_schedule))<0)){
+//			error("__switch_to register successful, but schedule failed");
+//			return -ENOSYS;
+//		}
 		configure_counters();
 	}
 
@@ -162,8 +162,8 @@ static void __exit scheduler_exit(void)
 	debug_exit();
 	unregister_jprobe(&jp_sched_fork);
 	unregister_jprobe(&jp___switch_to);
-	if(!using_seeker)
-		unregister_kprobe(&kp_schedule);
+//	if(!using_seeker)
+//		unregister_kprobe(&kp_schedule);
 
 	destroy_timer();
 }
