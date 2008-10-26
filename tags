@@ -4,7 +4,7 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.7	//
-A	Scripts/iconfig.h	/^	int A;$/;"	m	struct:__anon19
+A	Scripts/iconfig.h	/^	int A;$/;"	m	struct:__anon1
 ABS	Module/seeker-scheduler/mutate.c	13;"	d	file:
 ALL_HIGH	Module/seeker-scheduler/state.h	5;"	d
 ALL_LOW	Module/seeker-scheduler/state.h	7;"	d
@@ -22,13 +22,13 @@ Array	Scripts/Array.h	/^Array<T>::Array(){$/;"	f	class:Array
 Array	Scripts/Array.h	/^Array<T>::Array(T * carr, int len){$/;"	f	class:Array
 Array	Scripts/Array.h	/^Array<T>::Array(int num){$/;"	f	class:Array
 Array	Scripts/Array.h	/^class Array{	$/;"	c
-B	Scripts/iconfig.h	/^	int B;$/;"	m	struct:__anon19
+B	Scripts/iconfig.h	/^	int B;$/;"	m	struct:__anon1
 BALANCE	Module/seeker-scheduler/state.h	6;"	d
 BUFFER_SIZE	Scripts/debugd.c	37;"	d	file:
 BUFFER_SIZE	Scripts/seekerd.c	37;"	d	file:
 CC	Scripts/Makefile	/^CC = gcc$/;"	m
 CFLAGS	Scripts/Makefile	/^CFLAGS = -O3$/;"	m
-CPUMASK_TO_UINT	Module/seeker-scheduler/assigncpu.c	15;"	d	file:
+CPUMASK_TO_UINT	Module/seeker-scheduler/assigncpu.c	16;"	d	file:
 CPUS	Makefile	/^CPUS := $(shell cat \/proc\/cpuinfo | grep processor | wc -l)$/;"	m
 CPUS	Scripts/Makefile	/^CPUS := $(shell cat \/proc\/cpuinfo | grep processor | wc -l)$/;"	m
 CTR0_OVERFLOW_CLEAR_MASK	Module/pmu/pmu.h	38;"	d
@@ -44,8 +44,8 @@ CTR2_OVERFLOW_MASK	Module/pmu/pmu.h	44;"	d
 CTR3_OVERFLOW_CLEAR_MASK	Module/pmu/pmu.h	49;"	d
 CTR3_OVERFLOW_MASK	Module/pmu/pmu.h	45;"	d
 CXX	Scripts/Makefile	/^CXX = g++$/;"	m
-DEBUG_MUT	Module/include/seeker.h	/^enum {DEBUG_SCH, DEBUG_MUT};$/;"	e	enum:__anon2
-DEBUG_SCH	Module/include/seeker.h	/^enum {DEBUG_SCH, DEBUG_MUT};$/;"	e	enum:__anon2
+DEBUG_MUT	Module/include/seeker.h	/^enum {DEBUG_SCH, DEBUG_MUT};$/;"	e	enum:__anon6
+DEBUG_SCH	Module/include/seeker.h	/^enum {DEBUG_SCH, DEBUG_MUT};$/;"	e	enum:__anon6
 Data	Scripts/Array.h	/^		T * Data;$/;"	m	class:Array
 EVTSEL0	Module/pmu/pmu.h	56;"	d
 EVTSEL0	Module/pmu/pmu.h	64;"	d
@@ -68,17 +68,17 @@ IA32_THERM_STATUS	Module/therm/therm.h	42;"	d
 INCLUDE	Scripts/Makefile	/^INCLUDE := -I$(shell pwd)\/..\/Module\/include -I$(shell pwd)\/..\/Module\/scpufreq$/;"	m
 INCLUDE_DIRS	Module/Makefile	/^INCLUDE_DIRS := -I$(PWD)\/include	\\$/;"	m
 INPUT_FORMAT	Scripts/iconfig.h	33;"	d
-INST_THRESHOLD	Module/seeker-scheduler/assigncpu.c	33;"	d	file:
-IPC	Module/seeker-scheduler/assigncpu.c	18;"	d	file:
-IPC_0_000	Module/seeker-scheduler/assigncpu.c	19;"	d	file:
-IPC_0_125	Module/seeker-scheduler/assigncpu.c	20;"	d	file:
-IPC_0_250	Module/seeker-scheduler/assigncpu.c	21;"	d	file:
-IPC_0_375	Module/seeker-scheduler/assigncpu.c	22;"	d	file:
-IPC_0_500	Module/seeker-scheduler/assigncpu.c	23;"	d	file:
-IPC_0_625	Module/seeker-scheduler/assigncpu.c	24;"	d	file:
-IPC_0_750	Module/seeker-scheduler/assigncpu.c	25;"	d	file:
-IPC_0_875	Module/seeker-scheduler/assigncpu.c	26;"	d	file:
-IPC_1_000	Module/seeker-scheduler/assigncpu.c	27;"	d	file:
+INST_THRESHOLD	Module/seeker-scheduler/assigncpu.c	34;"	d	file:
+IPC	Module/seeker-scheduler/assigncpu.c	19;"	d	file:
+IPC_0_000	Module/seeker-scheduler/assigncpu.c	20;"	d	file:
+IPC_0_125	Module/seeker-scheduler/assigncpu.c	21;"	d	file:
+IPC_0_250	Module/seeker-scheduler/assigncpu.c	22;"	d	file:
+IPC_0_375	Module/seeker-scheduler/assigncpu.c	23;"	d	file:
+IPC_0_500	Module/seeker-scheduler/assigncpu.c	24;"	d	file:
+IPC_0_625	Module/seeker-scheduler/assigncpu.c	25;"	d	file:
+IPC_0_750	Module/seeker-scheduler/assigncpu.c	26;"	d	file:
+IPC_0_875	Module/seeker-scheduler/assigncpu.c	27;"	d	file:
+IPC_1_000	Module/seeker-scheduler/assigncpu.c	28;"	d	file:
 KDIR	Module/Makefile	/^KDIR    := \/lib\/modules\/$(shell uname -r)\/build$/;"	m
 KERNEL_VERSION	Module/include/seeker.h	95;"	d
 MAX_COUNTERS_PER_CPU	Module/include/seeker.h	36;"	d
@@ -105,7 +105,7 @@ NUM_COUNTERS	Module/pmu/pmu.h	76;"	d
 NUM_EXTRA_COUNTERS	Module/include/seeker.h	34;"	d
 NUM_FIXED_COUNTERS	Module/include/fpmu_public.h	6;"	d
 NUM_FIXED_COUNTERS	Module/include/fpmu_public.h	8;"	d
-PIDTAB_ENTRY	Module/include/seeker.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon1
+PIDTAB_ENTRY	Module/include/seeker.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon5
 PMC0	Module/pmu/pmu.h	58;"	d
 PMC0	Module/pmu/pmu.h	68;"	d
 PMC1	Module/pmu/pmu.h	59;"	d
@@ -118,9 +118,9 @@ PRIMARY	Scripts/iconfig.h	38;"	d
 PWD	Module/Makefile	/^PWD     := $(shell pwd)$/;"	m
 P_ASSERT_EXIT	Scripts/debugd.c	36;"	d	file:
 P_ASSERT_EXIT	Scripts/seekerd.c	36;"	d	file:
-SAMPLE_DEF	Module/include/seeker.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon1
-SCHED_EXIT_EXISTS	Module/seeker-sampler/probe.c	49;"	d	file:
-SEEKER_SAMPLE	Module/include/seeker.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon1
+SAMPLE_DEF	Module/include/seeker.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon5
+SCHED_EXIT_EXISTS	Module/seeker-sampler/probe.c	48;"	d	file:
+SEEKER_SAMPLE	Module/include/seeker.h	/^enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};$/;"	e	enum:__anon5
 SEEKER_SAMPLE_MINOR	Module/seeker-sampler/main.c	49;"	d	file:
 SPLINE	Scripts/iconfig.h	/^		SPLINE(){$/;"	f	class:SPLINE
 SPLINE	Scripts/iconfig.h	/^		SPLINE(int size){$/;"	f	class:SPLINE
@@ -142,25 +142,51 @@ _SEEKER_SAMPLER_H_	Module/include/seeker.h	26;"	d
 _THERM_H_	Module/therm/therm.h	28;"	d
 _TSC_H_	Module/tsc/tsc.h	27;"	d
 __ALLOC_H_	Module/seeker-sampler/alloc.h	26;"	d
-__CALLBACK_H_	Module/include/callback.h	2;"	d
+__ASSIGNCPU_H_	Module/seeker-scheduler/assigncpu.h	3;"	d
 __DEBUG_H_	Module/seeker-scheduler/debug.h	3;"	d
 __EXIT_H_	Module/seeker-sampler/exit.h	26;"	d
 __FPMU_PUBLIC_H_	Module/include/fpmu_public.h	3;"	d
 __INTR_H_	Module/seeker-sampler/intr.h	26;"	d
 __LOG_H_	Module/seeker-sampler/log.h	27;"	d
+__MUTATE_H_	Module/seeker-scheduler/mutate.h	3;"	d
 __PMU_PUBLIC_H_	Module/include/pmu_public.h	3;"	d
 __POWER_H_	Module/power/power.h	4;"	d
 __PROBE_H_	Module/seeker-sampler/probe.h	26;"	d
+__QUANTA_H_	Module/seeker-scheduler/quanta.h	3;"	d
 __SAMPLE_H_	Module/seeker-sampler/sample.h	26;"	d
 __SCPUFREQ_H_	Module/scpufreq/scpufreq.h	3;"	d
 __STATE_H_	Module/seeker-scheduler/state.h	3;"	d
 __THERM_PUBLIC_H_	Module/include/therm_public.h	3;"	d
 __TSC_PUBLIC_H_	Module/include/tsc_public.h	3;"	d
-addr	Module/fpmu/fpmu.h	/^	u32 addr;$/;"	m	struct:__anon18
-addr	Module/pmu/pmu.h	/^	u32 addr;$/;"	m	struct:__anon13
-addr	Module/pmu/pmu.h	/^	u32 addr;$/;"	m	struct:__anon15
-all	Module/fpmu/fpmu.h	/^	u64 all;$/;"	m	struct:__anon17
-all	Module/pmu/pmu.h	/^	u64 all;$/;"	m	struct:__anon14
+__this_module	Module/fpmu/fpmu.mod.c	/^struct module __this_module$/;"	v	typeref:struct:module
+__this_module	Module/pmu/pmu.mod.c	/^struct module __this_module$/;"	v	typeref:struct:module
+__this_module	Module/power/power.mod.c	/^struct module __this_module$/;"	v	typeref:struct:module
+__this_module	Module/scpufreq/scpufreq.mod.c	/^struct module __this_module$/;"	v	typeref:struct:module
+__this_module	Module/seeker_sampler.mod.c	/^struct module __this_module$/;"	v	typeref:struct:module
+__this_module	Module/seeker_scheduler.mod.c	/^struct module __this_module$/;"	v	typeref:struct:module
+__this_module	Module/therm/therm.mod.c	/^struct module __this_module$/;"	v	typeref:struct:module
+__this_module	Module/tsc/tsc.mod.c	/^struct module __this_module$/;"	v	typeref:struct:module
+__used	Module/fpmu/fpmu.mod.c	/^__used$/;"	v	file:
+__used	Module/fpmu/fpmu.mod.c	/^__used$/;"	v	typeref:struct:____versions	file:
+__used	Module/pmu/pmu.mod.c	/^__used$/;"	v	file:
+__used	Module/pmu/pmu.mod.c	/^__used$/;"	v	typeref:struct:____versions	file:
+__used	Module/power/power.mod.c	/^__used$/;"	v	file:
+__used	Module/power/power.mod.c	/^__used$/;"	v	typeref:struct:____versions	file:
+__used	Module/scpufreq/scpufreq.mod.c	/^__used$/;"	v	file:
+__used	Module/scpufreq/scpufreq.mod.c	/^__used$/;"	v	typeref:struct:____versions	file:
+__used	Module/seeker_sampler.mod.c	/^__used$/;"	v	file:
+__used	Module/seeker_sampler.mod.c	/^__used$/;"	v	typeref:struct:____versions	file:
+__used	Module/seeker_scheduler.mod.c	/^__used$/;"	v	file:
+__used	Module/seeker_scheduler.mod.c	/^__used$/;"	v	typeref:struct:____versions	file:
+__used	Module/therm/therm.mod.c	/^__used$/;"	v	file:
+__used	Module/therm/therm.mod.c	/^__used$/;"	v	typeref:struct:____versions	file:
+__used	Module/tsc/tsc.mod.c	/^__used$/;"	v	file:
+__used	Module/tsc/tsc.mod.c	/^__used$/;"	v	typeref:struct:____versions	file:
+addr	Module/fpmu/fpmu.h	/^	u32 addr;$/;"	m	struct:__anon4
+addr	Module/pmu/pmu.h	/^	u32 addr;$/;"	m	struct:__anon17
+addr	Module/pmu/pmu.h	/^	u32 addr;$/;"	m	struct:__anon19
+all	Module/fpmu/fpmu.h	/^	u64 all;$/;"	m	struct:__anon3
+all	Module/pmu/pmu.h	/^	u64 all;$/;"	m	struct:__anon18
 alloc_seeker	Module/seeker-sampler/alloc.c	/^struct log_block * alloc_seeker(void)$/;"	f
 append	Scripts/Array.h	/^void Array<T>::append(Array<T> dat){$/;"	f	class:Array
 append	Scripts/Array.h	/^void Array<T>::append(T * carr, int len){$/;"	f	class:Array
@@ -176,8 +202,8 @@ choose_layout	Module/seeker-scheduler/mutate.c	/^void choose_layout(int delta)$/
 clear_counters	Module/seeker-sampler/sample.c	/^void clear_counters(void)$/;"	f
 clear_ovf_status	Module/seeker-sampler/intr.h	/^	int (*clear_ovf_status)(int);$/;"	m	struct:struct_int_callbacks
 cleared	Module/pmu/pmu.c	/^cleared_t cleared[NR_CPUS][NUM_COUNTERS] = {$/;"	v
-cleared_t	Module/pmu/pmu.h	/^}cleared_t;$/;"	t	typeref:struct:__anon14
-cnt_mask	Module/pmu/pmu.h	/^	u32 cnt_mask:8;$/;"	m	struct:__anon13
+cleared_t	Module/pmu/pmu.h	/^}cleared_t;$/;"	t	typeref:struct:__anon18
+cnt_mask	Module/pmu/pmu.h	/^	u32 cnt_mask:8;$/;"	m	struct:__anon17
 config_counters	Module/seeker-sampler/sample.c	/^int config_counters(void)$/;"	f
 configure_disable_interrupts	Module/seeker-sampler/intr.c	/^void configure_disable_interrupts(void)$/;"	f
 configure_enable_interrupts	Module/seeker-sampler/intr.c	/^void configure_enable_interrupts(void)$/;"	f
@@ -189,7 +215,7 @@ control_read	Module/fpmu/fpmu.c	/^EXPORT_SYMBOL_GPL(control_read);$/;"	v
 control_read	Module/fpmu/fpmu.c	/^inline u32 control_read(void)$/;"	f
 control_write	Module/fpmu/fpmu.c	/^EXPORT_SYMBOL_GPL(control_write);$/;"	v
 control_write	Module/fpmu/fpmu.c	/^inline void control_write(void)$/;"	f
-count	Module/include/seeker.h	/^	unsigned int count;$/;"	m	struct:__anon4
+count	Module/include/seeker.h	/^	unsigned int count;$/;"	m	struct:__anon8
 count	Scripts/debugd.c	/^int count = 0;$/;"	v
 count	Scripts/seekerd.c	/^int count = 0;$/;"	v
 count_c	Scripts/debugd.c	/^char count_c[20];$/;"	v
@@ -203,24 +229,24 @@ counter_enable	Module/pmu/pmu.c	/^int counter_enable(u32 event, u32 ev_mask, u32
 counter_names	Module/pmu/pmu.c	/^char *counter_names[NUM_COUNTERS] = {$/;"	v
 counter_read	Module/pmu/pmu.c	/^EXPORT_SYMBOL_GPL(counter_read);$/;"	v
 counter_read	Module/pmu/pmu.c	/^void counter_read(void)$/;"	f
-counter_t	Module/pmu/pmu.h	/^}counter_t;$/;"	t	typeref:struct:__anon15
-counters	Module/include/seeker.h	/^	unsigned char counters[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon7
-counters	Module/include/seeker.h	/^	unsigned long long counters[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon8
+counter_t	Module/pmu/pmu.h	/^}counter_t;$/;"	t	typeref:struct:__anon19
+counters	Module/include/seeker.h	/^	unsigned char counters[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon11
+counters	Module/include/seeker.h	/^	unsigned long long counters[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon12
 counters	Module/pmu/pmu.c	/^counter_t counters[NR_CPUS][NUM_COUNTERS] = {$/;"	v
-cpu	Module/include/seeker.h	/^	unsigned int cpu;$/;"	m	struct:__anon8
+cpu	Module/include/seeker.h	/^	unsigned int cpu;$/;"	m	struct:__anon12
 cpu	Module/scpufreq/scpufreq.h	/^	unsigned int cpu;$/;"	m	struct:freq_info_t
 cpu_counters	Module/seeker-sampler/sample.c	/^int cpu_counters[NR_CPUS][MAX_COUNTERS_PER_CPU];$/;"	v
-cpu_cycles	Module/include/seeker.h	/^	unsigned long long cpu_cycles;$/;"	m	struct:__anon9
+cpu_cycles	Module/include/seeker.h	/^	unsigned long long cpu_cycles;$/;"	m	struct:__anon13
 cpu_pid	Module/seeker-sampler/sample.c	/^pid_t cpu_pid[NR_CPUS] = {-1};$/;"	v
-cpumask	Module/include/seeker.h	/^	unsigned int cpumask;$/;"	m	struct:__anon3
+cpumask	Module/include/seeker.h	/^	unsigned int cpumask;$/;"	m	struct:__anon7
 cpumask	Module/seeker-scheduler/state.h	/^	cpumask_t cpumask;$/;"	m	struct:state_desc
 cpus	Module/seeker-scheduler/state.h	/^	short cpus;$/;"	m	struct:state_desc
-cpustates	Module/include/seeker.h	/^	short cpustates[NR_CPUS];$/;"	m	struct:__anon4
+cpustates	Module/include/seeker.h	/^	short cpustates[NR_CPUS];$/;"	m	struct:__anon8
 create_timer	Module/seeker-scheduler/quanta.c	/^int create_timer(void)$/;"	f
 cur_cpu_state	Module/seeker-scheduler/state.c	/^int cur_cpu_state[NR_CPUS] = {0};$/;"	v
 cur_freq	Module/scpufreq/scpufreq.h	/^	unsigned int cur_freq;$/;"	m	struct:freq_info_t
 current_debug	Module/seeker-scheduler/debug.c	/^static struct debug_block *current_debug = NULL;$/;"	v	typeref:struct:debug_block	file:
-cycles	Module/include/seeker.h	/^	unsigned long long cycles;$/;"	m	struct:__anon8
+cycles	Module/include/seeker.h	/^	unsigned long long cycles;$/;"	m	struct:__anon12
 data	Scripts/Array.h	/^Array<T> Array<T>::data(Array<int> slice){$/;"	f	class:Array
 data	Scripts/Array.h	/^Array<T> Array<T>::data(int from, int to){$/;"	f	class:Array
 data	Scripts/Array.h	/^T Array<T>::data(int index){$/;"	f	class:Array
@@ -233,15 +259,16 @@ debug_free	Module/seeker-scheduler/debug.c	/^void debug_free(struct debug_block 
 debug_init	Module/seeker-scheduler/debug.c	/^void debug_init(void)$/;"	f
 debug_link	Module/seeker-scheduler/debug.c	/^void debug_link(struct debug_block *p)$/;"	f
 debug_lock	Module/seeker-scheduler/debug.c	/^static spinlock_t debug_lock = SPIN_LOCK_UNLOCKED;$/;"	v	file:
-debug_mutator_t	Module/include/seeker.h	/^} debug_mutator_t;$/;"	t	typeref:struct:__anon4
-debug_scheduler_t	Module/include/seeker.h	/^} debug_scheduler_t;$/;"	t	typeref:struct:__anon3
-debug_t	Module/include/seeker.h	/^} debug_t;$/;"	t	typeref:struct:__anon5
+debug_mutator_t	Module/include/seeker.h	/^} debug_mutator_t;$/;"	t	typeref:struct:__anon8
+debug_scheduler_t	Module/include/seeker.h	/^} debug_scheduler_t;$/;"	t	typeref:struct:__anon7
+debug_t	Module/include/seeker.h	/^} debug_t;$/;"	t	typeref:struct:__anon9
 dec_freq	Module/scpufreq/scpufreq.c	/^EXPORT_SYMBOL_GPL(dec_freq);$/;"	v
 dec_freq	Module/scpufreq/scpufreq.c	/^int dec_freq(unsigned int cpu)$/;"	f
 delete_log	Module/seeker-sampler/log.c	/^void delete_log(struct log_block *ent)$/;"	f
 delta	Module/seeker-scheduler/main.c	/^int delta=1;$/;"	v
 demand	Module/seeker-scheduler/state.h	/^	unsigned int demand;$/;"	m	struct:state_desc
 destroy_timer	Module/seeker-scheduler/quanta.c	/^void destroy_timer(void)$/;"	f
+dev_created	Module/seeker-scheduler/debug.c	/^static int dev_created = 0;$/;"	v	file:
 dev_open	Module/seeker-sampler/main.c	/^int dev_open = 0;$/;"	v
 dev_open	Module/seeker-scheduler/debug.c	/^static int dev_open = 0;$/;"	v	file:
 disable_interrupts	Module/seeker-sampler/intr.h	/^	int (*disable_interrupts)(int);$/;"	m	struct:struct_int_callbacks
@@ -255,39 +282,38 @@ do_sample	Module/seeker-sampler/sample.c	/^void do_sample(void) $/;"	f
 do_sample	Scripts/debugd.c	/^int do_sample = 1;$/;"	v
 do_sample	Scripts/seekerd.c	/^int do_sample = 1;$/;"	v
 do_timer_sample	Module/seeker-sampler/intr.c	/^void do_timer_sample(unsigned long param)$/;"	f
-edge	Module/pmu/pmu.h	/^	u32 edge:1;$/;"	m	struct:__anon13
+edge	Module/pmu/pmu.h	/^	u32 edge:1;$/;"	m	struct:__anon17
 empty	Scripts/Array.h	/^void Array<T>::empty(void){$/;"	f	class:Array
 enable_apic_pmu	Module/seeker-sampler/intr.c	/^void enable_apic_pmu(void)$/;"	f
 enable_interrupts	Module/seeker-sampler/intr.h	/^	int (*enable_interrupts)(int);$/;"	m	struct:struct_int_callbacks
-enabled	Module/pmu/pmu.h	/^	u32 enabled:1;$/;"	m	struct:__anon13
-enabled	Module/pmu/pmu.h	/^	u32 enabled;$/;"	m	struct:__anon15
+enabled	Module/pmu/pmu.h	/^	u32 enabled:1;$/;"	m	struct:__anon17
+enabled	Module/pmu/pmu.h	/^	u32 enabled;$/;"	m	struct:__anon19
 entry	Module/seeker-scheduler/debug.h	/^	debug_t entry;$/;"	m	struct:debug_block
 error	Module/include/seeker.h	99;"	d
-ev_mask	Module/pmu/pmu.h	/^	u32 ev_mask:8;$/;"	m	struct:__anon13
-ev_select	Module/pmu/pmu.h	/^	u32 ev_select:8;$/;"	m	struct:__anon13
-event	Module/pmu/pmu.h	/^	u32 event;$/;"	m	struct:__anon15
+ev_mask	Module/pmu/pmu.h	/^	u32 ev_mask:8;$/;"	m	struct:__anon17
+ev_select	Module/pmu/pmu.h	/^	u32 ev_select:8;$/;"	m	struct:__anon17
+event	Module/pmu/pmu.h	/^	u32 event;$/;"	m	struct:__anon19
 evtsel	Module/pmu/pmu.c	/^evtsel_t evtsel[NR_CPUS][NUM_COUNTERS] = {$/;"	v
 evtsel_clear	Module/pmu/pmu.c	/^EXPORT_SYMBOL_GPL(evtsel_clear);$/;"	v
 evtsel_clear	Module/pmu/pmu.c	/^inline void evtsel_clear(u32 evtsel_num)$/;"	f
 evtsel_names	Module/pmu/pmu.c	/^char *evtsel_names[NUM_COUNTERS] = {$/;"	v
 evtsel_read	Module/pmu/pmu.c	/^EXPORT_SYMBOL_GPL(evtsel_read);$/;"	v
 evtsel_read	Module/pmu/pmu.c	/^inline u32 evtsel_read(u32 evtsel_num) $/;"	f
-evtsel_t	Module/pmu/pmu.h	/^}evtsel_t;$/;"	t	typeref:struct:__anon13
+evtsel_t	Module/pmu/pmu.h	/^}evtsel_t;$/;"	t	typeref:struct:__anon17
 evtsel_write	Module/pmu/pmu.c	/^EXPORT_SYMBOL_GPL(evtsel_write);$/;"	v
 evtsel_write	Module/pmu/pmu.c	/^inline void evtsel_write(u32 evtsel_num)$/;"	f
 exit_power	Module/power/power.c	/^module_exit(exit_power);$/;"	v
 exit_power	Module/power/power.c	/^static void __exit exit_power(void)$/;"	f	file:
-extern_callback	Module/seeker-sampler/probe.c	/^switch_to_callback_t extern_callback;$/;"	v
 extract_relative	Scripts/seeker.pm	/^sub extract_relative{$/;"	s
 fcleared	Module/fpmu/fpmu.c	/^fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS] = {$/;"	v
-fcleared_t	Module/fpmu/fpmu.h	/^}fcleared_t;$/;"	t	typeref:struct:__anon17
+fcleared_t	Module/fpmu/fpmu.h	/^}fcleared_t;$/;"	t	typeref:struct:__anon3
 fcontrol	Module/fpmu/fpmu.c	/^fixctrl_t fcontrol[NR_CPUS] = {$/;"	v
 fcounter_clear	Module/fpmu/fpmu.c	/^EXPORT_SYMBOL_GPL(fcounter_clear);$/;"	v
 fcounter_clear	Module/fpmu/fpmu.c	/^inline void fcounter_clear(u32 counter)$/;"	f
 fcounter_names	Module/fpmu/fpmu.c	/^char *fcounter_names[NUM_FIXED_COUNTERS] = {$/;"	v
 fcounter_read	Module/fpmu/fpmu.c	/^EXPORT_SYMBOL_GPL(fcounter_read);$/;"	v
 fcounter_read	Module/fpmu/fpmu.c	/^void fcounter_read(void)$/;"	f
-fcounter_t	Module/fpmu/fpmu.h	/^} fcounter_t;$/;"	t	typeref:struct:__anon18
+fcounter_t	Module/fpmu/fpmu.h	/^} fcounter_t;$/;"	t	typeref:struct:__anon4
 fcounters	Module/fpmu/fpmu.c	/^fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS] = {$/;"	v
 fcounters_disable	Module/fpmu/fpmu.c	/^EXPORT_SYMBOL_GPL(fcounters_disable);$/;"	v
 fcounters_disable	Module/fpmu/fpmu.c	/^inline void fcounters_disable(void)$/;"	f
@@ -297,7 +323,7 @@ fill	Scripts/Array.h	/^void Array<T>::fill(int index, T data){$/;"	f	class:Array
 finalize_seeker_cache	Module/seeker-sampler/alloc.c	/^void finalize_seeker_cache(void)$/;"	f
 first_read	Module/seeker-sampler/log.c	/^static int first_read = 1;$/;"	v	file:
 first_read	Module/seeker-scheduler/debug.c	/^static int first_read = 1;$/;"	v	file:
-fixctrl_t	Module/fpmu/fpmu.h	/^} fixctrl_t;$/;"	t	typeref:struct:__anon16
+fixctrl_t	Module/fpmu/fpmu.h	/^} fixctrl_t;$/;"	t	typeref:struct:__anon2
 foreach	Scripts/Array.h	36;"	d
 fpmu_clear_ovf_status	Module/fpmu/fpmu.c	/^EXPORT_SYMBOL_GPL(fpmu_clear_ovf_status);$/;"	v
 fpmu_clear_ovf_status	Module/fpmu/fpmu.c	/^int fpmu_clear_ovf_status(int ctr)$/;"	f
@@ -319,7 +345,6 @@ fprint	Scripts/Array.h	/^void Array<T>::fprint(ofstream &outf){$/;"	f	class:Arra
 fprint	Scripts/Array.h	/^void Array<T>::fprint(ofstream &outf, int col){$/;"	f	class:Array
 free_seeker	Module/seeker-sampler/alloc.c	/^void free_seeker(struct log_block * entry)$/;"	f
 freq_count	Module/scpufreq/scpufreq.c	/^unsigned int freq_count = -1;$/;"	v
-freq_delta	Module/seeker-scheduler/state.c	/^int freq_delta(int delta)$/;"	f
 freq_info	Module/scpufreq/scpufreq.c	/^struct freq_info_t freq_info[NR_CPUS];$/;"	v	typeref:struct:freq_info_t
 freq_info_t	Module/scpufreq/scpufreq.h	/^struct freq_info_t{$/;"	s
 freqs	Module/scpufreq/scpufreq.c	/^unsigned int freqs[NR_CPUS];$/;"	v
@@ -338,20 +363,18 @@ get_last_time_stamp	Module/tsc/tsc.c	/^u64 get_last_time_stamp(u32 cpu_id)$/;"	f
 get_max_states	Module/scpufreq/scpufreq.c	/^EXPORT_SYMBOL_GPL(get_max_states);$/;"	v
 get_max_states	Module/scpufreq/scpufreq.c	/^int get_max_states(int cpu)$/;"	f
 get_power	Module/power/power.c	/^void get_power(void)$/;"	f
-get_state_of_cpu	Module/seeker-scheduler/assigncpu.c	/^EXPORT_SYMBOL_GPL(get_state_of_cpu);$/;"	v
-get_state_of_cpu	Module/seeker-scheduler/assigncpu.c	/^void get_state_of_cpu(void)$/;"	f
 get_temp	Module/therm/therm.c	/^EXPORT_SYMBOL_GPL(get_temp);$/;"	v
 get_temp	Module/therm/therm.c	/^int get_temp(int cpu)$/;"	f
 get_time_stamp	Module/tsc/tsc.c	/^EXPORT_SYMBOL_GPL(get_time_stamp);$/;"	v
 get_time_stamp	Module/tsc/tsc.c	/^u64 get_time_stamp(u32 cpu_id)$/;"	f
 header	Scripts/iconfig.h	/^char header[200] = "INSTR,RE_IPC,RF_IPC,L2_MISS,TEMPR";$/;"	v
-high	Module/fpmu/fpmu.h	/^	u32 high:32;$/;"	m	struct:__anon18
-high	Module/fpmu/fpmu.h	/^	u32 high;$/;"	m	struct:__anon17
-high	Module/pmu/pmu.h	/^	u32 high:32;$/;"	m	struct:__anon15
-high	Module/pmu/pmu.h	/^	u32 high;$/;"	m	struct:__anon14
-high	Module/tsc/tsc.h	/^	u32 high;$/;"	m	struct:__anon12
+high	Module/fpmu/fpmu.h	/^	u32 high:32;$/;"	m	struct:__anon4
+high	Module/fpmu/fpmu.h	/^	u32 high;$/;"	m	struct:__anon3
+high	Module/pmu/pmu.h	/^	u32 high:32;$/;"	m	struct:__anon19
+high	Module/pmu/pmu.h	/^	u32 high;$/;"	m	struct:__anon18
+high	Module/tsc/tsc.h	/^	u32 high;$/;"	m	struct:__anon16
 high	Scripts/iconfig.h	/^		double low,high;$/;"	m	class:SPLINE
-hint	Module/include/seeker.h	/^	unsigned int hint[MAX_STATES];$/;"	m	struct:__anon4
+hint	Module/include/seeker.h	/^	unsigned int hint[MAX_STATES];$/;"	m	struct:__anon8
 hint_dec	Module/seeker-scheduler/state.c	/^EXPORT_SYMBOL_GPL(hint_dec);$/;"	v
 hint_dec	Module/seeker-scheduler/state.c	/^void hint_dec(int state)$/;"	f
 hint_inc	Module/seeker-scheduler/state.c	/^EXPORT_SYMBOL_GPL(hint_inc);$/;"	v
@@ -369,31 +392,32 @@ init_ipmi_interface	Module/power/power.c	/^inline int init_ipmi_interface(void)$
 init_power	Module/power/power.c	/^module_init(init_power);$/;"	v
 init_power	Module/power/power.c	/^static int __init init_power(void)$/;"	f	file:
 init_seeker_cache	Module/seeker-sampler/alloc.c	/^int init_seeker_cache(void)$/;"	f
-init_system	Module/seeker-scheduler/assigncpu.c	/^void init_system(void)$/;"	f
+inst___switch_to	Module/seeker-sampler/probe.c	/^EXPORT_SYMBOL_GPL(inst___switch_to);$/;"	v
 inst___switch_to	Module/seeker-sampler/probe.c	/^void inst___switch_to(struct task_struct *from, struct task_struct *to)$/;"	f
-inst___switch_to	Module/seeker-scheduler/main.c	/^void inst___switch_to(struct task_struct *from, struct task_struct *to)$/;"	f
+inst_inst___switch_to	Module/seeker-scheduler/main.c	/^void inst_inst___switch_to(struct task_struct *from, struct task_struct *to)$/;"	f
 inst_release_thread	Module/seeker-sampler/probe.c	/^void inst_release_thread(struct task_struct *t)$/;"	f
-inst_sched_fork	Module/seeker-scheduler/main.c	/^void inst_sched_fork(struct task_struct *new, int clone_flags){$/;"	f
+inst_sched_fork	Module/seeker-scheduler/main.c	/^void inst_sched_fork(struct task_struct *new, int clone_flags)$/;"	f
 inst_schedule	Module/seeker-sampler/probe.c	/^int inst_schedule(struct kprobe *p, struct pt_regs *regs)$/;"	f
 inst_smp_apic_pmu_interrupt	Module/seeker-sampler/probe.c	/^void inst_smp_apic_pmu_interrupt(struct pt_regs *regs)$/;"	f
-instr_sum	Module/include/seeker.h	/^	unsigned long long instr_sum;$/;"	m	struct:__anon9
+instr_sum	Module/include/seeker.h	/^	unsigned long long instr_sum;$/;"	m	struct:__anon13
 int_callbacks	Module/seeker-sampler/intr.c	/^struct struct_int_callbacks int_callbacks = {NULL,NULL,NULL,NULL,NULL};$/;"	v	typeref:struct:struct_int_callbacks
-int_flag	Module/pmu/pmu.h	/^	u32 int_flag:1;$/;"	m	struct:__anon13
-interval	Module/include/seeker.h	/^	unsigned long long interval;$/;"	m	struct:__anon3
-interval	Module/include/seeker.h	/^	unsigned long long interval;$/;"	m	struct:__anon4
+int_flag	Module/pmu/pmu.h	/^	u32 int_flag:1;$/;"	m	struct:__anon17
+interval	Module/include/seeker.h	/^	unsigned long long interval;$/;"	m	struct:__anon7
+interval	Module/include/seeker.h	/^	unsigned long long interval;$/;"	m	struct:__anon8
 interval_count	Module/seeker-scheduler/mutate.c	/^u64 interval_count;$/;"	v
 interval_jiffies	Module/seeker-scheduler/quanta.c	/^u32 interval_jiffies;$/;"	v
-inv_flag	Module/pmu/pmu.h	/^	u32 inv_flag:1;$/;"	m	struct:__anon13
+inv_flag	Module/pmu/pmu.h	/^	u32 inv_flag:1;$/;"	m	struct:__anon17
 ipmi_address	Module/power/power.c	/^struct ipmi_addr ipmi_address;$/;"	v	typeref:struct:ipmi_addr
 is_interrupt	Module/seeker-sampler/intr.h	/^	int (*is_interrupt)(int);$/;"	m	struct:struct_int_callbacks
 jp___switch_to	Module/seeker-sampler/probe.c	/^struct jprobe jp___switch_to = {$/;"	v	typeref:struct:jprobe
+jp_inst___switch_to	Module/seeker-scheduler/main.c	/^struct jprobe jp_inst___switch_to = {$/;"	v	typeref:struct:jprobe
 jp_release_thread	Module/seeker-sampler/probe.c	/^struct jprobe jp_release_thread = {$/;"	v	typeref:struct:jprobe
 jp_sched_fork	Module/seeker-scheduler/main.c	/^struct jprobe jp_sched_fork = {$/;"	v	typeref:struct:jprobe
 jp_smp_pmu_interrupt	Module/seeker-sampler/probe.c	/^struct jprobe jp_smp_pmu_interrupt = {$/;"	v	typeref:struct:jprobe
 kp_schedule	Module/seeker-sampler/probe.c	/^struct kprobe kp_schedule = {$/;"	v	typeref:struct:kprobe
 kprobes_registered	Module/seeker-sampler/main.c	/^static int kprobes_registered = 0;$/;"	v	file:
-last_high	Module/tsc/tsc.h	/^	u32 last_high;$/;"	m	struct:__anon12
-last_low	Module/tsc/tsc.h	/^	u32 last_low;$/;"	m	struct:__anon12
+last_high	Module/tsc/tsc.h	/^	u32 last_high;$/;"	m	struct:__anon16
+last_low	Module/tsc/tsc.h	/^	u32 last_low;$/;"	m	struct:__anon16
 length	Scripts/Array.h	/^int Array<T>::length(){$/;"	f	class:Array
 log_block	Module/seeker-sampler/alloc.h	/^struct log_block {$/;"	s
 log_create	Module/seeker-sampler/log.c	/^struct log_block *log_create(void)$/;"	f
@@ -405,11 +429,11 @@ log_link	Module/seeker-sampler/log.c	/^void log_link(struct log_block * ent)$/;"
 log_lock	Module/seeker-sampler/log.c	/^static spinlock_t log_lock = SPIN_LOCK_UNLOCKED;$/;"	v	file:
 log_num_events	Module/seeker-sampler/main.c	/^int log_num_events = 0;$/;"	v
 log_read	Module/seeker-sampler/log.c	/^int log_read(struct file* file_ptr, $/;"	f
-low	Module/fpmu/fpmu.h	/^	u32 low:32;$/;"	m	struct:__anon18
-low	Module/fpmu/fpmu.h	/^	u32 low;$/;"	m	struct:__anon17
-low	Module/pmu/pmu.h	/^	u32 low:32;$/;"	m	struct:__anon15
-low	Module/pmu/pmu.h	/^	u32 low;$/;"	m	struct:__anon14
-low	Module/tsc/tsc.h	/^	u32 low;$/;"	m	struct:__anon12
+low	Module/fpmu/fpmu.h	/^	u32 low:32;$/;"	m	struct:__anon4
+low	Module/fpmu/fpmu.h	/^	u32 low;$/;"	m	struct:__anon3
+low	Module/pmu/pmu.h	/^	u32 low:32;$/;"	m	struct:__anon19
+low	Module/pmu/pmu.h	/^	u32 low;$/;"	m	struct:__anon18
+low	Module/tsc/tsc.h	/^	u32 low;$/;"	m	struct:__anon16
 low	Scripts/iconfig.h	/^		double low,high;$/;"	m	class:SPLINE
 main	Scripts/debugd.c	/^int main (int argc, char** argv) $/;"	f
 main	Scripts/decodedebug.c	/^main(int argc, char **argv, char **envp){$/;"	f
@@ -420,25 +444,25 @@ main	Scripts/powersample.c	/^int main(int argc,char *argv[])$/;"	f
 main	Scripts/seekerd.c	/^int main (int argc, char** argv) $/;"	f
 main	Scripts/smooth.C	/^int main(int argc, char *argv[]){$/;"	f
 make_dir	Scripts/seeker.pm	/^sub make_dir{$/;"	s
-mask	Module/pmu/pmu.h	/^	u32 mask;$/;"	m	struct:__anon15
-masks	Module/include/seeker.h	/^	unsigned int masks[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon7
+mask	Module/pmu/pmu.h	/^	u32 mask;$/;"	m	struct:__anon19
+masks	Module/include/seeker.h	/^	unsigned int masks[MAX_COUNTERS_PER_CPU];$/;"	m	struct:__anon11
 max	Scripts/Array.h	/^Array<T> max(Array<T> A, Array<T> B){$/;"	f
-max_state_in_system	Module/seeker-scheduler/state.c	/^unsigned int max_state_in_system = -1;$/;"	v
+max_state_in_system	Module/seeker-scheduler/state.c	/^unsigned int max_state_in_system = 0;$/;"	v
 max_state_possible	Module/seeker-scheduler/state.c	/^int max_state_possible[NR_CPUS] = {0};$/;"	v
 mdev_registered	Module/seeker-sampler/main.c	/^static int mdev_registered = 0;$/;"	v	file:
 min	Scripts/Array.h	/^Array<T> min(Array<T> A, Array<T> B){$/;"	f
 msrs_init	Module/seeker-sampler/sample.c	/^int msrs_init(void)$/;"	f
-mut	Module/include/seeker.h	/^		debug_mutator_t mut;$/;"	m	union:__anon5::__anon6
+mut	Module/include/seeker.h	/^		debug_mutator_t mut;$/;"	m	union:__anon9::__anon10
 mva	Scripts/smooth.C	/^Array<T> mva(Array<Array<T> > * data, int ind, int window){$/;"	f
 n	Scripts/Array.h	/^		int n;$/;"	m	class:Array
-name	Module/include/seeker.h	/^	char name[16];$/;"	m	struct:__anon9
+name	Module/include/seeker.h	/^	char name[16];$/;"	m	struct:__anon13
 next	Module/seeker-sampler/alloc.h	/^	struct log_block *next;$/;"	m	struct:log_block	typeref:struct:log_block::log_block
 next	Module/seeker-scheduler/debug.h	/^	struct debug_block *next;$/;"	m	struct:debug_block	typeref:struct:debug_block::debug_block
-num_counters	Module/include/seeker.h	/^	unsigned char num_counters;$/;"	m	struct:__anon7
+num_counters	Module/include/seeker.h	/^	unsigned char num_counters;$/;"	m	struct:__anon11
 num_states	Module/scpufreq/scpufreq.h	/^	unsigned int num_states;$/;"	m	struct:freq_info_t
-oper	Scripts/iconfig.h	/^	char oper;$/;"	m	struct:__anon19
+oper	Scripts/iconfig.h	/^	char oper;$/;"	m	struct:__anon1
 oper	Scripts/iconfig.h	/^T oper(T A, T B, char oper){$/;"	f
-operation_t	Scripts/iconfig.h	/^}operation_t;$/;"	t	typeref:struct:__anon19
+operation_t	Scripts/iconfig.h	/^}operation_t;$/;"	t	typeref:struct:__anon1
 operations	Scripts/iconfig.h	/^operation_t operations[TOTAL_COLUMNS] = {$/;"	v
 operator !=	Scripts/Array.h	/^Array<T> Array<T>::operator!=(T A){$/;"	f	class:Array
 operator !=	Scripts/Array.h	/^bool Array<T>::operator!=(Array<T> A){$/;"	f	class:Array
@@ -475,10 +499,10 @@ operator >=	Scripts/Array.h	/^bool Array<T>::operator>=(Array<T> A){$/;"	f	class
 operator >>	Scripts/Array.h	/^istream& operator>>(istream& in, Array<T> &A){$/;"	f
 operator []	Scripts/Array.h	/^T& Array<T>::operator[](int index){$/;"	f	class:Array
 operator ^	Scripts/Array.h	/^Array<T> Array<T>::operator^(T B){$/;"	f	class:Array
-os0	Module/fpmu/fpmu.h	/^	u32 os0:1;$/;"	m	struct:__anon16
-os1	Module/fpmu/fpmu.h	/^	u32 os1:1;$/;"	m	struct:__anon16
-os2	Module/fpmu/fpmu.h	/^	u32 os2:1;$/;"	m	struct:__anon16
-os_flag	Module/pmu/pmu.h	/^	u32 os_flag:1;$/;"	m	struct:__anon13
+os0	Module/fpmu/fpmu.h	/^	u32 os0:1;$/;"	m	struct:__anon2
+os1	Module/fpmu/fpmu.h	/^	u32 os1:1;$/;"	m	struct:__anon2
+os2	Module/fpmu/fpmu.h	/^	u32 os2:1;$/;"	m	struct:__anon2
+os_flag	Module/pmu/pmu.h	/^	u32 os_flag:1;$/;"	m	struct:__anon17
 os_flag	Module/seeker-sampler/main.c	/^int os_flag = 0;$/;"	v
 outfile	Scripts/debugd.c	/^static FILE *infile, *outfile;$/;"	v	file:
 outfile	Scripts/seekerd.c	/^static FILE *infile, *outfile;$/;"	v	file:
@@ -486,15 +510,15 @@ outfile_name	Scripts/debugd.c	/^char outfile_prefix[100], outfile_name[100];$/;"
 outfile_name	Scripts/seekerd.c	/^char outfile_prefix[100], outfile_name[100];$/;"	v
 outfile_prefix	Scripts/debugd.c	/^char outfile_prefix[100], outfile_name[100];$/;"	v
 outfile_prefix	Scripts/seekerd.c	/^char outfile_prefix[100], outfile_name[100];$/;"	v
-pc_flag	Module/pmu/pmu.h	/^	u32 pc_flag:1;$/;"	m	struct:__anon13
-pid	Module/include/seeker.h	/^	unsigned int pid;$/;"	m	struct:__anon3
-pid	Module/include/seeker.h	/^	unsigned int pid;$/;"	m	struct:__anon8
-pid	Module/include/seeker.h	/^	unsigned int pid;$/;"	m	struct:__anon9
-pidtab_entry	Module/include/seeker.h	/^		pidtab_entry_t pidtab_entry;$/;"	m	union:__anon10::__anon11
-pidtab_entry_t	Module/include/seeker.h	/^} pidtab_entry_t;$/;"	t	typeref:struct:__anon9
-pmi0	Module/fpmu/fpmu.h	/^	u32 pmi0:1;$/;"	m	struct:__anon16
-pmi1	Module/fpmu/fpmu.h	/^	u32 pmi1:1;$/;"	m	struct:__anon16
-pmi2	Module/fpmu/fpmu.h	/^	u32 pmi2:1;$/;"	m	struct:__anon16
+pc_flag	Module/pmu/pmu.h	/^	u32 pc_flag:1;$/;"	m	struct:__anon17
+pid	Module/include/seeker.h	/^	unsigned int pid;$/;"	m	struct:__anon12
+pid	Module/include/seeker.h	/^	unsigned int pid;$/;"	m	struct:__anon13
+pid	Module/include/seeker.h	/^	unsigned int pid;$/;"	m	struct:__anon7
+pidtab_entry	Module/include/seeker.h	/^		pidtab_entry_t pidtab_entry;$/;"	m	union:__anon14::__anon15
+pidtab_entry_t	Module/include/seeker.h	/^} pidtab_entry_t;$/;"	t	typeref:struct:__anon13
+pmi0	Module/fpmu/fpmu.h	/^	u32 pmi0:1;$/;"	m	struct:__anon2
+pmi1	Module/fpmu/fpmu.h	/^	u32 pmi1:1;$/;"	m	struct:__anon2
+pmi2	Module/fpmu/fpmu.h	/^	u32 pmi2:1;$/;"	m	struct:__anon2
 pmu_clear_ovf_status	Module/pmu/pmu.c	/^EXPORT_SYMBOL_GPL(pmu_clear_ovf_status);$/;"	v
 pmu_clear_ovf_status	Module/pmu/pmu.c	/^int pmu_clear_ovf_status(int ctr)$/;"	f
 pmu_configure_interrupt	Module/pmu/pmu.c	/^EXPORT_SYMBOL_GPL(pmu_configure_interrupt);$/;"	v
@@ -519,8 +543,6 @@ procs	Module/seeker-scheduler/mutate.c	/^inline int procs(int hints,int total, i
 purge_debug	Module/seeker-scheduler/debug.c	/^void purge_debug(void)$/;"	f
 purge_log	Module/seeker-sampler/log.c	/^void purge_log(void)$/;"	f
 put_mask_from_stats	Module/seeker-scheduler/assigncpu.c	/^void put_mask_from_stats(struct task_struct *ts)$/;"	f
-put_state_of_cpu	Module/seeker-scheduler/assigncpu.c	/^EXPORT_SYMBOL_GPL(put_state_of_cpu);$/;"	v
-put_state_of_cpu	Module/seeker-scheduler/assigncpu.c	/^void put_state_of_cpu(void)$/;"	f
 read_temp	Module/therm/therm.c	/^EXPORT_SYMBOL_GPL(read_temp);$/;"	v
 read_temp	Module/therm/therm.c	/^int read_temp(void)$/;"	f
 read_time_stamp	Module/tsc/tsc.c	/^EXPORT_SYMBOL_GPL(read_time_stamp);$/;"	v
@@ -528,20 +550,18 @@ read_time_stamp	Module/tsc/tsc.c	/^void read_time_stamp(void)$/;"	f
 real_index	Scripts/Array.h	/^int Array<T>::real_index(int ind){$/;"	f	class:Array
 receive_message	Module/power/power.c	/^void receive_message(struct ipmi_recv_msg *msg, void *msg_data)$/;"	f
 resize	Scripts/Array.h	/^void Array<T>::resize(int nsize){$/;"	f	class:Array
-rsvd	Module/pmu/pmu.h	/^	u32 rsvd:1;$/;"	m	struct:__anon13
+rsvd	Module/pmu/pmu.h	/^	u32 rsvd:1;$/;"	m	struct:__anon17
 sample	Module/seeker-sampler/alloc.h	/^	seeker_sampler_entry_t sample;$/;"	m	struct:log_block
 sample_freq	Module/seeker-sampler/main.c	/^int sample_freq=-1;$/;"	v
 sample_timer	Module/seeker-sampler/intr.c	/^struct timer_list sample_timer;$/;"	v	typeref:struct:timer_list
 sample_timer_started	Module/seeker-sampler/intr.c	/^int sample_timer_started = 0;$/;"	v
-sch	Module/include/seeker.h	/^		debug_scheduler_t sch;$/;"	m	union:__anon5::__anon6
+sch	Module/include/seeker.h	/^		debug_scheduler_t sch;$/;"	m	union:__anon9::__anon10
 scheduler_exit	Module/seeker-scheduler/main.c	/^module_exit(scheduler_exit);$/;"	v
 scheduler_exit	Module/seeker-scheduler/main.c	/^static void __exit scheduler_exit(void)$/;"	f	file:
 scheduler_init	Module/seeker-scheduler/main.c	/^module_init(scheduler_init);$/;"	v
 scheduler_init	Module/seeker-scheduler/main.c	/^static int __init scheduler_init(void)$/;"	f	file:
 seeker	Scripts/seeker.pm	/^package seeker;$/;"	p
 seeker_cachep	Module/seeker-sampler/alloc.c	/^static struct kmem_cache *seeker_cachep = NULL;$/;"	v	typeref:struct:kmem_cache	file:
-seeker_clear_callback	Module/seeker-sampler/probe.c	/^EXPORT_SYMBOL_GPL(seeker_clear_callback);$/;"	v
-seeker_clear_callback	Module/seeker-sampler/probe.c	/^void seeker_clear_callback(void)$/;"	f
 seeker_cpufreq_exit	Module/scpufreq/scpufreq.c	/^module_exit(seeker_cpufreq_exit);$/;"	v
 seeker_cpufreq_exit	Module/scpufreq/scpufreq.c	/^static void __exit seeker_cpufreq_exit(void)$/;"	f	file:
 seeker_cpufreq_init	Module/scpufreq/scpufreq.c	/^module_init(seeker_cpufreq_init);$/;"	v
@@ -554,24 +574,22 @@ seeker_debug_read	Module/seeker-scheduler/debug.c	/^ssize_t seeker_debug_read(st
 seeker_init_debug	Module/seeker-scheduler/debug.c	/^int seeker_init_debug(void)$/;"	f
 seeker_log_current	Module/seeker-sampler/log.c	/^struct log_block *seeker_log_current;$/;"	v	typeref:struct:log_block
 seeker_log_head	Module/seeker-sampler/log.c	/^struct log_block *seeker_log_head;$/;"	v	typeref:struct:log_block
-seeker_sample	Module/include/seeker.h	/^		seeker_sample_t seeker_sample;$/;"	m	union:__anon10::__anon11
+seeker_sample	Module/include/seeker.h	/^		seeker_sample_t seeker_sample;$/;"	m	union:__anon14::__anon15
 seeker_sample_close	Module/seeker-sampler/io.c	/^int seeker_sample_close(struct inode *in, struct file *f)$/;"	f
-seeker_sample_def	Module/include/seeker.h	/^		seeker_sample_def_t seeker_sample_def;$/;"	m	union:__anon10::__anon11
-seeker_sample_def_t	Module/include/seeker.h	/^} seeker_sample_def_t;$/;"	t	typeref:struct:__anon7
+seeker_sample_def	Module/include/seeker.h	/^		seeker_sample_def_t seeker_sample_def;$/;"	m	union:__anon14::__anon15
+seeker_sample_def_t	Module/include/seeker.h	/^} seeker_sample_def_t;$/;"	t	typeref:struct:__anon11
 seeker_sample_fops	Module/seeker-sampler/main.c	/^static struct file_operations seeker_sample_fops;$/;"	v	typeref:struct:file_operations	file:
 seeker_sample_log_init	Module/seeker-sampler/main.c	/^static int seeker_sample_log_init(void)$/;"	f	file:
 seeker_sample_log_read	Module/seeker-sampler/io.c	/^ssize_t seeker_sample_log_read(struct file *file_ptr, char __user *buf, $/;"	f
 seeker_sample_mdev	Module/seeker-sampler/main.c	/^static struct miscdevice seeker_sample_mdev;$/;"	v	typeref:struct:miscdevice	file:
 seeker_sample_open	Module/seeker-sampler/io.c	/^int seeker_sample_open(struct inode *in, struct file * f)$/;"	f
-seeker_sample_t	Module/include/seeker.h	/^} seeker_sample_t; $/;"	t	typeref:struct:__anon8
-seeker_sampler_entry_t	Module/include/seeker.h	/^} seeker_sampler_entry_t;$/;"	t	typeref:struct:__anon10
+seeker_sample_t	Module/include/seeker.h	/^} seeker_sample_t; $/;"	t	typeref:struct:__anon12
+seeker_sampler_entry_t	Module/include/seeker.h	/^} seeker_sampler_entry_t;$/;"	t	typeref:struct:__anon14
 seeker_sampler_exit	Module/seeker-sampler/main.c	/^module_exit(seeker_sampler_exit);$/;"	v
 seeker_sampler_exit	Module/seeker-sampler/main.c	/^static void __exit seeker_sampler_exit(void)$/;"	f	file:
 seeker_sampler_exit_handler	Module/seeker-sampler/main.c	/^void seeker_sampler_exit_handler(void)$/;"	f
 seeker_sampler_init	Module/seeker-sampler/main.c	/^module_init(seeker_sampler_init);$/;"	v
 seeker_sampler_init	Module/seeker-sampler/main.c	/^static int __init seeker_sampler_init(void)$/;"	f	file:
-seeker_set_callback	Module/seeker-sampler/probe.c	/^EXPORT_SYMBOL_GPL(seeker_set_callback);$/;"	v
-seeker_set_callback	Module/seeker-sampler/probe.c	/^void seeker_set_callback(switch_to_callback_t callback)$/;"	f
 set_freq	Module/scpufreq/scpufreq.c	/^EXPORT_SYMBOL_GPL(set_freq);$/;"	v
 set_freq	Module/scpufreq/scpufreq.c	/^int set_freq(unsigned int cpu, unsigned int freq_ind)$/;"	f
 slope	Scripts/iconfig.h	/^		Array<double> slope;$/;"	m	class:SPLINE
@@ -583,10 +601,9 @@ state_change	Module/seeker-scheduler/quanta.c	/^void state_change(unsigned long 
 state_change_timer	Module/seeker-scheduler/quanta.c	/^struct timer_list state_change_timer;$/;"	v	typeref:struct:timer_list
 state_desc	Module/seeker-scheduler/state.h	/^struct state_desc{$/;"	s
 state_matrix	Module/seeker-scheduler/mutate.c	/^int state_matrix[NR_CPUS][MAX_STATES];$/;"	v
-state_of_cpu_lock	Module/seeker-scheduler/assigncpu.c	/^rwlock_t state_of_cpu_lock = RW_LOCK_UNLOCKED;$/;"	v
 states	Module/seeker-scheduler/state.c	/^struct state_desc states[MAX_STATES];$/;"	v	typeref:struct:state_desc
+states_lock	Module/seeker-scheduler/state.c	/^spinlock_t states_lock;$/;"	v
 struct_int_callbacks	Module/seeker-sampler/intr.h	/^struct struct_int_callbacks{$/;"	s
-switch_to_callback_t	Module/include/callback.h	/^typedef void (* switch_to_callback_t)(struct task_struct *,struct task_struct *);$/;"	t
 table	Module/scpufreq/scpufreq.h	/^	unsigned int table[MAX_STATES];$/;"	m	struct:freq_info_t
 temperature	Module/therm/therm.c	/^int temperature[NR_CPUS] = {0};$/;"	v
 therm_exit	Module/therm/therm.c	/^module_exit(therm_exit);$/;"	v
@@ -596,7 +613,7 @@ therm_init	Module/therm/therm.c	/^static int __init therm_init(void)$/;"	f	file:
 therm_init_msrs	Module/therm/therm.c	/^EXPORT_SYMBOL_GPL(therm_init_msrs);$/;"	v
 therm_init_msrs	Module/therm/therm.c	/^void therm_init_msrs(void)$/;"	f
 time_stamp	Module/tsc/tsc.c	/^tstamp_t time_stamp[NR_CPUS] = {$/;"	v
-total_cycles	Module/include/seeker.h	/^	unsigned long long total_cycles;$/;"	m	struct:__anon9
+total_cycles	Module/include/seeker.h	/^	unsigned long long total_cycles;$/;"	m	struct:__anon13
 total_online_cpus	Module/seeker-scheduler/main.c	/^int total_online_cpus = 0;$/;"	v
 ts	Module/seeker-sampler/sample.c	/^struct task_struct *ts[NR_CPUS] = {NULL};$/;"	v	typeref:struct:task_struct
 tsc__exit	Module/tsc/tsc.c	/^module_exit(tsc__exit);$/;"	v
@@ -605,12 +622,12 @@ tsc__init	Module/tsc/tsc.c	/^module_init(tsc__init);$/;"	v
 tsc__init	Module/tsc/tsc.c	/^static int __init tsc__init(void)$/;"	f	file:
 tsc_init_msrs	Module/tsc/tsc.c	/^EXPORT_SYMBOL_GPL(tsc_init_msrs);$/;"	v
 tsc_init_msrs	Module/tsc/tsc.c	/^inline void tsc_init_msrs(void)$/;"	f
-tstamp_t	Module/tsc/tsc.h	/^}tstamp_t;$/;"	t	typeref:struct:__anon12
-type	Module/include/seeker.h	/^	int type;$/;"	m	struct:__anon10
-type	Module/include/seeker.h	/^	int type;$/;"	m	struct:__anon5
+tstamp_t	Module/tsc/tsc.h	/^}tstamp_t;$/;"	t	typeref:struct:__anon16
+type	Module/include/seeker.h	/^	int type;$/;"	m	struct:__anon14
+type	Module/include/seeker.h	/^	int type;$/;"	m	struct:__anon9
 typecast	Scripts/Array.h	/^Array<T> typecast(Array<U> B){$/;"	f
-u	Module/include/seeker.h	/^	} u;$/;"	m	struct:__anon10	typeref:union:__anon10::__anon11
-u	Module/include/seeker.h	/^	}u;$/;"	m	struct:__anon5	typeref:union:__anon5::__anon6
+u	Module/include/seeker.h	/^	} u;$/;"	m	struct:__anon14	typeref:union:__anon14::__anon15
+u	Module/include/seeker.h	/^	}u;$/;"	m	struct:__anon9	typeref:union:__anon9::__anon10
 update_state_matrix	Module/seeker-scheduler/mutate.c	/^void update_state_matrix(int *cpu_state, int delta)$/;"	f
 usage	Scripts/debugd.c	/^void usage(char *argv[])$/;"	f
 usage	Scripts/seekerd.c	/^void usage(char *argv[])$/;"	f
@@ -618,10 +635,10 @@ user	Module/power/power.c	/^ipmi_user_t user;$/;"	v
 user_handle	Module/power/power.c	/^struct ipmi_user_hndl user_handle;$/;"	v	typeref:struct:ipmi_user_hndl
 usleep_wrapper	Scripts/debugd.c	/^unsigned int usleep_wrapper(unsigned int time)$/;"	f
 usleep_wrapper	Scripts/seekerd.c	/^unsigned int usleep_wrapper(unsigned int time)$/;"	f
-usr0	Module/fpmu/fpmu.h	/^	u32 usr0:1;$/;"	m	struct:__anon16
-usr1	Module/fpmu/fpmu.h	/^	u32 usr1:1;$/;"	m	struct:__anon16
-usr2	Module/fpmu/fpmu.h	/^	u32 usr2:1;$/;"	m	struct:__anon16
-usr_flag	Module/pmu/pmu.h	/^	u32 usr_flag:1;$/;"	m	struct:__anon13
+usr0	Module/fpmu/fpmu.h	/^	u32 usr0:1;$/;"	m	struct:__anon2
+usr1	Module/fpmu/fpmu.h	/^	u32 usr1:1;$/;"	m	struct:__anon2
+usr2	Module/fpmu/fpmu.h	/^	u32 usr2:1;$/;"	m	struct:__anon2
+usr_flag	Module/pmu/pmu.h	/^	u32 usr_flag:1;$/;"	m	struct:__anon17
 warn	Module/include/seeker.h	100;"	d
 within	Scripts/iconfig.h	/^		bool within(double X){$/;"	f	class:SPLINE
 zeroes	Scripts/Array.h	/^void Array<T>::zeroes(void){$/;"	f	class:Array

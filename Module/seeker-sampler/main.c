@@ -78,8 +78,19 @@ int pmu_intr = -1;
 /************************* Declarations & Prototypes *************************/
 
 
-static struct file_operations seeker_sample_fops;
-static struct miscdevice seeker_sample_mdev;
+static struct file_operations seeker_sample_fops = {
+	.owner = THIS_MODULE,
+	.open = seeker_sample_open,
+	.release = seeker_sample_close,
+	.read = seeker_sample_log_read
+};
+
+static struct miscdevice seeker_sample_mdev = {
+	.minor = MISC_DYNAMIC_MINOR,
+	.name = "seeker_samples",
+	.fops = &seeker_sample_fops
+};
+
 static int mdev_registered = 0;
 static int kprobes_registered = 0;
 int dev_open = 0;
@@ -104,17 +115,12 @@ extern struct jprobe jp___switch_to;
  *---------------------------------------------------------------------------*/
 static int seeker_sample_log_init(void)
 {
+	int ret;
 	log_init();
-	seeker_sample_fops.open = seeker_sample_open;
-	seeker_sample_fops.release = seeker_sample_close;
-	seeker_sample_fops.read = seeker_sample_log_read;
-  
-	seeker_sample_mdev.minor = SEEKER_SAMPLE_MINOR;
-	seeker_sample_mdev.name = "seeker_samples";
-	seeker_sample_mdev.fops = &seeker_sample_fops;
 
-	if(unlikely(misc_register(&seeker_sample_mdev) < 0)) {
-		error("Device register failed");
+	ret = misc_register(&seeker_sample_mdev);
+	if(unlikely(ret != 0)) {
+		error("Device register failed with error code %d",ret);
 		return -1;
 	} else {
 		mdev_registered = 1;
@@ -312,8 +318,6 @@ static void __exit seeker_sampler_exit(void)
 {
 	seeker_sampler_exit_handler();
 }
-
-
 
 /*---------------------------------------------------------------------------*
  * Descreption: Module Parameters.

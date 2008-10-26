@@ -134,7 +134,7 @@ int seeker_init_debug(void)
 	seeker_debug_fops.release = seeker_debug_close;
 	seeker_debug_fops.read = seeker_debug_read;
 
-	seeker_debug_mdev.minor = 241;
+	seeker_debug_mdev.minor = MISC_DYNAMIC_MINOR;
 	seeker_debug_mdev.name  = "seeker_debug";
 	seeker_debug_mdev.fops = &seeker_debug_fops;
 
