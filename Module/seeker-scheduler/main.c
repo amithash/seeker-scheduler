@@ -54,6 +54,8 @@
 #define PMU_RFCY_EVTSEL 0x00000000
 #define PMU_RFCY_MASK 0x00000000
 
+#define MAX_INSTRUCTIONS_BEFORE_SCHEDULE 10000000
+
 
 void inst___switch_to(struct task_struct *from, struct task_struct *to);
 void inst_sched_fork(struct task_struct *new, int clone_flags);
@@ -70,7 +72,7 @@ struct jprobe jp___switch_to = {
 	.kp.symbol_name = "__switch_to",
 };
 
-struct jprobe jp_inst_schedule = {
+struct jprobe jp_schedule = {
 	.entry = (kprobe_opcode_t *)inst_schedule,
 	.kp.symbol_name = "inst_schedule",
 };
@@ -147,16 +149,16 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	read_counters(cpu);
 #ifdef SEEKER_PLUGIN_PATCH
 	if(ts[cpu]->interval == interval_count){
-		ts[cpu]->inst += pmu_val[0];
-		ts[cpu]->re_cy += pmu_val[1];
-		ts[cpu]->ref_cy += pmu_val[2];
+		ts[cpu]->inst += pmu_val[cpu][0];
+		ts[cpu]->re_cy += pmu_val[cpu][1];
+		ts[cpu]->ref_cy += pmu_val[cpu][2];
 		if(ts[cpu]->inst > MAX_INSTRUCTIONS_BEFORE_SCHEDULE)
 			set_tsk_need_resched(ts[cpu]);
 	} else {
 		ts[cpu]->interval = interval_count;
-		ts[cpu]->inst = pmu_val[0];
-		ts[cpu]->re_cy = pmu_val[1];
-		ts[cpu]->ref_cy = pmu_val[2];
+		ts[cpu]->inst = pmu_val[cpu][0];
+		ts[cpu]->re_cy = pmu_val[cpu][1];
+		ts[cpu]->ref_cy = pmu_val[cpu][2];
 	}	
 #endif
 	return 0;
@@ -203,7 +205,7 @@ static int __init scheduler_init(void)
 			return -ENOSYS;
 		}
 		if(unlikely((probe_ret = register_jprobe(&jp_schedule))<0)){
-			error("Register inst_schedule failed with %s",probe_ret);
+			error("Register inst_schedule failed with %d",probe_ret);
 			return -ENOSYS;
 		}
 		configure_counters();
