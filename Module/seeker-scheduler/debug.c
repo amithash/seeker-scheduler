@@ -36,7 +36,7 @@ ssize_t seeker_debug_read(struct file *file_ptr, char __user *buf, size_t count,
 struct debug_block *get_debug(void)
 {
 	struct debug_block *p;
-	if(!dev_open)
+	if(!dev_open && !current_debug)
 		return NULL;
 	spin_lock(&debug_lock);
 	if(!current_debug){
@@ -72,12 +72,12 @@ void purge_debug(void)
 	c1 = start_debug;
 	start_debug = NULL;
 	current_debug = NULL;
+	spin_unlock(&debug_lock);
 	while(c1){
 		c2 = c1->next;
 		debug_free(c1);
 		c1 = c2;
 	}
-	spin_unlock(&debug_lock);
 }
 	
 

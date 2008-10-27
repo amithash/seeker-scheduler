@@ -83,17 +83,26 @@ extern u64 pmu_val[NR_CPUS][3];
 
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 {
-	int cpu = smp_processor_id();
+	int test;
+	int cpu = get_cpu();
+	if(!ts[cpu])
+		goto inst_schedule_out;
+
 	read_counters(cpu);
 #ifdef SEEKER_PLUGIN_PATCH
-	if(ts[cpu]->interval == interval_count)
+	if(ts[cpu]->interval != interval_count)
 		ts[cpu]->interval = interval_count;
 	ts[cpu]->inst   = pmu_val[cpu][0];
 	ts[cpu]->re_cy  = pmu_val[cpu][1];
 	ts[cpu]->ref_cy = pmu_val[cpu][2];
+	test   = pmu_val[cpu][0];
+	test  = pmu_val[cpu][1];
+	test = pmu_val[cpu][2];
 	if(ts[cpu]->inst > MAX_INSTRUCTIONS_BEFORE_SCHEDULE)
 		set_tsk_need_resched(ts[cpu]);
 #endif
+inst_schedule_out:
+	put_cpu();
 	return 0;
 }
 
@@ -121,7 +130,7 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	jprobe_return();
 }
 
-static int __init scheduler_init(void)
+static int scheduler_init(void)
 {
 #ifdef SEEKER_PLUGIN_PATCH
 	int probe_ret;
@@ -162,7 +171,7 @@ static int __init scheduler_init(void)
 #endif
 }
 
-static void __exit scheduler_exit(void)
+static void scheduler_exit(void)
 {
 	debug_exit();
 	unregister_jprobe(&jp_sched_fork);
