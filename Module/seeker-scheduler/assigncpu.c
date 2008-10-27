@@ -45,6 +45,10 @@ void put_mask_from_stats(struct task_struct *ts)
 	short ipc = 0;
 	cpumask_t mask;
 
+	/* Do not do anything to the init task! */
+	if(ts->pid == 0)
+		return;
+
 
 #ifdef SEEKER_PLUGIN_PATCH
 	int state;

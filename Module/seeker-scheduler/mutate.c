@@ -11,7 +11,7 @@
 #include "debug.h"
 
 #define ABS(i) ((int)(i) >= 0 ? (i) : (-1*((int)(i))))
-#define div(a,b) ((b) > 0 ? ((a) / (b)) + ((((a) % (b)) << 1) >= (b) ? 1 : 0) : 0)
+#define div(a,b) ((b) != 0 ? ((((a) + (b) - 1))/(b))  : 0)
 
 extern int total_online_cpus;
 extern int max_allowed_states[NR_CPUS];
@@ -74,7 +74,6 @@ void choose_layout(int delta)
 	int sum;
 	short poison[NR_CPUS] = {1};
 	int new_cpu_state[NR_CPUS];
-	cpumask_t mask;
 
 	interval_count++;
 
@@ -220,10 +219,7 @@ void choose_layout(int delta)
 			set_freq(i,new_cpu_state[i]);
 		}
 		states[cur_cpu_state[i]].cpus++;
-		mask = cpumask_of_cpu(i);
-		cpus_or(states[cur_cpu_state[i]].cpumask,
-			states[cur_cpu_state[i]].cpumask,
-			mask);
+		cpu_set(i,states[cur_cpu_state[i]].cpumask);
 		if(p)
 			p->entry.u.mut.cpustates[i] = cur_cpu_state[i];
 	}
