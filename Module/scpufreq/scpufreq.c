@@ -63,7 +63,8 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 		policy = cpufreq_cpu_get(cpu);
 		policy->min = freq_info[cpu].table[freq_ind];
 		policy->max = freq_info[cpu].table[freq_ind];
-		policy->cpus= cpumask_of_cpu(cpu);
+		cpus_clear(policy->cpus);
+		cpu_set(cpu,policy->cpus);
 		cpufreq_cpu_put(policy);
 		freq_info[cpu].cur_freq = freq_ind;
 		return 0;
