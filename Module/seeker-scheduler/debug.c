@@ -65,6 +65,9 @@ void debug_free(struct debug_block *p)
 void purge_debug(void)
 {
 	struct debug_block *c1,*c2;
+	if(start_debug == NULL || current_debug == NULL)
+		return;
+
 	spin_lock(&debug_lock);
 	c1 = start_debug;
 	start_debug = NULL;

@@ -84,6 +84,9 @@ void purge_log(void)
 	 * one will try to access while the
 	 * purge is going on
 	 */
+	if(seeker_log_head == NULL || seeker_log_current == NULL)
+		return;
+
 	spin_lock(&log_lock);
 	c1 = seeker_log_head;
 	seeker_log_head = NULL;
