@@ -57,22 +57,15 @@ struct log_block *log_create(void)
 		return NULL;
 	}
 	p->next = NULL;
+	spin_lock(&log_lock);
+	if(!seeker_log_current)
+		goto out;
+	seeker_log_current->next = p;
+	seeker_log_current = p;
+out:
+	spin_unlock(&log_lock);
 	return p;
 }
-
-void log_link(struct log_block * ent)
-{
-	unsigned long flags;
-	if(!seeker_log_current || !ent){
-		warn("Current of ent is NULL");
-		return;
-	}
-	spin_lock_irqsave(&log_lock,flags);
-	seeker_log_current->next = ent;
-	seeker_log_current = ent;
-	spin_unlock_irqrestore(&log_lock,flags);
-}
-
 
 void delete_log(struct log_block *ent)
 {

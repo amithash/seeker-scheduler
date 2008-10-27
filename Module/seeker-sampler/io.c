@@ -100,7 +100,6 @@ int seeker_sample_open(struct inode *in, struct file * f)
 	pentry->sample.u.seeker_sample_def.counters[i] = 0x04;
 	pentry->sample.u.seeker_sample_def.masks[i] = 0x00;
 	i++;
-	log_link(pentry);
 
 	/* Enable and configure interrupts on each cpu */
 	#ifdef LOCAL_PMU_VECTOR

@@ -150,8 +150,6 @@ void do_sample(void)
 	
 	/* GETTING DATA FROM OTHER COUNTERS GO HERE */
 
-	log_link(pentry);
-  
 	out:
 	clear_counters();
 #ifdef SEEKER_PLUGIN_PATCH
@@ -272,6 +270,5 @@ void do_pid_log(struct task_struct *p)
 	memcpy(&(pentry->sample.u.pidtab_entry.name),
 	       p->comm, 
 	       sizeof(pentry->sample.u.pidtab_entry.name));
-	log_link(pentry);
 }
 
