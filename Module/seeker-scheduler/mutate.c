@@ -10,8 +10,8 @@
 #include "scpufreq.h"
 #include "debug.h"
 
-#define ABS(i) ((i) >= 0 ? (i) : (-1*(i)))
-#define div(a,b) ((a) / (b)) + (((a)%(b))<<1 >= (b) ? 1 : 0)
+#define ABS(i) ((int)(i) >= 0 ? (i) : (-1*((int)(i))))
+#define div(a,b) ((b) > 0 ? ((a) / (b)) + ((((a) % (b)) << 1) >= (b) ? 1 : 0) : 0)
 
 extern int total_online_cpus;
 extern int max_allowed_states[NR_CPUS];
@@ -47,7 +47,10 @@ void update_state_matrix(int *cpu_state, int delta)
 		}
 		l=1;
 		for(j=cpu_state[i]-1;j>=0;j--){
-			state_matrix[i][j] = (max_state_in_system-l)*(max_state_in_system-l);
+			if(l>delta)
+				state_matrix[i][j] = 0;
+			else
+				state_matrix[i][j] = (max_state_in_system-l)*(max_state_in_system-l);
 			l++;
 		}
 	}
@@ -70,7 +73,7 @@ void choose_layout(int delta)
 	unsigned int best_low_proc_value = 0;
 	int sum;
 	short poison[NR_CPUS] = {1};
-	int new_cpu_state[NR_CPUS] = {-1};
+	int new_cpu_state[NR_CPUS];
 	cpumask_t mask;
 
 	interval_count++;
@@ -95,10 +98,10 @@ void choose_layout(int delta)
 
 	/* Total Hint */
 	
-	for(i=0;i<max_state_in_system;i++){
-		total += states[i].demand;
+	for(j=0;j<max_state_in_system;j++){
+		total += states[j].demand;
 		if(p)
-			p->entry.u.mut.hint[i] = states[i].demand;
+			p->entry.u.mut.hint[j] = states[j].demand;
 	}
 
 	/* Num of cpus required for this state 
@@ -124,42 +127,43 @@ void choose_layout(int delta)
 		 */
 
 		/* For each state, */
-		for(i=0;i<max_state_in_system;i++){
+		for(j=0;j<max_state_in_system;j++){
 			sum = 0;
 			best_proc = 0;
 			best_proc_value = 0;
 			best_low_proc_value = -1;
 
 			/* Sum the cost over all rows */
-			for(j=0;j<total_online_cpus;j++){
-				if(state_matrix[j][i] * poison[j] > best_proc_value){
-					best_proc_value = state_matrix[j][i] * poison[j];
-					best_proc = j;
-				} else if(state_matrix[j][i] < best_low_proc_value){
-					best_low_proc_value = state_matrix[j][i];
+			for(i=0;i<total_online_cpus;i++){
+				if(state_matrix[i][j] * poison[i] > best_proc_value){
+					best_proc_value = state_matrix[i][j] * poison[i];
+					best_proc = i;
+				} else if(state_matrix[i][j] < best_low_proc_value){
+					best_low_proc_value = state_matrix[i][j];
 				}
-				sum += state_matrix[j][i];
+				sum += state_matrix[i][j];
 			}
-			sum = sum * (demand[i]+1);
+
+			sum = sum * (demand[j]+1);
 
 			/* if this is the max, make a note of the 
 			 * potential winner */
 			if(sum > winner_val){
-				winner = i;
+				winner = j;
 				winner_val = sum;
 				winner_best_proc= best_proc;
 				winner_best_proc_value = best_proc_value;
 				winner_best_low_proc_value = best_low_proc_value;
 			} else if(sum == winner_val){
 				if(best_proc_value > winner_best_proc_value){
-					winner = i;
+					winner = j;
 					winner_val = sum;
 					winner_best_proc= best_proc;
 					winner_best_proc_value = best_proc_value;
 					winner_best_low_proc_value = best_low_proc_value;
 				} else if(best_proc_value == winner_best_proc_value){
 					if(best_low_proc_value > winner_best_low_proc_value){
-						winner = i;
+						winner = j;
 						winner_val = sum;
 						winner_best_proc= best_proc;
 						winner_best_proc_value = best_proc_value;
@@ -186,6 +190,9 @@ void choose_layout(int delta)
 		/* Assign the new cpus state to be the winner */
 		new_cpu_state[winner_best_proc] = winner;
 
+		if(delta == 0)
+			break;
+
 		/* If the new state of the CPU is different,
 		 * change the state matrix to reflect it */
 		if(cur_cpu_state[winner_best_proc] != winner){
@@ -195,9 +202,9 @@ void choose_layout(int delta)
 		/* Continue the auction if delta > 0 */
 	}	
 
-	for(i=0;i<max_state_in_system;i++){
-		states[i].cpus = 0;
-		cpus_clear(states[i].cpumask);
+	for(j=0;j<max_state_in_system;j++){
+		states[j].cpus = 0;
+		cpus_clear(states[j].cpumask);
 	}
 
 

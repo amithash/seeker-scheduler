@@ -74,7 +74,7 @@ struct kprobe kp_schedule = {
 
 int total_online_cpus = 0;
 
-int change_interval = 5; /* In seconds */
+int change_interval = 5;
 int delta=1;
 int init = ALL_HIGH;
 extern u64 interval_count;

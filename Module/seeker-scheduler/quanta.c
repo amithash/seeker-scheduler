@@ -9,15 +9,24 @@
 #include "state.h"
 #include "mutate.h"
 
-u32 interval_jiffies;
+u64 interval_jiffies;
 extern int change_interval;
-struct timer_list state_change_timer;
+static struct timer_list state_change_timer;
 extern int delta;
+
+//static void state_change(unsigned long param);
 
 void destroy_timer(void)
 {
 	del_timer_sync(&state_change_timer);
 }
+
+static void state_change(unsigned long param)
+{
+	choose_layout(delta);
+	mod_timer(&state_change_timer, jiffies + interval_jiffies*HZ);
+}
+
 
 int create_timer(void)
 {
@@ -28,10 +37,3 @@ int create_timer(void)
 	mod_timer(&state_change_timer,jiffies + interval_jiffies);
 	return 0;
 }
-void state_change(unsigned long param)
-{
-	debug("State change now.");
-	choose_layout(delta);
-	mod_timer(&state_change_timer, jiffies + interval_jiffies);
-}
-
