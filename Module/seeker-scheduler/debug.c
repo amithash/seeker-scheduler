@@ -36,10 +36,10 @@ ssize_t seeker_debug_read(struct file *file_ptr, char __user *buf, size_t count,
 struct debug_block *get_debug(void)
 {
 	struct debug_block *p;
-	if(!dev_open && !current_debug)
+	if(!dev_open)
 		return NULL;
 	spin_lock(&debug_lock);
-	if(!current_debug){
+	if(unlikely(!current_debug)){
 		spin_unlock(&debug_lock);
 		return NULL;
 	}
@@ -49,9 +49,16 @@ struct debug_block *get_debug(void)
 	current_debug->next = p;
 	p->next = NULL;
 	current_debug = p;
+	return p;
 out:
 	spin_unlock(&debug_lock);
-	return p;
+	return NULL;
+}
+
+void put_debug(struct debug_block *p)
+{
+	if(p)
+		spin_unlock(&debug_lock);
 }
 
 void debug_free(struct debug_block *p)

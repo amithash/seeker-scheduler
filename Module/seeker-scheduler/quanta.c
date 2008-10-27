@@ -10,22 +10,26 @@
 #include "mutate.h"
 
 u64 interval_jiffies;
+void state_change(unsigned long param);
+
 extern int change_interval;
-static struct timer_list state_change_timer;
+static struct timer_list state_change_timer = {
+	.function = &state_change,
+};
 extern int delta;
 
-//static void state_change(unsigned long param);
 
 void destroy_timer(void)
 {
 	del_timer_sync(&state_change_timer);
 }
 
-static void state_change(unsigned long param)
+void state_change(unsigned long param)
 {
 	choose_layout(delta);
 	mod_timer(&state_change_timer, jiffies + interval_jiffies*HZ);
 }
+EXPORT_SYMBOL_GPL(state_change);
 
 
 int create_timer(void)
@@ -33,7 +37,9 @@ int create_timer(void)
 	interval_jiffies = change_interval * HZ;
 	debug("Interval set to every %d jiffies",interval_jiffies);
 	init_timer(&state_change_timer);
-	state_change_timer.function = &state_change;
+	warn("State change addr  = %lx",(unsigned long)state_change_timer.function);
 	mod_timer(&state_change_timer,jiffies + interval_jiffies);
 	return 0;
 }
+
+

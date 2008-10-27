@@ -43,6 +43,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	struct debug_block *p = NULL;
 	int i;
 	short ipc = 0;
+	int state;
 	cpumask_t mask;
 
 	/* Do not do anything to the init task! */
@@ -51,7 +52,6 @@ void put_mask_from_stats(struct task_struct *ts)
 
 
 #ifdef SEEKER_PLUGIN_PATCH
-	int state;
 	/* Do not try to estimate anything
 	 * till INST_THRESHOLD insts are 
 	 * executed. Hopefully avoids messing
@@ -126,6 +126,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		p->entry.u.sch.pid = ts->pid;
 		p->entry.u.sch.cpumask = CPUMASK_TO_UINT(ts->cpus_allowed);
 	}
+	put_debug(p);
 }
 
 

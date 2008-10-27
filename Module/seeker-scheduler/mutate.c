@@ -88,19 +88,11 @@ void choose_layout(int delta)
 
 	update_state_matrix(new_cpu_state,delta);
 	
-	p = get_debug();
-	if(p){
-		p->entry.type = DEBUG_MUT;
-		p->entry.u.mut.interval = interval_count;
-		p->entry.u.mut.count = max_state_in_system;
-	}
 
 	/* Total Hint */
 	
 	for(j=0;j<max_state_in_system;j++){
 		total += states[j].demand;
-		if(p)
-			p->entry.u.mut.hint[j] = states[j].demand;
 	}
 
 	/* Num of cpus required for this state 
@@ -199,10 +191,18 @@ assign:
 
 		/* Continue the auction if delta > 0 */
 	}	
+	p = get_debug();
+	if(p){
+		p->entry.type = DEBUG_MUT;
+		p->entry.u.mut.interval = interval_count;
+		p->entry.u.mut.count = max_state_in_system;
+	}
 
 	for(j=0;j<max_state_in_system;j++){
 		states[j].cpus = 0;
 		cpus_clear(states[j].cpumask);
+		if(p)
+			p->entry.u.mut.hint[j] = states[j].demand;
 	}
 
 
@@ -222,6 +222,7 @@ assign:
 		if(p)
 			p->entry.u.mut.cpustates[i] = cur_cpu_state[i];
 	}
+	put_debug(p);
 }
 
 
