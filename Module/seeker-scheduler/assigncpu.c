@@ -121,7 +121,6 @@ void put_mask_from_stats(struct task_struct *ts)
 		#endif
 		p->entry.u.sch.pid = ts->pid;
 		p->entry.u.sch.cpumask = CPUMASK_TO_UINT(ts->cpus_allowed);
-		debug_link(p);
 	}
 }
 

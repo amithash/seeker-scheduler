@@ -220,9 +220,6 @@ void choose_layout(int delta)
 		if(p)
 			p->entry.u.mut.cpustates[i] = cur_cpu_state[i];
 	}
-
-	if(p)
-		debug_link(p);
 }
 
 

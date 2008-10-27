@@ -13,7 +13,6 @@ int debug_init(void);
 void debug_exit(void);
 
 struct debug_block *get_debug(void);
-void debug_link(struct debug_block *p);
 void debug_free(struct debug_block *p);
 
 #endif

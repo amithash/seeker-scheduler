@@ -38,9 +38,19 @@ struct debug_block *get_debug(void)
 	struct debug_block *p;
 	if(!dev_open)
 		return NULL;
-
+	spin_lock(&debug_lock);
+	if(!current_debug){
+		spin_unlock(&debug_lock);
+		return NULL;
+	}
 	p = (struct debug_block *)kmem_cache_alloc(debug_cachep, GFP_ATOMIC);
+	if(!p)
+		goto out;
+	current_debug->next = p;
 	p->next = NULL;
+	current_debug = p;
+out:
+	spin_unlock(&debug_lock);
 	return p;
 }
 
@@ -50,21 +60,6 @@ void debug_free(struct debug_block *p)
 		return;
 
 	kmem_cache_free(debug_cachep,p);
-}
-
-void debug_link(struct debug_block *p)
-{
-	if(!p)
-		return;
-
-	if(!current_debug){
-		warn("Current or ent is null");
-		return;
-	}
-	spin_lock(&debug_lock);
-	current_debug->next = p;
-	current_debug = p;
-	spin_unlock(&debug_lock);
 }
 
 void purge_debug(void)
