@@ -106,16 +106,16 @@ void put_mask_from_stats(struct task_struct *ts)
 	if(new_state != state){
 		if(new_state == -1)
 			new_state = state;
-		cpus_or(mask,mask,states[new_state].cpumask);
+		mask = states[new_state].cpumask;
 		/* Done here without a lock. If cpumask has become
 		 * empty in the process, then return.
 		 */
-		if(cpus_empty(mask))
+		if(cpus_empty(mask)){
+			debug("mask empty...");
 			return;
+		}
 		set_cpus_allowed(ts,mask);
 	}
-
-	/* Update hint */
 
 	p = get_debug();
 	if(p){

@@ -145,31 +145,30 @@ void choose_layout(int delta)
 
 			sum = sum * (demand[j]+1);
 
-			/* if this is the max, make a note of the 
-			 * potential winner */
-			if(sum > winner_val){
-				winner = j;
-				winner_val = sum;
-				winner_best_proc= best_proc;
-				winner_best_proc_value = best_proc_value;
-				winner_best_low_proc_value = best_low_proc_value;
-			} else if(sum == winner_val){
-				if(best_proc_value > winner_best_proc_value){
-					winner = j;
-					winner_val = sum;
-					winner_best_proc= best_proc;
-					winner_best_proc_value = best_proc_value;
-					winner_best_low_proc_value = best_low_proc_value;
-				} else if(best_proc_value == winner_best_proc_value){
-					if(best_low_proc_value > winner_best_low_proc_value){
-						winner = j;
-						winner_val = sum;
-						winner_best_proc= best_proc;
-						winner_best_proc_value = best_proc_value;
-						winner_best_low_proc_value = best_low_proc_value;
-					}
-				}
-			}
+			/* Find the max sum and the sate, and its best proc 
+			 * If there is contention for that, choose the one
+			 * with the best proc, if there is contention for both,
+			 * choose the one with the best lowest proc,
+			 * if there is contention for that too, then first come
+			 * first serve */
+			if(sum < winner_val)
+				continue;
+			if(sum > winner_val) 
+				goto assign;
+			if(best_proc_value < winner_best_proc_value)
+				continue;
+			if(best_proc_value > winner_best_proc_value)
+				goto assign;
+
+			if(best_low_proc_value < winner_best_low_proc_value)
+				continue;
+assign:
+			winner = j;
+			winner_val = sum;
+			winner_best_proc= best_proc;
+			winner_best_proc_value = best_proc_value;
+			winner_best_low_proc_value = best_low_proc_value;
+
 		}
 		/* A winning val of 0 indicated a failed auction.
 		 * all contenstents are broke. Go home loosers.*/
