@@ -69,8 +69,6 @@ void put_mask_from_stats(struct task_struct *ts)
 		ts->re_cy = 0;
 	}
 
-#else
-	int state = 0;
 #endif
 	cpus_clear(mask);
 

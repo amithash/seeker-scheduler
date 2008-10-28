@@ -83,7 +83,6 @@ extern u64 pmu_val[NR_CPUS][3];
 
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 {
-	int test;
 	int cpu = get_cpu();
 	if(!ts[cpu])
 		goto inst_schedule_out;
@@ -95,9 +94,6 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	ts[cpu]->inst   = pmu_val[cpu][0];
 	ts[cpu]->re_cy  = pmu_val[cpu][1];
 	ts[cpu]->ref_cy = pmu_val[cpu][2];
-	test   = pmu_val[cpu][0];
-	test  = pmu_val[cpu][1];
-	test = pmu_val[cpu][2];
 	if(ts[cpu]->inst > MAX_INSTRUCTIONS_BEFORE_SCHEDULE)
 		set_tsk_need_resched(ts[cpu]);
 #endif

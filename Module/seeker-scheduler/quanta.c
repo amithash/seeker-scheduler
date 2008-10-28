@@ -36,7 +36,7 @@ int create_timer(void)
 {
 	interval_jiffies = change_interval * HZ;
 	debug("Interval set to every %d jiffies",interval_jiffies);
-	init_timer(&state_change_timer);
+	setup_timer(&state_change_timer,state_change,0);
 	warn("State change addr  = %lx",(unsigned long)state_change_timer.function);
 	mod_timer(&state_change_timer,jiffies + interval_jiffies);
 	return 0;
