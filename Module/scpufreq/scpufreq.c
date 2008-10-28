@@ -66,6 +66,7 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 		cpus_clear(policy->cpus);
 		cpu_set(cpu,policy->cpus);
 		cpufreq_cpu_put(policy);
+		cpufreq_driver_target(policy,freq_info[cpu].table[freq_ind],CPUFREQ_RELATION_H);
 		freq_info[cpu].cur_freq = freq_ind;
 		return 0;
 	}
