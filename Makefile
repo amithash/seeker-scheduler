@@ -23,11 +23,11 @@ endif
 
 ifndef ARCA
 ARCA := $(shell cat /proc/cpuinfo | grep -i AuthenticAMD | wc -l)
-ifeq ($(ARCA), 1)
+ifneq ($(ARCA), 0)
 ARCA := K10
 else
 ARCA := $(shell cat /proc/cpuinfo | grep -i AuthenticIntel | wc -l)
-ifeq ($(ARCA), 1)
+ifneq ($(ARCA), 0)
 ARCA := C2D
 else 
 ARCA := C2D
