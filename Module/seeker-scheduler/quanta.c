@@ -13,9 +13,8 @@ u64 interval_jiffies;
 void state_change(unsigned long param);
 
 extern int change_interval;
-static struct timer_list state_change_timer = {
-	.function = &state_change,
-};
+static struct timer_list state_change_timer;
+
 extern int delta;
 
 
