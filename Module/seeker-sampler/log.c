@@ -50,16 +50,18 @@ void log_init(void)
 /* Create, add elements and link. */
 struct log_block *log_create(void)
 {
-	struct log_block *p;
-	p = alloc_seeker();
-	if(!p){
-		warn("Allocation failed");
-		return NULL;
-	}
-	p->next = NULL;
+	struct log_block *p = NULL;
 	spin_lock(&log_lock);
 	if(!seeker_log_current)
 		goto out;
+	p = alloc_seeker();
+	if(!p){
+		p = NULL;	
+		warn("Allocation failed");
+		goto out;
+	}
+
+	p->next = NULL;
 	seeker_log_current->next = p;
 	seeker_log_current = p;
 out:

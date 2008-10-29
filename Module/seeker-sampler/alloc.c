@@ -42,8 +42,10 @@ int init_seeker_cache(void)
 					  0,
 					  SLAB_PANIC,
 					  NULL);
-	if(!seeker_cachep)
+	if(!seeker_cachep){
+		error("Could not create the cache. Shit just hit the fan");
 		return -1;
+	}
 	return 0;
 }
 
