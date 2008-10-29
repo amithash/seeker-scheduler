@@ -30,6 +30,8 @@
 #include <asm/msr.h>
 #include <linux/smp.h>
 
+#include <seeker.h>
+
 #include "therm.h"
 
 MODULE_LICENSE("GPL");
@@ -108,7 +110,10 @@ EXPORT_SYMBOL_GPL(therm_init_msrs);
 //must be called from on_each_cpu
 static int __init therm_init(void)
 {
-	therm_init_msrs();
+	if(on_each_cpu((void *)therm_init_msrs,NULL,1,1) < 0){
+		error("Could not init therm on all cpus");
+		return -ENODEV;
+	}
 	return 0;
 }
 

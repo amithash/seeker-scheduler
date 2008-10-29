@@ -209,31 +209,6 @@ int config_counters(void)
  *---------------------------------------------------------------------------*/
 int msrs_init(void)
 {
-	/* initialize the pmu counters */
-	if(log_num_events > 0){
-		if(unlikely(on_each_cpu((void*)pmu_init_msrs,NULL, 1,1) < 0)){
-			error("could not initialize counters !");
-			return -1;
-  		}                   
-	}
-	/* initialize the fixed pmu counters */
-	if(unlikely(on_each_cpu((void*)fpmu_init_msrs,NULL, 1,1) < 0)){
-		error("could not initialize fixed counters!");
-		return -1;
-  	}                   
-	/* initialize the temperature sensors */
-	if(unlikely(on_each_cpu((void*)therm_init_msrs,NULL, 1,1) < 0)){
-		error("could not initialize the temperature sensors!");
-		return -1;
-  	}
-	/* initialize the time stamp counter */
-	if(unlikely(on_each_cpu((void*)tsc_init_msrs,NULL, 1,1) < 0)){
-		error("could not initialize the time stamp counter!");
-		return -1;
-  	}
-
-	/* OTHER COUNTER's MSRS CAN BE INITIALIZED HERE. */
-
 	// setup the counters modifications -- needed only for counters with information from seeker 
 	// that is currently only for the variable pmu counters.
 	if(unlikely(on_each_cpu((void*)config_counters,NULL, 1,1) < 0)){
