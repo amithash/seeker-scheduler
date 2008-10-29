@@ -42,8 +42,7 @@ obj-m += seeker_scheduler.o           	\
 	 tsc/tsc.o         		\
 	 therm/therm.o       		\
 	 scpufreq/scpufreq.o  		\
-	 power/power.o			\
-	 cpufreq_seeker.o
+	 power/power.o
 
 seeker_sampler-objs += seeker-sampler/alloc.o   \
 		       seeker-sampler/log.o     \

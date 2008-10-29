@@ -73,36 +73,6 @@ counter_t counters[NR_CPUS][NUM_COUNTERS] = {
 	}
 };
 
-char *evtsel_names[NUM_COUNTERS] = {
-	#if NUM_COUNTERS > 0
-	"EVTSEL0"
-	#endif	
-	#if NUM_COUNTERS > 1
-	,"EVTSEL1"
-	#endif	
-	#if NUM_COUNTERS > 2
-	,"EVTSEL2"
-	#endif	
-	#if NUM_COUNTERS > 3
-	,"EVTSEL3"
-	#endif	
-};
-
-char *counter_names[NUM_COUNTERS] = {
-	#if NUM_COUNTERS > 0
-	"PMC0" 
-	#endif
-	#if NUM_COUNTERS > 1
-	,"PMC1"
-	#endif
-	#if NUM_COUNTERS > 2
-	,"PMC2"
-	#endif
-	#if NUM_COUNTERS > 3
-	,"PMC3"
-	#endif
-};
-
 cleared_t cleared[NR_CPUS][NUM_COUNTERS] = {
 	{
 		#if NUM_COUNTERS > 0
@@ -342,6 +312,10 @@ inline void counter_clear(u32 counter)
 	#if NUM_COUNTERS > 0
 	int cpu_id;
 	cpu_id = smp_processor_id();
+	if(unlikely(counter >= NUM_COUNTERS)){
+		error("Trying to clear non-existant counter %d",counter);
+		return;	
+	}
 	if(likely(cpu_id < NR_CPUS)){
 		wrmsr(counters[cpu_id][counter].addr, 0, 0);
 	}
@@ -409,40 +383,37 @@ int counter_enable(u32 event, u32 ev_mask, u32 os)
 	u32 i;
 	int counter_num = -1;
 	int cpu_id = smp_processor_id();
-	if(likely(cpu_id < NR_CPUS)){
-		for(i=0;i<NUM_COUNTERS;i++){
-			if(counters[cpu_id][i].enabled == 0){
-				counter_num = i;
-				break;
-			}
-		}
-  		if(likely(counter_num >=0)){
-			evtsel_clear(counter_num);
-			counter_clear(counter_num);
-			counters[cpu_id][counter_num].enabled = 1;
-			counters[cpu_id][counter_num].event = event;
-			counters[cpu_id][counter_num].mask = ev_mask;
-
-			//counfigure the event sel reg
-			evtsel[cpu_id][counter_num].ev_select = event;
-			evtsel[cpu_id][counter_num].ev_mask = ev_mask;
-			evtsel[cpu_id][counter_num].usr_flag = 1;
-			evtsel[cpu_id][counter_num].os_flag = os;
-			evtsel[cpu_id][counter_num].pc_flag = 1;
-			evtsel[cpu_id][counter_num].int_flag = 0;
-			evtsel[cpu_id][counter_num].inv_flag = 0;
-			evtsel[cpu_id][counter_num].cnt_mask = 0;
-			evtsel[cpu_id][counter_num].enabled = 1;
-			evtsel[cpu_id][counter_num].edge = 0;	
-			evtsel_write(counter_num);
-			return counter_num;
-		} else {
-			return -1;
-		} 
-	}
-	else{
+	if(unlikely(cpu_id >= NR_CPUS))
 		return -1;
+
+	for(i=0;i<NUM_COUNTERS;i++){
+		if(counters[cpu_id][i].enabled == 0){
+			counter_num = i;
+			break;
+		}
 	}
+	if(likely(counter_num >=0)){
+		evtsel_clear(counter_num);
+		counter_clear(counter_num);
+		counters[cpu_id][counter_num].enabled = 1;
+		counters[cpu_id][counter_num].event = event;
+		counters[cpu_id][counter_num].mask = ev_mask;
+		//counfigure the event sel reg
+		evtsel[cpu_id][counter_num].ev_select = event;
+		evtsel[cpu_id][counter_num].ev_mask = ev_mask;
+		evtsel[cpu_id][counter_num].usr_flag = 1;
+		evtsel[cpu_id][counter_num].os_flag = os;
+		evtsel[cpu_id][counter_num].pc_flag = 1;
+		evtsel[cpu_id][counter_num].int_flag = 0;
+		evtsel[cpu_id][counter_num].inv_flag = 0;
+		evtsel[cpu_id][counter_num].cnt_mask = 0;
+		evtsel[cpu_id][counter_num].enabled = 1;
+		evtsel[cpu_id][counter_num].edge = 0;	
+		evtsel_write(counter_num);
+		return counter_num;
+	} else {
+		return -1;
+	} 
 	#else
 	return -1;
 	#endif

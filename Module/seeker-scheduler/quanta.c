@@ -36,7 +36,7 @@ int create_timer(void)
 	debug("Interval set to every %d jiffies",interval_jiffies);
 	setup_timer(&state_change_timer,state_change,0);
 	warn("State change addr  = %lx",(unsigned long)state_change_timer.function);
-	mod_timer(&state_change_timer,jiffies + interval_jiffies);
+//	mod_timer(&state_change_timer,jiffies + interval_jiffies);
 	return 0;
 }
 

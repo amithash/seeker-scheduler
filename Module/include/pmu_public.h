@@ -7,6 +7,7 @@
 #elif defined(ARCH_K8) || defined(ARCH_K10)
 #	define NUM_COUNTERS 4
 #else
+#	define NUM_COUNTERS 0
 #error "Architecture not supported."
 #endif
 

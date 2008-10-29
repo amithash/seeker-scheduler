@@ -13,15 +13,25 @@ u64 pmu_val[NR_CPUS][3];
 
 void enable_pmu_counters(void)
 {
-	int cpu = smp_processor_id();
+	int cpu = get_cpu();
 #if NUM_FIXED_COUNTERS > 0
-		fcounters_enable(0);
+	fcounters_enable(0);
 #else
-		sys_counters[cpu][0] = counter_enable(PMU_INST_EVTSEL,PMU_INST_MASK,0);
-		sys_counters[cpu][1] = counter_enable(PMU_RECY_EVTSEL,PMU_RECY_MASK,0);
-		sys_counters[cpu][2] = counter_enable(PMU_RFCY_EVTSEL,PMU_RFCY_MASK,0);
-#endif
-		clear_counters(cpu);
+	if((sys_counters[cpu][0] = counter_enable(PMU_INST_EVTSEL,PMU_INST_MASK,0)) < 0){
+		error("Could not enable INST");
+		sys_counters[cpu][0] = 0;
+	}
+	if((sys_counters[cpu][0] = counter_enable(PMU_RECY_EVTSEL,PMU_RECY_MASK,0)) < 0){
+		error("Could not enable RECY");
+		sys_counters[cpu][1] = 1;
+	}
+	if((sys_counters[cpu][0] = counter_enable(PMU_RFCY_EVTSEL,PMU_RFCY_MASK,0)) < 0){
+		error("Could not enable RFCY");
+		sys_counters[cpu][2] = 2;
+	}
+#endif	
+	clear_counters(cpu);
+	put_cpu();
 }
 
 int configure_counters(void)
@@ -60,4 +70,5 @@ void clear_counters(int cpu)
 	counter_clear(sys_counters[cpu][2]);
 #endif
 }
+
 	

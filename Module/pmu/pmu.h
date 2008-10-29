@@ -73,7 +73,6 @@
 #	define MSR_PERF_GLOBAL_CTRL		0x0000038F
 #	define MSR_PERF_GLOBAL_OVF_CTRL	0x00000390
 #else
-#define NUM_COUNTERS 0
 #error "Architecture Not supported"
 #endif
 
