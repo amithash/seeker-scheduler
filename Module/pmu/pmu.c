@@ -30,6 +30,8 @@
 #include <asm/msr.h>
 #include <linux/smp.h>
 
+#include <seeker.h>
+
 #include "pmu.h"
 
 MODULE_LICENSE("GPL");
@@ -451,11 +453,11 @@ EXPORT_SYMBOL_GPL(counter_enable);
 
 
 //must be called from on_each_cpu
-inline void pmu_init_msrs(void)
+void pmu_init_msrs(void)
 {
 	#if NUM_COUNTERS > 0
 	int i;
-	int cpu = smp_processor_id();
+	int cpu = get_cpu();
 	if(cpu != 0){
 		for(i=0;i<NUM_COUNTERS;i++){
 			counters[cpu][i] = counters[0][i];
@@ -463,17 +465,22 @@ inline void pmu_init_msrs(void)
 		}
 	}
 	for(i = 0; i < NUM_COUNTERS; i++) {
+		warn("cpu %d counter %d enabled %d",cpu,i,counters[cpu][i].enabled);
 		evtsel_clear(i);
 		counter_disable(i);
 		counter_clear(i);
 	}
+	put_cpu();
 	#endif
 }
 EXPORT_SYMBOL_GPL(pmu_init_msrs);
 
 static int __init pmu_init(void)
 {
-	pmu_init_msrs();
+	if(on_each_cpu((void *)pmu_init_msrs,NULL,1,1) < 0){
+		error("Could not enable all counters. Panicing and exiting");
+		return -ENODEV;
+	}
 	return 0;
 }
 

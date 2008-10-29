@@ -25,7 +25,7 @@ void destroy_timer(void)
 
 void state_change(unsigned long param)
 {
-	choose_layout(delta);
+//	choose_layout(delta);
 	mod_timer(&state_change_timer, jiffies + interval_jiffies*HZ);
 }
 EXPORT_SYMBOL_GPL(state_change);
