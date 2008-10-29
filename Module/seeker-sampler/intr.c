@@ -25,7 +25,7 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/module.h>
-#include <linux/timer.h>
+#include <linux/jiffies.h>
 #include <asm/apic.h>
 #include <asm/apicdef.h>
 #include <asm/hw_irq.h>

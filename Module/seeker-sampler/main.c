@@ -181,8 +181,7 @@ static int __init seeker_sampler_init(void)
 		sample_freq = HZ/sample_freq;
 		printk("seeker sampler sampling every %d jiffies, HZ is %d\n",
 			sample_freq, HZ);
-		init_timer(&sample_timer);
-		sample_timer.function = &do_timer_sample;
+		setup_timer(&sample_timer,do_timer_sample,0);
 		mod_timer(&sample_timer, jiffies + sample_freq);
 		sample_timer_started = 1;
 	}

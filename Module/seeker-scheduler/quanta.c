@@ -1,7 +1,7 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/module.h>
-#include <linux/timer.h>
+#include <linux/jiffies.h>
 
 #include <seeker.h>
 
@@ -10,8 +10,6 @@
 #include "mutate.h"
 
 u64 interval_jiffies;
-void state_change(unsigned long param);
-
 extern int change_interval;
 static struct timer_list state_change_timer;
 extern int delta;
