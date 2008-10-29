@@ -22,10 +22,10 @@
  * General Public License along with this program.   *
  * If not, see <http://www.gnu.org/licenses/>.       *
  *****************************************************/
-#include <linux/kernel.h>
 #include <linux/init.h>
+#include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/jiffies.h>
+#include <linux/timer.h>
 #include <asm/apic.h>
 #include <asm/apicdef.h>
 #include <asm/hw_irq.h>
@@ -60,7 +60,7 @@ void do_timer_sample(unsigned long param)
 			error("could not sample on all cpu's\n");
 		}
 	}
-
+	warn("Hello!\n");
 	mod_timer(&sample_timer, jiffies + sample_freq);  
 }
 

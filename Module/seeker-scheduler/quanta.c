@@ -1,7 +1,7 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/module.h>
-#include <linux/jiffies.h>
+#include <linux/timer.h>
 
 #include <seeker.h>
 
