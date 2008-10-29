@@ -14,7 +14,6 @@ void state_change(unsigned long param);
 
 extern int change_interval;
 static struct timer_list state_change_timer;
-
 extern int delta;
 
 
@@ -26,7 +25,7 @@ void destroy_timer(void)
 void state_change(unsigned long param)
 {
 //	choose_layout(delta);
-	mod_timer(&state_change_timer, jiffies + interval_jiffies*HZ);
+	mod_timer(&state_change_timer, jiffies + interval_jiffies);
 }
 EXPORT_SYMBOL_GPL(state_change);
 

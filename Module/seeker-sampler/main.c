@@ -116,7 +116,6 @@ extern struct jprobe jp___switch_to;
 static int seeker_sample_log_init(void)
 {
 	int ret;
-	log_init();
 
 	ret = misc_register(&seeker_sample_mdev);
 	if(unlikely(ret != 0)) {
