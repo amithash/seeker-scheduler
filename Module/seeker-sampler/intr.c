@@ -55,6 +55,7 @@ struct struct_int_callbacks int_callbacks = {NULL,NULL,NULL,NULL,NULL};
  *---------------------------------------------------------------------------*/
 void do_timer_sample(unsigned long param)
 {
+	warn("Wassap");
 	if(dev_open){
 		if(unlikely(on_each_cpu((void*)do_sample, NULL, 1,1) < 0)){
 			error("could not sample on all cpu's\n");

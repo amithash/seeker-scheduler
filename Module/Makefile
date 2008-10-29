@@ -41,6 +41,7 @@ obj-m += seeker_scheduler.o           	\
 	 fpmu/fpmu.o        		\
 	 tsc/tsc.o         		\
 	 therm/therm.o       		\
+	 test.o				\
 	 scpufreq/scpufreq.o  		\
 	 power/power.o
 
@@ -55,7 +56,6 @@ seeker_sampler-objs += seeker-sampler/alloc.o   \
 seeker_scheduler-objs += seeker-scheduler/main.o     \
 		       seeker-scheduler/assigncpu.o  \
 		       seeker-scheduler/mutate.o     \
-		       seeker-scheduler/quanta.o     \
 		       seeker-scheduler/state.o      \
 		       seeker-scheduler/hwcounters.o \
 		       seeker-scheduler/debug.o

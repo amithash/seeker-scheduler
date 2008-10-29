@@ -38,7 +38,6 @@
 #include "scpufreq.h"
 #include "state.h"
 #include "assigncpu.h"
-#include "quanta.h"
 #include "debug.h"
 #include "hwcounters.h"
 
@@ -48,6 +47,9 @@
 void inst___switch_to(struct task_struct *from, struct task_struct *to);
 void inst_sched_fork(struct task_struct *new, int clone_flags);
 int inst_schedule(struct kprobe *p, struct pt_regs *regs);
+
+static struct timer_list state_change_timer;
+static u64 interval_jiffies;
 
 struct task_struct *ts[NR_CPUS] = {NULL};
 int using_seeker = 1;
@@ -80,6 +82,12 @@ int init = ALL_HIGH;
 extern u64 interval_count;
 extern int cur_cpu_state[MAX_STATES];
 extern u64 pmu_val[NR_CPUS][3];
+
+static void state_change(unsigned long param)
+{
+//	choose_layout(delta);
+	mod_timer(&state_change_timer, jiffies + interval_jiffies);
+}
 
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 {
@@ -155,8 +163,10 @@ static int scheduler_init(void)
 		configure_counters();
 	}
 
+	interval_jiffies = change_interval * HZ;
+	setup_timer(&state_change_timer,state_change,0);
+	mod_timer(&state_change_timer,jiffies+interval_jiffies);
 
-	create_timer();
 	return 0;
 #else
 	error("You are trying to use this module without patching "
@@ -177,7 +187,7 @@ static void scheduler_exit(void)
 		unregister_jprobe(&jp___switch_to);
 		unregister_kprobe(&kp_schedule);
 	}
-	destroy_timer();
+	del_timer_sync(&state_change_timer);
 }
 
 module_init(scheduler_init);

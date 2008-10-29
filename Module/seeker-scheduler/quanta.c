@@ -9,10 +9,6 @@
 #include "state.h"
 #include "mutate.h"
 
-u64 interval_jiffies;
-extern int change_interval;
-static struct timer_list state_change_timer;
-extern int delta;
 
 
 void destroy_timer(void)
@@ -20,11 +16,6 @@ void destroy_timer(void)
 	del_timer_sync(&state_change_timer);
 }
 
-void state_change(unsigned long param)
-{
-//	choose_layout(delta);
-	mod_timer(&state_change_timer, jiffies + interval_jiffies);
-}
 EXPORT_SYMBOL_GPL(state_change);
 
 
