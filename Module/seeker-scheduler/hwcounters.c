@@ -15,12 +15,8 @@ void enable_pmu_counters(void)
 {
 	int cpu = smp_processor_id();
 #if NUM_FIXED_COUNTERS > 0
-		fpmu_init_msrs();
 		fcounters_enable(0);
-		fcounters_enable(1);
-		fcounters_enable(2);
 #else
-		pmu_init_msrs();
 		sys_counters[cpu][0] = counter_enable(PMU_INST_EVTSEL,PMU_INST_MASK,0);
 		sys_counters[cpu][1] = counter_enable(PMU_RECY_EVTSEL,PMU_RECY_MASK,0);
 		sys_counters[cpu][2] = counter_enable(PMU_RFCY_EVTSEL,PMU_RFCY_MASK,0);

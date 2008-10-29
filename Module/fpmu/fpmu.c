@@ -31,6 +31,8 @@
 #include <linux/smp.h>
 #include <linux/percpu.h>
 
+#include <seeker.h>
+
 #include "fpmu.h"
 
 MODULE_LICENSE("GPL");
@@ -360,11 +362,11 @@ void fcounters_enable(u32 os)
 EXPORT_SYMBOL_GPL(fcounters_enable);
 
 //must be called from on_each_cpu
-inline void fpmu_init_msrs(void)
+void fpmu_init_msrs(void)
 {
 	#if NUM_FIXED_COUNTERS > 0
 	int i;
-	int cpu_id = smp_processor_id();
+	int cpu_id = get_cpu();
 	if(likely(cpu_id < NR_CPUS)){
 		for(i=0;i<NUM_FIXED_COUNTERS;i++){
 			if(cpu_id != 0){
@@ -379,6 +381,7 @@ inline void fpmu_init_msrs(void)
 		control_clear();
 		fcounters_disable();
 	}
+	put_cpu();
 	#endif
 }
 EXPORT_SYMBOL_GPL(fpmu_init_msrs);
@@ -386,7 +389,12 @@ EXPORT_SYMBOL_GPL(fpmu_init_msrs);
 //must be called from on_each_cpu
 static int __init fpmu_init(void)
 {
-	fpmu_init_msrs();
+	#if NUM_FIXED_COUNTERS > 0
+	if(on_each_cpu((void *)fpmu_init_msrs,NULL,1,1) < 0){
+		error("Could not enable anything, panicing and exiting");
+		return -ENODEV;
+	}
+	#endif
 	return 0;
 }
 
