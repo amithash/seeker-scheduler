@@ -107,7 +107,7 @@ ssize_t seeker_debug_read(struct file *file_ptr, char __user *buf,
 	int i = 0;
 	if(unlikely(start_debug == NULL || buf == NULL || file_ptr == NULL || start_debug == current_debug)){
 		warn("Nothing read");
-		return -1;
+		return 0;
 	}
 	if(unlikely(first_read)){
 		if(unlikely(!start_debug->next))

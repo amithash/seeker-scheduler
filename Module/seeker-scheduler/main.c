@@ -86,7 +86,6 @@ extern u64 pmu_val[NR_CPUS][3];
 
 void state_change(unsigned long param)
 {
-	warn("hello, %lx",jiffies);
 	choose_layout(delta);
 	mod_timer(&state_change_timer, jiffies + interval_jiffies);
 }
