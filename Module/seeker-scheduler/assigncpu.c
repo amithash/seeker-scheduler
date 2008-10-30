@@ -51,7 +51,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	if(ts->pid == 0)
 		return;
 
-	if(!spin_can_lock(&states_lock))
+	if(spin_is_locked(&states_lock))
 		return;
 
 
@@ -122,8 +122,10 @@ void put_mask_from_stats(struct task_struct *ts)
 		 * Bit problem.
 		 * set_cpus_allowed(ts,mask); 
 		 * so do a lazy migrate */
+		if(spin_is_locked(&states_lock))
+			return;
 		ts->cpus_allowed = mask;
-		set_tsk_need_resched(ts);
+//		set_tsk_need_resched(ts);
 	}
 
 	p = get_debug();
