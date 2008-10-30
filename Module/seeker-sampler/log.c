@@ -111,12 +111,12 @@ int log_read(struct file* file_ptr,
 
 	if(unlikely(seeker_log_head == NULL || buf == NULL || file_ptr == NULL || seeker_log_head == seeker_log_current)){
 		warn("Trying to read or write from/to a NULL buf");
-		return -1;
+		return 0;
 	}
 
 	if(unlikely(first_read)){
 		if(unlikely(!seeker_log_head->next))
-			return -1;
+			return 0;
 		log = seeker_log_head;
 		seeker_log_head = seeker_log_head->next;
 		delete_log(log);
