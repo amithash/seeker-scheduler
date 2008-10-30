@@ -31,7 +31,6 @@
  * This removes artifcats from IPC and 
  * removes IPC Computation for small tasks
  */
-#define INST_THRESHOLD 1000000
 
 extern struct state_desc states[MAX_STATES];
 extern int max_state_in_system;
@@ -43,7 +42,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	struct debug_block *p = NULL;
 	int i;
 	short ipc = 0;
-	int state;
+	int state = 0;
 	cpumask_t mask;
 
 	/* Do not do anything to the init task! */
@@ -59,20 +58,19 @@ void put_mask_from_stats(struct task_struct *ts)
 	 */
 	if(ts->inst < INST_THRESHOLD)
 		return;
-	if(ts->interval == interval_count)
-		state = ts->cpustate;
-	else{
-		state = -1;
+
+	state = ts->cpustate;
+	if(unlikely(state < 0 || state >= max_state_in_system))
+		state = 0;
+
+	if(ts->interval != interval_count){
 		ts->interval = interval_count;
 		ts->inst = 0;
 		ts->ref_cy = 0;
 		ts->re_cy = 0;
 	}
 
-#endif
 	cpus_clear(mask);
-
-#ifdef SEEKER_PLUGIN_PATCH
 	ipc = IPC(ts->inst,ts->re_cy);
 #endif
 	/*up*/
@@ -112,7 +110,15 @@ void put_mask_from_stats(struct task_struct *ts)
 			debug("mask empty...");
 			return;
 		}
-		set_cpus_allowed(ts,mask);
+		#ifdef SEEKER_PLUGIN_PATCH
+		ts->cpustate = new_state;
+		#endif
+		/* XXX this recursively involes schedule.... 
+		 * Bit problem.
+		 * set_cpus_allowed(ts,mask); 
+		 * so do a lazy migrate */
+		ts->cpus_allowed = mask;
+		set_tsk_need_resched(ts);
 	}
 
 	p = get_debug();

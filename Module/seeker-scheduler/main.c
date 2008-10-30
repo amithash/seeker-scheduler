@@ -38,6 +38,7 @@
 #include "scpufreq.h"
 #include "state.h"
 #include "assigncpu.h"
+#include "mutate.h"
 #include "debug.h"
 #include "hwcounters.h"
 
@@ -85,9 +86,10 @@ extern u64 pmu_val[NR_CPUS][3];
 
 static void state_change(unsigned long param)
 {
-//	choose_layout(delta);
+	choose_layout(delta);
 	mod_timer(&state_change_timer, jiffies + interval_jiffies);
 }
+
 
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 {
@@ -99,10 +101,11 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 #ifdef SEEKER_PLUGIN_PATCH
 	if(ts[cpu]->interval != interval_count)
 		ts[cpu]->interval = interval_count;
-	ts[cpu]->inst   = pmu_val[cpu][0];
-	ts[cpu]->re_cy  = pmu_val[cpu][1];
-	ts[cpu]->ref_cy = pmu_val[cpu][2];
-	if(ts[cpu]->inst > MAX_INSTRUCTIONS_BEFORE_SCHEDULE)
+	ts[cpu]->inst   += pmu_val[cpu][0];
+	ts[cpu]->re_cy  += pmu_val[cpu][1];
+	ts[cpu]->ref_cy += pmu_val[cpu][2];
+	clear_counters(cpu);
+	if(ts[cpu]->inst > INST_THRESHOLD)
 		set_tsk_need_resched(ts[cpu]);
 #endif
 inst_schedule_out:
@@ -126,7 +129,14 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 {
 	int cpu = smp_processor_id();
 	if(!using_seeker){
-		inst_schedule(NULL,NULL);
+		read_counters(cpu);
+	#ifdef SEEKER_PLUGIN_PATCH
+		if(from->interval != interval_count)
+			from->interval = interval_count;
+		from->inst   += pmu_val[cpu][0];
+		from->re_cy  += pmu_val[cpu][1];
+		from->ref_cy += pmu_val[cpu][2];
+	#endif
 		clear_counters(cpu);
 	}
 	ts[cpu] = to;
@@ -164,10 +174,10 @@ static int scheduler_init(void)
 	}
 
 	interval_jiffies = change_interval * HZ;
-	setup_timer(&state_change_timer,state_change,0);
-	mod_timer(&state_change_timer,jiffies+interval_jiffies);
 
 	return 0;
+	setup_timer(&state_change_timer,state_change,0);
+	mod_timer(&state_change_timer,jiffies+interval_jiffies);
 #else
 	error("You are trying to use this module without patching "
 		"the kernel with schedmod. Refer to the "

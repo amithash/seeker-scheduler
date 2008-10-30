@@ -41,7 +41,6 @@ obj-m += seeker_scheduler.o           	\
 	 fpmu/fpmu.o        		\
 	 tsc/tsc.o         		\
 	 therm/therm.o       		\
-	 test.o				\
 	 scpufreq/scpufreq.o  		\
 	 power/power.o
 
