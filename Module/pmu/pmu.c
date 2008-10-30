@@ -405,7 +405,7 @@ int counter_enable(u32 event, u32 ev_mask, u32 os)
 		evtsel[cpu_id][counter_num].ev_select = event;
 		evtsel[cpu_id][counter_num].ev_mask = ev_mask;
 		evtsel[cpu_id][counter_num].usr_flag = 1;
-		evtsel[cpu_id][counter_num].os_flag = os;
+		evtsel[cpu_id][counter_num].os_flag = (os & 1);
 		evtsel[cpu_id][counter_num].pc_flag = 1;
 		evtsel[cpu_id][counter_num].int_flag = 0;
 		evtsel[cpu_id][counter_num].inv_flag = 0;

@@ -8,7 +8,7 @@
 
 #include "hwcounters.h"
 
-int sys_counters[NR_CPUS][3];
+int sys_counters[NR_CPUS][3] = {{0,0,0}};
 u64 pmu_val[NR_CPUS][3];
 int ERROR=0;
 
@@ -19,17 +19,17 @@ void enable_pmu_counters(void)
 	fcounters_enable(0);
 #else
 	if((sys_counters[cpu][0] = counter_enable(PMU_INST_EVTSEL,PMU_INST_MASK,0)) < 0){
-		error("Could not enable INST");
+		error("Could not enable INST on %d",cpu);
 		sys_counters[cpu][0] = 0;
 		ERROR=1;
 	}
 	if((sys_counters[cpu][1] = counter_enable(PMU_RECY_EVTSEL,PMU_RECY_MASK,0)) < 0){
-		error("Could not enable RECY");
+		error("Could not enable RECY on cpu %d",cpu);
 		sys_counters[cpu][1] = 1;
 		ERROR=1;
 	}
 	if((sys_counters[cpu][2] = counter_enable(PMU_RFCY_EVTSEL,PMU_RFCY_MASK,0)) < 0){
-		error("Could not enable RFCY");
+		error("Could not enable RFCY on cpu %d",cpu);
 		sys_counters[cpu][2] = 2;
 		ERROR=1;
 	}

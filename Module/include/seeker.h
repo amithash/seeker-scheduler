@@ -98,6 +98,7 @@ typedef struct {
 /* Error and warn hash defines kern meaning is increased on purpose... */
 #define error(str,a...) printk(KERN_EMERG "SEEKER ERROR[%s : %d]: " str "\n",__FILE__,__LINE__, ## a)
 #define warn(str,a...) printk(KERN_ERR "SEEKER WARN[%s : %d]: " str "\n",__FILE__,__LINE__, ## a)
+#define info(str,a...) printk(KERN_INFO "SEEKER INFO[%s : %d]: " str "\n",__FILE__,__LINE__, ## a)
 
 /* Print Debugging statements only if DEBUG is defined. */
 #ifdef DEBUG
