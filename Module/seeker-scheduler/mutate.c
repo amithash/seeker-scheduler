@@ -19,6 +19,7 @@ extern int cur_cpu_state[NR_CPUS];
 extern unsigned int max_state_in_system;
 int state_matrix[NR_CPUS][MAX_STATES];
 extern struct state_desc states[MAX_STATES];
+extern spinlock_t states_lock;
 
 u64 interval_count;
 
@@ -75,6 +76,7 @@ void choose_layout(int delta)
 	short poison[NR_CPUS] = {1};
 	int new_cpu_state[NR_CPUS];
 
+	spin_lock(&states_lock);
 	interval_count++;
 
 	/* Create a state matrix such that, the cell which
@@ -223,6 +225,7 @@ assign:
 			p->entry.u.mut.cpustates[i] = cur_cpu_state[i];
 	}
 	put_debug(p);
+	spin_unlock(&states_lock);
 }
 
 

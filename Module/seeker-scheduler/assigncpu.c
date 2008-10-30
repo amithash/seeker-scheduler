@@ -36,6 +36,7 @@
 extern struct state_desc states[MAX_STATES];
 extern int max_state_in_system;
 extern u64 interval_count;
+extern spinlock_t states_lock;
 
 void put_mask_from_stats(struct task_struct *ts)
 {
@@ -48,6 +49,9 @@ void put_mask_from_stats(struct task_struct *ts)
 
 	/* Do not do anything to the init task! */
 	if(ts->pid == 0)
+		return;
+
+	if(!spin_can_lock(&states_lock))
 		return;
 
 
