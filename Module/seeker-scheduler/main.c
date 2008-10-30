@@ -86,6 +86,7 @@ extern u64 pmu_val[NR_CPUS][3];
 
 static void state_change(unsigned long param)
 {
+	warn("hello, %lx",jiffies);
 	choose_layout(delta);
 	mod_timer(&state_change_timer, jiffies + interval_jiffies);
 }
@@ -174,10 +175,9 @@ static int scheduler_init(void)
 	}
 
 	interval_jiffies = change_interval * HZ;
-
-	return 0;
 	setup_timer(&state_change_timer,state_change,0);
 	mod_timer(&state_change_timer,jiffies+interval_jiffies);
+	return 0;
 #else
 	error("You are trying to use this module without patching "
 		"the kernel with schedmod. Refer to the "
