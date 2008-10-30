@@ -21,11 +21,11 @@ void enable_pmu_counters(void)
 		error("Could not enable INST");
 		sys_counters[cpu][0] = 0;
 	}
-	if((sys_counters[cpu][0] = counter_enable(PMU_RECY_EVTSEL,PMU_RECY_MASK,0)) < 0){
+	if((sys_counters[cpu][1] = counter_enable(PMU_RECY_EVTSEL,PMU_RECY_MASK,0)) < 0){
 		error("Could not enable RECY");
 		sys_counters[cpu][1] = 1;
 	}
-	if((sys_counters[cpu][0] = counter_enable(PMU_RFCY_EVTSEL,PMU_RFCY_MASK,0)) < 0){
+	if((sys_counters[cpu][2] = counter_enable(PMU_RFCY_EVTSEL,PMU_RFCY_MASK,0)) < 0){
 		error("Could not enable RFCY");
 		sys_counters[cpu][2] = 2;
 	}
