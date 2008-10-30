@@ -108,9 +108,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		if(new_state == -1)
 			new_state = state;
 		mask = states[new_state].cpumask;
-		/* Done here without a lock. If cpumask has become
-		 * empty in the process, then return.
-		 */
+
 		if(cpus_empty(mask)){
 			debug("mask empty...");
 			return;
@@ -118,14 +116,11 @@ void put_mask_from_stats(struct task_struct *ts)
 		#ifdef SEEKER_PLUGIN_PATCH
 		ts->cpustate = new_state;
 		#endif
-		/* XXX this recursively involes schedule.... 
-		 * Bit problem.
-		 * set_cpus_allowed(ts,mask); 
-		 * so do a lazy migrate */
 		if(spin_is_locked(&states_lock))
 			return;
 		ts->cpus_allowed = mask;
-//		set_tsk_need_resched(ts);
+//		set_tsk_need_resched(ts); /* Lazy */
+//		set_cpus_allowed(ts,mask); /* Unlazy */
 	}
 
 	p = get_debug();
