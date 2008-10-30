@@ -77,9 +77,11 @@ void clear_counters(void)
 	for(i = 0; i < log_num_events; i++) {
 		counter_clear(cpu_counters[cpu][i]);
 	}
+#if NUM_FIXED_COUNTERS > 0
 	for(i = 0; i < NUM_FIXED_COUNTERS; i++) {
 		fcounter_clear(i);
 	}
+#endif
 
 	/* OTHER COUNTERS SHOULD BE CLEARED HERE (If it makes sense that is) */
 }
@@ -93,12 +95,15 @@ void clear_counters(void)
  *---------------------------------------------------------------------------*/
 void do_sample(void) 
 {
-	int i,j;
+	int i;
 	struct log_block *pentry;
 	unsigned long long now, period;
 	unsigned long long last_ts;
 	unsigned long long temp[3];
 	int cpu;
+#if NUM_FIXED_COUNTERS > 0
+	int j;
+#endif
 	if(!dev_open)
 		return;
 
@@ -106,7 +111,9 @@ void do_sample(void)
 
 	read_time_stamp();  
 	counter_read();
+#if NUM_FIXED_COUNTERS > 0
 	fcounter_read();
+#endif
 	if(unlikely(read_temp() == -1)){
 		debug("Temperature value not valid, retrying");
 		read_temp();
@@ -134,18 +141,20 @@ void do_sample(void)
 	/* log the pmu counters */
 	for(i = 0; i < log_num_events; i++) {
 		pentry->sample.u.seeker_sample.counters[i] = get_counter_data(cpu_counters[cpu][i], cpu);
-#ifdef SEEKER_PLUGIN_PATCH
-		if(NUM_FIXED_COUNTERS == 0 && i<3)
+#if defined(SEEKER_PLUGIN_PATCH) && NUM_FIXED_COUNTERS == 0
+		if(i<3)
 			temp[i] = pentry->sample.u.seeker_sample.counters[i];
 #endif
 	}
+#if NUM_FIXED_COUNTERS > 0
 	/* log the fixed counters */
 	for(j=0;j<NUM_FIXED_COUNTERS;j++){
 		temp[j] = pentry->sample.u.seeker_sample.counters[i++] = get_fcounter_data(j,cpu);
-#ifdef SEEKER_PLUGIN_PATCH
+#	if defined(SEEKER_PLUGIN_PATCH)
 		temp[j] = pentry->sample.u.seeker_sample.counters[i-1];
-#endif
+#	endif
 	}
+#endif
 	pentry->sample.u.seeker_sample.counters[i++] = get_temp(cpu);
 	
 	/* GETTING DATA FROM OTHER COUNTERS GO HERE */
@@ -153,11 +162,13 @@ void do_sample(void)
 	out:
 	clear_counters();
 #ifdef SEEKER_PLUGIN_PATCH
-	ts[cpu]->inst += temp[0];
-	ts[cpu]->re_cy += temp[1];
-	ts[cpu]->ref_cy += temp[2];
-	if(ts[cpu]->inst > MAX_INSTRUCTIONS_BEFORE_SCHEDULE)
-		set_tsk_need_resched(ts[cpu]);
+	if(ts[cpu]){
+		ts[cpu]->inst += temp[0];
+		ts[cpu]->re_cy += temp[1];
+		ts[cpu]->ref_cy += temp[2];
+		if(ts[cpu]->inst > MAX_INSTRUCTIONS_BEFORE_SCHEDULE)
+			set_tsk_need_resched(ts[cpu]);
+	}
 #endif
 	put_cpu();
 }
@@ -178,16 +189,17 @@ int config_counters(void)
 	for(i = 0; i < log_num_events; i++) {
 		cpu_counters[cpu][i] =
 		counter_enable(log_events[i], log_ev_masks[i], os_flag);
-		if(unlikely(cpu_counters[cpu][i] < 0)) {
+		if(unlikely(cpu_counters[cpu][i] < 0 || cpu_counters[cpu][i] >= NUM_COUNTERS)) {
 			error("Could not allocate counter for event %d",log_events[i]);
 			return -1;
 		}
 		printk("%d: Allocated counter %d for %d:%x\n", cpu, cpu_counters[cpu][i],
 								log_events[i], log_ev_masks[i]);
 	}
-
+	#if NUM_FIXED_COUNTERS > 0
 	fcounters_enable(os_flag);
 	printk("%d: enabled the fixed counters\n",cpu);
+	#endif
 
 	/* ENABLING AND CONFIGURATION OF COUNTERS ARE DONE HERE. 
 	 * NOTE: This is different from initialization. This is where they are enabled 
