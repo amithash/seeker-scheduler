@@ -84,13 +84,12 @@ extern u64 interval_count;
 extern int cur_cpu_state[MAX_STATES];
 extern u64 pmu_val[NR_CPUS][3];
 
-static void state_change(unsigned long param)
+void state_change(unsigned long param)
 {
 	warn("hello, %lx",jiffies);
 	choose_layout(delta);
 	mod_timer(&state_change_timer, jiffies + interval_jiffies);
 }
-
 
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 {
