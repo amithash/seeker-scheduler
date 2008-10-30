@@ -167,9 +167,14 @@ static int scheduler_init(void)
 	} else {
 		if(unlikely((probe_ret = register_kprobe(&kp_schedule))<0)){
 			error("schedule register successful, but schedule failed");
+			unregister(&jp___switch_to);
 			return -ENOSYS;
 		}
-		configure_counters();
+		if(configure_counters() < 0){
+			unregister_jprobe(&jp___switch_to);
+			unregister_kprobe(&kp_schedule);
+			return -ENOSYS;
+		}
 	}
 
 	interval_jiffies = change_interval * HZ;

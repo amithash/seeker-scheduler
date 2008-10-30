@@ -10,6 +10,7 @@
 
 int sys_counters[NR_CPUS][3];
 u64 pmu_val[NR_CPUS][3];
+int ERROR=0;
 
 void enable_pmu_counters(void)
 {
@@ -20,14 +21,17 @@ void enable_pmu_counters(void)
 	if((sys_counters[cpu][0] = counter_enable(PMU_INST_EVTSEL,PMU_INST_MASK,0)) < 0){
 		error("Could not enable INST");
 		sys_counters[cpu][0] = 0;
+		ERROR=1;
 	}
 	if((sys_counters[cpu][1] = counter_enable(PMU_RECY_EVTSEL,PMU_RECY_MASK,0)) < 0){
 		error("Could not enable RECY");
 		sys_counters[cpu][1] = 1;
+		ERROR=1;
 	}
 	if((sys_counters[cpu][2] = counter_enable(PMU_RFCY_EVTSEL,PMU_RFCY_MASK,0)) < 0){
 		error("Could not enable RFCY");
 		sys_counters[cpu][2] = 2;
+		ERROR=1;
 	}
 #endif	
 	clear_counters(cpu);
@@ -40,6 +44,9 @@ int configure_counters(void)
 		error("Counters could not be configured");
 		return -1;
 	}
+	if(ERROR)
+		return -1;
+
 	return 0;
 }
 
