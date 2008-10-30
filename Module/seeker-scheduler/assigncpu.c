@@ -8,6 +8,7 @@
 
 #include <seeker.h>
 
+#include "assigncpu.h"
 #include "state.h"
 #include "scpufreq.h"
 #include "debug.h"

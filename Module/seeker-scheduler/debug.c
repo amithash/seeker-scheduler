@@ -23,25 +23,36 @@ static struct debug_block *current_debug = NULL;
 static int first_read = 1;
 static int dev_created = 0;
 
-static struct file_operations seeker_debug_fops;
-static struct miscdevice seeker_debug_mdev;
-static int dev_open = 0;
-static struct kmem_cache *debug_cachep = NULL;
-
 int seeker_debug_close(struct inode *in, struct file *f);
 int seeker_debug_open(struct inode *in, struct file *f);
 ssize_t seeker_debug_read(struct file *file_ptr, char __user *buf, size_t count, loff_t *offset);
 
+static struct file_operations seeker_debug_fops = {
+	.owner = THIS_MODULE,
+	.open = seeker_debug_open,
+	.release = seeker_debug_close,
+	.read = seeker_debug_read,
+};
+
+static struct miscdevice seeker_debug_mdev = {
+	.minor = MISC_DYNAMIC_MINOR,
+	.name = "seeker_debug",
+	.fops = &seeker_debug_fops,
+};
+
+static int dev_open = 0;
+static struct kmem_cache *debug_cachep = NULL;
+
+
 
 struct debug_block *get_debug(void)
 {
-	struct debug_block *p;
+	struct debug_block *p = NULL;
 	if(!dev_open)
 		return NULL;
 	spin_lock(&debug_lock);
 	if(unlikely(!current_debug)){
-		spin_unlock(&debug_lock);
-		return NULL;
+		goto out;
 	}
 	p = (struct debug_block *)kmem_cache_alloc(debug_cachep, GFP_ATOMIC);
 	if(!p)
@@ -79,12 +90,12 @@ void purge_debug(void)
 	c1 = start_debug;
 	start_debug = NULL;
 	current_debug = NULL;
-	spin_unlock(&debug_lock);
 	while(c1){
 		c2 = c1->next;
 		debug_free(c1);
 		c1 = c2;
 	}
+	spin_unlock(&debug_lock);
 }
 	
 
@@ -94,8 +105,7 @@ ssize_t seeker_debug_read(struct file *file_ptr, char __user *buf,
 {
 	struct debug_block *log;
 	int i = 0;
-	int exit = 0;
-	if(unlikely(start_debug == NULL || buf == NULL || file_ptr == NULL)){
+	if(unlikely(start_debug == NULL || buf == NULL || file_ptr == NULL || start_debug == current_debug)){
 		warn("Nothing read");
 		return -1;
 	}
@@ -108,12 +118,10 @@ ssize_t seeker_debug_read(struct file *file_ptr, char __user *buf,
 		first_read = 0;
 	}
 	while(i+sizeof(debug_t) <= count &&
-		!exit &&
+		start_debug->next &&
 		start_debug != current_debug){
 		memcpy(buf+i,&(start_debug->entry),sizeof(debug_t));
 		log = start_debug;
-		if(log->next == NULL)
-			exit = 1;
 		start_debug = start_debug->next;
 		debug_free(log);
 		i += sizeof(debug_t);
@@ -130,23 +138,6 @@ int seeker_debug_open(struct inode *in, struct file *f)
 int seeker_debug_close(struct inode *in, struct file *f)
 {
 	dev_open = 0;
-	return 0;
-}
-
-int seeker_init_debug(void)
-{
-	seeker_debug_fops.open = seeker_debug_open;
-	seeker_debug_fops.release = seeker_debug_close;
-	seeker_debug_fops.read = seeker_debug_read;
-
-	seeker_debug_mdev.minor = MISC_DYNAMIC_MINOR;
-	seeker_debug_mdev.name  = "seeker_debug";
-	seeker_debug_mdev.fops = &seeker_debug_fops;
-
-	if(unlikely(misc_register(&seeker_debug_mdev) < 0)){
-		error("seeker_debug device register failed");
-		return -1;
-	}
 	return 0;
 }
 
@@ -167,12 +158,13 @@ int debug_init(void)
 	current_debug = kmem_cache_alloc(debug_cachep, GFP_ATOMIC);
 	start_debug = current_debug;
 	spin_lock_init(&debug_lock);
-	if(!seeker_init_debug()){
-		first_read = 1;
-		dev_created = 1;
-		return 0;
+	first_read = 1;
+	if(unlikely(misc_register(&seeker_debug_mdev) < 0)){
+		error("seeker_debug device register failed");
+		return -1;
 	}
-	return -1;
+	dev_created = 1;
+	return 0;
 }
 
 void debug_exit(void)

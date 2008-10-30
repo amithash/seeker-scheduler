@@ -108,9 +108,8 @@ int log_read(struct file* file_ptr,
 {
 	struct log_block *log;
 	int i = 0;
-	int exit = 0;
 
-	if(unlikely(seeker_log_head == NULL || buf == NULL || file_ptr == NULL)){
+	if(unlikely(seeker_log_head == NULL || buf == NULL || file_ptr == NULL || seeker_log_head == seeker_log_current)){
 		warn("Trying to read or write from/to a NULL buf");
 		return -1;
 	}
@@ -130,14 +129,13 @@ int log_read(struct file* file_ptr,
 	 * a competetor with the writers and creates the 
 	 * need for a lock.
 	 */
-	while(i+sizeof(seeker_sampler_entry_t) <= count 
-	      && !exit 
-	      && seeker_log_head != seeker_log_current){
+	while(i+sizeof(seeker_sampler_entry_t) <= count  &&
+	      seeker_log_head->next && 
+	      seeker_log_head != seeker_log_current){
+
 		memcpy(buf+i,&(seeker_log_head->sample),sizeof(seeker_sampler_entry_t));	
 		/* Check if this is the last */
 		log = seeker_log_head;
-		if(log->next == NULL)
-			exit = 1;
 		seeker_log_head = seeker_log_head->next;
 		delete_log(log);
 		i+=sizeof(seeker_sampler_entry_t);
