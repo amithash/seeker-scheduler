@@ -154,6 +154,7 @@ int pmu_is_interrupt(int ctr)
 {
 	#if NUM_COUNTERS > 0
 
+#if defined(ARCH_C2D)
 	u32 ret = 0;
 	u32 low,high;
 
@@ -162,9 +163,6 @@ int pmu_is_interrupt(int ctr)
 	 * control. And hence just return success
 	 * (1)
 	 */
-	#if defined(ARCH_K8) || defined(ARCH_K10)
-	return 1;
-	#endif
 
 	if(unlikely(ctr >= NUM_COUNTERS))
 		return -1;
@@ -195,17 +193,21 @@ int pmu_is_interrupt(int ctr)
 			break;
 	}
 	return ret;
-	#else
+#	else
+	return 0;
+#	endif
+#else
 	return -1;
-	#endif
+#endif
 }
 EXPORT_SYMBOL_GPL(pmu_is_interrupt);
 
 int pmu_clear_ovf_status(int ctr)
 {
-	#if NUM_COUNTERS > 0
-	u32 low,high;
 	int ret = 0;
+	#if NUM_COUNTERS > 0 
+	#if defined(ARCH_C2D)
+	u32 low,high;
 	if(unlikely(ctr > NUM_COUNTERS))
 		return -1;
 	/* Unlike the C2D, the AMD Archs do not
@@ -213,9 +215,6 @@ int pmu_clear_ovf_status(int ctr)
 	 * control. And hence just return success
 	 * (0)
 	 */
-	#if defined(ARCH_K8) || defined(ARCH_K10)
-	return 0;
-	#endif
 	rdmsr(MSR_PERF_GLOBAL_OVF_CTRL,low,high);
 	switch(ctr){
 		#if NUM_COUNTERS > 0
@@ -245,8 +244,12 @@ int pmu_clear_ovf_status(int ctr)
 	if(likely(ret != -1)){
 		wrmsr(MSR_PERF_GLOBAL_OVF_CTRL,low,high);
 	}
+	#else
+	return 0;
 	#endif
 	return ret;
+#endif
+
 }
 EXPORT_SYMBOL_GPL(pmu_clear_ovf_status);
 
