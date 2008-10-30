@@ -38,16 +38,14 @@ void update_state_matrix(int *cpu_state, int delta)
 {
 	int i,j,l;
 	for(i=0;i<total_online_cpus;i++){
-		l=0;
-		for(j=cpu_state[i];j<max_state_in_system;j++){
+		for(j=cpu_state[i],l=0;j<max_state_in_system;j++,l++){
 			if(l>delta)
 				state_matrix[i][j] = 0;
 			else
 				state_matrix[i][j] = (max_state_in_system-l)*(max_state_in_system-l);
 			l++;
 		}
-		l=1;
-		for(j=cpu_state[i]-1;j>=0;j--){
+		for(j=cpu_state[i]-1,l=1;j>=0;j--,l++){
 			if(l>delta)
 				state_matrix[i][j] = 0;
 			else
@@ -124,7 +122,7 @@ void choose_layout(int delta)
 			sum = 0;
 			best_proc = 0;
 			best_proc_value = 0;
-			best_low_proc_value = -1;
+			best_low_proc_value = 0;
 
 			/* Sum the cost over all rows */
 			for(i=0;i<total_online_cpus;i++){
@@ -153,9 +151,9 @@ void choose_layout(int delta)
 				continue;
 			if(best_proc_value > winner_best_proc_value)
 				goto assign;
-
 			if(best_low_proc_value < winner_best_low_proc_value)
 				continue;
+
 assign:
 			winner = j;
 			winner_val = sum;
@@ -170,7 +168,8 @@ assign:
 			break;
 
 		/* Now the winning state, reduces its demand */
-		demand[winner]--;
+		if(demand[winner] > 0)
+			demand[winner]--;
 	
 		/* The best processor is best_proc */
 		/* Poison the choosen processor */
