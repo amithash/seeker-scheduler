@@ -167,7 +167,7 @@ static int scheduler_init(void)
 	} else {
 		if(unlikely((probe_ret = register_kprobe(&kp_schedule))<0)){
 			error("schedule register successful, but schedule failed");
-			unregister(&jp___switch_to);
+			unregister_jprobe(&jp___switch_to);
 			return -ENOSYS;
 		}
 		if(configure_counters() < 0){
