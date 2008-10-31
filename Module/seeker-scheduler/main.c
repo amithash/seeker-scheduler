@@ -96,8 +96,10 @@ static void state_change(unsigned long param)
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 {
 	int cpu = get_cpu();
+#ifdef SEEKER_PLUGIN_PATCH
 	if(!ts[cpu] || ts[cpu]->seeker_scheduled != SEEKER_MAGIC_NUMBER)
 		goto inst_schedule_out;
+#endif
 
 	read_counters(cpu);
 #ifdef SEEKER_PLUGIN_PATCH
@@ -132,8 +134,10 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 {
 	int cpu = smp_processor_id();
 	ts[cpu] = to;
+	#ifdef SEEKER_PLUGIN_PATCH
 	if(from->seeker_scheduled != SEEKER_MAGIC_NUMBER)
 		jprobe_return();
+	#endif
 
 	if(!using_seeker){
 		read_counters(cpu);

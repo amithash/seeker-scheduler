@@ -83,10 +83,11 @@ void debug_free(struct debug_block *p)
 void purge_debug(void)
 {
 	struct debug_block *c1,*c2;
+	unsigned int flags;
 	if(start_debug == NULL || current_debug == NULL)
 		return;
 
-	spin_lock(&debug_lock);
+	spin_lock_irqsave(&debug_lock,flags);
 	c1 = start_debug;
 	start_debug = NULL;
 	current_debug = NULL;
@@ -95,7 +96,7 @@ void purge_debug(void)
 		debug_free(c1);
 		c1 = c2;
 	}
-	spin_unlock(&debug_lock);
+	spin_unlock_irqrestore(&debug_lock,flags);
 }
 	
 
