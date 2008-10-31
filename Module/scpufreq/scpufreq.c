@@ -26,12 +26,18 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/cpufreq.h>
+#include <linux/workqueue.h>
 #include <asm/types.h>
 #include <linux/moduleparam.h>
 
 #include <seeker.h>
 
 #include "scpufreq.h"
+
+struct cpufreq_governor seeker_governor = {
+	.name = "seeker",
+	.owner = THIS_MODULE,
+};
 
 unsigned int freqs[NR_CPUS];
 unsigned int freq_count = -1;
@@ -52,6 +58,13 @@ unsigned int get_freq(unsigned int cpu)
 }
 EXPORT_SYMBOL_GPL(get_freq);
 
+void scpufreq_update_freq(struct work_struct *w)
+{
+	int cpu = (int)*((unsigned long *)&(w->data));
+	cpufreq_update_policy(cpu);
+}
+
+
 int set_freq(unsigned int cpu, unsigned int freq_ind)
 {
 	struct cpufreq_policy *policy = NULL;
@@ -60,16 +73,22 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 	if(freq_ind == freq_info[cpu].cur_freq)
 		return 0;
 	if(freq_ind < freq_info[cpu].num_states){
-		cpufreq_get_policy(policy,cpu);
+		policy = cpufreq_cpu_get(cpu);
 		if(!policy){
 			error("cpufreq_get_policy did not work!");
 			return -1;
 		}
 		policy->min = freq_info[cpu].table[freq_ind];
 		policy->max = freq_info[cpu].table[freq_ind];
+		policy->cur = freq_info[cpu].table[freq_ind];
+		policy->cpu = cpu;
 		cpus_clear(policy->cpus);
 		cpu_set(cpu,policy->cpus);
-		cpufreq_update_policy(cpu);
+		*((unsigned long *)&(policy->update.data)) = cpu;
+		policy->update.func = &scpufreq_update_freq;
+		cpufreq_cpu_put(policy);
+		/* Start a worker thread to do the actual update */
+		schedule_work(&(policy->update));
 		freq_info[cpu].cur_freq = freq_ind;
 		return 0;
 	}
@@ -106,6 +125,7 @@ static int __init seeker_cpufreq_init(void)
 	unsigned int tmp;
 	struct cpufreq_frequency_table *table;
 	int cpus = num_online_cpus();
+	cpufreq_register_governor(&seeker_governor);
 	for(i=0;i<cpus;i++){
 		freq_info[i].cpu = i;
 		freq_info[i].cur_freq = -1; /* Not known */
@@ -155,7 +175,8 @@ static void __exit seeker_cpufreq_exit(void)
 {
 	/* Revert changes to cpufreq to make it useable by
 	 * user process again */
-	;
+	cpufreq_unregister_governor(&seeker_governor);
+	flush_scheduled_work();
 }
 
 module_param_array(freqs,int, &freq_count, 0444);

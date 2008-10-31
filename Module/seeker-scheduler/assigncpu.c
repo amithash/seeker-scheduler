@@ -103,6 +103,7 @@ void put_mask_from_stats(struct task_struct *ts)
 
 
 	hint_inc(new_state);
+	return;
 
 	if(new_state != state){
 		if(new_state == -1)
@@ -118,8 +119,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		#endif
 		if(spin_is_locked(&states_lock))
 			return;
-		if(!spin_can_lock(&states_lock))
-			return;
+		
 		ts->cpus_allowed = mask;
 //		set_tsk_need_resched(ts); /* Lazy */
 //		set_cpus_allowed(ts,mask); /* Unlazy */
