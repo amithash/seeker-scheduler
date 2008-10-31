@@ -52,6 +52,7 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs);
 
 static struct timer_list state_change_timer;
 static u64 interval_jiffies;
+static int timer_started = 0;
 
 struct task_struct *ts[NR_CPUS] = {NULL};
 int using_seeker = 1;
@@ -88,7 +89,8 @@ extern u64 pmu_val[NR_CPUS][3];
 void state_change(unsigned long param)
 {
 	choose_layout(delta);
-	mod_timer(&state_change_timer, jiffies + interval_jiffies);
+	if(timer_started)
+		mod_timer(&state_change_timer, jiffies + interval_jiffies);
 }
 
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
@@ -189,6 +191,7 @@ static int scheduler_init(void)
 
 	interval_jiffies = change_interval * HZ;
 	setup_timer(&state_change_timer,state_change,0);
+	timer_started = 1;
 	mod_timer(&state_change_timer,jiffies+interval_jiffies);
 	return 0;
 #else
@@ -210,7 +213,10 @@ static void scheduler_exit(void)
 		unregister_jprobe(&jp___switch_to);
 		unregister_kprobe(&kp_schedule);
 	}
-	del_timer_sync(&state_change_timer);
+	if(timer_started){
+		timer_started = 0;
+		del_timer_sync(&state_change_timer);
+	}
 }
 
 module_init(scheduler_init);

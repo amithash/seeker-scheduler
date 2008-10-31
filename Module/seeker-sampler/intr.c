@@ -60,7 +60,8 @@ void do_timer_sample(unsigned long param)
 			error("could not sample on all cpu's\n");
 		}
 	}
-	mod_timer(&sample_timer, jiffies + sample_freq);  
+	if(sample_timer_started)
+		mod_timer(&sample_timer, jiffies + sample_freq);  
 }
 
 #ifdef LOCAL_PMU_VECTOR
