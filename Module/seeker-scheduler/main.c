@@ -86,7 +86,7 @@ extern u64 interval_count;
 extern int cur_cpu_state[MAX_STATES];
 extern u64 pmu_val[NR_CPUS][3];
 
-void state_change(unsigned long param)
+static void state_change(unsigned long param)
 {
 	choose_layout(delta);
 	if(timer_started)
@@ -205,7 +205,9 @@ static int scheduler_init(void)
 
 static void scheduler_exit(void)
 {
+	debug("Debug exiting");
 	debug_exit();
+	debug("Unregistering probes");
 	unregister_jprobe(&jp_sched_fork);
 	if(using_seeker){
 		unregister_jprobe(&jp_inst___switch_to);
@@ -213,6 +215,7 @@ static void scheduler_exit(void)
 		unregister_jprobe(&jp___switch_to);
 		unregister_kprobe(&kp_schedule);
 	}
+	debug("removing the state change timer");
 	if(timer_started){
 		timer_started = 0;
 		del_timer_sync(&state_change_timer);
