@@ -54,19 +54,22 @@ EXPORT_SYMBOL_GPL(get_freq);
 
 int set_freq(unsigned int cpu, unsigned int freq_ind)
 {
-	struct cpufreq_policy *policy;
+	struct cpufreq_policy *policy = NULL;
 	if(unlikely(cpu >= NR_CPUS))
 		return -1;
 	if(freq_ind == freq_info[cpu].cur_freq)
 		return 0;
 	if(freq_ind < freq_info[cpu].num_states){
-		policy = cpufreq_cpu_get(cpu);
+		cpufreq_get_policy(policy,cpu);
+		if(!policy){
+			error("cpufreq_get_policy did not work!");
+			return -1;
+		}
 		policy->min = freq_info[cpu].table[freq_ind];
 		policy->max = freq_info[cpu].table[freq_ind];
 		cpus_clear(policy->cpus);
 		cpu_set(cpu,policy->cpus);
-		cpufreq_cpu_put(policy);
-		cpufreq_driver_target(policy,freq_info[cpu].table[freq_ind],CPUFREQ_RELATION_H);
+		cpufreq_update_policy(cpu);
 		freq_info[cpu].cur_freq = freq_ind;
 		return 0;
 	}
