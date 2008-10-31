@@ -122,7 +122,7 @@ void put_mask_from_stats(struct task_struct *ts)
 			return;
 		
 		ts->cpus_allowed = mask;
-//		set_tsk_need_resched(ts); /* Lazy */
+		set_tsk_need_resched(ts); /* Lazy */
 //		set_cpus_allowed(ts,mask); /* Unlazy */
 	}
 
