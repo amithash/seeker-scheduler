@@ -78,6 +78,7 @@ void put_mask_from_stats(struct task_struct *ts)
 
 	cpus_clear(mask);
 	ipc = IPC(ts->inst,ts->re_cy);
+	debug("IPC = %d",ipc);
 #endif
 	/*up*/
 	if(ipc >= IPC_0_750){
@@ -104,7 +105,6 @@ void put_mask_from_stats(struct task_struct *ts)
 
 
 	hint_inc(new_state);
-	return;
 
 	if(new_state != state){
 		if(new_state == -1)

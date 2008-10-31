@@ -183,8 +183,8 @@ static int __init seeker_sampler_init(void)
 		printk("seeker sampler sampling every %d jiffies, HZ is %d\n",
 			sample_freq, HZ);
 		setup_timer(&sample_timer,do_timer_sample,0);
-		mod_timer(&sample_timer, jiffies + sample_freq);
 		sample_timer_started = 1;
+		mod_timer(&sample_timer, jiffies + sample_freq);
 	}
 	else{
 		#ifdef LOCAL_PMU_VECTOR

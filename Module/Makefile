@@ -70,9 +70,9 @@ INCLUDE_DIRS := -I$(PWD)/include	\
 		-I$(PWD)/scpufreq	\
 
 ifndef DEBUG
-MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall
+MOD_FLAGS := -DMODULE -O3 -m64 -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall
 else
-MOD_FLAGS := -DMODULE -O3 -march=nocona -DARCH_$(ARCA) $(INCLUDE_DIRS) -DDEBUG
+MOD_FLAGS := -DMODULE -O3 -m64 -DARCH_$(ARCA) $(INCLUDE_DIRS) -DDEBUG
 endif
 
 default:

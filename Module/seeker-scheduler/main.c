@@ -209,8 +209,11 @@ static int scheduler_init(void)
 
 static void scheduler_exit(void)
 {
-	debug("Debug exiting");
-	debug_exit();
+	debug("removing the state change timer");
+	if(timer_started){
+		timer_started = 0;
+		del_timer_sync(&state_change_timer);
+	}
 	debug("Unregistering probes");
 	unregister_jprobe(&jp_sched_fork);
 	if(using_seeker){
@@ -219,11 +222,8 @@ static void scheduler_exit(void)
 		unregister_jprobe(&jp___switch_to);
 		unregister_kprobe(&kp_schedule);
 	}
-	debug("removing the state change timer");
-	if(timer_started){
-		timer_started = 0;
-		del_timer_sync(&state_change_timer);
-	}
+	debug("Debug exiting");
+	debug_exit();
 }
 
 module_init(scheduler_init);
