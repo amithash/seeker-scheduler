@@ -5,6 +5,7 @@
 #include <linux/cpumask.h>
 #include <linux/sched.h>
 #include <linux/spinlock.h>
+#include <linux/string.h>
 
 #include <seeker.h>
 

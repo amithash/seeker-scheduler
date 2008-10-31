@@ -43,6 +43,7 @@
 #include "hwcounters.h"
 
 #define MAX_INSTRUCTIONS_BEFORE_SCHEDULE 10000000
+#define SEEKER_MAGIC_NUMBER 0x5ee6e5ef
 
 
 void inst___switch_to(struct task_struct *from, struct task_struct *to);
@@ -93,7 +94,7 @@ void state_change(unsigned long param)
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 {
 	int cpu = get_cpu();
-	if(!ts[cpu])
+	if(!ts[cpu] || ts[cpu]->seeker_scheduled != SEEKER_MAGIC_NUMBER)
 		goto inst_schedule_out;
 
 	read_counters(cpu);
@@ -115,6 +116,7 @@ inst_schedule_out:
 void inst_sched_fork(struct task_struct *new, int clone_flags)
 {
 #ifdef SEEKER_PLUGIN_PATCH
+	new->seeker_scheduled = 0x5ee6e5ef; 
 	new->interval = interval_count;
 	new->inst = 0;
 	new->ref_cy = 0;
@@ -127,6 +129,10 @@ void inst_sched_fork(struct task_struct *new, int clone_flags)
 void inst___switch_to(struct task_struct *from, struct task_struct *to)
 {
 	int cpu = smp_processor_id();
+	ts[cpu] = to;
+	if(from->seeker_scheduled != SEEKER_MAGIC_NUMBER)
+		jprobe_return();
+
 	if(!using_seeker){
 		read_counters(cpu);
 	#ifdef SEEKER_PLUGIN_PATCH
@@ -138,7 +144,9 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	#endif
 		clear_counters(cpu);
 	}
-	ts[cpu] = to;
+	if(strnicmp(from->comm,"events",6) == 0)
+		jprobe_return();
+
 	put_mask_from_stats(from);
 	jprobe_return();
 }
