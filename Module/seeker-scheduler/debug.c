@@ -195,9 +195,13 @@ void debug_exit(void)
 		dev_open = 0;
 
 	if(dev_created){
+		debug("Deregestering the misc device");
 		misc_deregister(&seeker_debug_mdev);
+		debug("purging the log");
 		purge_debug();
+		debug("Destroying the cache");
 		kmem_cache_destroy(debug_cachep);
+		debug("Debug exit done!!!");
 		dev_created = 0;
 	}
 }

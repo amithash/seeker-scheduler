@@ -69,10 +69,13 @@ INCLUDE_DIRS := -I$(PWD)/include	\
 		-I$(PWD)/therm		\
 		-I$(PWD)/scpufreq	\
 
-ifndef DEBUG
-MOD_FLAGS := -DMODULE -O3 -m64 -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall
+MOD_FLAGS := -DMODULE -m64 -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall
+
+# Use -g and -O0 while defineing DEBUG for debug builds, else just use O2
+ifdef DEBUG
+MOD_FLAGS += -DDEBUG -g -O0
 else
-MOD_FLAGS := -DMODULE -O3 -m64 -DARCH_$(ARCA) $(INCLUDE_DIRS) -DDEBUG
+MOD_FLAGS += -O2
 endif
 
 default:

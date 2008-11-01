@@ -18,13 +18,15 @@ spinlock_t states_lock;
 
 void hint_inc(int state)
 {
-	atomic_inc((void *)&(states[state].demand));
+	states[state].demand++;
+//	atomic_inc((void *)&(states[state].demand));
 }
 EXPORT_SYMBOL_GPL(hint_inc);
 
 void hint_dec(int state)
 {
-	atomic_dec((void *)&(states[state].demand));
+	states[state].demand--;
+//	atomic_dec((void *)&(states[state].demand));
 }
 EXPORT_SYMBOL_GPL(hint_dec);
 

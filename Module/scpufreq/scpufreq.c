@@ -39,8 +39,7 @@ struct cpufreq_governor seeker_governor = {
 	.owner = THIS_MODULE,
 };
 
-unsigned int freqs[NR_CPUS];
-unsigned int freq_count = -1;
+unsigned int freqs;
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
@@ -149,23 +148,16 @@ static int __init seeker_cpufreq_init(void)
 			}
 		}
 	}
-	for(i=cpus;i<NR_CPUS;i++){
-		freq_info[i].num_states = 0;
-		freq_info[i].cpu = -1;
-		freq_info[i].cur_freq = -1;
-	}
 	/* From now on frequency refered by the index from freq_info. */
+	if(freqs < 0)
+		freqs = 0;
+	if(freqs >= freq_info[0].num_states)
+		freqs = freq_info[0].num_states-1;
 
-	if(freq_count != -1){
-		if(freq_count > cpus){
-			warn("There are only %d cpus online. Ignoring the rest.",cpus);
-			freq_count = cpus;
-		}
-		for(i=0;i<freq_count;i++){
-			if(set_freq(i,freqs[i]))
-				warn("Param for cpu %d = %d is not valid (avaliable=0,...%d). "
-					"CPU speed is left unchanged.\n",i,freq_info[i].num_states-1,freqs[i]);
-		}
+	for(i=0;i<cpus;i++){
+		if(set_freq(i,freqs))
+			warn("Param for cpu %d = %d is not valid (avaliable=0,...%d). "
+				"CPU speed is left unchanged.\n",i,freq_info[i].num_states-1,freqs);
 	}
 
 	return 0;
@@ -179,7 +171,7 @@ static void __exit seeker_cpufreq_exit(void)
 	flush_scheduled_work();
 }
 
-module_param_array(freqs,int, &freq_count, 0444);
+module_param(freqs,int, 0444);
 MODULE_PARM_DESC(freqs, "Optional, sets the cpus with the current freq_index: 0,1,... Num states in increasing frequencies");
 
 module_init(seeker_cpufreq_init);

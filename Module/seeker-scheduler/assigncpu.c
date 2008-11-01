@@ -48,12 +48,10 @@ void put_mask_from_stats(struct task_struct *ts)
 	int state = 0;
 	cpumask_t mask;
 
-	/* Do not do anything to the init task! */
-	if(ts->pid == 0)
+	if(spin_is_locked(&states_lock)){
+		debug("States is locked... returning");
 		return;
-
-	if(spin_is_locked(&states_lock))
-		return;
+	}
 
 
 #ifdef SEEKER_PLUGIN_PATCH
