@@ -3,7 +3,7 @@
 #define __SCPUFREQ_H_
 
 
-#define MAX_STATES 16
+#define MAX_STATES 8
 
 struct freq_info_t{
 	unsigned int cpu;

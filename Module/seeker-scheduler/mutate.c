@@ -5,27 +5,27 @@
 #include <linux/cpumask.h>
 
 #include <seeker.h>
+#include <scpufreq.h>
 
 #include "state.h"
-#include "scpufreq.h"
 #include "debug.h"
 
 #define ABS(i) ((int)(i) >= 0 ? (i) : (-1*((int)(i))))
 #define div(a,b) ((b) != 0 ? ((((a) + (b) - 1))/(b))  : 0)
 
+static int new_cpu_state[NR_CPUS];
+static int state_matrix[NR_CPUS][MAX_STATES];
+extern struct state_desc states[MAX_STATES];
+extern unsigned int max_state_in_system;
 extern int total_online_cpus;
 extern int max_allowed_states[NR_CPUS];
 extern int cur_cpu_state[NR_CPUS];
-int new_cpu_state[NR_CPUS];
-extern unsigned int max_state_in_system;
-int state_matrix[NR_CPUS][MAX_STATES];
-extern struct state_desc states[MAX_STATES];
 
 u64 interval_count;
 
-inline int procs(int hints,int total, int proc, int total_load);
+inline int procs(int hints,int total, int total_load);
 
-inline int procs(int hints,int total, int proc, int total_load)
+inline int procs(int hints,int total, int total_load)
 {
 	if(hints == 0)
 		return 0;
@@ -38,19 +38,20 @@ void update_state_matrix(int delta)
 {
 	int i,j,l;
 	for(i=0;i<total_online_cpus;i++){
+		if(unlikely(new_cpu_state[i] < 0 || new_cpu_state[i] >= max_state_in_system))
+			warn("Possible problem, new_cpu_state[%d] = %d",i,new_cpu_state[i]);
+
 		for(j=new_cpu_state[i],l=0;j<max_state_in_system;j++,l++){
 			if(l>delta)
 				state_matrix[i][j] = 0;
 			else
 				state_matrix[i][j] = (max_state_in_system-l)*(max_state_in_system-l);
-			l++;
 		}
 		for(j=new_cpu_state[i]-1,l=1;j>=0;j--,l++){
 			if(l>delta)
 				state_matrix[i][j] = 0;
 			else
 				state_matrix[i][j] = (max_state_in_system-l)*(max_state_in_system-l);
-			l++;
 		}
 	}
 }
@@ -88,8 +89,6 @@ void choose_layout(int delta)
 		load += weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0;
 	}
 
-	
-
 	/* Total Hint */
 	
 	for(j=0;j<max_state_in_system;j++){
@@ -100,7 +99,7 @@ void choose_layout(int delta)
 	 * SUM(demand[]) could be < cpus. 
 	 * Make sure to bring down their states. */
 	for(j=0;j<max_state_in_system;j++){
-		demand[j] = procs(states[j].demand,total,total_online_cpus,load);
+		demand[j] = procs(states[j].demand,total,load);
 		debug("required cpus for state %d = %d",j,demand[j]);
 	}
 
@@ -188,12 +187,6 @@ assign:
 		if(delta == 0)
 			break;
 
-		/* If the new state of the CPU is different,
-		 * change the state matrix to reflect it */
-		if(cur_cpu_state[winner_best_proc] != winner){
-			update_state_matrix(delta);
-		}
-
 		/* Continue the auction if delta > 0 */
 	} while(delta > 0 && total_iter < total_online_cpus);
 
@@ -229,8 +222,8 @@ assign:
 		if(p)
 			p->entry.u.mut.cpustates[i] = cur_cpu_state[i];
 	}
-	put_debug(p,&irq_flags);
 	mark_states_consistent();
+	put_debug(p,&irq_flags);
 }
 
 

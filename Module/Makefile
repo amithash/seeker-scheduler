@@ -75,7 +75,7 @@ MOD_FLAGS := -DMODULE -m64 -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall
 ifdef DEBUG
 MOD_FLAGS += -DDEBUG -g -O0
 else
-MOD_FLAGS += -O2
+MOD_FLAGS += -O0
 endif
 
 default:

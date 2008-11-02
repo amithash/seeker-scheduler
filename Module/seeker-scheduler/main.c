@@ -81,7 +81,7 @@ int total_online_cpus = 0;
 
 int change_interval = 5;
 int delta=1;
-int init = ALL_HIGH;
+int init = ALL_LOW;
 extern u64 interval_count;
 extern int cur_cpu_state[MAX_STATES];
 extern u64 pmu_val[NR_CPUS][3];

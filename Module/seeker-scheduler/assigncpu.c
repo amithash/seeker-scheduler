@@ -46,7 +46,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	int i;
 	short ipc = 0;
 	int state = 0;
-	cpumask_t mask;
+	cpumask_t mask = CPU_MASK_NONE;
 
 	if(!is_states_consistent()){
 		debug("States is locked... returning");
@@ -74,7 +74,6 @@ void put_mask_from_stats(struct task_struct *ts)
 		ts->re_cy = 0;
 	}
 
-	cpus_clear(mask);
 	ipc = IPC(ts->inst,ts->re_cy);
 	debug("IPC = %d",ipc);
 #endif
@@ -113,12 +112,13 @@ void put_mask_from_stats(struct task_struct *ts)
 			debug("mask empty...");
 			return;
 		}
-		#ifdef SEEKER_PLUGIN_PATCH
-		ts->cpustate = new_state;
-		#endif
 	
-		if(is_states_consistent())	
+		if(is_states_consistent()){
 			ts->cpus_allowed = mask;
+			#ifdef SEEKER_PLUGIN_PATCH
+			ts->cpustate = new_state;
+			#endif
+		}
 //		set_tsk_need_resched(ts); /* Lazy */
 //		set_cpus_allowed(ts,mask); /* Unlazy */
 	}

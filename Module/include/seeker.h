@@ -104,7 +104,7 @@ typedef struct {
 #ifdef DEBUG
 #	define debug(str,a...) printk(KERN_INFO "SEEKER DEBUG[%s : %d]: " str "\n",__FILE__,__LINE__, ## a)
 #else
-#	define debug(str,a...) do{;}while(0)
+#	define debug(str,a...) do{;}while(0);
 #endif
 #endif
 
