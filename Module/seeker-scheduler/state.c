@@ -59,6 +59,7 @@ int init_cpu_states(unsigned int how)
 
 	for(i=0;i<total_online_cpus;i++){
 		max_state_possible[i] = get_max_states(i);
+		info("Max state for cpu %d = %d",i,max_state_possible[i]);
 		if(max_state_in_system < max_state_possible[i])
 			max_state_in_system = max_state_possible[i];
 	}

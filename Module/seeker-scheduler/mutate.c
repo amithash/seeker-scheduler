@@ -21,6 +21,9 @@ extern int total_online_cpus;
 extern int max_allowed_states[NR_CPUS];
 extern int cur_cpu_state[NR_CPUS];
 
+#define ASSERT_CPU(i) do{ if(i < 0 || i >= NR_CPUS) error("cpu index out of bounds"); return;}while(0)
+#define ASSERT_STATE(i) do{ if(i < 0 || i >= MAX_STATES) error("state index out of bounds"); return;}while(0)
+
 u64 interval_count;
 
 inline int procs(int hints,int total, int total_load);
@@ -38,16 +41,21 @@ void update_state_matrix(int delta)
 {
 	int i,j,l;
 	for(i=0;i<total_online_cpus;i++){
-		if(unlikely(new_cpu_state[i] < 0 || new_cpu_state[i] >= max_state_in_system))
+		ASSERT_CPU(i);
+		if(unlikely(new_cpu_state[i] < 0 || new_cpu_state[i] >= max_state_in_system)){
 			warn("Possible problem, new_cpu_state[%d] = %d",i,new_cpu_state[i]);
+			continue;
+		}
 
 		for(j=new_cpu_state[i],l=0;j<max_state_in_system;j++,l++){
+			ASSERT_STATE(j);
 			if(l>delta)
 				state_matrix[i][j] = 0;
 			else
 				state_matrix[i][j] = (max_state_in_system-l)*(max_state_in_system-l);
 		}
 		for(j=new_cpu_state[i]-1,l=1;j>=0;j--,l++){
+			ASSERT_STATE(j);
 			if(l>delta)
 				state_matrix[i][j] = 0;
 			else

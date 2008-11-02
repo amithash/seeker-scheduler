@@ -101,8 +101,8 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	int cpu = get_cpu();
 #ifdef SEEKER_PLUGIN_PATCH
 	if(!ts[cpu] || ts[cpu]->seeker_scheduled != SEEKER_MAGIC_NUMBER)
-		goto inst_schedule_out;
 #endif
+		goto inst_schedule_out;
 
 	read_counters(cpu);
 #ifdef SEEKER_PLUGIN_PATCH
@@ -167,6 +167,7 @@ static int scheduler_init(void)
 	total_online_cpus = num_online_cpus();
 
 	init_cpu_states(init);
+
 	if(debug_init() != 0)
 		return -ENODEV;
 
