@@ -9,13 +9,14 @@
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/miscdevice.h>
+#include <linux/spinlock.h>
 
 #include <seeker.h>
 
 #include "debug.h"
 
 
-static spinlock_t debug_lock = SPIN_LOCK_UNLOCKED;
+static DEFINE_SPINLOCK(debug_lock);
 
 static struct debug_block *start_debug = NULL;
 static struct debug_block *current_debug = NULL;
@@ -47,7 +48,7 @@ static struct kmem_cache *debug_cachep = NULL;
 /* Returns a pointer and takes a lock if allocation is
  * successful. Do not waste time. Fill it and call
  * put_debug asap! */
-struct debug_block *get_debug(void)
+struct debug_block *get_debug(unsigned long *irq_flags)
 {
 	struct debug_block *p = NULL;
 	if(!dev_open)
@@ -58,18 +59,18 @@ struct debug_block *get_debug(void)
 		debug("debug_cachep is not initialized..");
 		return NULL;
 	}
-	spin_lock(&debug_lock);
+	spin_lock_irqsave(&debug_lock,*irq_flags);
 	/* Just in case this was waiting for the lock
 	 * and meanwhile, purge just set current_debug
 	 * to NULL. */
 	if(unlikely(!current_debug)){
-		spin_unlock(&debug_lock);
+		spin_unlock_irqrestore(&debug_lock,*irq_flags);
 		return NULL;
 	}
 	p = (struct debug_block *)kmem_cache_alloc(debug_cachep, GFP_ATOMIC);
 	if(!p){
 		debug("Allocation failed");
-		spin_unlock(&debug_lock);
+		spin_unlock_irqrestore(&debug_lock,*irq_flags);
 		return NULL;
 	}
 	current_debug->next = p;
@@ -79,10 +80,10 @@ struct debug_block *get_debug(void)
 }
 
 /* Releases the spinlock */
-void put_debug(struct debug_block *p)
+void put_debug(struct debug_block *p, unsigned long *irq_flags)
 {
 	if(p)
-		spin_unlock(&debug_lock);
+		spin_unlock_irqrestore(&debug_lock,*irq_flags);
 }
 
 void debug_free(struct debug_block *p)
@@ -101,16 +102,19 @@ void purge_debug(void)
 		return;
 	/* Acquire the lock, then set current debug to NULL
 	 */
+	debug("Starting safe section");
 	spin_lock_irqsave(&debug_lock,flags);
 	c1 = start_debug;
 	start_debug = NULL;
 	current_debug = NULL;
 	spin_unlock_irqrestore(&debug_lock,flags);
+	debug("Ending safe section starting cleanup");
 	while(c1){
 		c2 = c1->next;
 		debug_free(c1);
 		c1 = c2;
 	}
+	debug("Ended cleanup");
 }
 
 ssize_t seeker_debug_read(struct file *file_ptr, char __user *buf, 
@@ -123,6 +127,7 @@ ssize_t seeker_debug_read(struct file *file_ptr, char __user *buf,
 		return 0;
 	}
 	if(unlikely(first_read)){
+		debug("First read");
 		if(unlikely(!start_debug->next))
 			return 0;
 		log = start_debug;
@@ -130,6 +135,7 @@ ssize_t seeker_debug_read(struct file *file_ptr, char __user *buf,
 		debug_free(log);
 		first_read = 0;
 	}
+	debug("Data Reading");
 	while(i+sizeof(debug_t) <= count &&
 		start_debug->next &&
 		start_debug != current_debug){
@@ -139,28 +145,35 @@ ssize_t seeker_debug_read(struct file *file_ptr, char __user *buf,
 		debug_free(log);
 		i += sizeof(debug_t);
 	}
+	debug("Read %d bytes",i);
 	return i;
 }
 
 int seeker_debug_open(struct inode *in, struct file *f)
 {
+	debug("Device opened");
 	dev_open = 1;
 	return 0;
 }
 
 int seeker_debug_close(struct inode *in, struct file *f)
 {
+	debug("Device closed");
 	dev_open = 0;
 	return 0;
 }
 
 int debug_init(void)
 {
+	debug("Initing debug lock");
+	spin_lock_init(&debug_lock);
+
+	debug("Regestering misc device");
 	if(unlikely(misc_register(&seeker_debug_mdev) < 0)){
 		error("seeker_debug device register failed");
 		return -1;
 	}
-
+	debug("Creating cache");
 	debug_cachep = kmem_cache_create("seeker_debug_cache",
 					 sizeof(struct debug_block),
 					 0,
@@ -170,15 +183,16 @@ int debug_init(void)
 		error("Could not create debug cache, Debug unit will not be avaliable");
 		goto err;
 	}
-	current_debug = kmem_cache_alloc(debug_cachep, GFP_ATOMIC);
+	debug("Allocating first entry");
+	current_debug = (struct debug_block *)kmem_cache_alloc(debug_cachep, GFP_ATOMIC);
 	if(!current_debug){
 		error("Initial allocation from the cache failed");
 		kmem_cache_destroy(debug_cachep);
 		goto err;
 	}
+	debug("Initing first entry");
 	start_debug = current_debug;
 	start_debug->next = NULL;
-	spin_lock_init(&debug_lock);
 
 	dev_created = 1;
 	first_read = 1;
@@ -191,6 +205,7 @@ err:
 
 void debug_exit(void)
 {
+	debug("Exiting debug section");
 	if(dev_open)
 		dev_open = 0;
 

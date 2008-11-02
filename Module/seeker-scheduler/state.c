@@ -1,6 +1,7 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
+#include <linux/spinlock.h>
 
 #include <seeker.h>
 
@@ -14,21 +15,41 @@ int max_state_possible[NR_CPUS] = {0};
 unsigned int max_state_in_system = 0;
 int cur_cpu_state[NR_CPUS] = {0};
 struct state_desc states[MAX_STATES];
-spinlock_t states_lock;
+static DEFINE_SPINLOCK(states_lock);
+static unsigned long states_irq_flags;
 
 void hint_inc(int state)
 {
 	states[state].demand++;
 //	atomic_inc((void *)&(states[state].demand));
 }
-EXPORT_SYMBOL_GPL(hint_inc);
 
 void hint_dec(int state)
 {
 	states[state].demand--;
 //	atomic_dec((void *)&(states[state].demand));
 }
-EXPORT_SYMBOL_GPL(hint_dec);
+
+void mark_states_inconsistent(void)
+{
+	if(spin_is_locked(&states_lock))
+		warn("Recursive spin lock avoided");
+	else
+		spin_lock_irqsave(&states_lock,states_irq_flags);
+}
+void mark_states_consistent(void)
+{
+	if(spin_is_locked(&states_lock))
+		spin_unlock_irqrestore(&states_lock,states_irq_flags);
+	else
+		warn("Recursive spin unlock avoided");
+}
+
+int is_states_consistent(void)
+{
+	return (spin_is_locked(&states_lock) == 0);
+}
+
 
 int init_cpu_states(unsigned int how)
 {
@@ -36,7 +57,6 @@ int init_cpu_states(unsigned int how)
 	cpumask_t mask;
 	int i;
 	spin_lock_init(&states_lock);
-	spin_lock(&states_lock);
 
 	for(i=0;i<cpus;i++){
 		max_state_possible[i] = get_max_states(i);
@@ -95,7 +115,6 @@ int init_cpu_states(unsigned int how)
 			}
 			break;
 	}
-	spin_unlock(&states_lock);
 	return 0;
 }
 

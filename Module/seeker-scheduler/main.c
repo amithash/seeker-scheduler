@@ -88,12 +88,11 @@ extern u64 pmu_val[NR_CPUS][3];
 
 static void state_change(unsigned long param)
 {
-	int ret;
 	debug("State change now @ %ld",jiffies);
 	choose_layout(delta);
 	if(timer_started){
-		ret = mod_timer(&state_change_timer, jiffies + interval_jiffies);
-		debug("mod_timer in handler returned %d",ret);
+		if(mod_timer(&state_change_timer, jiffies + interval_jiffies))
+			warn("Modified a live timer");
 	}
 }
 
@@ -190,6 +189,7 @@ static int scheduler_init(void)
 			return -ENOSYS;
 		}
 		if(configure_counters() != 0){
+			error("Configuring counters failed");
 			unregister_jprobe(&jp_sched_fork);
 			unregister_jprobe(&jp___switch_to);
 			unregister_kprobe(&kp_schedule);
@@ -200,8 +200,9 @@ static int scheduler_init(void)
 	interval_jiffies = change_interval * HZ;
 	setup_timer(&state_change_timer,state_change,0);
 	timer_started = 1;
-	probe_ret = mod_timer(&state_change_timer,jiffies+interval_jiffies);
-	debug("mod_timer returned %d",probe_ret);
+	if(mod_timer(&state_change_timer,jiffies+interval_jiffies))
+		warn("Modified a live timer @ init");
+
 	return 0;
 #else
 	error("You are trying to use this module without patching "

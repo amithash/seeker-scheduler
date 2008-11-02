@@ -16,5 +16,8 @@ struct state_desc{
 void hint_inc(int state);
 void hint_dec(int state);
 int init_cpu_states(unsigned int how);
+void mark_states_inconsistent(void);
+void mark_states_consistent(void);
+int is_states_consistent(void);
 
 #endif

@@ -16,10 +16,10 @@
 extern int total_online_cpus;
 extern int max_allowed_states[NR_CPUS];
 extern int cur_cpu_state[NR_CPUS];
+int new_cpu_state[NR_CPUS];
 extern unsigned int max_state_in_system;
 int state_matrix[NR_CPUS][MAX_STATES];
 extern struct state_desc states[MAX_STATES];
-extern spinlock_t states_lock;
 
 u64 interval_count;
 
@@ -34,18 +34,18 @@ inline int procs(int hints,int total, int proc, int total_load)
 	return div((hints * total_load),total);
 }
 
-void update_state_matrix(int *cpu_state, int delta)
+void update_state_matrix(int delta)
 {
 	int i,j,l;
 	for(i=0;i<total_online_cpus;i++){
-		for(j=cpu_state[i],l=0;j<max_state_in_system;j++,l++){
+		for(j=new_cpu_state[i],l=0;j<max_state_in_system;j++,l++){
 			if(l>delta)
 				state_matrix[i][j] = 0;
 			else
 				state_matrix[i][j] = (max_state_in_system-l)*(max_state_in_system-l);
 			l++;
 		}
-		for(j=cpu_state[i]-1,l=1;j>=0;j--,l++){
+		for(j=new_cpu_state[i]-1,l=1;j>=0;j--,l++){
 			if(l>delta)
 				state_matrix[i][j] = 0;
 			else
@@ -70,12 +70,14 @@ void choose_layout(int delta)
 	unsigned int best_proc = 0;
 	unsigned int best_proc_value = 0;
 	unsigned int best_low_proc_value = 0;
+	unsigned long irq_flags;
 	int sum;
 	short poison[NR_CPUS] = {1};
-	int new_cpu_state[NR_CPUS];
+	int total_iter = 0;
 
-	spin_lock(&states_lock);
 	interval_count++;
+	if(delta < 1)
+		return;
 
 	/* Create a state matrix such that, the cell which
 	 * indicates a processors current state, gets the highest
@@ -86,7 +88,6 @@ void choose_layout(int delta)
 		load += weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0;
 	}
 
-	update_state_matrix(new_cpu_state,delta);
 	
 
 	/* Total Hint */
@@ -104,12 +105,15 @@ void choose_layout(int delta)
 	}
 
 	/* Now for each delta to spend, hold an auction */
-	while(delta > 0){
+	do{
 		winner = 0;
 		winner_val = 0;
 		winner_best_proc = 0;
 		winner_best_proc_value = 0;
 		winner_best_low_proc_value = 0;
+		total_iter++;
+
+		update_state_matrix(delta);
 
 		/* There is an optimization here, so do not get confused.
 		 * Technically, each column in the state matrix is supposed
@@ -187,18 +191,20 @@ assign:
 		/* If the new state of the CPU is different,
 		 * change the state matrix to reflect it */
 		if(cur_cpu_state[winner_best_proc] != winner){
-			update_state_matrix(new_cpu_state,delta);
+			update_state_matrix(delta);
 		}
 
 		/* Continue the auction if delta > 0 */
-	}	
-	p = get_debug();
+	} while(delta > 0 && total_iter < total_online_cpus);
+
+	p = get_debug(&irq_flags);
 	if(p){
 		p->entry.type = DEBUG_MUT;
 		p->entry.u.mut.interval = interval_count;
 		p->entry.u.mut.count = max_state_in_system;
 	}
 
+	mark_states_inconsistent();
 	for(j=0;j<max_state_in_system;j++){
 		states[j].cpus = 0;
 		cpus_clear(states[j].cpumask);
@@ -223,8 +229,8 @@ assign:
 		if(p)
 			p->entry.u.mut.cpustates[i] = cur_cpu_state[i];
 	}
-	put_debug(p);
-	spin_unlock(&states_lock);
+	put_debug(p,&irq_flags);
+	mark_states_consistent();
 }
 
 

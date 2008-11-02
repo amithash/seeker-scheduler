@@ -37,18 +37,18 @@
 extern struct state_desc states[MAX_STATES];
 extern int max_state_in_system;
 extern u64 interval_count;
-extern spinlock_t states_lock;
 
 void put_mask_from_stats(struct task_struct *ts)
 {
 	int new_state = -1;
 	struct debug_block *p = NULL;
+	unsigned long irq_flags;
 	int i;
 	short ipc = 0;
 	int state = 0;
 	cpumask_t mask;
 
-	if(spin_is_locked(&states_lock)){
+	if(!is_states_consistent()){
 		debug("States is locked... returning");
 		return;
 	}
@@ -116,15 +116,14 @@ void put_mask_from_stats(struct task_struct *ts)
 		#ifdef SEEKER_PLUGIN_PATCH
 		ts->cpustate = new_state;
 		#endif
-		if(spin_is_locked(&states_lock))
-			return;
-		
-		ts->cpus_allowed = mask;
+	
+		if(is_states_consistent())	
+			ts->cpus_allowed = mask;
 //		set_tsk_need_resched(ts); /* Lazy */
 //		set_cpus_allowed(ts,mask); /* Unlazy */
 	}
 
-	p = get_debug();
+	p = get_debug(&irq_flags);
 	if(p){
 		p->entry.type = DEBUG_SCH;
 		#ifdef SEEKER_PLUGIN_PATCH
@@ -133,7 +132,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		p->entry.u.sch.pid = ts->pid;
 		p->entry.u.sch.cpumask = CPUMASK_TO_UINT(ts->cpus_allowed);
 	}
-	put_debug(p);
+	put_debug(p,&irq_flags);
 }
 
 
