@@ -21,8 +21,8 @@ extern int total_online_cpus;
 extern int max_allowed_states[NR_CPUS];
 extern int cur_cpu_state[NR_CPUS];
 
-#define ASSERT_CPU(i) do{ if(i < 0 || i >= NR_CPUS) error("cpu index out of bounds"); return;}while(0)
-#define ASSERT_STATE(i) do{ if(i < 0 || i >= MAX_STATES) error("state index out of bounds"); return;}while(0)
+#define ASSERT_CPU(i) do{ if(i < 0 || i >= NR_CPUS) error("cpu index %d out of bounds", i); return;}while(0)
+#define ASSERT_STATE(i) do{ if(i < 0 || i >= MAX_STATES) error("state index %d out of bounds",i); return;}while(0)
 
 u64 interval_count;
 
