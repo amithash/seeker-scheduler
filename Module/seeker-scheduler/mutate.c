@@ -21,45 +21,38 @@ extern int total_online_cpus;
 extern int max_allowed_states[NR_CPUS];
 extern int cur_cpu_state[NR_CPUS];
 
-#define ASSERT_CPU(i) do{ if(i < 0 || i >= NR_CPUS) error("cpu index %d out of bounds", i); return;}while(0)
-#define ASSERT_STATE(i) do{ if(i < 0 || i >= MAX_STATES) error("state index %d out of bounds",i); return;}while(0)
-
 u64 interval_count;
 
 inline int procs(int hints,int total, int total_load);
 
 inline int procs(int hints,int total, int total_load)
 {
+	int ans;
 	if(hints == 0)
 		return 0;
 	if(hints == total)
 		return total_load;
-	return div((hints * total_load),total);
+	
+	ans = div((hints * total_load),total) - 1;
+	return ans < 0 ? 0 : ans;
 }
 
 void update_state_matrix(int delta)
 {
-	int i,j,l;
+	int i,j,k;
 	for(i=0;i<total_online_cpus;i++){
-		ASSERT_CPU(i);
-		if(unlikely(new_cpu_state[i] < 0 || new_cpu_state[i] >= max_state_in_system)){
-			warn("Possible problem, new_cpu_state[%d] = %d",i,new_cpu_state[i]);
-			continue;
+		for(j=new_cpu_state[i],k=0; j<max_state_in_system; j++,k++){
+			if(k>delta)
+				state_matrix[i][j] = 0;
+			else
+				state_matrix[i][j] = (max_state_in_system-k)*(max_state_in_system-k);
 		}
 
-		for(j=new_cpu_state[i],l=0;j<max_state_in_system;j++,l++){
-			ASSERT_STATE(j);
-			if(l>delta)
+		for(j=new_cpu_state[i]-1,k=1; j>=0; j--,k++){
+			if(k>delta)
 				state_matrix[i][j] = 0;
 			else
-				state_matrix[i][j] = (max_state_in_system-l)*(max_state_in_system-l);
-		}
-		for(j=new_cpu_state[i]-1,l=1;j>=0;j--,l++){
-			ASSERT_STATE(j);
-			if(l>delta)
-				state_matrix[i][j] = 0;
-			else
-				state_matrix[i][j] = (max_state_in_system-l)*(max_state_in_system-l);
+				state_matrix[i][j] = (max_state_in_system-k)*(max_state_in_system-k);
 		}
 	}
 }
@@ -80,8 +73,8 @@ void choose_layout(int delta)
 	unsigned int best_proc_value = 0;
 	unsigned int best_low_proc_value = 0;
 	unsigned long irq_flags;
+	int poison[NR_CPUS];
 	int sum;
-	short poison[NR_CPUS] = {1};
 	int total_iter = 0;
 
 	interval_count++;
@@ -93,6 +86,7 @@ void choose_layout(int delta)
 	 * value = iax_state_in_system^2, and parabolically decreases on either side.
 	 */
 	for(i=0;i<total_online_cpus;i++){
+		poison[i] = 1;
 		new_cpu_state[i] = cur_cpu_state[i];
 		load += weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0;
 	}
@@ -119,6 +113,8 @@ void choose_layout(int delta)
 		winner_best_proc_value = 0;
 		winner_best_low_proc_value = 0;
 		total_iter++;
+	
+		debug("Iteration %d",total_iter);
 
 		update_state_matrix(delta);
 
@@ -133,20 +129,21 @@ void choose_layout(int delta)
 			sum = 0;
 			best_proc = 0;
 			best_proc_value = 0;
-			best_low_proc_value = 0;
+			best_low_proc_value = -1;
 
 			/* Sum the cost over all rows */
 			for(i=0;i<total_online_cpus;i++){
-				if(state_matrix[i][j] * poison[i] > best_proc_value){
+				if((state_matrix[i][j] * poison[i]) > best_proc_value){
 					best_proc_value = state_matrix[i][j] * poison[i];
 					best_proc = i;
 				} else if(state_matrix[i][j] < best_low_proc_value){
 					best_low_proc_value = state_matrix[i][j];
 				}
-				sum += state_matrix[i][j];
+				sum += (state_matrix[i][j] * poison[i]);
 			}
 
 			sum = sum * (demand[j]+1);
+			debug("sum for state %d is %d with demand %d",j,sum,demand[j]);
 
 			/* Find the max sum and the sate, and its best proc 
 			 * If there is contention for that, choose the one
@@ -178,12 +175,14 @@ assign:
 		if(winner_val <= 0)
 			break;
 
+		debug("Winner is state %d choosing cpu %d",winner,winner_best_proc);
+
 		/* Now the winning state, reduces its demand */
 		if(demand[winner] > 0)
 			demand[winner]--;
-	
+
 		/* The best processor is best_proc */
-		/* Poison the choosen processor */
+		/* Poison the choosen processor element */
 		poison[winner_best_proc] = 0;
 
 		/* Subtract that from the delta */
@@ -192,10 +191,7 @@ assign:
 		/* Assign the new cpus state to be the winner */
 		new_cpu_state[winner_best_proc] = winner;
 
-		if(delta == 0)
-			break;
-
-		/* Continue the auction if delta > 0 */
+		/* Continue the auction if delta > 0  or till all cpus are allocated */
 	} while(delta > 0 && total_iter < total_online_cpus);
 
 	p = get_debug(&irq_flags);

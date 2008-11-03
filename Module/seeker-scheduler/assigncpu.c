@@ -37,6 +37,7 @@
 extern struct state_desc states[MAX_STATES];
 extern int max_state_in_system;
 extern u64 interval_count;
+extern int cur_cpu_state[NR_CPUS];
 
 void put_mask_from_stats(struct task_struct *ts)
 {
@@ -46,13 +47,12 @@ void put_mask_from_stats(struct task_struct *ts)
 	int i;
 	short ipc = 0;
 	int state = 0;
+	int this_cpu;
 	cpumask_t mask = CPU_MASK_NONE;
 
 	if(!is_states_consistent()){
-		debug("States is locked... returning");
 		return;
 	}
-
 
 #ifdef SEEKER_PLUGIN_PATCH
 	/* Do not try to estimate anything
@@ -62,58 +62,58 @@ void put_mask_from_stats(struct task_struct *ts)
 	 */
 	if(ts->inst < INST_THRESHOLD)
 		return;
+#endif
+
+	this_cpu = get_cpu();
+
+#ifdef SEEKER_PLUGIN_PATCH
+	ipc = IPC(ts->inst,ts->re_cy);
+	if(ts->cpustate != cur_cpu_state[this_cpu])
+		ts->cpustate = cur_cpu_state[this_cpu];
 
 	state = ts->cpustate;
-	if(unlikely(state < 0 || state >= max_state_in_system))
-		state = 0;
+	ts->interval = interval_count;
+	ts->inst = 0;
+	ts->ref_cy = 0;
+	ts->re_cy = 0;
 
-	if(ts->interval != interval_count){
-		ts->interval = interval_count;
-		ts->inst = 0;
-		ts->ref_cy = 0;
-		ts->re_cy = 0;
-	}
-
-	ipc = IPC(ts->inst,ts->re_cy);
-	debug("IPC = %d",ipc);
 #endif
 	/*up*/
 	if(ipc >= IPC_0_750){
+		if(state < max_state_in_system-1)
+			hint_inc(state+1);
+		else
+			hint_inc(max_state_in_system-1);
+
 		for(i=state+1;i<max_state_in_system;i++){
 			if(states[i].cpus > 0){
 				new_state = i;
 				break;
 			}
-			if(i-state > 2)
-				break;
 		}
 	}
 	/*down*/
 	if(ipc <= IPC_0_500){
+		if(state > 0)
+			hint_inc(state-1);
+		else
+			hint_inc(0);
+
 		for(i=state-1;i>=0;i--){
 			if(states[i].cpus > 0){
 				new_state = i;
 				break;
 			}
-			if(state-i > 2)
-				break;
 		}
 	}
-
-
-	hint_inc(new_state);
+	
+	if(new_state == -1)
+		new_state = state;
 
 	if(new_state != state){
-		if(new_state == -1)
-			new_state = state;
 		mask = states[new_state].cpumask;
 
-		if(cpus_empty(mask)){
-			debug("mask empty...");
-			return;
-		}
-	
-		if(is_states_consistent()){
+		if(is_states_consistent() && !cpus_empty(mask)){
 			ts->cpus_allowed = mask;
 			#ifdef SEEKER_PLUGIN_PATCH
 			ts->cpustate = new_state;
@@ -133,6 +133,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		p->entry.u.sch.cpumask = CPUMASK_TO_UINT(ts->cpus_allowed);
 	}
 	put_debug(p,&irq_flags);
+	put_cpu();
 }
 
 

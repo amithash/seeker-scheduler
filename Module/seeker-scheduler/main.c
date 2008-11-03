@@ -123,7 +123,7 @@ inst_schedule_out:
 void inst_sched_fork(struct task_struct *new, int clone_flags)
 {
 #ifdef SEEKER_PLUGIN_PATCH
-	new->seeker_scheduled = 0x5ee6e5ef; 
+	new->seeker_scheduled = SEEKER_MAGIC_NUMBER;
 	new->interval = interval_count;
 	new->inst = 0;
 	new->ref_cy = 0;
@@ -145,17 +145,13 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	if(!using_seeker){
 		read_counters(cpu);
 	#ifdef SEEKER_PLUGIN_PATCH
-		if(from->interval != interval_count)
-			from->interval = interval_count;
+		from->interval = interval_count;
 		from->inst   += pmu_val[cpu][0];
 		from->re_cy  += pmu_val[cpu][1];
 		from->ref_cy += pmu_val[cpu][2];
 	#endif
 		clear_counters(cpu);
 	}
-	if(strnicmp(from->comm,"events",6) == 0)
-		jprobe_return();
-
 	put_mask_from_stats(from);
 	jprobe_return();
 }
@@ -174,20 +170,29 @@ static int scheduler_init(void)
 	if(unlikely((probe_ret = register_jprobe(&jp_sched_fork)))){
 		error("Could not find sched_fork to probe, returned %d",probe_ret);
 		return -ENOSYS;
+	} else {
+		info("Registered jp_sched_fork");
 	}
 	if((probe_ret = register_jprobe(&jp___switch_to)) < 0){
 		/* Seeker is loaded. probe its instrumentation functions instead */
+		info("Detected seeker-sampler to be loaded");
 		using_seeker = 1;
 		if(unlikely((probe_ret = register_jprobe(&jp_inst___switch_to)) < 0)){
 			error("Register inst___switch_to probe failed with %d",probe_ret);
+			unregister_jprobe(&jp_sched_fork);	
 			return -ENOSYS;
+		} else {
+			info("Successfully instrumented seeker-sampler's inst___switch_to function");
 		}
 	} else {
+		using_seeker = 0;
 		if(unlikely((probe_ret = register_kprobe(&kp_schedule))<0)){
 			error("schedule register successful, but schedule failed");
 			unregister_jprobe(&jp_sched_fork);
 			unregister_jprobe(&jp___switch_to);
 			return -ENOSYS;
+		} else {
+			info("Registering of kp_schedule was successful");
 		}
 		if(configure_counters() != 0){
 			error("Configuring counters failed");
@@ -195,6 +200,8 @@ static int scheduler_init(void)
 			unregister_jprobe(&jp___switch_to);
 			unregister_kprobe(&kp_schedule);
 			return -ENOSYS;
+		} else {
+			info("Configuring counters was successful");
 		}
 	}
 
@@ -226,8 +233,8 @@ static void scheduler_exit(void)
 	if(using_seeker){
 		unregister_jprobe(&jp_inst___switch_to);
 	} else {
-		unregister_jprobe(&jp___switch_to);
 		unregister_kprobe(&kp_schedule);
+		unregister_jprobe(&jp___switch_to);
 	}
 	debug("Debug exiting");
 	debug_exit();
