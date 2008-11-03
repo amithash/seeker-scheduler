@@ -35,7 +35,7 @@
 
 #define MAX_COUNTERS_PER_CPU NUM_COUNTERS + NUM_FIXED_COUNTERS + NUM_EXTRA_COUNTERS
 
-enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};
+/* Seeker-scheduler sample data */
 
 enum {DEBUG_SCH, DEBUG_MUT, DEBUG_PID};
 
@@ -52,6 +52,7 @@ typedef struct {
 	unsigned int hint[MAX_STATES];
 	short cpustates[NR_CPUS];
 } debug_mutator_t;
+
 typedef struct {
 
 	char name[16];
@@ -67,6 +68,9 @@ typedef struct {
 	}u;
 } debug_t;
 
+/* Seeker sampler sample data */
+
+enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};
 
 typedef struct {
 	unsigned char num_counters;
