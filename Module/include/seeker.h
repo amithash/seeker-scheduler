@@ -37,7 +37,7 @@
 
 enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};
 
-enum {DEBUG_SCH, DEBUG_MUT};
+enum {DEBUG_SCH, DEBUG_MUT, DEBUG_PID};
 
 typedef struct {
 	unsigned long long interval;
@@ -51,12 +51,18 @@ typedef struct {
 	unsigned int hint[MAX_STATES];
 	short cpustates[NR_CPUS];
 } debug_mutator_t;
+typedef struct {
+
+	char name[16];
+	unsigned int pid;
+} debug_pid_t;
 
 typedef struct {
 	int type;
 	union{
 		debug_scheduler_t sch;
 		debug_mutator_t mut;
+		debug_pid_t tpid;
 	}u;
 } debug_t;
 

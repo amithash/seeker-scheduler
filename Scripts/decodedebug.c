@@ -38,10 +38,17 @@ main(int argc, char **argv, char **envp){
 		switch(entry->type) {
 			debug_scheduler_t *schDef;
 			debug_mutator_t *mutDef;
+			debug_pid_t *pidDef;
 			case DEBUG_SCH:
 				schDef = (debug_scheduler_t *)(&entry->u);
 				printf("s");
 				printf(",%d,%d,%d\n",schDef->interval,schDef->pid,schDef->cpumask);
+				break;
+			case DEBUG_PID:
+				pidDef = (debug_pid_t *)(&entry->u);
+				printf("p");
+				pidDef->name[15] = '\0';
+				printf(",%d,%s\n",pidDef->pid,pidDef->name);
 				break;
 			case DEBUG_MUT:
 				mutDef = (debug_mutator_t *)(&entry->u);

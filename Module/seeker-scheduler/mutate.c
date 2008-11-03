@@ -45,14 +45,14 @@ void update_state_matrix(int delta)
 			if(k>delta)
 				state_matrix[i][j] = 0;
 			else
-				state_matrix[i][j] = (max_state_in_system-k)*(max_state_in_system-k);
+				state_matrix[i][j] = (max_state_in_system-k);
 		}
 
 		for(j=new_cpu_state[i]-1,k=1; j>=0; j--,k++){
 			if(k>delta)
 				state_matrix[i][j] = 0;
 			else
-				state_matrix[i][j] = (max_state_in_system-k)*(max_state_in_system-k);
+				state_matrix[i][j] = (max_state_in_system-k);
 		}
 	}
 }
@@ -134,10 +134,10 @@ void choose_layout(int delta)
 			/* Sum the cost over all rows */
 			for(i=0;i<total_online_cpus;i++){
 				if((state_matrix[i][j] * poison[i]) > best_proc_value){
-					best_proc_value = state_matrix[i][j] * poison[i];
+					best_proc_value = state_matrix[i][j] * poison[i] * demand[j];
 					best_proc = i;
 				} else if(state_matrix[i][j] < best_low_proc_value){
-					best_low_proc_value = state_matrix[i][j];
+					best_low_proc_value = state_matrix[i][j] * demand[j];
 				}
 				sum += (state_matrix[i][j] * poison[i]);
 			}

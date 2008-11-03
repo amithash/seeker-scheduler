@@ -49,6 +49,7 @@
 void inst___switch_to(struct task_struct *from, struct task_struct *to);
 void inst_sched_fork(struct task_struct *new, int clone_flags);
 int inst_schedule(struct kprobe *p, struct pt_regs *regs);
+void inst_release_thread(struct task_struct *t);
 
 static struct timer_list state_change_timer;
 static u64 interval_jiffies;
@@ -77,6 +78,15 @@ struct kprobe kp_schedule = {
 	.addr = (kprobe_opcode_t *) schedule,
 };
 
+struct jprobe jp_release_thread = {
+	.entry = (kprobe_opcode_t *)inst_release_thread,
+	.kp.symbol_name = "release_thread",
+};
+struct jprobe jp_inst_release_thread = {
+	.entry = (kprobe_opcode_t *)inst_release_thread,
+	.kp.symbol_name = "inst_release_thread",
+};
+
 int total_online_cpus = 0;
 
 int change_interval = 5;
@@ -94,6 +104,19 @@ static void state_change(unsigned long param)
 		if(mod_timer(&state_change_timer, jiffies + interval_jiffies))
 			warn("Modified a live timer");
 	}
+}
+
+void inst_release_thread(struct task_struct *t)
+{
+	unsigned long flags;
+	struct debug_block *p = get_debug(&flags);
+	if(p){
+		p->entry.type = DEBUG_PID;
+		p->entry.u.tpid.pid = (u32)(t->pid);
+		memcpy(&(p->entry.u.tpid.name),t->comm,sizeof(p->entry.u.tpid.name));
+	}
+	put_debug(p,&flags);
+	
 }
 
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
@@ -184,6 +207,14 @@ static int scheduler_init(void)
 		} else {
 			info("Successfully instrumented seeker-sampler's inst___switch_to function");
 		}
+		if(unlikely((probe_ret = register_jprobe(&jp_inst_release_thread)) < 0)){
+			error("Register inst_release_thread probe failed with %d",probe_ret);
+			unregister_jprobe(&jp_sched_fork);	
+			unregister_jprobe(&jp_inst___switch_to);
+			return -ENOSYS;
+		} else {
+			info("Successfully instrumented seeker-sampler's inst___switch_to function");
+		}
 	} else {
 		using_seeker = 0;
 		if(unlikely((probe_ret = register_kprobe(&kp_schedule))<0)){
@@ -194,11 +225,21 @@ static int scheduler_init(void)
 		} else {
 			info("Registering of kp_schedule was successful");
 		}
-		if(configure_counters() != 0){
-			error("Configuring counters failed");
+		if(unlikely((probe_ret = register_jprobe(&jp_release_thread))<0)){
+			error("schedule register successful, but schedule failed");
+			unregister_kprobe(&kp_schedule);
 			unregister_jprobe(&jp_sched_fork);
 			unregister_jprobe(&jp___switch_to);
+			return -ENOSYS;
+		} else {
+			info("Registering of kp_schedule was successful");
+		}
+		if(configure_counters() != 0){
+			error("Configuring counters failed");
 			unregister_kprobe(&kp_schedule);
+			unregister_jprobe(&jp_sched_fork);
+			unregister_jprobe(&jp_release_thread);
+			unregister_jprobe(&jp___switch_to);
 			return -ENOSYS;
 		} else {
 			info("Configuring counters was successful");
