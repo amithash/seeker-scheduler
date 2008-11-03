@@ -43,6 +43,7 @@ typedef struct {
 	unsigned long long interval;
 	unsigned int pid;
 	unsigned int cpumask;
+	unsigned int ipc;
 } debug_scheduler_t;
 
 typedef struct {

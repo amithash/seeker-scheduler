@@ -129,6 +129,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		#ifdef SEEKER_PLUGIN_PATCH
 		p->entry.u.sch.interval = ts->interval;
 		#endif
+		p->entry.u.sch.ipc = ipc;
 		p->entry.u.sch.pid = ts->pid;
 		p->entry.u.sch.cpumask = CPUMASK_TO_UINT(ts->cpus_allowed);
 	}
