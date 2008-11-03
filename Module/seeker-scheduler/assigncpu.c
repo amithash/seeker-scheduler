@@ -18,7 +18,7 @@
 #define CPUMASK_TO_UINT(x) (*((unsigned int *)&(x)))
 
 /* IPC of 8 Corrospondents to IPC of 1.0. */
-#define IPC(inst,cy) ((cy)>0) ? ((inst) << 3)/(cy) : 0
+#define IPC(inst,cy) div(((inst)<<3),(cy))
 #define IPC_0_000 0
 #define IPC_0_125 1
 #define IPC_0_250 2

@@ -102,6 +102,8 @@ typedef struct {
 # define KERNEL_VERSION(a,b,c) (LINUX_VERSION_CODE + 1)
 #endif
 
+/* Useful Macros */
+
 /* Error and warn hash defines kern meaning is increased on purpose... */
 #define error(str,a...) printk(KERN_EMERG "SEEKER ERROR[%s : %d]: " str "\n",__FILE__,__LINE__, ## a)
 #define warn(str,a...) printk(KERN_ERR "SEEKER WARN[%s : %d]: " str "\n",__FILE__,__LINE__, ## a)
@@ -114,4 +116,7 @@ typedef struct {
 #	define debug(str,a...) do{;}while(0);
 #endif
 #endif
+
+#define ABS(i) ((i) >= 0 ? (i) : (-1)*(i))
+#define div(a,b) ((b) != 0 ? ((((a) + (b) - 1))/(b))  : 0)
 

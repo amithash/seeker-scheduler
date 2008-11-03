@@ -10,8 +10,6 @@
 #include "state.h"
 #include "debug.h"
 
-#define ABS(i) ((int)(i) >= 0 ? (i) : (-1*((int)(i))))
-#define div(a,b) ((b) != 0 ? ((((a) + (b) - 1))/(b))  : 0)
 
 static int new_cpu_state[NR_CPUS];
 static int state_matrix[NR_CPUS][MAX_STATES];
@@ -64,7 +62,7 @@ void choose_layout(int delta)
 	int load = 0;
 	struct debug_block *p = NULL;
 	unsigned int i,j;
-	unsigned int winner=0;
+	int winner=0;
 	unsigned int winner_val = 0;
 	unsigned int winner_best_proc = 0;
 	unsigned int winner_best_proc_value = 0;
@@ -186,7 +184,7 @@ assign:
 		poison[winner_best_proc] = 0;
 
 		/* Subtract that from the delta */
-		delta -= abs(cur_cpu_state[winner_best_proc] - winner);
+		delta -= ABS(cur_cpu_state[winner_best_proc] - winner);
 
 		/* Assign the new cpus state to be the winner */
 		new_cpu_state[winner_best_proc] = winner;
