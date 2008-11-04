@@ -64,14 +64,12 @@ void put_mask_from_stats(struct task_struct *ts)
 		return;
 #endif
 
-	this_cpu = get_cpu();
+	this_cpu = smp_processor_id();
 
 #ifdef SEEKER_PLUGIN_PATCH
 	ipc = IPC(ts->inst,ts->re_cy);
 	if(ts->cpustate != cur_cpu_state[this_cpu])
 		ts->cpustate = cur_cpu_state[this_cpu];
-
-	put_cpu();
 
 	state = ts->cpustate;
 	ts->interval = interval_count;
