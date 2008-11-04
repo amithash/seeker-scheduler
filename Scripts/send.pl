@@ -20,6 +20,7 @@
 
 use strict;
 use warnings;
+use Getopt::Long;
 use Config;
 
 defined $Config{sig_name} or die "No sigs?";
@@ -33,12 +34,25 @@ foreach my $name (split(' ', $Config{sig_name})) {
 my $sigusr1 = $signo{USR1} + 0;
 my $sigterm = $signo{TERM} + 0;
 
-my $terminate = (defined($ARGV[0]) and $ARGV[0] eq "-t") ? 1 : 0;
+my $terminate = 0;
+my $debug = 0;
+GetOptions('t|terminate'	=>	\$terminate,
+	   'd|debug'		=>	\$debug);
+my $daemon_name = "seekerd";
+if($debug == 1){
+	$daemon_name = "debugd";
+}
 
-open PS,"ps -e | grep \"seekerd\" |";
+
+open PS,"ps -e | grep \"$daemon_name\" |";
 my $pid = 0;
 my $ps_log = <PS>;
 close(PS);
+if(not defined($ps_log)){
+	print "$daemon_name does not seem to be running\n";
+	exit;
+}
+
 chomp($ps_log);
 my @ps = split(/\s+/,$ps_log);
 if(defined($ps[0])){
@@ -50,17 +64,18 @@ if(defined($ps[0])){
 	}
 }
 else{
-	print "seekerd does not seem to be executing!\n";
+	print "$daemon_name does not seem to be executing!\n";
 	exit;
 }
 
 if($terminate == 0){
-	print "Requesting seekerd to change logs\n";
+	print "Requesting $daemon_name to change logs\n";
 	print "Sending Signal:$sigusr1 to pid $pid \n";
 	kill $sigusr1, $pid;
 }
 else{
-	print "Terminating seekerd\n";
+	print "Terminating $daemon_name\n";
 	kill $sigterm, $pid;
 }
+
 
