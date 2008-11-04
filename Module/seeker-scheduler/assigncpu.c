@@ -118,6 +118,9 @@ void put_mask_from_stats(struct task_struct *ts)
 			#ifdef SEEKER_PLUGIN_PATCH
 			ts->cpustate = new_state;
 			#endif
+		} else {
+			put_cpu();
+			return;
 		}
 //		set_tsk_need_resched(ts); /* Lazy */
 //		set_cpus_allowed(ts,mask); /* Unlazy */
