@@ -52,13 +52,19 @@ seeker_sampler-objs += seeker-sampler/alloc.o   \
 		       seeker-sampler/io.o      \
 		       seeker-sampler/intr.o    \
 		       seeker-sampler/main.o
+ifdef ALT1
+MUT := mutate_alt1.o
+else
+MUT := mutate.o
+endif
 
 seeker_scheduler-objs += seeker-scheduler/main.o     \
 		       seeker-scheduler/assigncpu.o  \
-		       seeker-scheduler/mutate.o     \
+		       seeker-scheduler/$(MUT)	     \
 		       seeker-scheduler/state.o      \
 		       seeker-scheduler/hwcounters.o \
 		       seeker-scheduler/debug.o
+
 else
 KDIR    := /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)
