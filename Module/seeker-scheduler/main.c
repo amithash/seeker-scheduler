@@ -129,8 +129,8 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	int cpu = get_cpu();
 #ifdef SEEKER_PLUGIN_PATCH
 	if(!ts[cpu] || ts[cpu]->seeker_scheduled != SEEKER_MAGIC_NUMBER)
-#endif
 		goto inst_schedule_out;
+#endif
 
 	read_counters(cpu);
 #ifdef SEEKER_PLUGIN_PATCH
@@ -140,8 +140,11 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	ts[cpu]->re_cy  += pmu_val[cpu][1];
 	ts[cpu]->ref_cy += pmu_val[cpu][2];
 	clear_counters(cpu);
-	if(ts[cpu]->inst > INST_THRESHOLD)
+	if(ts[cpu]->inst > INST_THRESHOLD){
+		put_cpu();
 		set_tsk_need_resched(ts[cpu]);
+		return 0;
+	}
 #endif
 inst_schedule_out:
 	put_cpu();
@@ -278,9 +281,11 @@ static void scheduler_exit(void)
 	unregister_jprobe(&jp_sched_fork);
 	if(using_seeker){
 		unregister_jprobe(&jp_inst___switch_to);
+		unregister_jprobe(&jp_inst_release_thread);
 	} else {
 		unregister_kprobe(&kp_schedule);
 		unregister_jprobe(&jp___switch_to);
+		unregister_jprobe(&jp_release_thread);
 	}
 	debug("Debug exiting");
 	debug_exit();
