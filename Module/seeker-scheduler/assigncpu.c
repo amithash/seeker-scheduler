@@ -71,6 +71,8 @@ void put_mask_from_stats(struct task_struct *ts)
 	if(ts->cpustate != cur_cpu_state[this_cpu])
 		ts->cpustate = cur_cpu_state[this_cpu];
 
+	put_cpu();
+
 	state = ts->cpustate;
 	ts->interval = interval_count;
 	ts->inst = 0;
@@ -119,7 +121,6 @@ void put_mask_from_stats(struct task_struct *ts)
 			ts->cpustate = new_state;
 			#endif
 		} else {
-			put_cpu();
 			return;
 		}
 //		set_tsk_need_resched(ts); /* Lazy */
@@ -137,7 +138,6 @@ void put_mask_from_stats(struct task_struct *ts)
 		p->entry.u.sch.cpumask = CPUMASK_TO_UINT(ts->cpus_allowed);
 	}
 	put_debug(p,&irq_flags);
-	put_cpu();
 }
 
 
