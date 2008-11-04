@@ -53,7 +53,6 @@ main(int argc, char **argv, char **envp){
 			case DEBUG_MUT:
 				mutDef = (debug_mutator_t *)(&entry->u);
 				printf("m,%d,r",mutDef->interval);
-				printf("m,r");
 				for(i=0;i<mutDef->count;i++){
 					printf(",%d",mutDef->cpus_req[i]);
 				}
