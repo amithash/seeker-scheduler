@@ -205,6 +205,7 @@ assign:
 		cpus_clear(states[j].cpumask);
 		if(p)
 			p->entry.u.mut.hint[j] = states[j].demand;
+		states[j].demand = 0;
 	}
 
 
