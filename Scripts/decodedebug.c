@@ -42,7 +42,7 @@ main(int argc, char **argv, char **envp){
 			case DEBUG_SCH:
 				schDef = (debug_scheduler_t *)(&entry->u);
 				printf("s");
-				printf(",%d,%d,%d,%1.4f\n",schDef->interval,schDef->pid,((float)schDef->ipc)/8.0,schDef->cpumask);
+				printf(",%d,%d,%ld,%1.4f,%d\n",schDef->interval,schDef->pid,schDef->inst,((float)schDef->ipc)/8.0,schDef->cpumask);
 				break;
 			case DEBUG_PID:
 				pidDef = (debug_pid_t *)(&entry->u);

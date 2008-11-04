@@ -72,11 +72,6 @@ void put_mask_from_stats(struct task_struct *ts)
 		ts->cpustate = cur_cpu_state[this_cpu];
 
 	state = ts->cpustate;
-	ts->interval = interval_count;
-	ts->inst = 0;
-	ts->ref_cy = 0;
-	ts->re_cy = 0;
-
 #endif
 	/*up*/
 	if(ipc >= IPC_0_750){
@@ -130,12 +125,17 @@ void put_mask_from_stats(struct task_struct *ts)
 		p->entry.type = DEBUG_SCH;
 		#ifdef SEEKER_PLUGIN_PATCH
 		p->entry.u.sch.interval = ts->interval;
+		p->entry.u.sch.inst = ts->inst;
 		#endif
 		p->entry.u.sch.ipc = ipc;
 		p->entry.u.sch.pid = ts->pid;
 		p->entry.u.sch.cpumask = CPUMASK_TO_UINT(ts->cpus_allowed);
 	}
 	put_debug(p,&irq_flags);
+	ts->interval = interval_count;
+	ts->inst = 0;
+	ts->ref_cy = 0;
+	ts->re_cy = 0;
 }
 
 
