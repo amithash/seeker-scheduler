@@ -132,10 +132,12 @@ void put_mask_from_stats(struct task_struct *ts)
 		p->entry.u.sch.cpumask = CPUMASK_TO_UINT(ts->cpus_allowed);
 	}
 	put_debug(p,&irq_flags);
+#ifdef SEEKER_PLUGIN_PATCH
 	ts->interval = interval_count;
 	ts->inst = 0;
 	ts->ref_cy = 0;
 	ts->re_cy = 0;
+#endif
 }
 
 

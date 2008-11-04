@@ -203,8 +203,10 @@ assign:
 	for(j=0;j<max_state_in_system;j++){
 		states[j].cpus = 0;
 		cpus_clear(states[j].cpumask);
-		if(p)
-			p->entry.u.mut.hint[j] = states[j].demand;
+		if(p){
+			p->entry.u.mut.cpus_req[j] = demand[j];
+			p->entry.u.mut.cpus_given[j] = 0;
+		}
 		states[j].demand = 0;
 	}
 
@@ -219,11 +221,11 @@ assign:
 		if(new_cpu_state[i] != cur_cpu_state[i]){
 			cur_cpu_state[i] = new_cpu_state[i];
 			set_freq(i,new_cpu_state[i]);
+			if(p)
+				p->entry.u.mut.cpus_given[cur_cpu_state[i]]++;
 		}
 		states[cur_cpu_state[i]].cpus++;
 		cpu_set(i,states[cur_cpu_state[i]].cpumask);
-		if(p)
-			p->entry.u.mut.cpustates[i] = cur_cpu_state[i];
 	}
 	mark_states_consistent();
 	put_debug(p,&irq_flags);

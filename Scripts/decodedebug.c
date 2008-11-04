@@ -52,13 +52,14 @@ main(int argc, char **argv, char **envp){
 				break;
 			case DEBUG_MUT:
 				mutDef = (debug_mutator_t *)(&entry->u);
-				printf("m,h");
+				printf("m,%d,r",mutDef->interval);
+				printf("m,r");
 				for(i=0;i<mutDef->count;i++){
-					printf(",%d",mutDef->hint[i]);
+					printf(",%d",mutDef->cpus_req[i]);
 				}
-				printf(",s");
-				for(i=0;i<NR_CPUS;i++){
-					printf(",%d",mutDef->cpustates[i]);
+				printf(",g");
+				for(i=0;i<mutDef->count;i++){
+					printf(",%d",mutDef->cpus_given[i]);
 				}
 				printf("\n");
 				break;

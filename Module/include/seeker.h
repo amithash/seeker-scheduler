@@ -50,8 +50,8 @@ typedef struct {
 typedef struct {
 	unsigned long long interval;
 	unsigned int count;
-	unsigned int hint[MAX_STATES];
-	short cpustates[NR_CPUS];
+	unsigned int cpus_req[MAX_STATES];
+	unsigned int cpus_given[MAX_STATES];
 } debug_mutator_t;
 
 typedef struct {
