@@ -33,38 +33,6 @@ main(int argc, char **argv, char **envp){
 	int first_sample[NR_CPUS] = {1};
 	const int bufsize = sizeof(debug_t);
 	char buf[bufsize];
-	while( fread(buf, 1, bufsize, stdin) == bufsize ) {
-		debug_t *entry = (debug_t *)(buf);
-		switch(entry->type) {
-			debug_scheduler_t *schDef;
-			debug_mutator_t *mutDef;
-			debug_pid_t *pidDef;
-			case DEBUG_SCH:
-				schDef = (debug_scheduler_t *)(&entry->u);
-				printf("s");
-				printf(",%d,%d,%ld,%1.4f,%d\n",schDef->interval,schDef->pid,schDef->inst,((float)schDef->ipc)/8.0,schDef->cpumask);
-				break;
-			case DEBUG_PID:
-				pidDef = (debug_pid_t *)(&entry->u);
-				printf("p");
-				pidDef->name[15] = '\0';
-				printf(",%d,%s\n",pidDef->pid,pidDef->name);
-				break;
-			case DEBUG_MUT:
-				mutDef = (debug_mutator_t *)(&entry->u);
-				printf("m,%d,r",mutDef->interval);
-				for(i=0;i<mutDef->count;i++){
-					printf(",%d",mutDef->cpus_req[i]);
-				}
-				printf(",g");
-				for(i=0;i<mutDef->count;i++){
-					printf(",%d",mutDef->cpus_given[i]);
-				}
-				printf("\n");
-				break;
-		}
-	}
-  
 	return EXIT_SUCCESS;
 }
 

@@ -31,8 +31,20 @@ main(int argc, char **argv, char **envp){
 	int num_counters = -1;
 	unsigned long long total_cycles[NR_CPUS] = {0};
 	int first_sample[NR_CPUS] = {1};
+	int debug = 0;
 	const int bufsize = sizeof(seeker_sampler_entry_t);
+	const int debug_bufsize = sizeof(debug_t);
 	char buf[bufsize];
+	char debug_buf[debug_bufsize];
+
+	if(argc > 1){
+		if(strcmp(argv[1],"-d") == 0){
+			goto debug_start;
+		}
+	}
+
+	fprintf(stderr, "seeker!\n");
+
 	while( fread(buf, 1, bufsize, stdin) == bufsize ) {
 		seeker_sampler_entry_t *entry = (seeker_sampler_entry_t *)(buf);
 		switch(entry->type) {
@@ -72,6 +84,41 @@ main(int argc, char **argv, char **envp){
 				break;
 		}
 	}
+	goto out;
+debug_start:
+	fprintf(stderr, "debug!\n");
+	while( fread(buf, 1, bufsize, stdin) == bufsize ) {
+		debug_t *entry = (debug_t *)(buf);
+		switch(entry->type) {
+			debug_scheduler_t *schDef;
+			debug_mutator_t *mutDef;
+			debug_pid_t *pidDef;
+			case DEBUG_SCH:
+				schDef = (debug_scheduler_t *)(&entry->u);
+				printf("s");
+				printf(",%d,%d,%ld,%1.4f,%d\n",schDef->interval,schDef->pid,schDef->inst,((float)schDef->ipc)/8.0,schDef->cpumask);
+				break;
+			case DEBUG_PID:
+				pidDef = (debug_pid_t *)(&entry->u);
+				printf("p");
+				pidDef->name[15] = '\0';
+				printf(",%d,%s\n",pidDef->pid,pidDef->name);
+				break;
+			case DEBUG_MUT:
+				mutDef = (debug_mutator_t *)(&entry->u);
+				printf("m,%d,r",mutDef->interval);
+				for(i=0;i<mutDef->count;i++){
+					printf(",%d",mutDef->cpus_req[i]);
+				}
+				printf(",g");
+				for(i=0;i<mutDef->count;i++){
+					printf(",%d",mutDef->cpus_given[i]);
+				}
+				printf("\n");
+				break;
+		}
+	}
+out:
   
 	return EXIT_SUCCESS;
 }
