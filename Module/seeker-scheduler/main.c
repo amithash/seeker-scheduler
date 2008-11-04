@@ -112,7 +112,7 @@ void inst_release_thread(struct task_struct *t)
 	struct debug_block *p = NULL;
 	#ifdef SEEKER_PLUGIN_PATCH
 	if(t->seeker_scheduled != SEEKER_MAGIC_NUMBER)
-		return;
+		jprobe_return();
 	#endif
 	p = get_debug(&flags);
 	if(p){
@@ -121,15 +121,16 @@ void inst_release_thread(struct task_struct *t)
 		memcpy(&(p->entry.u.tpid.name[0]),t->comm,16);
 	}
 	put_debug(p,&flags);
+	jprobe_return();
 	
 }
 
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 {
-	int cpu = get_cpu();
+	int cpu = smp_processor_id();
 #ifdef SEEKER_PLUGIN_PATCH
 	if(!ts[cpu] || ts[cpu]->seeker_scheduled != SEEKER_MAGIC_NUMBER)
-		goto inst_schedule_out;
+		return 0;
 #endif
 
 	read_counters(cpu);
@@ -141,13 +142,9 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	ts[cpu]->ref_cy += pmu_val[cpu][2];
 	clear_counters(cpu);
 	if(ts[cpu]->inst > INST_THRESHOLD){
-		put_cpu();
 		set_tsk_need_resched(ts[cpu]);
-		return 0;
 	}
 #endif
-inst_schedule_out:
-	put_cpu();
 	return 0;
 }
 
@@ -232,7 +229,7 @@ static int scheduler_init(void)
 			return -ENOSYS;
 		} else {
 			info("Registering of kp_schedule was successful");
-		}
+		} 
 		if(unlikely((probe_ret = register_jprobe(&jp_release_thread))<0)){
 			error("schedule register successful, but schedule failed");
 			unregister_kprobe(&kp_schedule);
@@ -241,7 +238,7 @@ static int scheduler_init(void)
 			return -ENOSYS;
 		} else {
 			info("Registering of kp_schedule was successful");
-		}
+		} 
 		if(configure_counters() != 0){
 			error("Configuring counters failed");
 			unregister_kprobe(&kp_schedule);
