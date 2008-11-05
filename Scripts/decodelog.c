@@ -25,8 +25,8 @@
 #include <seeker.h>
 
 
-int
-main(int argc, char **argv, char **envp){
+int main(int argc, char **argv, char **envp)
+{
 	int i;
 	int num_counters = -1;
 	unsigned long long total_cycles[NR_CPUS] = {0};
@@ -87,8 +87,8 @@ main(int argc, char **argv, char **envp){
 	goto out;
 debug_start:
 	fprintf(stderr, "debug!\n");
-	while( fread(buf, 1, bufsize, stdin) == bufsize ) {
-		debug_t *entry = (debug_t *)(buf);
+	while( fread(debug_buf, 1, debug_bufsize, stdin) == debug_bufsize ) {
+		debug_t *entry = (debug_t *)(debug_buf);
 		switch(entry->type) {
 			debug_scheduler_t *schDef;
 			debug_mutator_t *mutDef;
@@ -96,7 +96,7 @@ debug_start:
 			case DEBUG_SCH:
 				schDef = (debug_scheduler_t *)(&entry->u);
 				printf("s");
-				printf(",%d,%d,%ld,%1.4f,%d\n",schDef->interval,schDef->pid,schDef->inst,((float)schDef->ipc)/8.0,schDef->cpumask);
+				printf(",%d,%d,%ld,%1.4f,%d,%d\n",schDef->interval,schDef->pid,schDef->inst,((float)schDef->ipc)/8.0,schDef->state_req,schDef->state_given);
 				break;
 			case DEBUG_PID:
 				pidDef = (debug_pid_t *)(&entry->u);
@@ -106,7 +106,7 @@ debug_start:
 				break;
 			case DEBUG_MUT:
 				mutDef = (debug_mutator_t *)(&entry->u);
-				printf("m,%d,r",mutDef->interval);
+				printf("m,%ld,r",mutDef->interval);
 				for(i=0;i<mutDef->count;i++){
 					printf(",%d",mutDef->cpus_req[i]);
 				}
@@ -116,6 +116,8 @@ debug_start:
 				}
 				printf("\n");
 				break;
+			default:
+				fprintf(stderr,"WTF?!!\n");
 		}
 	}
 out:

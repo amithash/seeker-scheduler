@@ -74,6 +74,7 @@ void choose_layout(int delta)
 	int poison[NR_CPUS];
 	int sum;
 	int total_iter = 0;
+	int tmp_load;
 
 	interval_count++;
 	if(delta < 1)
@@ -86,7 +87,9 @@ void choose_layout(int delta)
 	for(i=0;i<total_online_cpus;i++){
 		poison[i] = 1;
 		new_cpu_state[i] = cur_cpu_state[i];
-		load += weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0;
+		tmp_load = weighted_cpuload(i);
+		debug("weighted_cpuload(%d) = %d",i,tmp_load);
+		load += tmp_load >= SCHED_LOAD_SCALE ? 1 : 0;
 	}
 
 	/* Total Hint */

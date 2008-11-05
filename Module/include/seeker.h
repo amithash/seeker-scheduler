@@ -42,7 +42,8 @@ enum {DEBUG_SCH, DEBUG_MUT, DEBUG_PID};
 typedef struct {
 	unsigned long long interval;
 	unsigned int pid;
-	unsigned int cpumask;
+	unsigned int state_req;
+	unsigned int state_given;
 	unsigned int ipc;
 	unsigned long long inst;
 } debug_scheduler_t;
