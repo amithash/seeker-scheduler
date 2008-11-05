@@ -224,9 +224,9 @@ assign:
 		if(new_cpu_state[i] != cur_cpu_state[i]){
 			cur_cpu_state[i] = new_cpu_state[i];
 			set_freq(i,new_cpu_state[i]);
-			if(p)
-				p->entry.u.mut.cpus_given[cur_cpu_state[i]]++;
 		}
+		if(p)
+			p->entry.u.mut.cpus_given[cur_cpu_state[i]]++;
 		states[cur_cpu_state[i]].cpus++;
 		cpu_set(i,states[cur_cpu_state[i]].cpumask);
 	}

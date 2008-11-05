@@ -104,11 +104,10 @@ void choose_layout(int delta)
 		d = procs(states[j].demand,total,load);
 		if(d == 0)
 			continue;
-		for(k=j,l=0;(d-l) > 0 && k<max_state_in_system;k++,l++)
+		for(k=j,l=0; k<max_state_in_system && (d-l) > 0; k++,l++)
 			demand[k] += (d-l);
-		for(k=j-1,l=1;(d-l)>0 && k>=0;k--,l++)
+		for(k=j-1,l=1; k >= 0 && (d-l)>0; k--,l++)
 			demand[k] += (d-l);
-		debug("required cpus for state %d = %d",j,demand[j]);
 	}
 
 	/* Now for each delta to spend, hold an auction */
@@ -229,9 +228,9 @@ assign:
 		if(new_cpu_state[i] != cur_cpu_state[i]){
 			cur_cpu_state[i] = new_cpu_state[i];
 			set_freq(i,new_cpu_state[i]);
-			if(p)
-				p->entry.u.mut.cpus_given[cur_cpu_state[i]]++;
 		}
+		if(p)
+			p->entry.u.mut.cpus_given[cur_cpu_state[i]]++;
 		states[cur_cpu_state[i]].cpus++;
 		cpu_set(i,states[cur_cpu_state[i]].cpumask);
 	}
