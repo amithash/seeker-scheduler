@@ -13,6 +13,11 @@ struct state_desc{
 	unsigned int demand;
 };
 
+struct state_sane_t {
+	short val;
+	spinlock_t lock;
+};
+
 void hint_inc(int state);
 void hint_dec(int state);
 int init_cpu_states(unsigned int how);

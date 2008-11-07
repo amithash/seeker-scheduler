@@ -45,7 +45,10 @@ void choose_layout(int delta)
 	int winning_cpu_state = 0;
 	int total;
 	struct debug_block *p = NULL;
+	int stop = 0;
 	unsigned long irq_flags;
+	int low = 0;
+	int high = 0;
 
 	for(i=0;i<total_online_cpus;i++){
 		new_cpu_state[i] = cur_cpu_state[i];
@@ -60,9 +63,16 @@ void choose_layout(int delta)
 		debug("required cpus for state %d = %d",j,demand[j]);
 	}
 
-	while(delta > 0){
+	while(delta > 0 && !stop){
 		/* Need a higher cpu find lowest and increase it by a state */
 		if((work_required - work_done) > 0){
+			/* There is a possibility of infinite
+			 * oscillations (Atleast till delta of course)
+			 * but we do not want that, so check if the other
+			 * code section has been executed */
+			if(high == 1)
+				break;
+			low = 1;
 			winning_cpu = 0;
 			winning_cpu_state = max_state_in_system;
 			for(i=0;i<total_online_cpus;i++){
@@ -71,10 +81,16 @@ void choose_layout(int delta)
 					winning_cpu = i;
 				}
 			}
-			if(new_cpu_state[winning_cpu] < max_state_in_system)
+			if(new_cpu_state[winning_cpu] < max_state_in_system){
 				new_cpu_state[winning_cpu]++;
-			work_required++;
+				delta--;
+				work_required++;
+			}
 		} else if((work_required - work_done) < 0){ /* Lower */
+			/* same as above */
+			if(low == 1) 
+				break;
+			high = 1;
 			winning_cpu = 0;
 			winning_cpu_state = 0;
 			for(i=0;i<total_online_cpus;i++){
@@ -83,15 +99,19 @@ void choose_layout(int delta)
 					winning_cpu = i;
 				}
 			}
-			if(new_cpu_state[winning_cpu] < max_state_in_system)
+			if(new_cpu_state[winning_cpu] > 0){
 				new_cpu_state[winning_cpu]--;
-			work_required--;
+				work_required--;
+				delta++;
+			}
 		} else {
+			/* They are equal, best case reached,
+			 * break */
 			break;
 		}
-		delta--;
 	}
 
+	/* Record the changes in the debug log */
 	p = get_debug(&irq_flags);
 	if(p){
 		p->entry.type = DEBUG_MUT;

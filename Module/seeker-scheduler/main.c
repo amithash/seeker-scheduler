@@ -189,7 +189,9 @@ static int scheduler_init(void)
 #ifdef SEEKER_PLUGIN_PATCH
 	int probe_ret;
 	total_online_cpus = num_online_cpus();
-
+	/* Please keep this BEFORE the probe registeration and
+	 * the timer initialization. init_cpu_states makes this 
+	 * assumption */
 	init_cpu_states(init);
 
 	if(debug_init() != 0)
