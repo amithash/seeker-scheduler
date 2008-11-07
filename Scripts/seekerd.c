@@ -124,9 +124,9 @@ int main (int argc, char** argv)
 	unsigned int (*seeker_sleep)(unsigned int);
 
 #if defined(SEEKERD)
-	printf("Seeker daemon started!");
+	printf("Seeker daemon started!\n");
 #elif defined(DEBUGD)
-	printf("Seeker scheduler debug daemon started!");
+	printf("Seeker scheduler debug daemon started!\n");
 #else
 	#error "Either SEEKERD or DEBUGD must be defined"
 #endif
