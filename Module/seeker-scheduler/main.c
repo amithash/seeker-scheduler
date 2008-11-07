@@ -141,8 +141,8 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	ts[cpu]->re_cy  += pmu_val[cpu][1];
 	ts[cpu]->ref_cy += pmu_val[cpu][2];
 	clear_counters(cpu);
-	if(ts[cpu]->inst > INST_THRESHOLD){
-		set_tsk_need_resched(ts[cpu]);
+	if(ts[cpu]->inst > INST_THRESHOLD && ts[cpu]->cpustate != cur_cpu_state[cpu]){
+		set_tsk_need_resched(ts[cpu]); /* lazy, as we are anyway getting into schedule */
 	}
 #endif
 	return 0;

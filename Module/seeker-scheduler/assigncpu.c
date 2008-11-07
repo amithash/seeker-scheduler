@@ -50,10 +50,12 @@ void put_mask_from_stats(struct task_struct *ts)
 	int this_cpu;
 	int state_req = 0;
 	cpumask_t mask = CPU_MASK_NONE;
-
+	
+#if 0
 	if(!is_states_consistent()){
 		return;
 	}
+#endif
 
 #ifdef SEEKER_PLUGIN_PATCH
 	/* Do not try to estimate anything
@@ -108,8 +110,15 @@ void put_mask_from_stats(struct task_struct *ts)
 		new_state = state;
 
 	if(new_state != state){
+		/* There is no way to do this atomically except to
+		 * hold a lock which just screws performance. 
+		 * (Note this section is not only contended with mutate, but
+		 * also by other schedules on other CPUS!)
+		 * So do it non-atomically, by first getting the mask of the
+		 * state required, then assign it to the cpus_allowed ONLY
+		 * if the states are consistant AND the mask is NOT empty! 
+		 * else leave it as it is */
 		mask = states[new_state].cpumask;
-
 		if(is_states_consistent() && !cpus_empty(mask)){
 			ts->cpus_allowed = mask;
 			#ifdef SEEKER_PLUGIN_PATCH
