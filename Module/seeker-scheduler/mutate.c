@@ -31,7 +31,7 @@ inline int procs(int hints,int total, int total_load)
 	if(hints == total)
 		return total_load;
 	
-	ans = div((hints * total_load),total) - 1;
+	ans = div((hints * total_load),total);
 	return ans < 0 ? 0 : ans;
 }
 

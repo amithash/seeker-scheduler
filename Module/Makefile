@@ -32,6 +32,12 @@ endif
 endif
 endif
 
+ifdef ALT
+MUTATE := mutate_alt$(ALT).o
+else
+MUTATE := mutate.o
+endif
+
 ifneq ($(KERNELRELEASE),)
 
 
@@ -52,15 +58,9 @@ seeker_sampler-objs += seeker-sampler/alloc.o   \
 		       seeker-sampler/io.o      \
 		       seeker-sampler/intr.o    \
 		       seeker-sampler/main.o
-ifdef ALT1
-MUT := mutate_alt1.o
-else
-MUT := mutate.o
-endif
-
 seeker_scheduler-objs += seeker-scheduler/main.o     \
 		       seeker-scheduler/assigncpu.o  \
-		       seeker-scheduler/$(MUT)	     \
+		       seeker-scheduler/$(MUTATE)    \
 		       seeker-scheduler/state.o      \
 		       seeker-scheduler/hwcounters.o \
 		       seeker-scheduler/debug.o

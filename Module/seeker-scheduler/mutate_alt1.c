@@ -10,7 +10,7 @@
 #include "state.h"
 #include "debug.h"
 
-
+static int demand_field[MAX_STATES];
 static int new_cpu_state[NR_CPUS];
 static int state_matrix[NR_CPUS][MAX_STATES];
 extern struct state_desc states[MAX_STATES];
@@ -31,7 +31,7 @@ inline int procs(int hints,int total, int total_load)
 	if(hints == total)
 		return total_load;
 	
-	ans = div((hints * total_load),total) - 1;
+	ans = div((hints * total_load),total);
 	return ans < 0 ? 0 : ans;
 }
 
@@ -55,14 +55,32 @@ void update_state_matrix(int delta)
 	}
 }
 
+void update_demand_field(int *demand, int total_states)
+{
+	int i,j,k;
+	for(i=0;i<total_states;i++){
+		demand_field[i] = 0;
+	}
+	for(i=0;i<total_states;i++){
+		if(demand[i] == 0)
+			continue;
+		if(demand[i] == 1)
+			demand_field[i]++;
+
+		for(j=i,k=0;j<total_states && (demand[i]-k)>0;k++,j++)
+			demand_field[j] += (demand[i]-k);
+		for(j=i-1,k=1;j>=0 && (demand[i]-k) > 0;j--,k++)
+			demand_field[j] += (demand[i]-k);
+	}
+}
+
 void choose_layout(int delta)
 {
 	int total = 0;
 	int demand[MAX_STATES];
-	int d;
 	int load = 0;
 	struct debug_block *p = NULL;
-	unsigned int i,j,k,l;
+	unsigned int i,j;
 	int winner=0;
 	unsigned int winner_val = 0;
 	unsigned int winner_best_proc = 0;
@@ -94,20 +112,13 @@ void choose_layout(int delta)
 	
 	for(j=0;j<max_state_in_system;j++){
 		total += states[j].demand;
-		demand[j] = 0;
 	}
 
 	/* Num of cpus required for this state 
 	 * SUM(demand[]) could be < cpus. 
 	 * Make sure to bring down their states. */
 	for(j=0;j<max_state_in_system;j++){
-		d = procs(states[j].demand,total,load);
-		if(d == 0)
-			continue;
-		for(k=j,l=0; k<max_state_in_system && (d-l) > 0; k++,l++)
-			demand[k] += (d-l);
-		for(k=j-1,l=1; k >= 0 && (d-l)>0; k--,l++)
-			demand[k] += (d-l);
+		demand[j] = procs(states[j].demand,total,load);
 	}
 
 	/* Now for each delta to spend, hold an auction */
@@ -120,7 +131,8 @@ void choose_layout(int delta)
 		total_iter++;
 	
 		debug("Iteration %d",total_iter);
-
+		
+		update_demand_field(demand,max_state_in_system);
 		update_state_matrix(delta);
 
 		/* There is an optimization here, so do not get confused.
@@ -139,16 +151,16 @@ void choose_layout(int delta)
 			/* Sum the cost over all rows */
 			for(i=0;i<total_online_cpus;i++){
 				if((state_matrix[i][j] * poison[i]) > best_proc_value){
-					best_proc_value = state_matrix[i][j] * poison[i] * demand[j];
+					best_proc_value = state_matrix[i][j] * poison[i] * demand_field[j];
 					best_proc = i;
 				} else if(state_matrix[i][j] < best_low_proc_value){
-					best_low_proc_value = state_matrix[i][j] * demand[j];
+					best_low_proc_value = state_matrix[i][j] * demand_field[j];
 				}
 				sum += (state_matrix[i][j] * poison[i]);
 			}
 
-			sum = sum * (demand[j]+1);
-			debug("sum for state %d is %d with demand %d",j,sum,demand[j]);
+			sum = sum * demand_field[j];
+			debug("sum for state %d is %d with demand %d",j,sum,demand_field[j]);
 
 			/* Find the max sum and the sate, and its best proc 
 			 * If there is contention for that, choose the one
@@ -173,7 +185,6 @@ assign:
 			winner_best_proc= best_proc;
 			winner_best_proc_value = best_proc_value;
 			winner_best_low_proc_value = best_low_proc_value;
-
 		}
 		/* A winning val of 0 indicated a failed auction.
 		 * all contenstents are broke. Go home loosers.*/
