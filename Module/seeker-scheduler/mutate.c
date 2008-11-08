@@ -59,6 +59,7 @@ void choose_layout(int delta)
 {
 	int total = 0;
 	int demand[MAX_STATES];
+	int cpus_demanded[MAX_STATES];
 	int load = 0;
 	struct debug_block *p = NULL;
 	unsigned int i,j;
@@ -102,7 +103,7 @@ void choose_layout(int delta)
 	 * SUM(demand[]) could be < cpus. 
 	 * Make sure to bring down their states. */
 	for(j=0;j<max_state_in_system;j++){
-		demand[j] = procs(states[j].demand,total,load);
+		cpus_demanded[i] = demand[j] = procs(states[j].demand,total,load);
 		debug("required cpus for state %d = %d",j,demand[j]);
 	}
 
@@ -207,7 +208,7 @@ assign:
 		states[j].cpus = 0;
 		cpus_clear(states[j].cpumask);
 		if(p){
-			p->entry.u.mut.cpus_req[j] = demand[j];
+			p->entry.u.mut.cpus_req[j] = cpus_demanded[j];
 			p->entry.u.mut.cpus_given[j] = 0;
 		}
 		states[j].demand = 0;
