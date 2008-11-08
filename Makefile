@@ -21,6 +21,10 @@ ifdef DEBUG
 EXTRA_ARGS += "DEBUG=1"
 endif
 
+ifdef ALT
+	EXTRA := "ALT=$(ALT)"
+endif
+
 ifndef ARCA
 ARCA := $(shell cat /proc/cpuinfo | grep -i AuthenticAMD | wc -l)
 ifneq ($(ARCA), 0)
@@ -41,7 +45,7 @@ CPUS := $(shell cat /proc/cpuinfo | grep processor | wc -l)
 endif
 
 all:
-	+make -C Module ARCA=$(ARCA) $(EXTRA_ARGS)
+	+make -C Module ARCA=$(ARCA) $(EXTRA_ARGS) $(EXTRA)
 	+make -C Scripts ARCA=$(ARCA) CPUS=$(CPUS) $(EXTRA_ARGS)
 
 clean:
