@@ -61,7 +61,7 @@ void choose_layout(int delta)
 	}
 	for(j=0;j<max_state_in_system;j++){
 		cpus_demanded[j] = procs(states[j].demand,total,load);
-		debug("required cpus for state %d = %d",j,demand[j]);
+		work_required += (cpus_demanded[j] * j);
 	}
 
 	while(delta > 0 && !stop){
