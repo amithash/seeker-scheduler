@@ -11,12 +11,14 @@
 #include "debug.h"
 
 
-static int new_cpu_state[NR_CPUS];
 extern struct state_desc states[MAX_STATES];
+
+/* Runtime params decided at load time. */
 extern unsigned int max_state_in_system;
 extern int total_online_cpus;
-extern int max_allowed_states[NR_CPUS];
+
 extern int cur_cpu_state[NR_CPUS];
+static int new_cpu_state[NR_CPUS];
 
 u64 interval_count;
 
@@ -36,24 +38,25 @@ inline int procs(int hints,int total, int total_load)
 
 void choose_layout(int delta)
 {
-	int demand[MAX_STATES];
 	int cpus_demanded[MAX_STATES];
 	int i,j;
-	int load;
-	int work_required;
-	int work_done;
+	int load = 0;
+	int work_required = 0;
+	int work_done = 0;
 	int winning_cpu;
 	int winning_cpu_state = 0;
 	int total;
 	struct debug_block *p = NULL;
-	int stop = 0;
 	unsigned long irq_flags;
 	int low = 0;
 	int high = 0;
+	int stop = total_online_cpus;
+
+	interval_count++;
 
 	for(i=0;i<total_online_cpus;i++){
 		new_cpu_state[i] = cur_cpu_state[i];
-		load += weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0;
+		load += (weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0);
 		work_done += cur_cpu_state[i];
 	}
 	for(j=0;j<max_state_in_system;j++){
@@ -62,11 +65,16 @@ void choose_layout(int delta)
 	for(j=0;j<max_state_in_system;j++){
 		cpus_demanded[j] = procs(states[j].demand,total,load);
 		work_required += (cpus_demanded[j] * j);
+		debug("required cpus for state %d = %d",j,cpus_demanded[j]);
 	}
 
-	while(delta > 0 && !stop){
+	while(delta > 0 && stop){
+		stop--;
+		winning_cpu = 0;
+		winning_cpu_state = new_cpu_state[0];
+
 		/* Need a higher cpu find lowest and increase it by a state */
-		if((work_required - work_done) > 0){
+		if(work_required > work_done){
 			/* There is a possibility of infinite
 			 * oscillations (Atleast till delta of course)
 			 * but we do not want that, so check if the other
@@ -74,27 +82,23 @@ void choose_layout(int delta)
 			if(high == 1)
 				break;
 			low = 1;
-			winning_cpu = 0;
-			winning_cpu_state = max_state_in_system;
-			for(i=0;i<total_online_cpus;i++){
+			for(i=1;i<total_online_cpus;i++){
 				if(new_cpu_state[i] < winning_cpu_state){
 					winning_cpu_state = new_cpu_state[i];
 					winning_cpu = i;
 				}
 			}
-			if(new_cpu_state[winning_cpu] < max_state_in_system){
+			if(new_cpu_state[winning_cpu] < (max_state_in_system-1)){
 				new_cpu_state[winning_cpu]++;
 				delta--;
-				work_required++;
+				work_done++;
 			}
-		} else if((work_required - work_done) < 0){ /* Lower */
+		} else if(work_required < work_done){ /* Lower */
 			/* same as above */
 			if(low == 1) 
 				break;
 			high = 1;
-			winning_cpu = 0;
-			winning_cpu_state = 0;
-			for(i=0;i<total_online_cpus;i++){
+			for(i=1;i<total_online_cpus;i++){
 				if(new_cpu_state[i] > winning_cpu_state){
 					winning_cpu_state = new_cpu_state[i];
 					winning_cpu = i;
@@ -102,7 +106,7 @@ void choose_layout(int delta)
 			}
 			if(new_cpu_state[winning_cpu] > 0){
 				new_cpu_state[winning_cpu]--;
-				work_required--;
+				work_done--;
 				delta++;
 			}
 		} else {
@@ -135,9 +139,9 @@ void choose_layout(int delta)
 		if(new_cpu_state[i] != cur_cpu_state[i]){
 			cur_cpu_state[i] = new_cpu_state[i];
 			set_freq(i,new_cpu_state[i]);
-			if(p)
-				p->entry.u.mut.cpus_given[cur_cpu_state[i]]++;
 		}
+		if(p)
+			p->entry.u.mut.cpus_given[cur_cpu_state[i]]++;
 		states[cur_cpu_state[i]].cpus++;
 		cpu_set(i,states[cur_cpu_state[i]].cpumask);
 	}
