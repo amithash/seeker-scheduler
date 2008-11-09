@@ -96,7 +96,15 @@ debug_start:
 			case DEBUG_SCH:
 				schDef = (debug_scheduler_t *)(&entry->u);
 				printf("s");
-				printf(",%d,%d,%ld,%1.4f,%d,%d\n",schDef->interval,schDef->pid,schDef->inst,((float)schDef->ipc)/8.0,schDef->state_req,schDef->state_given);
+				printf(",%d,%d,%d,%ld,%1.4f,%d,%d\n",schDef->interval,
+								schDef->pid,
+								schDef->cpu,
+								schDef->inst,
+								((float)schDef->ipc)/8.0,
+								schDef->state_req,
+								schDef->state_given
+								);
+
 				break;
 			case DEBUG_PID:
 				pidDef = (debug_pid_t *)(&entry->u);

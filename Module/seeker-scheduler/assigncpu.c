@@ -142,6 +142,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		p->entry.u.sch.pid = ts->pid;
 		p->entry.u.sch.state_req = state_req;
 		p->entry.u.sch.state_given = new_state;
+		p->entry.u.sch.cpu = this_cpu;
 	}
 	put_debug(p,&irq_flags);
 #ifdef SEEKER_PLUGIN_PATCH

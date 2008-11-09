@@ -13,6 +13,7 @@
 static int demand_field[MAX_STATES];
 static int new_cpu_state[NR_CPUS];
 static int state_matrix[NR_CPUS][MAX_STATES];
+static int demand[MAX_STATES];
 extern struct state_desc states[MAX_STATES];
 extern unsigned int max_state_in_system;
 extern int total_online_cpus;
@@ -55,29 +56,33 @@ void update_state_matrix(int delta)
 	}
 }
 
-void update_demand_field(int *demand, int total_states)
+/* Create a demand field such that, each state
+ * gets its share and also shares half of what it
+ * gets with its friends = friend_count on either side
+ * = (max_state_in_system/2)-1.
+ */
+void update_demand_field(int friend_count)
 {
 	int i,j,k;
-	for(i=0;i<total_states;i++){
-		demand_field[i] = 0;
+	int share;
+	for(i=0;i<max_state_in_system;i++){
+		demand_field[i] = 1;
 	}
-	for(i=0;i<total_states;i++){
-		if(demand[i] == 0)
-			continue;
-		if(demand[i] == 1)
-			demand_field[i]++;
-
-		for(j=i,k=0;j<total_states && (demand[i]-k)>0;k++,j++)
-			demand_field[j] += (demand[i]-k);
-		for(j=i-1,k=1;j>=0 && (demand[i]-k) > 0;j--,k++)
-			demand_field[j] += (demand[i]-k);
+	share = demand[i] >> 1;
+	for(i=0;i<max_state_in_system;i++){
+		demand_field[i] += (demand[i] + share);
+		for(j=i+1,k=1; j<max_state_in_system && (share - k) > 0 && k <= friend_count; j++,k++){
+			demand_field[j] += (share-k);
+		}
+		for(j=i-1,k=1; j >= 0 && (share - k) > 0 && k <= friend_count; j--,k++){
+			demand_field[j] += (share-k);
+		}
 	}
 }
 
 void choose_layout(int delta)
 {
 	int total = 0;
-	int demand[MAX_STATES];
 	int cpus_demanded[MAX_STATES];
 	int load = 0;
 	struct debug_block *p = NULL;
@@ -94,6 +99,7 @@ void choose_layout(int delta)
 	int poison[NR_CPUS];
 	int sum;
 	int total_iter = 0;
+	int friends = (max_state_in_system >> 1)-1;
 
 	interval_count++;
 	if(delta < 1)
@@ -133,8 +139,8 @@ void choose_layout(int delta)
 	
 		debug("Iteration %d",total_iter);
 		
-		update_demand_field(demand,max_state_in_system);
 		update_state_matrix(delta);
+		update_demand_field(friends);
 
 		/* There is an optimization here, so do not get confused.
 		 * Technically, each column in the state matrix is supposed
