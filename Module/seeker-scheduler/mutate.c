@@ -60,6 +60,7 @@ void choose_layout(int delta)
 	int total = 0;
 	int demand[MAX_STATES];
 	int cpus_demanded[MAX_STATES];
+	int total_demand;
 	int load = 0;
 	struct debug_block *p = NULL;
 	unsigned int i,j;
@@ -180,8 +181,10 @@ assign:
 		debug("Winner is state %d choosing cpu %d",winner,winner_best_proc);
 
 		/* Now the winning state, reduces its demand */
-		if(demand[winner] > 0)
+		if(demand[winner] > 0){
 			demand[winner]--;
+			total_demand--;
+		}
 
 		/* The best processor is best_proc */
 		/* Poison the choosen processor element */
@@ -194,7 +197,7 @@ assign:
 		new_cpu_state[winner_best_proc] = winner;
 
 		/* Continue the auction if delta > 0  or till all cpus are allocated */
-	} while(delta > 0 && total_iter < total_online_cpus);
+	} while(delta > 0 && total_iter < total_online_cpus && total_demand > 0);
 
 	p = get_debug(&irq_flags);
 	if(p){
