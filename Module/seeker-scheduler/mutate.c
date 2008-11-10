@@ -103,7 +103,7 @@ void choose_layout(int delta)
 	 * SUM(demand[]) could be < cpus. 
 	 * Make sure to bring down their states. */
 	for(j=0;j<max_state_in_system;j++){
-		cpus_demanded[i] = demand[j] = procs(states[j].demand,total,load);
+		cpus_demanded[j] = demand[j] = procs(states[j].demand,total,load);
 		debug("required cpus for state %d = %d",j,demand[j]);
 	}
 
