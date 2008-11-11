@@ -50,7 +50,7 @@ void choose_layout(int delta)
 	unsigned long irq_flags;
 	int low = 0;
 	int high = 0;
-	int stop = total_online_cpus;
+	int stop = 0;
 
 	interval_count++;
 
@@ -65,10 +65,11 @@ void choose_layout(int delta)
 	for(j=0;j<max_state_in_system;j++){
 		cpus_demanded[j] = procs(states[j].demand,total,load);
 		work_required += (cpus_demanded[j] * j);
+		stop += cpus_demanded[j];
 		debug("required cpus for state %d = %d",j,cpus_demanded[j]);
 	}
 
-	while(delta > 0 && stop){
+	while(delta > 0 && stop > 0){
 		stop--;
 		winning_cpu = 0;
 		winning_cpu_state = new_cpu_state[0];
