@@ -14,7 +14,7 @@ int main(int argc,char *argv[])
 		printf("Usage: %s FILE\n",argv[0]);
 		exit(1);
 	}
-	sprintf(touch,"/usr/bin/echo \" \" > %s",argv[1]);
+	sprintf(touch,"/bin/echo \" \" > %s",argv[1]);
 	sprintf(cat,"/usr/bin/ipmitool sensor get /SYS/VPS | /bin/grep -i \"sensor reading\" >> %s",argv[1]);
 	sprintf(interval,"/bin/date +\"\%s\" >> %s",argv[1]);
 
