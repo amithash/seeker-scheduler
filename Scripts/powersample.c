@@ -16,7 +16,7 @@ int main(int argc,char *argv[])
 	}
 	sprintf(touch,"/bin/echo \" \" > %s",argv[1]);
 	sprintf(cat,"/usr/bin/ipmitool sensor get /SYS/VPS | /bin/grep -i \"sensor reading\" >> %s",argv[1]);
-	sprintf(interval,"/bin/date +\"\%s\" >> %s",argv[1]);
+	sprintf(interval,"/bin/date +\"%%s\" >> %s",argv[1]);
 
 	system(touch);
 	pid = fork();
@@ -26,6 +26,7 @@ int main(int argc,char *argv[])
 		while(1){
 			system(interval);
 			system(cat);
+			usleep(100000);
 		}
 	}
 	return 0;
