@@ -43,7 +43,7 @@ ifneq ($(KERNELRELEASE),)
 
 obj-m += seeker_scheduler.o           	\
 	 seeker_sampler.o             	\
-	 pmu/pmu.o         		\
+	 pmu.o  	       		\
 	 fpmu/fpmu.o        		\
 	 tsc/tsc.o         		\
 	 therm/therm.o       		\
@@ -64,6 +64,9 @@ seeker_scheduler-objs += seeker-scheduler/main.o     \
 		       seeker-scheduler/state.o      \
 		       seeker-scheduler/hwcounters.o \
 		       seeker-scheduler/debug.o
+pmu-objs += pmu/main.o \
+	    pmu/intr.o \
+	    pmu/msr.o
 
 else
 KDIR    := /lib/modules/$(shell uname -r)/build

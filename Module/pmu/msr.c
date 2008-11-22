@@ -34,224 +34,9 @@
 
 #include "pmu.h"
 
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
-MODULE_DESCRIPTION("Module provides an interface to access the PMU");
-
-evtsel_t evtsel[NR_CPUS][NUM_COUNTERS] = {
-	{
-		#if NUM_COUNTERS > 0
-		{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL0} /*0*/
-		#endif
-		#if NUM_COUNTERS > 1
-		,{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL1}  /*1*/
-		#endif
-		#if NUM_COUNTERS > 2
-		,{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL2} /*2*/
-		#endif
-		#if NUM_COUNTERS > 3
-		,{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL3}  /*3*/
-		#endif
-	}
-};
-
-counter_t counters[NR_CPUS][NUM_COUNTERS] = {
-	{
-
-		#if NUM_COUNTERS > 0
-		{0, 0, PMC0, 0, 0, 0} /* 0 */
-		#endif
-		#if NUM_COUNTERS > 1
-		,{0, 0, PMC1, 1, 0, 0}  /* 1 */
-		#endif
-		#if NUM_COUNTERS > 2
-		,{0, 0, PMC2, 2, 0, 0} /* 2 */
-		#endif
-		#if NUM_COUNTERS > 3
-		,{0, 0, PMC3, 3, 0, 0}  /* 3 */
-		#endif
-	}
-};
-
-cleared_t cleared[NR_CPUS][NUM_COUNTERS] = {
-	{
-		#if NUM_COUNTERS > 0
-		{0,0,0} 
-		#endif
-		#if NUM_COUNTERS > 1
-		,{0,0,0}
-		#endif
-		#if NUM_COUNTERS > 2
-		,{0,0,0}
-		#endif
-		#if NUM_COUNTERS > 3
-		,{0,0,0}
-		#endif
-	}
-};
-
-int pmu_configure_interrupt(int ctr, u32 low, u32 high)
-{
-	#if NUM_COUNTERS > 0
-	int ret = 0;
-	int cpu = smp_processor_id();
-	if(likely(ctr < NUM_COUNTERS)){
-		cleared[cpu][ctr].low = low;
-		cleared[cpu][ctr].high = high;
-		cleared[cpu][ctr].all = (u64)low | (((u64)high) << 32);
-	}
-	else{
-		ret =  -1;
-	}
-	return -1;
-	#else
-	return 0;
-	#endif
-}
-EXPORT_SYMBOL_GPL(pmu_configure_interrupt);
-
-int pmu_enable_interrupt(int ctr)
-{
-	#if NUM_COUNTERS > 0
-	int cpu_id = smp_processor_id();
-	if(likely(cpu_id < NR_CPUS && ctr < NUM_COUNTERS)){
-		evtsel[cpu_id][ctr].int_flag = 1;
-		evtsel_write(ctr);
-	}
-	else{
-		return -1;
-	}
-	return 0;
-	#else
-	return -1;
-	#endif
-}	
-EXPORT_SYMBOL_GPL(pmu_enable_interrupt);
-
-int pmu_disable_interrupt(int ctr)
-{
-	#if NUM_COUNTERS > 0
-	int cpu;
-	cpu = smp_processor_id();
-	if(likely(ctr < NUM_COUNTERS && cpu < NR_CPUS)){
-		cleared[cpu][ctr].low = 0;
-		cleared[cpu][ctr].high = 0;
-		cleared[cpu][ctr].all = 0;
-		evtsel[cpu][ctr].int_flag = 0;
-		evtsel_write(ctr);
-	}
-	else{
-		return -1;
-	}
-	return 0;
-	#else
-	return -1;
-	#endif
-}	
-EXPORT_SYMBOL_GPL(pmu_disable_interrupt);
-
-int pmu_is_interrupt(int ctr)
-{
-	#if NUM_COUNTERS > 0
-
-#if defined(ARCH_C2D)
-	u32 ret = 0;
-	u32 low,high;
-
-	/* Unlike the C2D, the AMD Archs do not
-	 * have a way of indicating ovf status or
-	 * control. And hence just return success
-	 * (1)
-	 */
-
-	if(unlikely(ctr >= NUM_COUNTERS))
-		return -1;
-	rdmsr(MSR_PERF_GLOBAL_STATUS,low,high);
-	switch(ctr){
-		#if NUM_COUNTERS > 0
-		case 0:
-			ret = low & CTR0_OVERFLOW_MASK;
-			break;
-		#endif
-		#if NUM_COUNTERS > 1
-		case 1:
-			ret = low & CTR1_OVERFLOW_MASK;
-			break;
-		#endif
-		#if NUM_COUNTERS > 2
-		case 2:
-			ret = low & CTR2_OVERFLOW_MASK;
-			break;
-		#endif
-		#if NUM_COUNTERS > 3
-		case 3:
-			ret = low & CTR3_OVERFLOW_MASK;
-			break;
-		#endif
-		default:
-			ret = -1;
-			break;
-	}
-	return ret;
-#	else
-	return 0;
-#	endif
-#else
-	return -1;
-#endif
-}
-EXPORT_SYMBOL_GPL(pmu_is_interrupt);
-
-int pmu_clear_ovf_status(int ctr)
-{
-	int ret = 0;
-	#if NUM_COUNTERS > 0 
-	#if defined(ARCH_C2D)
-	u32 low,high;
-	if(unlikely(ctr > NUM_COUNTERS))
-		return -1;
-	/* Unlike the C2D, the AMD Archs do not
-	 * have a way of indicating ovf status or
-	 * control. And hence just return success
-	 * (0)
-	 */
-	rdmsr(MSR_PERF_GLOBAL_OVF_CTRL,low,high);
-	switch(ctr){
-		#if NUM_COUNTERS > 0
-		case 0:
-			low &= CTR0_OVERFLOW_CLEAR_MASK;
-			break;
-		#endif
-		#if NUM_COUNTERS > 1
-		case 1:
-			low &= CTR1_OVERFLOW_CLEAR_MASK;
-			break;
-		#endif
-		#if NUM_COUNTERS > 2
-		case 2:
-			low &= CTR2_OVERFLOW_CLEAR_MASK;
-			break;
-		#endif
-		#if NUM_COUNTERS > 3
-		case 3:
-			low &= CTR3_OVERFLOW_CLEAR_MASK;
-			break;
-		#endif
-		default:
-			ret = -1;
-			break;
-	}
-	if(likely(ret != -1)){
-		wrmsr(MSR_PERF_GLOBAL_OVF_CTRL,low,high);
-	}
-	#else
-	return 0;
-	#endif
-	return ret;
-#endif
-
-}
-EXPORT_SYMBOL_GPL(pmu_clear_ovf_status);
+extern evtsel_t  evtsel[NR_CPUS][NUM_COUNTERS];
+extern counter_t counters[NR_CPUS][NUM_COUNTERS];
+extern cleared_t cleared[NR_CPUS][NUM_COUNTERS];
 
 //read the evtsel reg and return the low 32 bits
 //the high are reserved anyway
@@ -309,7 +94,7 @@ inline void evtsel_write(u32 evtsel_num)
 }
 EXPORT_SYMBOL_GPL(evtsel_write);
 
-//must be called using on_each_cpu
+//must be called using ON_EACH_CPU
 inline void counter_clear(u32 counter)
 {
 	#if NUM_COUNTERS > 0
@@ -326,7 +111,7 @@ inline void counter_clear(u32 counter)
 }
 EXPORT_SYMBOL_GPL(counter_clear);
 
-//must be called using on_each_cpu
+//must be called using ON_EACH_CPU
 void counter_read(void)
 {
 	#if NUM_COUNTERS > 0
@@ -361,7 +146,7 @@ u64 get_counter_data(u32 counter, u32 cpu_id)
 }
 EXPORT_SYMBOL_GPL(get_counter_data);
 
-//must be called using on_each_cpu
+//must be called using ON_EACH_CPU
 inline void counter_disable(int counter) 
 {
 	#if NUM_COUNTERS > 0
@@ -379,7 +164,7 @@ inline void counter_disable(int counter)
 }
 EXPORT_SYMBOL_GPL(counter_disable);
 
-//must be called using on_each_cpu
+//must be called using ON_EACH_CPU
 int counter_enable(u32 event, u32 ev_mask, u32 os)
 {
 	#if NUM_COUNTERS > 0
@@ -422,53 +207,3 @@ int counter_enable(u32 event, u32 ev_mask, u32 os)
 	#endif
 }
 EXPORT_SYMBOL_GPL(counter_enable);
-
-
-
-
-//must be called from on_each_cpu
-void pmu_init_msrs(void)
-{
-	#if NUM_COUNTERS > 0
-	int i;
-	int cpu = get_cpu();
-	if(cpu != 0){
-		for(i=0;i<NUM_COUNTERS;i++){
-			counters[cpu][i] = counters[0][i];
-			evtsel[cpu][i] = evtsel[0][i];
-		}
-	}
-	for(i = 0; i < NUM_COUNTERS; i++) {
-		warn("cpu %d counter %d enabled %d",cpu,i,counters[cpu][i].enabled);
-		evtsel_clear(i);
-		counter_disable(i);
-		counter_clear(i);
-	}
-	put_cpu();
-	#endif
-}
-EXPORT_SYMBOL_GPL(pmu_init_msrs);
-
-static int __init pmu_init(void)
-{
-	if(on_each_cpu((void *)pmu_init_msrs,NULL,1,1) < 0){
-		error("Could not enable all counters. Panicing and exiting");
-		return -ENODEV;
-	}
-	return 0;
-}
-
-static void __exit pmu_exit(void)
-{
-	int i,j;
-	for(i=0;i<NR_CPUS;i++){
-		for(j=0;j<NUM_COUNTERS;j++){
-			counters[i][j].enabled = 0;
-		}
-	}
-}
-
-module_init(pmu_init);
-module_exit(pmu_exit);
-
-

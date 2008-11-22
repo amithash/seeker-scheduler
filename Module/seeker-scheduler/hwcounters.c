@@ -40,7 +40,7 @@ void enable_pmu_counters(void)
 
 int configure_counters(void)
 {
-	if(on_each_cpu((void *)enable_pmu_counters,NULL,1,1) < 0){
+	if(ON_EACH_CPU((void *)enable_pmu_counters,NULL,1,1) < 0){
 		error("Counters could not be configured");
 		return -1;
 	}

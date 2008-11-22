@@ -105,8 +105,19 @@ typedef struct {
 	} u;
 } seeker_sampler_entry_t;
 
+/*
 #if !defined(KERNEL_VERSION)
 # define KERNEL_VERSION(a,b,c) (LINUX_VERSION_CODE + 1)
+#endif
+*/
+
+#include <linux/version.h>
+
+/* Ass holes changed on_each_cpu's declaration.... */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27)
+#define ON_EACH_CPU(a,b,c,d) on_each_cpu((a),(b),(c),(d))
+#else
+#define ON_EACH_CPU(a,b,c,d) on_each_cpu((a),(b),(c))
 #endif
 
 /* Useful Macros */

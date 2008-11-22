@@ -107,10 +107,10 @@ void therm_init_msrs(void)
 }
 EXPORT_SYMBOL_GPL(therm_init_msrs);
 
-//must be called from on_each_cpu
+//must be called from ON_EACH_CPU
 static int __init therm_init(void)
 {
-	if(on_each_cpu((void *)therm_init_msrs,NULL,1,1) < 0){
+	if(ON_EACH_CPU((void *)therm_init_msrs,NULL,1,1) < 0){
 		error("Could not init therm on all cpus");
 		return -ENODEV;
 	}

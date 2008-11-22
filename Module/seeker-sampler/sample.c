@@ -223,7 +223,7 @@ int msrs_init(void)
 {
 	// setup the counters modifications -- needed only for counters with information from seeker 
 	// that is currently only for the variable pmu counters.
-	if(unlikely(on_each_cpu((void*)config_counters,NULL, 1,1) < 0)){
+	if(unlikely(ON_EACH_CPU((void*)config_counters,NULL, 1,1) < 0)){
 		error("could not configure counters!");
 		return -1;
   	}

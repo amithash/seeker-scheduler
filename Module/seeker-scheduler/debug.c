@@ -97,7 +97,7 @@ void debug_free(struct debug_block *p)
 void purge_debug(void)
 {
 	struct debug_block *c1,*c2;
-	unsigned int flags;
+	unsigned long flags;
 	if(start_debug == NULL || current_debug == NULL)
 		return;
 	/* Acquire the lock, then set current debug to NULL

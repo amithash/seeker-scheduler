@@ -104,7 +104,7 @@ int seeker_sample_open(struct inode *in, struct file * f)
 	/* Enable and configure interrupts on each cpu */
 	#ifdef LOCAL_PMU_VECTOR
 	if(pmu_intr >= 0){
-		if(on_each_cpu((void *)configure_enable_interrupts,NULL,1,1) < 0){
+		if(ON_EACH_CPU((void *)configure_enable_interrupts,NULL,1,1) < 0){
 			error("Could not configure interrupts on all cpu's");
 		}
 	}
@@ -130,7 +130,7 @@ int seeker_sample_close(struct inode *in, struct file *f)
 	/* Disable interrupts on each cpu. */
 	#ifdef LOCAL_PMU_VECTOR
 	if(pmu_intr >= 0){
-		if(unlikely(on_each_cpu((void *)configure_disable_interrupts,NULL,1,1) < 0)){
+		if(unlikely(ON_EACH_CPU((void *)configure_disable_interrupts,NULL,1,1) < 0)){
 			error("Oops... Could not disable interrupts on all cpu's");
 		}
 	}

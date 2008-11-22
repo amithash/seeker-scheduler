@@ -268,7 +268,7 @@ inline void control_write(void)
 }
 EXPORT_SYMBOL_GPL(control_write);
 
-//must be called using on_each_cpu
+//must be called using ON_EACH_CPU
 inline void fcounter_clear(u32 counter)
 {
 	#if NUM_FIXED_COUNTERS > 0
@@ -282,7 +282,7 @@ inline void fcounter_clear(u32 counter)
 }
 EXPORT_SYMBOL_GPL(fcounter_clear);
 
-//must be called using on_each_cpu
+//must be called using ON_EACH_CPU
 void fcounter_read(void)
 {
 	#if NUM_FIXED_COUNTERS > 0
@@ -320,7 +320,7 @@ u64 get_fcounter_data(u32 counter, u32 cpu_id)
 }
 EXPORT_SYMBOL_GPL(get_fcounter_data);
 
-//must be called using on_each_cpu
+//must be called using ON_EACH_CPU
 inline void fcounters_disable(void)
 {
 	#if NUM_FIXED_COUNTERS > 0
@@ -336,7 +336,7 @@ inline void fcounters_disable(void)
 }
 EXPORT_SYMBOL_GPL(fcounters_disable);
 
-//must be called using on_each_cpu
+//must be called using ON_EACH_CPU
 void fcounters_enable(u32 os)
 {
 	#if NUM_FIXED_COUNTERS > 0
@@ -361,7 +361,7 @@ void fcounters_enable(u32 os)
 }
 EXPORT_SYMBOL_GPL(fcounters_enable);
 
-//must be called from on_each_cpu
+//must be called from ON_EACH_CPU
 void fpmu_init_msrs(void)
 {
 	#if NUM_FIXED_COUNTERS > 0
@@ -386,11 +386,11 @@ void fpmu_init_msrs(void)
 }
 EXPORT_SYMBOL_GPL(fpmu_init_msrs);
 
-//must be called from on_each_cpu
+//must be called from ON_EACH_CPU
 static int __init fpmu_init(void)
 {
 	#if NUM_FIXED_COUNTERS > 0
-	if(on_each_cpu((void *)fpmu_init_msrs,NULL,1,1) < 0){
+	if(ON_EACH_CPU((void *)fpmu_init_msrs,NULL,1,1) < 0){
 		error("Could not enable anything, panicing and exiting");
 		return -ENODEV;
 	}

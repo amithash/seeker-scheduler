@@ -78,7 +78,7 @@ u64 get_last_time_stamp(u32 cpu_id)
 }
 EXPORT_SYMBOL_GPL(get_last_time_stamp);
 
-//must be called using on_each_cpu
+//must be called using ON_EACH_CPU
 void tsc_init_msrs(void)
 {
 	int cpu = smp_processor_id();
@@ -91,7 +91,7 @@ EXPORT_SYMBOL_GPL(tsc_init_msrs);
 
 static int __init tsc__init(void)
 {
-	if(on_each_cpu((void *)tsc_init_msrs,NULL,1,1) < 0){
+	if(ON_EACH_CPU((void *)tsc_init_msrs,NULL,1,1) < 0){
 		error("Could not init tsc on all cpus!");
 		return -ENODEV;
 	}

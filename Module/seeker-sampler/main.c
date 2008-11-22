@@ -221,7 +221,7 @@ static int __init seeker_sampler_init(void)
 			return -ENODEV;
 		}
 
-		if(on_each_cpu((void *)enable_apic_pmu, NULL, 1, 1) < 0){
+		if(ON_EACH_CPU((void *)enable_apic_pmu, NULL, 1, 1) < 0){
 			error("Could not enable local pmu interrupt on all cpu's\n");
 		}
 		#else
@@ -295,7 +295,7 @@ void seeker_sampler_exit_handler(void)
 		/* Disable interrupts if they were enabled in the first palce. */
 		if(pmu_intr >= 0){
 			/* Disable interrupts on all cpus */
-			if(unlikely(on_each_cpu((void *)configure_disable_interrupts,NULL,1,1) < 0)){
+			if(unlikely(ON_EACH_CPU((void *)configure_disable_interrupts,NULL,1,1) < 0)){
 				error("Oops... Could not disable interrupts on all cpu's");
 			}
 		}
