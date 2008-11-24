@@ -43,13 +43,21 @@ ifneq ($(KERNELRELEASE),)
 
 obj-m += seeker_scheduler.o           	\
 	 seeker_sampler.o             	\
+	 test_scpufreq.o		\
 	 pmu.o  	       		\
 	 fpmu.o 	       		\
-	 tsc/tsc.o         		\
-	 therm/therm.o       		\
-	 scpufreq/scpufreq.o  		\
-	 test_scpufreq.o		\
-	 power/power.o
+	 tsc.o 	        		\
+	 therm.o	       		\
+	 seeker_cpufreq.o  		\
+	 power.o
+
+tsc-objs += tsc/main.o
+
+therm-objs += therm/main.o
+
+power-objs += power/power.o
+
+seeker_cpufreq-objs += seeker-cpufreq/main.o
 
 seeker_sampler-objs += seeker-sampler/alloc.o   \
 		       seeker-sampler/log.o     \
@@ -58,6 +66,7 @@ seeker_sampler-objs += seeker-sampler/alloc.o   \
 		       seeker-sampler/io.o      \
 		       seeker-sampler/intr.o    \
 		       seeker-sampler/main.o
+
 seeker_scheduler-objs += seeker-scheduler/main.o     \
 		       seeker-scheduler/assigncpu.o  \
 		       seeker-scheduler/$(MUTATE)    \
@@ -75,12 +84,7 @@ fpmu-objs += fpmu/main.o \
 else
 KDIR    := /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)
-INCLUDE_DIRS := -I$(PWD)/include	\
-		-I$(PWD)/pmu		\
-		-I$(PWD)/fpmu		\
-		-I$(PWD)/tsc		\
-		-I$(PWD)/therm		\
-		-I$(PWD)/scpufreq	\
+INCLUDE_DIRS := -I$(PWD)/include
 
 MOD_FLAGS := -DMODULE -m64 -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall
 

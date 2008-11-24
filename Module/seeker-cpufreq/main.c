@@ -32,7 +32,14 @@
 
 #include <seeker.h>
 
-#include "scpufreq.h"
+#include "seeker_cpufreq.h"
+
+struct freq_info_t{
+	unsigned int cpu;
+	unsigned int cur_freq;
+	unsigned int num_states;
+	unsigned int table[MAX_STATES];
+};
 
 struct cpufreq_governor seeker_governor = {
 	.name = "seeker",

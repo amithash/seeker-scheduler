@@ -32,7 +32,7 @@
 
 #include <seeker.h>
 
-#include "fpmu.h"
+#include "fpmu_int.h"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");

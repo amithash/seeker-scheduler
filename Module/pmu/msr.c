@@ -32,7 +32,7 @@
 
 #include <seeker.h>
 
-#include "pmu.h"
+#include "pmu_int.h"
 
 extern evtsel_t  evtsel[NR_CPUS][NUM_COUNTERS];
 extern counter_t counters[NR_CPUS][NUM_COUNTERS];

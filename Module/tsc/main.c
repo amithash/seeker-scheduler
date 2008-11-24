@@ -32,96 +32,79 @@
 
 #include <seeker.h>
 
-#include "therm.h"
+#include "tsc_int.h"
+
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
-MODULE_DESCRIPTION("Module provides an interface to access "
-		   "the per-core temperature sensor");
+MODULE_DESCRIPTION("Module provides an interface to access the "
+		   "Time stamp counter");
 
-int temperature[NR_CPUS] = {0};
-int TjMax[NR_CPUS] = {0};
+tstamp_t time_stamp[NR_CPUS] = {
+	{0, 0, 0, 0}
+};
 
-int read_temp(void)
+
+void read_time_stamp(void)
 {
-	#ifdef THERM_SUPPORTED
-	u32 low,high;
-	//read the temperature
+	u32 low, high;
+	int cpu_id = smp_processor_id();
+	if (likely(cpu_id < NR_CPUS)){
+		// rdtsc is no longer supported by the linux kernel.
+		rdmsr(TIME_STAMP_COUNTER, low, high);
+		time_stamp[cpu_id].last_low = time_stamp[cpu_id].low;
+		time_stamp[cpu_id].last_high = time_stamp[cpu_id].high;
+		time_stamp[cpu_id].low = low;
+		time_stamp[cpu_id].high = high;
+	}
+}
+EXPORT_SYMBOL_GPL(read_time_stamp);
+
+
+u64 get_time_stamp(u32 cpu_id)
+{
+	u64 ts = (u64)time_stamp[cpu_id].low;
+	ts = ts | ((u64)time_stamp[cpu_id].high << 32);
+	return ts;
+}
+EXPORT_SYMBOL_GPL(get_time_stamp);
+
+
+u64 get_last_time_stamp(u32 cpu_id)
+{
+	u64 ts = (u64)time_stamp[cpu_id].last_low;
+	ts = ts | ((u64)time_stamp[cpu_id].last_high << 32);
+	return ts;
+}
+EXPORT_SYMBOL_GPL(get_last_time_stamp);
+
+//must be called using ON_EACH_CPU
+void tsc_init_msrs(void)
+{
 	int cpu = smp_processor_id();
-
-	rdmsr(IA32_THERM_STATUS,low,high);
-	if(unlikely((low & THERM_VALID_MASK) == 0)){
-		return -1;
+	if(cpu != 0){
+		time_stamp[cpu] = time_stamp[0];
 	}
-	else{
-		low = 0x7F & (low >> 16); // only 7 bits please...
-		temperature[cpu] = TjMax[cpu] - low;
-		return 0;
-	}
-	#else
-	return 0;
-	#endif
 }
-EXPORT_SYMBOL_GPL(read_temp);
+EXPORT_SYMBOL_GPL(tsc_init_msrs);
 
-int get_temp(int cpu)
+
+static int __init tsc__init(void)
 {
-	return temperature[cpu];
-}
-EXPORT_SYMBOL_GPL(get_temp);
-
-void therm_init_msrs(void)
-{
-	#ifdef THERM_SUPPORTED
-#ifdef ARCH_C2D
-	u32 low,high;
-#endif
-	int cpu = smp_processor_id();
-	temperature[cpu] = 0;
-	
-	#ifdef ARCH_C2D
-	/* get the value of TjMax 
-	 * There is an undocumented MSR 0xEE
-	 * when bit 30 of this is set then
-	 * it is assumed that Tj_Max is 100
-	 * degree celsius, else it has to be
-	 * assumed that Tj_Max is 85 degree 
-	 * celsius.
-	 * reference:
-	 * http://softwarecommunity.intel.com/isn/Community/en-US/forums/thread/30222546.aspx
-	 *
-	 */
-
-	rdmsr(0xEE,low,high);
-	if(low & 0x40000000){ // bit 30 if the MSR 0xEE
-		// is set. TjMax is 100 degree C
-		TjMax[cpu] = 100;
-	}
-	else{
-		TjMax[cpu] = 85;
-	}
-	#endif
-	//perform the first readout.
-	read_temp();
-	#endif
-}
-EXPORT_SYMBOL_GPL(therm_init_msrs);
-
-//must be called from ON_EACH_CPU
-static int __init therm_init(void)
-{
-	if(ON_EACH_CPU((void *)therm_init_msrs,NULL,1,1) < 0){
-		error("Could not init therm on all cpus");
+	if(ON_EACH_CPU((void *)tsc_init_msrs,NULL,1,1) < 0){
+		error("Could not init tsc on all cpus!");
 		return -ENODEV;
 	}
 	return 0;
 }
 
-static void __exit therm_exit(void)
+
+static void __exit tsc__exit(void)
 {
 	;
 }
 
-module_init(therm_init);
-module_exit(therm_exit);
+module_init(tsc__init);
+module_exit(tsc__exit);
+
 

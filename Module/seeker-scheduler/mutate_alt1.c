@@ -5,7 +5,7 @@
 #include <linux/cpumask.h>
 
 #include <seeker.h>
-#include <scpufreq.h>
+#include <seeker_cpufreq.h>
 
 #include "state.h"
 #include "debug.h"

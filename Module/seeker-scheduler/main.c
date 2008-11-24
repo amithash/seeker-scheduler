@@ -35,7 +35,7 @@
 #include <pmu.h>
 #include <fpmu.h>
 
-#include "scpufreq.h"
+#include "seeker_cpufreq.h"
 #include "state.h"
 #include "assigncpu.h"
 #include "mutate.h"

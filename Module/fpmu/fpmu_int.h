@@ -24,8 +24,8 @@
  *****************************************************/
 
 
-#ifndef _FPMU_H_
-#define _FPMU_H_
+#ifndef _FPMU_INT_H_
+#define _FPMU_INT_H_
 
 #include <asm/types.h>
 #include <fpmu_public.h>
@@ -89,22 +89,10 @@ extern fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS];
 
 /********** Function Prototypes **********************************************/
 
-void fpmu_init_msrs(void);
-
 inline u32 control_read(void);
 inline void control_clear(void);
 inline void control_write(void);
 
-void fcounter_clear(u32 counter);
-void fcounter_read(void);
-u64 get_fcounter_data(u32 counter, u32 cpu_id);
-void fcounters_disable(void);
-void fcounters_enable(u32 os);
-
-int fpmu_configure_interrupt(int ctr, u32 low, u32 high);
-int fpmu_enable_interrupt(int ctr);
-int fpmu_disable_interrupt(int ctr);
-int fpmu_clear_ovf_status(int ctr);
-int fpmu_is_interrupt(int ctr);
+#include <fpmu.h>
 
 #endif

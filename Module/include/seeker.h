@@ -22,14 +22,14 @@
  * General Public License along with this program.   *
  * If not, see <http://www.gnu.org/licenses/>.       *
  *****************************************************/
-#ifndef _SEEKER_SAMPLER_H_
-#define _SEEKER_SAMPLER_H_
+#ifndef _SEEKER_H_
+#define _SEEKER_H_
 
 #include <pmu_public.h>
 #include <fpmu_public.h>
 #include <tsc_public.h>
 #include <therm_public.h>
-#include <scpufreq.h>
+#include <seeker_cpufreq.h>
 
 #define NUM_EXTRA_COUNTERS THERM_SUPPORTED
 
@@ -133,8 +133,8 @@ typedef struct {
 #else
 #	define debug(str,a...) do{;}while(0);
 #endif
-#endif
 
 #define ABS(i) ((i) >= 0 ? (i) : (-1)*(i))
 #define div(a,b) ((b) != 0 ? ((((a) + (b) - 1))/(b))  : 0)
 
+#endif

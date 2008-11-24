@@ -25,7 +25,7 @@ CXX = g++
 ifndef ARCA
 ARCA := C2D
 endif
-INCLUDE := -I$(shell pwd)/../Module/include -I$(shell pwd)/../Module/scpufreq
+INCLUDE := -I$(shell pwd)/../Module/include
 
 all:
 	${CC} ${CFLAGS} seekerd.c -o seekerd -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS) -DSEEKERD

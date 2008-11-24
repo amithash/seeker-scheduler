@@ -32,7 +32,7 @@
 
 #include <seeker.h>
 
-#include "fpmu.h"
+#include "fpmu_int.h"
 
 extern fixctrl_t fcontrol[NR_CPUS];
 extern fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS];

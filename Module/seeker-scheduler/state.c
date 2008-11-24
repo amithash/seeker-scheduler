@@ -7,7 +7,7 @@
 #include <seeker.h>
 
 #include "state.h"
-#include "scpufreq.h"
+#include "seeker_cpufreq.h"
 #include "assigncpu.h"
 #include "mutate.h"
 

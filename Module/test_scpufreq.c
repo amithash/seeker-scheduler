@@ -4,7 +4,7 @@
 #include <linux/timer.h>
 
 #include <seeker.h>
-#include <scpufreq.h>
+#include <seeker_cpufreq.h>
 
 MODULE_AUTHOR("Amithash Prasad <amithash@gmail.com>");
 MODULE_DESCRIPTION("Tests the scpufreq cpufreq governor");

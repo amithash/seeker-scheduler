@@ -1,4 +1,3 @@
-
 /*****************************************************
  * Copyright 2008 Amithash Prasad                    *
  *                                                   *
@@ -26,28 +25,6 @@
 
 #ifndef _THERM_H_
 #define _THERM_H_
-
-#include <asm/types.h>
-#include <therm_public.h>
-
-/********** Constants ********************************************************/
-#if defined(ARCH_C2D)
-#	define IA32_THERM_STATUS 0x0000019C
-#	define THERM_VALID_MASK 0x80000000
-#	define THERM_SUPPORTED 1
-#elif defined(ARCH_K8) || defined(ARCH_K8)
-#	define IA32_THERM_STATUS 0x00000000
-#	define THERM_VALID_MASK 0x00000000
-#elif defined(ARCH_K10)
-#	define IA32_THERM_STATUS 0x00000000
-#	define THERM_VALID_MASK 0x00000000
-#endif
-/********* Extern Vars *******************************************************/
-
-extern int temperature[NR_CPUS];
-extern int TjMax[NR_CPUS];
-
-/********** Function Prototypes **********************************************/
 
 void therm_init_msrs(void);
 int read_temp(void);

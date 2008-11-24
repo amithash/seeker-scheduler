@@ -11,7 +11,7 @@
 
 #include "assigncpu.h"
 #include "state.h"
-#include "scpufreq.h"
+#include "seeker_cpufreq.h"
 #include "debug.h"
 
 /* Works for a max of 32 processors */
