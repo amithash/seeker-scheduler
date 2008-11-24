@@ -36,8 +36,6 @@ using namespace std;
 #define foreach(iter,data) for(int i=0;i<data.length();i++){ \
 				iter = data[i];
 
-using namespace std;
-
 template <class T = int> 
 class Array{	
 	private:
