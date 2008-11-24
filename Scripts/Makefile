@@ -36,5 +36,5 @@ all:
 	${CXX} ${CFLAGS} smooth.C -o smooth
 
 clean:
-	rm -f seekerd decodelog interp maxmin smooth debugd powersample
+	rm -f seekerd decodelog interp maxmin smooth debugd
 
