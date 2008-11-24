@@ -18,6 +18,9 @@
 # You should have received a copy of the GNU General Public License      *
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
 #*************************************************************************/
+
+# First try and get the architecture...
+
 ifndef ARCA
 ARCA := $(shell cat /proc/cpuinfo | grep -i AuthenticAMD | wc -l)
 ifneq ($(ARCA), 0)
@@ -32,6 +35,7 @@ endif
 endif
 endif
 
+# get what mutator should be compiled.
 ifdef ALT
 MUTATE := mutate_alt$(ALT).o
 else
@@ -40,7 +44,7 @@ endif
 
 ifneq ($(KERNELRELEASE),)
 
-
+# All the kernel modules 
 obj-m += seeker_scheduler.o           	\
 	 seeker_sampler.o             	\
 	 test_scpufreq.o		\
@@ -51,14 +55,20 @@ obj-m += seeker_scheduler.o           	\
 	 seeker_cpufreq.o  		\
 	 power.o
 
-tsc-objs += tsc/main.o
-
-therm-objs += therm/main.o
-
-power-objs += power/power.o
-
+# The seeker cpufreq governor and its test module.
+test_scpufreq-objs += seeker-cpufreq/test.o
 seeker_cpufreq-objs += seeker-cpufreq/main.o
 
+# TSC Module
+tsc-objs += tsc/main.o
+
+# Temperature module.
+therm-objs += therm/main.o
+
+# IPMI Power sampler
+power-objs += power/power.o
+
+# Seeker sampler. 
 seeker_sampler-objs += seeker-sampler/alloc.o   \
 		       seeker-sampler/log.o     \
 		       seeker-sampler/probe.o   \
@@ -67,16 +77,20 @@ seeker_sampler-objs += seeker-sampler/alloc.o   \
 		       seeker-sampler/intr.o    \
 		       seeker-sampler/main.o
 
+# Seeker scheduler
 seeker_scheduler-objs += seeker-scheduler/main.o     \
 		       seeker-scheduler/assigncpu.o  \
 		       seeker-scheduler/$(MUTATE)    \
 		       seeker-scheduler/state.o      \
 		       seeker-scheduler/hwcounters.o \
 		       seeker-scheduler/debug.o
+
+# Performance Monitoring counters.
 pmu-objs += pmu/main.o \
 	    pmu/intr.o \
 	    pmu/msr.o
 
+# Fixed Performance Monitoring counters.
 fpmu-objs += fpmu/main.o \
 	     fpmu/intr.o \
 	     fpmu/msr.o
@@ -92,7 +106,7 @@ MOD_FLAGS := -DMODULE -m64 -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall
 ifdef DEBUG
 MOD_FLAGS += -DDEBUG -g -O0
 else
-MOD_FLAGS += -O0
+MOD_FLAGS += -O2
 endif
 
 default:
