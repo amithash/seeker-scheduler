@@ -9,6 +9,8 @@ if($#ARGV != 0){
 }
 my $ipmi = `which ipmitool`;
 my $date = `which date`;
+chomp($ipmi);
+chomp($date);
 if(! -e $ipmi || !-e $date){
 	die "ipmitool is not installed\n";
 }
@@ -30,7 +32,7 @@ while(1){
 	foreach my $entry (@temp){
 		if($entry =~ /Sensor Reading\s+:\s+(\d+\.\d+)\s+.+Volts/){
 			$voltage = $1 + 0.0;
-		} else if($entry =~ /Sensor Reading\s+:\s+(\d+\.\d+)\s+.+Amps/){
+		} elsif($entry =~ /Sensor Reading\s+:\s+(\d+\.\d+)\s+.+Amps/){
 			$current = $1 + 0.0;
 		} else {
 			warn "Something happened\n";
@@ -41,6 +43,7 @@ while(1){
 	}
 	$power = $voltage * $current;
 	my $interval = `/bin/date +"%s"`;
+	chomp($interval);
 	print OUT "$interval,$power\n";
 }
 
