@@ -15,7 +15,7 @@ int main(int argc,char *argv[])
 		exit(1);
 	}
 	sprintf(touch,"/bin/echo \" \" > %s",argv[1]);
-	sprintf(cat,"/usr/bin/ipmitool sensor get /SYS/VPS | /bin/grep -i \"sensor reading\" >> %s",argv[1]);
+	sprintf(cat,"/usr/bin/ipmitool sensor get PS0/V_OUT PS0/I_OUT | /bin/grep -i \"sensor reading\" >> %s",argv[1]);
 	sprintf(interval,"/bin/date +\"%%s\" >> %s",argv[1]);
 
 	system(touch);
