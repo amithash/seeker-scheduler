@@ -22,8 +22,12 @@ my $current;
 my $voltage;
 my $power;
 
-open OUT, "+>$outfile" or die "Could not open or create $outfile\n";
+my $pid = fork();
+if($pid != 0){
+	exit;
+}
 
+open OUT, "+>$outfile" or die "Could not open or create $outfile\n";
 while(1){
 	open IN, "$ipmi sensor get $Voltage $Current | grep \"Sensor Reading\" |" or warn "Could not execute $ipmi\n";
 	my @temp = <IN>;
@@ -46,4 +50,6 @@ while(1){
 	chomp($interval);
 	print OUT "$interval,$power\n";
 }
+close(OUT);
+close(IN);
 
