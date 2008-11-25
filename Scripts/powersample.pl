@@ -18,9 +18,6 @@ if(! -e $ipmi || !-e $date){
 my $Voltage = "PS0/V_OUT";
 my $Current = "PS0/I_OUT";
 my $outfile = $ARGV[0];
-my $current;
-my $voltage;
-my $power;
 
 my $pid = fork();
 if($pid != 0){
@@ -29,21 +26,23 @@ if($pid != 0){
 
 open OUT, "+>$outfile" or die "Could not open or create $outfile\n";
 while(1){
+	my $current = 0;
+	my $voltage = 0;
+	my $power = 0;
 	open IN, "$ipmi sensor get $Voltage $Current | grep \"Sensor Reading\" |" or warn "Could not execute $ipmi\n";
 	my @temp = <IN>;
 	close(IN);
-	$voltage = $current = 0;
 	foreach my $entry (@temp){
 		if($entry =~ /Sensor Reading\s+:\s+(\d+\.\d+)\s+.+Volts/){
 			$voltage = $1 + 0.0;
 		} elsif($entry =~ /Sensor Reading\s+:\s+(\d+\.\d+)\s+.+Amps/){
 			$current = $1 + 0.0;
-		} else {
-			warn "Something happened\n";
 		}
 	}
-	if($voltage == 0 and $current == 0){
+	
+	if($voltage == 0 or $current == 0){
 		print "Something is wrong\n";
+		next;
 	}
 	$power = $voltage * $current;
 	my $interval = `/bin/date +"%s"`;
