@@ -24,6 +24,8 @@ if($pid != 0){
 	exit;
 }
 
+my $first = -1;
+
 open OUT, "+>$outfile" or die "Could not open or create $outfile\n";
 while(1){
 	my $current = 0;
@@ -33,21 +35,35 @@ while(1){
 	my @temp = <IN>;
 	close(IN);
 	foreach my $entry (@temp){
-		if($entry =~ /Sensor Reading\s+:\s+(\d+\.\d+)\s+.+Volts/){
+		if($entry =~ /Sensor Reading\s+\:\s+(\d+\.\d+)\s+.+Volts/){
 			$voltage = $1 + 0.0;
-		} elsif($entry =~ /Sensor Reading\s+:\s+(\d+\.\d+)\s+.+Amps/){
+		} elsif($entry =~ /Sensor Reading\s+\:\s+(\d+\.\d+)\s+.+Amps/){
 			$current = $1 + 0.0;
+		} elsif($entry =~ /Sensor Reading\s+\:\s+(\d+)\s+.+Amps/){
+			$current = $1 + 0.0;
+		} elsif($entry =~ /Sensor Reading\s+\:\s+(\d+)\s+.+Volts/){
+			$voltage = $1 + 0.0;
+		} else {
+			next;
 		}
 	}
 	
 	if($voltage == 0 or $current == 0){
-		print "Something is wrong\n";
+		my $joined_entry = join("",@temp);
+		$joined_entry =~ s/\n//g;
+		print "Something is wrong ($joined_entry)\n";
 		next;
 	}
 	$power = $voltage * $current;
 	my $interval = `/bin/date +"%s"`;
 	chomp($interval);
-	print OUT "$interval,$power\n";
+	if($first == -1){
+		$first = int($interval);
+		print OUT "0,$power\n";
+	} else {
+		my $int = int($interval) - $first;
+		print OUT "$int,$power\n";
+	}
 }
 close(OUT);
 close(IN);
