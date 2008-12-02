@@ -90,11 +90,11 @@ void state_change(unsigned long param)
 void configure_counters(void)
 {
 #if NUM_FIXED_COUNTERS > 0
-	fcounters_enable(0);
+	fcounters_enable(1);
 	fcounter_clear(1);
 #else
 	int cpu = smp_processor_id();
-	ctr[cpu] = counter_enable(PMU_RECY_EVTSEL,PMU_RECY_MASK,0);
+	ctr[cpu] = counter_enable(PMU_RECY_EVTSEL,PMU_RECY_MASK,1);
 	counter_clear(ctr[cpu]);
 #endif
 }
