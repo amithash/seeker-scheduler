@@ -48,7 +48,10 @@ void init_stats(int cpu)
 
 void print_stats(int cpu)
 {
-	unsigned long long avg_clk = total_clocks[cpu] / count[cpu];
+	unsigned long long avg_clk;
+	if(count[cpu] == 0)
+		return;
+	avg_clk = total_clocks[cpu] / count[cpu];
 	info("CurState=%d HZ = %lld\n",cur_state[cpu],avg_clk);
 }
 
