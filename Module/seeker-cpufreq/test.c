@@ -21,14 +21,17 @@ static struct timer_list state_change_timer;
 static struct timer_list clk_estimate_timer;
 static int total_cpus = NR_CPUS;
 
-static unsigned long long total_clocks[NR_CPUS];
-static unsigned long long last_jiffies = 0;
+static u64 total_clocks[NR_CPUS];
+static u64 last_jiffies = 0;
 static unsigned int count[NR_CPUS];
+#if NUM_FIXED_COUNTERS == 0
 static int ctr[NR_CPUS];
+#endif
 static int first = 0;
 
 void update_stats(int cpu)
 {
+	info("CPU = %d",cpu);
 	#if NUM_FIXED_COUNTERS > 0
 	fcounter_read();
 	total_clocks[cpu] += (get_fcounter_data(1,cpu) * HZ )/ (jiffies - last_jiffies);
@@ -52,7 +55,7 @@ void print_stats(int cpu)
 	if(count[cpu] == 0)
 		return;
 	avg_clk = total_clocks[cpu] / count[cpu];
-	info("CurState=%d HZ = %lld\n",cur_state[cpu],avg_clk);
+	info("CurState=%d HZ = %lld",cur_state[cpu],avg_clk);
 }
 
 
@@ -69,21 +72,19 @@ void state_change(unsigned long param)
 {
 	int i;
 	int cpu = get_cpu();
+	info("cpu for state change = %d",cpu);
 	if(first == 0){
 		first = 1;
 	} else {
 		print_stats(cpu);
 	}
-	print_stats(cpu);
 	init_stats(cpu);
 	for(i=0;i<total_cpus;i++){
 		set_freq(i,cur_state[i]);
 		cur_state[i] = (cur_state[i]+1)%max_state[i];
 	}
-	last_jiffies = jiffies;
 	mod_timer(&clk_estimate_timer,jiffies+(HZ));
-	mod_timer(&state_change_timer,jiffies+(10*HZ));
-	first = 1;
+	mod_timer(&state_change_timer,jiffies+(20*HZ));
 	put_cpu();
 }
 
@@ -113,7 +114,7 @@ static int init_test_scpufreq(void)
 
 	setup_timer(&clk_estimate_timer,clk_estimate,0);
 	setup_timer(&state_change_timer,state_change,0);
-	mod_timer(&state_change_timer,jiffies+(10*HZ));
+	mod_timer(&state_change_timer,jiffies+(20*HZ));
 	return 0;
 }
 

@@ -66,8 +66,11 @@ EXPORT_SYMBOL_GPL(get_freq);
 
 void scpufreq_update_freq(struct work_struct *w)
 {
-	int cpu = (int)*((unsigned long *)&(w->data));
+	struct cpufreq_policy *policy = container_of(w,struct cpufreq_policy,update);
+	int cpu = policy->cpu;
 	cpufreq_update_policy(cpu);
+	__cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_L);
+	info("Update complete");
 }
 
 
