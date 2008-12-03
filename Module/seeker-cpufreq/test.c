@@ -4,16 +4,11 @@
 #include <linux/timer.h>
 
 #include <seeker.h>
-#include <fpmu.h>
-#include <pmu.h>
 #include <seeker_cpufreq.h>
 
 MODULE_AUTHOR("Amithash Prasad <amithash@gmail.com>");
 MODULE_DESCRIPTION("Tests the scpufreq cpufreq governor");
 MODULE_LICENSE("GPL");
-
-#define PMU_RECY_EVTSEL 0x76
-#define PMU_RECY_MASK 0x00
 
 short int max_state[NR_CPUS];
 short int cur_state[NR_CPUS];
@@ -21,26 +16,25 @@ static struct timer_list state_change_timer;
 static struct timer_list clk_estimate_timer;
 static int total_cpus = NR_CPUS;
 
-static u64 total_clocks[NR_CPUS];
 static u64 last_jiffies = 0;
+static unsigned long long total_clocks[NR_CPUS];
 static unsigned int count[NR_CPUS];
-#if NUM_FIXED_COUNTERS == 0
-static int ctr[NR_CPUS];
-#endif
 static int first = 0;
+static unsigned long long last_tsc = 0;
 
 void update_stats(int cpu)
 {
+	u64 val,tscv;
 	info("CPU = %d",cpu);
-	#if NUM_FIXED_COUNTERS > 0
-	fcounter_read();
-	total_clocks[cpu] += (get_fcounter_data(1,cpu) * HZ )/ (jiffies - last_jiffies);
-	fcounter_clear(1);
-	#else
-	counter_read();
-	total_clocks[cpu] += (get_counter_data(ctr[cpu],cpu) * HZ) / (jiffies - last_jiffies);
-	counter_clear(ctr[cpu]);
-	#endif
+	tscv = native_read_tsc();
+	if(last_tsc == 0){
+		last_tsc = tscv;
+		return;
+	} else {
+		val = tscv - last_tsc;
+	}
+	last_tsc = tscv;
+	total_clocks[cpu] += (val * HZ )/ (jiffies - last_jiffies);
 	count[cpu]++;
 }
 void init_stats(int cpu)
@@ -83,21 +77,10 @@ void state_change(unsigned long param)
 		set_freq(i,cur_state[i]);
 		cur_state[i] = (cur_state[i]+1)%max_state[i];
 	}
+	del_timer_sync(&clk_estimate_timer);
 	mod_timer(&clk_estimate_timer,jiffies+(HZ));
 	mod_timer(&state_change_timer,jiffies+(20*HZ));
 	put_cpu();
-}
-
-void configure_counters(void)
-{
-#if NUM_FIXED_COUNTERS > 0
-	fcounters_enable(1);
-	fcounter_clear(1);
-#else
-	int cpu = smp_processor_id();
-	ctr[cpu] = counter_enable(PMU_RECY_EVTSEL,PMU_RECY_MASK,1);
-	counter_clear(ctr[cpu]);
-#endif
 }
 
 static int init_test_scpufreq(void)
@@ -110,8 +93,6 @@ static int init_test_scpufreq(void)
 		count[i] = 0;
 		total_clocks[i] = 0;
 	}
-	ON_EACH_CPU((void *)configure_counters,NULL,1,1);
-
 	setup_timer(&clk_estimate_timer,clk_estimate,0);
 	setup_timer(&state_change_timer,state_change,0);
 	mod_timer(&state_change_timer,jiffies+(20*HZ));

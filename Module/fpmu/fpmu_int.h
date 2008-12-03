@@ -76,8 +76,9 @@ typedef struct {
 }fcleared_t;
 
 typedef struct {
-	u32 low:32;
-	u32 high:32;
+	u32 low;
+	u32 high;
+	u64 all;
 	u32 addr;
 } fcounter_t;
 
@@ -89,7 +90,7 @@ extern fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS];
 
 /********** Function Prototypes **********************************************/
 
-inline u32 control_read(void);
+inline u64 control_read(void);
 inline void control_clear(void);
 inline void control_write(void);
 

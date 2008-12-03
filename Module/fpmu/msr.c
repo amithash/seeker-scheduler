@@ -39,12 +39,10 @@ extern fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS];
 extern fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS];
 
 // Read the fixed counter control register.
-inline u32 control_read(void)
+inline u64 control_read(void)
 {
 	#if NUM_FIXED_COUNTERS > 0
-	u32 low, high;
-	rdmsr(MSR_PERF_FIXED_CTR_CTRL, low, high);
-	return low;
+	return native_read_msr(MSR_PERF_FIXED_CTR_CTRL);
 	#else
 	return 0;
 	#endif
@@ -56,10 +54,9 @@ EXPORT_SYMBOL_GPL(control_read);
 inline void control_clear(void)
 {
 	#if NUM_FIXED_COUNTERS > 0
-	u32 low, high;
-	rdmsr(MSR_PERF_FIXED_CTR_CTRL, low, high);
-	low &= FIXSEL_RESERVED_BITS;
-	wrmsr(MSR_PERF_FIXED_CTR_CTRL, low, high);
+	u64 val = native_read_msr(MSR_PERF_FIXED_CTR_CTRL);
+	val &= FIXSEL_RESERVED_BITS;
+	wrmsrl(MSR_PERF_FIXED_CTR_CTRL,val);
 	#endif
 }
 EXPORT_SYMBOL_GPL(control_clear);
@@ -68,15 +65,15 @@ EXPORT_SYMBOL_GPL(control_clear);
 inline void control_write(void)
 {
 	#if NUM_FIXED_COUNTERS > 0
-	u32 low, high;
+	u64 val;
 	int cpu_id = smp_processor_id();
 	if(likely(cpu_id < NR_CPUS)){
 		fixctrl_t *cur_control = &(fcontrol[cpu_id]);
 	
-		rdmsr(MSR_PERF_FIXED_CTR_CTRL, low, high);
-		low &= FIXSEL_RESERVED_BITS;
+		val = native_read_msr(MSR_PERF_FIXED_CTR_CTRL);
+		val &= FIXSEL_RESERVED_BITS;
 	
-		low = 	  (cur_control->os0 << 0)
+		val |=    (cur_control->os0 << 0)
 			| (cur_control->usr0 << 1)
 			| (cur_control->pmi0 << 3)
 			| (cur_control->os1 << 4)
@@ -86,7 +83,7 @@ inline void control_write(void)
 			| (cur_control->usr2 << 9)
 			| (cur_control->pmi2 << 11);
 	
-		wrmsr(MSR_PERF_FIXED_CTR_CTRL, low, high);
+		wrmsrl(MSR_PERF_FIXED_CTR_CTRL, val);
 	}
 	#endif
 }
@@ -99,8 +96,7 @@ inline void fcounter_clear(u32 counter)
 	int cpu_id;
 	cpu_id = smp_processor_id();
 	if(likely(cpu_id < NR_CPUS)){
-		wrmsr(fcounters[cpu_id][counter].addr, fcleared[cpu_id][counter].low, fcleared[cpu_id][counter].high);
-		wrmsr(fcounters[cpu_id][counter].addr, fcleared[cpu_id][counter].low, fcleared[cpu_id][counter].high);
+		wrmsrl(fcounters[cpu_id][counter].addr, fcleared[cpu_id][counter].all);
 	}
 	#endif
 }
@@ -110,15 +106,14 @@ EXPORT_SYMBOL_GPL(fcounter_clear);
 void fcounter_read(void)
 {
 	#if NUM_FIXED_COUNTERS > 0
-	u32 low, high;
 	int cpu_id, i;
 	cpu_id = smp_processor_id();
 	if(likely(cpu_id < NR_CPUS)){
 		/* this is the "full" read of the full 64bits */
 		for(i=0;i<NUM_FIXED_COUNTERS;i++){
-			rdmsr(fcounters[cpu_id][i].addr, low, high);
-			fcounters[cpu_id][i].high = high;
-			fcounters[cpu_id][i].low = low;
+			fcounters[cpu_id][i].all = native_read_msr(fcounters[cpu_id][i].addr);
+			fcounters[cpu_id][i].high = (u32)(fcounters[cpu_id][i].all << 32);
+			fcounters[cpu_id][i].low = (u32)fcounters[cpu_id][i].all;
 		}
 	}
 	#endif
@@ -129,11 +124,8 @@ EXPORT_SYMBOL_GPL(fcounter_read);
 u64 get_fcounter_data(u32 counter, u32 cpu_id)
 {
 	#if NUM_FIXED_COUNTERS > 0
-	u64 counter_val;
 	if(likely(counter < NUM_FIXED_COUNTERS && cpu_id < NR_CPUS)){
-		counter_val = (u64)fcounters[cpu_id][counter].low;
-		counter_val = counter_val | ((u64)fcounters[cpu_id][counter].high << 32);
-		return counter_val - fcleared[cpu_id][counter].all;
+		return fcounters[cpu_id][counter].all - fcleared[cpu_id][counter].all;
 	}
 	else{
 		return -1;
