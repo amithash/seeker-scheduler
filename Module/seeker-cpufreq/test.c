@@ -10,6 +10,9 @@ MODULE_AUTHOR("Amithash Prasad <amithash@gmail.com>");
 MODULE_DESCRIPTION("Tests the scpufreq cpufreq governor");
 MODULE_LICENSE("GPL");
 
+#define IA32_MPERF 0x000000E7
+#define IA32_APERF 0x000000E8
+
 short int max_state[NR_CPUS];
 short int cur_state[NR_CPUS];
 static struct timer_list state_change_timer;
@@ -21,12 +24,18 @@ static unsigned long long total_clocks[NR_CPUS];
 static unsigned int count[NR_CPUS];
 static int first = 0;
 static unsigned long long last_tsc = 0;
+static 
 
 void update_stats(int cpu)
 {
 	u64 val,tscv;
-	info("CPU = %d",cpu);
-	tscv = native_read_tsc();
+	static u64 aperf = 0;
+	static u64 mperf = 0;
+	aperf = native_read_msr(IA32_APERF) - aperf;
+	mperf = native_read_msr(IA32_MPERF) - mperf;
+	info("APERF=%lld MPERF=%lld",aperf,mperf);
+	aperf = native_read_msr(IA32_APERF);
+	mperf = native_read_msr(IA32_MPERF);
 	if(last_tsc == 0){
 		last_tsc = tscv;
 		return;
@@ -73,9 +82,9 @@ void state_change(unsigned long param)
 		print_stats(cpu);
 	}
 	init_stats(cpu);
-	for(i=0;i<total_cpus;i++){
-		set_freq(i,cur_state[i]);
+	for(i=0;i<2;i++){
 		cur_state[i] = (cur_state[i]+1)%max_state[i];
+		set_freq(i,cur_state[i]);
 	}
 	del_timer_sync(&clk_estimate_timer);
 	mod_timer(&clk_estimate_timer,jiffies+(HZ));

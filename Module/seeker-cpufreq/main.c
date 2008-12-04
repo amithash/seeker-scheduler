@@ -44,6 +44,7 @@ struct freq_info_t{
 struct cpufreq_governor seeker_governor = {
 	.name = "seeker",
 	.owner = THIS_MODULE,
+	.max_transition_latency = 1000000000,
 };
 
 unsigned int freqs;
@@ -69,8 +70,8 @@ void scpufreq_update_freq(struct work_struct *w)
 	struct cpufreq_policy *policy = container_of(w,struct cpufreq_policy,update);
 	int cpu = policy->cpu;
 	cpufreq_update_policy(cpu);
-	__cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_L);
-	info("Update complete");
+//	__cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
+//	info("Update complete");
 }
 
 
@@ -93,8 +94,9 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 		policy->cpu = cpu;
 		cpus_clear(policy->cpus);
 		cpu_set(cpu,policy->cpus);
-		*((unsigned long *)&(policy->update.data)) = cpu;
+//		*((unsigned long *)&(policy->update.data)) = cpu;
 		policy->update.func = &scpufreq_update_freq;
+		policy->governor = &seeker_governor;
 		cpufreq_cpu_put(policy);
 		/* Start a worker thread to do the actual update */
 		schedule_work(&(policy->update));
