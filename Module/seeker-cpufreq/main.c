@@ -41,8 +41,6 @@ struct freq_info_t{
 	unsigned int table[MAX_STATES];
 };
 
-struct cpufreq_governor *previous_governor[NR_CPUS];
-
 struct cpufreq_governor seeker_governor = {
 	.name = "seeker",
 	.owner = THIS_MODULE,
@@ -72,7 +70,7 @@ void scpufreq_update_freq(struct work_struct *w)
 	struct cpufreq_policy *policy = container_of(w,struct cpufreq_policy,update);
 	int cpu = policy->cpu;
 	cpufreq_update_policy(cpu);
-//	__cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
+	__cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
 //	info("Update complete");
 }
 
@@ -135,10 +133,8 @@ static int __init seeker_cpufreq_init(void)
 	cpufreq_register_governor(&seeker_governor);
 	for(i=0;i<cpus;i++){
 		policy = cpufreq_cpu_get(i);
-		previous_governor[i] = policy->governor;
-		policy->governor = &seeker_governor;
 		cpus_clear(policy->cpus);
-		cpu_set(cpu,policy->cpus);
+		cpu_set(i,policy->cpus);
 		policy->update.func = &scpufreq_update_freq;
 		cpufreq_cpu_put(policy);
 
@@ -186,15 +182,14 @@ static void __exit seeker_cpufreq_exit(void)
 	int i;
 	struct cpufreq_policy *policy;
 	int cpus = num_online_cpus();
+	flush_scheduled_work();
 	for(i=0;i<cpus;i++){
 		policy = cpufreq_cpu_get(i);
-		policy.governor = previous_governor[i];
-		policty.update.func = NULL;
+		policy->update.func = NULL;
 		cpufreq_cpu_put(policy);
 	}
 	
 	cpufreq_unregister_governor(&seeker_governor);
-	flush_scheduled_work();
 }
 
 module_param(freqs,int, 0444);

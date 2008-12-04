@@ -82,7 +82,7 @@ void state_change(unsigned long param)
 		print_stats(cpu);
 	}
 	init_stats(cpu);
-	for(i=0;i<2;i++){
+	for(i=0;i<total_cpus;i++){
 		cur_state[i] = (cur_state[i]+1)%max_state[i];
 		set_freq(i,cur_state[i]);
 	}
