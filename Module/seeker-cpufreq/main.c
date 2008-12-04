@@ -41,6 +41,8 @@ struct freq_info_t{
 	unsigned int table[MAX_STATES];
 };
 
+struct cpufreq_governor *previous_governor[NR_CPUS];
+
 struct cpufreq_governor seeker_governor = {
 	.name = "seeker",
 	.owner = THIS_MODULE,
@@ -91,13 +93,6 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 		policy->min = freq_info[cpu].table[freq_ind];
 		policy->max = freq_info[cpu].table[freq_ind];
 		policy->cur = freq_info[cpu].table[freq_ind];
-		policy->cpu = cpu;
-		cpus_clear(policy->cpus);
-		cpu_set(cpu,policy->cpus);
-//		*((unsigned long *)&(policy->update.data)) = cpu;
-		policy->update.func = &scpufreq_update_freq;
-		policy->governor = &seeker_governor;
-		cpufreq_cpu_put(policy);
 		/* Start a worker thread to do the actual update */
 		schedule_work(&(policy->update));
 		freq_info[cpu].cur_freq = freq_ind;
@@ -136,8 +131,17 @@ static int __init seeker_cpufreq_init(void)
 	unsigned int tmp;
 	struct cpufreq_frequency_table *table;
 	int cpus = num_online_cpus();
+	struct cpufreq_policy *policy;
 	cpufreq_register_governor(&seeker_governor);
 	for(i=0;i<cpus;i++){
+		policy = cpufreq_cpu_get(i);
+		previous_governor[i] = policy->governor;
+		policy->governor = &seeker_governor;
+		cpus_clear(policy->cpus);
+		cpu_set(cpu,policy->cpus);
+		policy->update.func = &scpufreq_update_freq;
+		cpufreq_cpu_put(policy);
+
 		freq_info[i].cpu = i;
 		freq_info[i].cur_freq = -1; /* Not known */
 		freq_info[i].num_states = 0;
@@ -179,6 +183,16 @@ static void __exit seeker_cpufreq_exit(void)
 {
 	/* Revert changes to cpufreq to make it useable by
 	 * user process again */
+	int i;
+	struct cpufreq_policy *policy;
+	int cpus = num_online_cpus();
+	for(i=0;i<cpus;i++){
+		policy = cpufreq_cpu_get(i);
+		policy.governor = previous_governor[i];
+		policty.update.func = NULL;
+		cpufreq_cpu_put(policy);
+	}
+	
 	cpufreq_unregister_governor(&seeker_governor);
 	flush_scheduled_work();
 }
