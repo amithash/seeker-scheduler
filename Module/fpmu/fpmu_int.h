@@ -58,16 +58,20 @@
 
 /********** Structure Definitions ********************************************/
 typedef struct {
-	u32 pmi0:1;
 	u32 os0:1;
 	u32 usr0:1;
-	u32 pmi1:1;
+	u32 rsvd1:1;
+	u32 pmi0:1;
 	u32 os1:1;
 	u32 usr1:1;
-	u32 pmi2:1;
+	u32 rsvd2:1;
+	u32 pmi1:1;
 	u32 os2:1;
 	u32 usr2:1;
-} fixctrl_t;
+	u32 rsvd3:1;
+	u32 pmi2:1;
+	u32 rsvd4:20;
+} fixctrl_t __attribute__((__packed__));
 
 typedef struct {
 	u32 low;
