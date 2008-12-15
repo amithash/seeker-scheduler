@@ -68,21 +68,8 @@ inline void control_write(void)
 	u64 val;
 	int cpu_id = smp_processor_id();
 	if(likely(cpu_id < NR_CPUS)){
-		fixctrl_t *cur_control = &(fcontrol[cpu_id]);
-	
 		val = native_read_msr(MSR_PERF_FIXED_CTR_CTRL);
-		val &= FIXSEL_RESERVED_BITS;
-	
-		val |=    (cur_control->os0 << 0)
-			| (cur_control->usr0 << 1)
-			| (cur_control->pmi0 << 3)
-			| (cur_control->os1 << 4)
-			| (cur_control->usr1 << 5)
-			| (cur_control->pmi1 << 7)
-			| (cur_control->os2 << 8)
-			| (cur_control->usr2 << 9)
-			| (cur_control->pmi2 << 11);
-	
+		memcpy(&val,&(fcontrol[cpu_id]),sizeof(u64));
 		wrmsrl(MSR_PERF_FIXED_CTR_CTRL, val);
 	}
 	#endif

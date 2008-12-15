@@ -77,6 +77,7 @@ void fpmu_init_msrs(void)
 {
 	#if NUM_FIXED_COUNTERS > 0
 	int i;
+	u64 zero = 0;
 	int cpu_id = get_cpu();
 	if(likely(cpu_id < NR_CPUS)){
 		for(i=0;i<NUM_FIXED_COUNTERS;i++){
@@ -86,9 +87,7 @@ void fpmu_init_msrs(void)
 			}
 			fcounter_clear(i);
 		}
-		if(cpu_id != 0){
-			fcontrol[cpu_id] = fcontrol[0];
-		}
+		memcpy(&fcontrol[cpu_id],&zero,sizeof(u64));
 		control_clear();
 		fcounters_disable();
 	}
