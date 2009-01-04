@@ -95,7 +95,7 @@ void inst_smp_apic_pmu_interrupt(struct pt_regs *regs)
 	if(likely(int_callbacks.is_interrupt(pmu_intr) > 0)){
 		int_callbacks.clear_ovf_status(pmu_intr);
 		if(likely(dev_open == 1)){
-			do_sample();
+			do_sample(NULL);
 		}
 	}
 	else{

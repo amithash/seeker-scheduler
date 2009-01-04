@@ -16,6 +16,7 @@ diff -Naur linux-2.6.24.7/include/linux/sched.h linux-2.6.24.7_schedmod/include/
  	struct prop_local_single dirties;
 +
 +	/* Seeker Patch Additions */
++	short seeker_scheduled;
 +	short cpustate;
 +	u64 interval;
 +	u64 inst;

@@ -38,7 +38,7 @@ extern struct struct_int_callbacks int_callbacks;
 
 void do_timer_sample(unsigned long param);
 #ifdef LOCAL_PMU_VECTOR
-void configure_enable_interrupts(void);
+void configure_enable_interrupts(void *info);
 void configure_disable_interrupts(void);
 void enable_apic_pmu(void);
 #endif

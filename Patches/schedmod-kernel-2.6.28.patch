@@ -1,12 +1,31 @@
 diff -Naur linux-2.6.28/include/linux/sched.h linux-2.6.28_mod/include/linux/sched.h
 --- linux-2.6.28/include/linux/sched.h	2008-12-24 16:26:37.000000000 -0700
-+++ linux-2.6.28_mod/include/linux/sched.h	2009-01-03 21:21:36.000000000 -0700
-@@ -1356,6 +1356,13 @@
++++ linux-2.6.28_mod/include/linux/sched.h	2009-01-04 07:24:56.000000000 -0700
+@@ -1,6 +1,8 @@
+ #ifndef _LINUX_SCHED_H
+ #define _LINUX_SCHED_H
+ 
++#define SEEKER_PLUGIN_PATCH 1
++
+ /*
+  * cloning flags:
+  */
+@@ -135,6 +137,8 @@
+ extern unsigned long nr_uninterruptible(void);
+ extern unsigned long nr_active(void);
+ extern unsigned long nr_iowait(void);
++extern unsigned long weighted_cpuload(const int cpu);
++
+ 
+ struct seq_file;
+ struct cfs_rq;
+@@ -1356,6 +1360,14 @@
  	unsigned long default_timer_slack_ns;
  
  	struct list_head	*scm_work_list;
 +
 +	/* Seeker Patch Additions */
++	short seeker_scheduled;
 +	short cpustate;
 +	u64 interval;
 +	u64 inst;
@@ -17,7 +36,7 @@ diff -Naur linux-2.6.28/include/linux/sched.h linux-2.6.28_mod/include/linux/sch
  /*
 diff -Naur linux-2.6.28/kernel/sched.c linux-2.6.28_mod/kernel/sched.c
 --- linux-2.6.28/kernel/sched.c	2008-12-24 16:26:37.000000000 -0700
-+++ linux-2.6.28_mod/kernel/sched.c	2009-01-03 21:22:16.000000000 -0700
++++ linux-2.6.28_mod/kernel/sched.c	2009-01-04 07:23:01.000000000 -0700
 @@ -1804,6 +1804,7 @@
  {
  	return cpu_rq(cpu)->load.weight;

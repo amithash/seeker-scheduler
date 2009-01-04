@@ -72,7 +72,7 @@ void do_timer_sample(unsigned long param)
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-void configure_enable_interrupts(void)
+void configure_enable_interrupts(void *info)
 {
 		/* Configure the initial counter value as (-1) * sample_freq */
 		int_callbacks.configure_interrupts(pmu_intr,((u32)0xFFFFFFFF-(u32)sample_freq + 2),0xFFFFFFFF);

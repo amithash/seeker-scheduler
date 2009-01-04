@@ -43,7 +43,7 @@
 #include "hwcounters.h"
 
 #define MAX_INSTRUCTIONS_BEFORE_SCHEDULE 10000000
-#define SEEKER_MAGIC_NUMBER 0x5ee6e5ef
+#define SEEKER_MAGIC_NUMBER 0x5ee
 
 
 void inst___switch_to(struct task_struct *from, struct task_struct *to);

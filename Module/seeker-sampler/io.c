@@ -32,6 +32,7 @@
 #include "alloc.h"
 #include "log.h"
 #include "io.h"
+#include "intr.h"
 
 extern int log_events[MAX_COUNTERS_PER_CPU];
 extern unsigned int log_ev_masks[MAX_COUNTERS_PER_CPU];
@@ -104,7 +105,7 @@ int seeker_sample_open(struct inode *in, struct file * f)
 	/* Enable and configure interrupts on each cpu */
 	#ifdef LOCAL_PMU_VECTOR
 	if(pmu_intr >= 0){
-		if(ON_EACH_CPU((void *)configure_enable_interrupts,NULL,1,1) < 0){
+		if(ON_EACH_CPU(configure_enable_interrupts,NULL,1,1) < 0){
 			error("Could not configure interrupts on all cpu's");
 		}
 	}

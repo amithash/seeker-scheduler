@@ -45,7 +45,7 @@ void inst___switch_to(struct task_struct *from,
  */
 
 #ifdef LOCAL_PMU_VECTOR
-void configure_enable_interrupts(void);
+void configure_enable_interrupts(void *info);
 void configure_disable_interrupts(void);
 void enable_apic_pmu(void);
 #endif

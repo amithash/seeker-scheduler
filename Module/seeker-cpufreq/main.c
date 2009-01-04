@@ -150,7 +150,7 @@ static int __init seeker_cpufreq_init(void)
 	cpufreq_register_governor(&seeker_governor);
 	for(i=0;i<cpus;i++){
 		cpu_policy[i] = cpufreq_cpu_get(i);
-		info("Related cpus for cpu%d are (bitmask) %d",i,CPUMASK_TO_UINT(cpu_policy[i]->cpus));
+		info("Related cpus for cpu%d are (bitmask) %d",i,CPUMASK_TO_UINT(cpu_policy[i]->related_cpus));
 		cpus_clear(cpu_policy[i]->cpus);
 		cpu_set(i,cpu_policy[i]->cpus);
 		cpu_policy[i]->update.func = &scpufreq_update_freq;
