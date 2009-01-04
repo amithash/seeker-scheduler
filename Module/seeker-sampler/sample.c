@@ -180,7 +180,7 @@ void do_sample(void *info)
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-int config_counters(void *info)
+void config_counters(void *info)
 {
 	int i;
 	int cpu = get_cpu();
@@ -191,7 +191,7 @@ int config_counters(void *info)
 		counter_enable(log_events[i], log_ev_masks[i], os_flag);
 		if(unlikely(cpu_counters[cpu][i] < 0 || cpu_counters[cpu][i] >= NUM_COUNTERS)) {
 			error("Could not allocate counter for event %d",log_events[i]);
-			return -1;
+			return;
 		}
 		printk("%d: Allocated counter %d for %d:%x\n", cpu, cpu_counters[cpu][i],
 								log_events[i], log_ev_masks[i]);
@@ -207,8 +207,6 @@ int config_counters(void *info)
 
 	clear_counters();
 	put_cpu();
-
-	return 0;
 }
 
 

@@ -25,7 +25,7 @@
 #ifndef __SAMPLE_H_
 #define __SAMPLE_H_
 void clear_counters(void);
-int config_counters(void *info);
+void config_counters(void *info);
 void do_pid_log(struct task_struct *p);
 void do_sample(void *info);
 int msrs_init(void);
