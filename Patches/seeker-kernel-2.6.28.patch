@@ -1,0 +1,98 @@
+diff -Naur linux-2.6.28/arch/x86/include/asm/hw_irq.h linux-2.6.28_mod/arch/x86/include/asm/hw_irq.h
+--- linux-2.6.28/arch/x86/include/asm/hw_irq.h	2008-12-24 16:26:37.000000000 -0700
++++ linux-2.6.28_mod/arch/x86/include/asm/hw_irq.h	2009-01-03 21:01:05.000000000 -0700
+@@ -29,6 +29,7 @@
+ 
+ /* Interrupt handlers registered during init_IRQ */
+ extern void apic_timer_interrupt(void);
++extern void apic_pmu_interrupt(void);
+ extern void error_interrupt(void);
+ extern void spurious_interrupt(void);
+ extern void thermal_interrupt(void);
+@@ -96,6 +97,7 @@
+ 
+ /* SMP */
+ extern void smp_apic_timer_interrupt(struct pt_regs *);
++extern void smp_apic_pmu_interrupt(struct pt_regs *);
+ extern void smp_spurious_interrupt(struct pt_regs *);
+ extern void smp_error_interrupt(struct pt_regs *);
+ #ifdef CONFIG_X86_SMP
+diff -Naur linux-2.6.28/arch/x86/include/asm/irq_vectors.h linux-2.6.28_mod/arch/x86/include/asm/irq_vectors.h
+--- linux-2.6.28/arch/x86/include/asm/irq_vectors.h	2008-12-24 16:26:37.000000000 -0700
++++ linux-2.6.28_mod/arch/x86/include/asm/irq_vectors.h	2009-01-03 21:03:23.000000000 -0700
+@@ -85,6 +85,7 @@
+  * sources per level' errata.
+  */
+ #define LOCAL_TIMER_VECTOR	0xef
++#define LOCAL_PMU_VECTOR       0xee
+ 
+ /*
+  * First APIC vector available to drivers: (vectors 0x30-0xee) we
+diff -Naur linux-2.6.28/arch/x86/include/asm/mach-default/entry_arch.h linux-2.6.28_mod/arch/x86/include/asm/mach-default/entry_arch.h
+--- linux-2.6.28/arch/x86/include/asm/mach-default/entry_arch.h	2008-12-24 16:26:37.000000000 -0700
++++ linux-2.6.28_mod/arch/x86/include/asm/mach-default/entry_arch.h	2009-01-03 21:05:28.000000000 -0700
+@@ -26,6 +26,7 @@
+  */
+ #ifdef CONFIG_X86_LOCAL_APIC
+ BUILD_INTERRUPT(apic_timer_interrupt,LOCAL_TIMER_VECTOR)
++BUILD_INTERRUPT(apic_pmu_interrupt,LOCAL_PMU_VECTOR)
+ BUILD_INTERRUPT(error_interrupt,ERROR_APIC_VECTOR)
+ BUILD_INTERRUPT(spurious_interrupt,SPURIOUS_APIC_VECTOR)
+ 
+diff -Naur linux-2.6.28/arch/x86/kernel/apic.c linux-2.6.28_mod/arch/x86/kernel/apic.c
+--- linux-2.6.28/arch/x86/kernel/apic.c	2008-12-24 16:26:37.000000000 -0700
++++ linux-2.6.28_mod/arch/x86/kernel/apic.c	2009-01-03 20:51:55.000000000 -0700
+@@ -824,6 +824,28 @@
+ 	set_irq_regs(old_regs);
+ }
+ 
++void smp_apic_pmu_interrupt(struct pt_regs *regs)
++{
++	struct pt_regs *old_regs = set_irq_regs(regs);
++	/*
++	 * NOTE! We'd better ACK the irq immediately,
++	 * because timer handling can be slow.
++	 */
++	ack_APIC_irq();
++	/*
++	 * update_process_times() expects us to have done irq_enter()
++	 * Besides, if we don't timer interrupts ignore the global
++	 * interrupt lock, which is the WrongThing (tm) to do.
++	 */
++#ifdef CONFIG_X86_64
++	exit_idle();
++#endif
++	irq_enter();
++	apic_write(APIC_LVTPC, LOCAL_PMU_VECTOR);
++	irq_exit();
++	set_irq_regs(old_regs);
++}
++
+ int setup_profiling_timer(unsigned int multiplier)
+ {
+ 	return -EINVAL;
+diff -Naur linux-2.6.28/arch/x86/kernel/entry_64.S linux-2.6.28_mod/arch/x86/kernel/entry_64.S
+--- linux-2.6.28/arch/x86/kernel/entry_64.S	2008-12-24 16:26:37.000000000 -0700
++++ linux-2.6.28_mod/arch/x86/kernel/entry_64.S	2009-01-03 20:55:01.000000000 -0700
+@@ -858,6 +858,10 @@
+ 	apicinterrupt LOCAL_TIMER_VECTOR,smp_apic_timer_interrupt
+ END(apic_timer_interrupt)
+ 
++ENTRY(apic_pmu_interrupt)
++	apicinterrupt LOCAL_PMU_VECTOR,smp_apic_pmu_interrupt
++END(apic_pmu_interrupt)
++
+ ENTRY(uv_bau_message_intr1)
+ 	apicinterrupt 220,uv_bau_message_interrupt
+ END(uv_bau_message_intr1)
+diff -Naur linux-2.6.28/kernel/kallsyms.c linux-2.6.28_mod/kernel/kallsyms.c
+--- linux-2.6.28/kernel/kallsyms.c	2008-12-24 16:26:37.000000000 -0700
++++ linux-2.6.28_mod/kernel/kallsyms.c	2009-01-03 21:11:08.000000000 -0700
+@@ -160,6 +160,7 @@
+ 	}
+ 	return module_kallsyms_lookup_name(name);
+ }
++EXPORT_SYMBOL_GPL(kallsyms_lookup_name);
+ 
+ static unsigned long get_symbol_pos(unsigned long addr,
+ 				    unsigned long *symbolsize,
