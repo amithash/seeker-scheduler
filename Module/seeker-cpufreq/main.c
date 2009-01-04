@@ -41,19 +41,42 @@ struct freq_info_t{
 	unsigned int table[MAX_STATES];
 };
 
+static int freqs = 0;
+
+static int cpufreq_seeker_governor(struct cpufreq_policy *policy, unsigned int event)
+{
+	unsigned int cpu = policy->cpu;
+	switch(event){
+		case CPUFREQ_GOV_START:
+			info("Starting governor on cpu %d",cpu);
+			break;
+		case CPUFREQ_GOV_STOP:
+			info("Stopping governor on cpu %d",cpu);
+			break;
+		case CPUFREQ_GOV_LIMITS:
+			info("Setting limits %d to %d for cpu %d",policy->min,policy->max,cpu);
+			break;	
+		default:
+			info("Unknown");
+			break;
+	}
+	return 0;
+}
+
 struct cpufreq_governor seeker_governor = {
 	.name = "seeker",
 	.owner = THIS_MODULE,
 	.max_transition_latency = 1000000000,
+	.governor = cpufreq_seeker_governor,
 };
-
-unsigned int freqs;
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
 MODULE_DESCRIPTION("Provides abstracted access to the cpufreq driver");
 
 struct freq_info_t freq_info[NR_CPUS];
+
+struct cpufreq_policy *cpu_policy[NR_CPUS] = {NULL};
 
 unsigned int get_freq(unsigned int cpu)
 {
@@ -68,10 +91,7 @@ EXPORT_SYMBOL_GPL(get_freq);
 void scpufreq_update_freq(struct work_struct *w)
 {
 	struct cpufreq_policy *policy = container_of(w,struct cpufreq_policy,update);
-	int cpu = policy->cpu;
-	cpufreq_update_policy(cpu);
-	__cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
-//	info("Update complete");
+	cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
 }
 
 
@@ -82,21 +102,19 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 		return -1;
 	if(freq_ind == freq_info[cpu].cur_freq)
 		return 0;
-	if(freq_ind < freq_info[cpu].num_states){
-		policy = cpufreq_cpu_get(cpu);
-		if(!policy){
-			error("cpufreq_get_policy did not work!");
-			return -1;
-		}
-		policy->min = freq_info[cpu].table[freq_ind];
-		policy->max = freq_info[cpu].table[freq_ind];
-		policy->cur = freq_info[cpu].table[freq_ind];
-		/* Start a worker thread to do the actual update */
-		schedule_work(&(policy->update));
-		freq_info[cpu].cur_freq = freq_ind;
-		return 0;
+	if(freq_ind >= freq_info[cpu].num_states)
+		return -1;
+
+	policy = cpu_policy[cpu];
+	if(!policy){
+		error("Error, governor not initialized for cpu %d",cpu);
+		return -1;
 	}
-	return -1;
+	policy->cur = freq_info[cpu].table[freq_ind];
+	/* Start a worker thread to do the actual update */
+	schedule_work(&(policy->update));
+	freq_info[cpu].cur_freq = freq_ind;
+	return 0;
 }
 EXPORT_SYMBOL_GPL(set_freq);
 
@@ -129,15 +147,13 @@ static int __init seeker_cpufreq_init(void)
 	unsigned int tmp;
 	struct cpufreq_frequency_table *table;
 	int cpus = num_online_cpus();
-	struct cpufreq_policy *policy;
 	cpufreq_register_governor(&seeker_governor);
 	for(i=0;i<cpus;i++){
-		policy = cpufreq_cpu_get(i);
-		cpus_clear(policy->cpus);
-		cpu_set(i,policy->cpus);
-		policy->update.func = &scpufreq_update_freq;
-		cpufreq_cpu_put(policy);
-
+		cpu_policy[i] = cpufreq_cpu_get(i);
+		cpus_clear(cpu_policy[i]->cpus);
+		cpu_set(i,cpu_policy[i]->cpus);
+		cpu_policy[i]->update.func = &scpufreq_update_freq;
+		cpufreq_cpu_put(cpu_policy[i]);
 		freq_info[i].cpu = i;
 		freq_info[i].cur_freq = -1; /* Not known */
 		freq_info[i].num_states = 0;
@@ -188,7 +204,6 @@ static void __exit seeker_cpufreq_exit(void)
 		policy->update.func = NULL;
 		cpufreq_cpu_put(policy);
 	}
-	
 	cpufreq_unregister_governor(&seeker_governor);
 }
 
@@ -197,3 +212,4 @@ MODULE_PARM_DESC(freqs, "Optional, sets the cpus with the current freq_index: 0,
 
 module_init(seeker_cpufreq_init);
 module_exit(seeker_cpufreq_exit);
+

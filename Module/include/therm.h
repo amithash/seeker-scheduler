@@ -26,7 +26,7 @@
 #ifndef _THERM_H_
 #define _THERM_H_
 
-void therm_init_msrs(void);
+void therm_init_msrs(void *info);
 int read_temp(void);
 int get_temp(int);
 

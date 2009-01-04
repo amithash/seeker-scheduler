@@ -12,7 +12,7 @@ int sys_counters[NR_CPUS][3] = {{0,0,0}};
 u64 pmu_val[NR_CPUS][3];
 int ERROR=0;
 
-void enable_pmu_counters(void)
+void enable_pmu_counters(void *info)
 {
 	int cpu = get_cpu();
 #if NUM_FIXED_COUNTERS > 0
@@ -40,7 +40,7 @@ void enable_pmu_counters(void)
 
 int configure_counters(void)
 {
-	if(ON_EACH_CPU((void *)enable_pmu_counters,NULL,1,1) < 0){
+	if(ON_EACH_CPU(enable_pmu_counters,NULL,1,1) < 0){
 		error("Counters could not be configured");
 		return -1;
 	}

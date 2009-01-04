@@ -34,6 +34,7 @@
 
 #include "pmu_int.h"
 
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
 MODULE_DESCRIPTION("Module provides an interface to access the PMU");
@@ -91,7 +92,7 @@ cleared_t cleared[NR_CPUS][NUM_COUNTERS] = {
 };
 
 //must be called from ON_EACH_CPU
-void pmu_init_msrs(void)
+void pmu_init_msrs(void *info)
 {
 	#if NUM_COUNTERS > 0
 	int i;
@@ -115,7 +116,7 @@ EXPORT_SYMBOL_GPL(pmu_init_msrs);
 
 static int __init pmu_init(void)
 {
-	if(ON_EACH_CPU((void *)pmu_init_msrs,NULL,1,1) < 0){
+	if(ON_EACH_CPU(&pmu_init_msrs,NULL,1,1) < 0){
 		error("Could not enable all counters. Panicing and exiting");
 		return -ENODEV;
 	}

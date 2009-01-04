@@ -25,7 +25,7 @@
 #ifndef _TSC_H_
 #define _TSC_H_
 
-void tsc_init_msrs(void);
+void tsc_init_msrs(void *info);
 void read_time_stamp(void);
 u64 get_time_stamp(u32 cpu_id);
 u64 get_last_time_stamp(u32 cpu_id);

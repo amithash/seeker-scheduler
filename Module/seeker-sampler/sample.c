@@ -93,7 +93,7 @@ void clear_counters(void)
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-void do_sample(void) 
+void do_sample(void *info) 
 {
 	int i;
 	struct log_block *pentry;
@@ -180,7 +180,7 @@ void do_sample(void)
  * Input Parameters: None
  * Output Parameters: None
  *---------------------------------------------------------------------------*/
-int config_counters(void)
+int config_counters(void *info)
 {
 	int i;
 	int cpu = get_cpu();
@@ -223,7 +223,7 @@ int msrs_init(void)
 {
 	// setup the counters modifications -- needed only for counters with information from seeker 
 	// that is currently only for the variable pmu counters.
-	if(unlikely(ON_EACH_CPU((void*)config_counters,NULL, 1,1) < 0)){
+	if(unlikely(ON_EACH_CPU(config_counters,NULL, 1,1) < 0)){
 		error("could not configure counters!");
 		return -1;
   	}

@@ -28,7 +28,7 @@
 #include <linux/kprobes.h>
 #include <linux/version.h>
 #include <linux/sched.h>
-#include <asm/hw_irq.h>
+//#include <asm/hw_irq.h>
 
 #include <seeker.h>
 
@@ -126,7 +126,7 @@ void inst_smp_apic_pmu_interrupt(struct pt_regs *regs)
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 {
 	if(dev_open){
-		do_sample();
+		do_sample(NULL);
 	}
 	return 0;
 }

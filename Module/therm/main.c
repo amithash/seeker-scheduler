@@ -70,7 +70,7 @@ int get_temp(int cpu)
 }
 EXPORT_SYMBOL_GPL(get_temp);
 
-void therm_init_msrs(void)
+void therm_init_msrs(void *info)
 {
 	#ifdef THERM_SUPPORTED
 #ifdef ARCH_C2D
@@ -110,7 +110,7 @@ EXPORT_SYMBOL_GPL(therm_init_msrs);
 //must be called from ON_EACH_CPU
 static int __init therm_init(void)
 {
-	if(ON_EACH_CPU((void *)therm_init_msrs,NULL,1,1) < 0){
+	if(ON_EACH_CPU(therm_init_msrs,NULL,1,1) < 0){
 		error("Could not init therm on all cpus");
 		return -ENODEV;
 	}

@@ -31,7 +31,7 @@
 #include <linux/moduleparam.h>
 #include <linux/cpumask.h>
 #include <linux/fs.h>
-#include <asm/hw_irq.h>
+//#include <asm/hw_irq.h>
 
 #include <seeker.h>
 #include <pmu.h>

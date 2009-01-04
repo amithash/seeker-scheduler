@@ -26,7 +26,7 @@
 #include <linux/slab.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <asm/spinlock.h>
+#include <linux/spinlock.h>
 
 #include <seeker.h>
 
@@ -110,7 +110,6 @@ int log_read(struct file* file_ptr,
 	int i = 0;
 
 	if(unlikely(seeker_log_head == NULL || buf == NULL || file_ptr == NULL || seeker_log_head == seeker_log_current)){
-		warn("Trying to read or write from/to a NULL buf");
 		return 0;
 	}
 

@@ -24,7 +24,7 @@
 #ifndef _PMU_H_
 #define _PMU_H_
 
-void pmu_init_msrs(void);
+void pmu_init_msrs(void *info);
 void counter_clear(u32 counter);
 void counter_read(void);
 u64 get_counter_data(u32 counter, u32 cpu_id);

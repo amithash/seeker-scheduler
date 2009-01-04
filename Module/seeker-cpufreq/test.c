@@ -9,9 +9,13 @@
 MODULE_AUTHOR("Amithash Prasad <amithash@gmail.com>");
 MODULE_DESCRIPTION("Tests the scpufreq cpufreq governor");
 MODULE_LICENSE("GPL");
-
+#if defined(ARCH_C2D)
 #define IA32_MPERF 0x000000E7
 #define IA32_APERF 0x000000E8
+#else
+#define IA32_MPERF 0x000000E7
+#define IA32_APERF 0x000000E8
+#endif
 
 short int max_state[NR_CPUS];
 short int cur_state[NR_CPUS];
@@ -29,20 +33,11 @@ static
 void update_stats(int cpu)
 {
 	u64 val,tscv;
-	static u64 aperf = 0;
-	static u64 mperf = 0;
-	aperf = native_read_msr(IA32_APERF) - aperf;
-	mperf = native_read_msr(IA32_MPERF) - mperf;
-	info("APERF=%lld MPERF=%lld",aperf,mperf);
+	u64 aperf;
+	u64 mperf;
 	aperf = native_read_msr(IA32_APERF);
 	mperf = native_read_msr(IA32_MPERF);
-	if(last_tsc == 0){
-		last_tsc = tscv;
-		return;
-	} else {
-		val = tscv - last_tsc;
-	}
-	last_tsc = tscv;
+	info("Running at %d of the max",(int)((aperf * 100)/mperf));
 	total_clocks[cpu] += (val * HZ )/ (jiffies - last_jiffies);
 	count[cpu]++;
 }

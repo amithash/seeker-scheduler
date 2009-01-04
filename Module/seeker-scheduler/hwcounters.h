@@ -16,7 +16,7 @@
 #define PMU_RFCY_MASK 0x00
 
 void clear_counters(int cpu);
-void enable_pmu_counters(void);
+void enable_pmu_counters(void *info);
 int configure_counters(void);
 void read_counters(int cpu);
 
