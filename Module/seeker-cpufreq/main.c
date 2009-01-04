@@ -153,6 +153,7 @@ static int __init seeker_cpufreq_init(void)
 		cpus_clear(cpu_policy[i]->cpus);
 		cpu_set(i,cpu_policy[i]->cpus);
 		cpu_policy[i]->update.func = &scpufreq_update_freq;
+		cpu_policy[i]->governor = &seeker_governor;
 		cpufreq_cpu_put(cpu_policy[i]);
 		freq_info[i].cpu = i;
 		freq_info[i].cur_freq = -1; /* Not known */
@@ -202,6 +203,7 @@ static void __exit seeker_cpufreq_exit(void)
 	for(i=0;i<cpus;i++){
 		policy = cpufreq_cpu_get(i);
 		policy->update.func = NULL;
+		policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
 		cpufreq_cpu_put(policy);
 	}
 	cpufreq_unregister_governor(&seeker_governor);
