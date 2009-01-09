@@ -39,6 +39,7 @@ struct freq_info_t{
 	unsigned int cur_freq;
 	unsigned int num_states;
 	unsigned int table[MAX_STATES];
+	struct cpufreq_policy *policy;
 };
 
 static int freqs = 0;
@@ -105,14 +106,15 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 	if(freq_ind >= freq_info[cpu].num_states)
 		return -1;
 
-	policy = cpu_policy[cpu];
+	policy = freq_info[cpu].policy;
 	if(!policy){
 		error("Error, governor not initialized for cpu %d",cpu);
 		return -1;
 	}
 	policy->cur = freq_info[cpu].table[freq_ind];
 	/* Start a worker thread to do the actual update */
-	schedule_work(&(policy->update));
+//	schedule_work(&(policy->update));
+	__cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
 	freq_info[cpu].cur_freq = freq_ind;
 	return 0;
 }
@@ -145,17 +147,18 @@ static int __init seeker_cpufreq_init(void)
 {
 	int i,j,k,l;
 	unsigned int tmp;
+	struct cpufreq_policy *policy;
 	struct cpufreq_frequency_table *table;
 	int cpus = num_online_cpus();
 	cpufreq_register_governor(&seeker_governor);
 	for(i=0;i<cpus;i++){
-		cpu_policy[i] = cpufreq_cpu_get(i);
-		info("Related cpus for cpu%d are (bitmask) %d",i,CPUMASK_TO_UINT(cpu_policy[i]->related_cpus));
-		cpus_clear(cpu_policy[i]->cpus);
-		cpu_set(i,cpu_policy[i]->cpus);
-		cpu_policy[i]->update.func = &scpufreq_update_freq;
-		cpu_policy[i]->governor = &seeker_governor;
-		cpufreq_cpu_put(cpu_policy[i]);
+		policy = freq_info[i].policy = cpufreq_cpu_get(i);
+		info("Related cpus for cpu%d are (bitmask) %d",i,CPUMASK_TO_UINT(policy->related_cpus));
+		cpus_clear(policy->cpus);
+		cpu_set(i,policy->cpus);
+		//policy->update.func = &scpufreq_update_freq;
+		policy->governor = &seeker_governor;
+		cpufreq_cpu_put(policy);
 		freq_info[i].cpu = i;
 		freq_info[i].cur_freq = -1; /* Not known */
 		freq_info[i].num_states = 0;
@@ -203,7 +206,7 @@ static void __exit seeker_cpufreq_exit(void)
 	flush_scheduled_work();
 	for(i=0;i<cpus;i++){
 		policy = cpufreq_cpu_get(i);
-		policy->update.func = NULL;
+//		policy->update.func = NULL;
 		policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
 		cpufreq_cpu_put(policy);
 	}
