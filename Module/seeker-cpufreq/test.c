@@ -32,7 +32,7 @@ static
 
 void update_stats(int cpu)
 {
-	u64 val,tscv;
+	u64 val=0,tscv;
 	u64 aperf;
 	u64 mperf;
 	aperf = native_read_msr(IA32_APERF);
