@@ -28,6 +28,7 @@
 #include <linux/version.h>
 #include <linux/kallsyms.h>
 #include <linux/sched.h>
+#include <linux/workqueue.h>
 #include <linux/interrupt.h>
 
 #include <seeker.h>
@@ -51,7 +52,9 @@ void inst_sched_fork(struct task_struct *new, int clone_flags);
 int inst_schedule(struct kprobe *p, struct pt_regs *regs);
 void inst_release_thread(struct task_struct *t);
 
-static struct timer_list state_change_timer;
+static void state_change(struct work_struct *w);
+static DECLARE_DELAYED_WORK(state_work, state_change);
+
 static u64 interval_jiffies;
 static int timer_started = 0;
 
@@ -96,13 +99,12 @@ extern u64 interval_count;
 extern int cur_cpu_state[MAX_STATES];
 extern u64 pmu_val[NR_CPUS][3];
 
-static void state_change(unsigned long param)
+static void state_change(struct work_struct *w)
 {
 	debug("State change now @ %ld",jiffies);
 	choose_layout(delta);
 	if(timer_started){
-		if(mod_timer(&state_change_timer, jiffies + interval_jiffies))
-			warn("Modified a live timer");
+		schedule_delayed_work(&state_work, interval_jiffies);
 	}
 }
 
@@ -254,10 +256,9 @@ static int scheduler_init(void)
 	}
 
 	interval_jiffies = change_interval * HZ;
-	setup_timer(&state_change_timer,state_change,0);
 	timer_started = 1;
-	if(mod_timer(&state_change_timer,jiffies+interval_jiffies))
-		warn("Modified a live timer @ init");
+	init_timer_deferrable(&state_work.timer);
+	schedule_delayed_work(&state_work, interval_jiffies);
 
 	return 0;
 #else
@@ -274,7 +275,7 @@ static void scheduler_exit(void)
 	debug("removing the state change timer");
 	if(timer_started){
 		timer_started = 0;
-		del_timer_sync(&state_change_timer);
+		cancel_delayed_work(&state_work);
 	}
 	debug("Unregistering probes");
 	unregister_jprobe(&jp_sched_fork);
