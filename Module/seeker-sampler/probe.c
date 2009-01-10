@@ -92,6 +92,7 @@ extern int pmu_intr;
 void inst_smp_apic_pmu_interrupt(struct pt_regs *regs)
 {
 	int i,ovf=0;
+	debug("inst called. APIC WOrking");
 	if(likely(int_callbacks.is_interrupt(pmu_intr) > 0)){
 		int_callbacks.clear_ovf_status(pmu_intr);
 		if(likely(dev_open == 1)){
