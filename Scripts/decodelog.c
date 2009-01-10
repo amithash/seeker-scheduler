@@ -43,8 +43,6 @@ int main(int argc, char **argv, char **envp)
 		}
 	}
 
-	fprintf(stderr, "seeker!\n");
-
 	while( fread(buf, 1, bufsize, stdin) == bufsize ) {
 		seeker_sampler_entry_t *entry = (seeker_sampler_entry_t *)(buf);
 		switch(entry->type) {
@@ -86,7 +84,6 @@ int main(int argc, char **argv, char **envp)
 	}
 	goto out;
 debug_start:
-	fprintf(stderr, "debug!\n");
 	while( fread(debug_buf, 1, debug_bufsize, stdin) == debug_bufsize ) {
 		debug_t *entry = (debug_t *)(debug_buf);
 		switch(entry->type) {

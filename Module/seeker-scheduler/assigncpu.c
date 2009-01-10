@@ -43,7 +43,6 @@ void put_mask_from_stats(struct task_struct *ts)
 {
 	int new_state = -1;
 	struct debug_block *p = NULL;
-	unsigned long irq_flags;
 	int i;
 	short ipc = 0;
 	int state = 0;
@@ -51,12 +50,6 @@ void put_mask_from_stats(struct task_struct *ts)
 	int state_req = 0;
 	cpumask_t mask = CPU_MASK_NONE;
 	
-#if 0
-	if(!is_states_consistent()){
-		return;
-	}
-#endif
-
 #ifdef SEEKER_PLUGIN_PATCH
 	/* Do not try to estimate anything
 	 * till INST_THRESHOLD insts are 
@@ -131,7 +124,7 @@ void put_mask_from_stats(struct task_struct *ts)
 //		set_cpus_allowed(ts,mask); /* Unlazy */
 	}
 
-	p = get_debug(&irq_flags);
+	p = get_debug();
 	if(p){
 		p->entry.type = DEBUG_SCH;
 		#ifdef SEEKER_PLUGIN_PATCH
@@ -144,7 +137,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		p->entry.u.sch.state_given = new_state;
 		p->entry.u.sch.cpu = this_cpu;
 	}
-	put_debug(p,&irq_flags);
+	put_debug(p);
 #ifdef SEEKER_PLUGIN_PATCH
 	ts->interval = interval_count;
 	ts->inst = 0;

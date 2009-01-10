@@ -89,16 +89,6 @@ unsigned int get_freq(unsigned int cpu)
 }
 EXPORT_SYMBOL_GPL(get_freq);
 
-void scpufreq_update_freq(struct work_struct *w)
-{
-	struct cpufreq_policy *policy = container_of(w,struct cpufreq_policy,update);
-	if(!policy)
-		error("Policy is NULL");
-	__cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_L);
-	cpufreq_update_policy(policy->cpu);
-}
-
-
 int set_freq(unsigned int cpu, unsigned int freq_ind)
 {
 	struct cpufreq_policy *policy = NULL;
@@ -117,8 +107,7 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 	policy->cur = freq_info[cpu].table[freq_ind];
 	/* Start a worker thread to do the actual update */
 	freq_info[cpu].cur_freq = freq_ind;
-//	schedule_work(&(policy->update));
-	__cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
+	cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
 	return 0;
 }
 EXPORT_SYMBOL_GPL(set_freq);
@@ -209,7 +198,6 @@ static void __exit seeker_cpufreq_exit(void)
 	flush_scheduled_work();
 	for(i=0;i<cpus;i++){
 		policy = cpufreq_cpu_get(i);
-//		policy->update.func = NULL;
 		policy->governor = NULL;
 		cpufreq_cpu_put(policy);
 	}

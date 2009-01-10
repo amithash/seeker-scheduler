@@ -110,19 +110,18 @@ static void state_change(struct work_struct *w)
 
 void inst_release_thread(struct task_struct *t)
 {
-	unsigned long flags;
 	struct debug_block *p = NULL;
 	#ifdef SEEKER_PLUGIN_PATCH
 	if(t->seeker_scheduled != SEEKER_MAGIC_NUMBER)
 		jprobe_return();
 	#endif
-	p = get_debug(&flags);
+	p = get_debug();
 	if(p){
 		p->entry.type = DEBUG_PID;
 		p->entry.u.tpid.pid = (u32)(t->pid);
 		memcpy(&(p->entry.u.tpid.name[0]),t->comm,16);
 	}
-	put_debug(p,&flags);
+	put_debug(p);
 	jprobe_return();
 	
 }

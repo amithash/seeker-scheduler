@@ -96,7 +96,6 @@ void choose_layout(int delta)
 	unsigned int best_proc = 0;
 	unsigned int best_proc_value = 0;
 	unsigned int best_low_proc_value = 0;
-	unsigned long irq_flags;
 	int poison[NR_CPUS];
 	int sum;
 	int total_iter = 0;
@@ -220,7 +219,7 @@ assign:
 
 		/* Continue the auction if delta > 0  or till all cpus are allocated */
 	}
-	p = get_debug(&irq_flags);
+	p = get_debug();
 	if(p){
 		p->entry.type = DEBUG_MUT;
 		p->entry.u.mut.interval = interval_count;
@@ -245,18 +244,22 @@ assign:
 		 * are in the lowest cpu state */
 		if(poison[i] == 1)
 			new_cpu_state[i] = 0;
-		
+		if(p)
+			p->entry.u.mut.cpus_given[new_cpu_state[i]]++;
+		states[new_cpu_state[i]].cpus++;
+		cpu_set(i,states[new_cpu_state[i]].cpumask);
+	}
+	mark_states_consistent();
+	put_debug(p);
+	/* This is purposefully put in a different loop 
+	 * due to the intereference with put_debug();
+	 */
+	for(i=0;i<total_online_cpus;i++){
 		if(new_cpu_state[i] != cur_cpu_state[i]){
 			cur_cpu_state[i] = new_cpu_state[i];
 			set_freq(i,new_cpu_state[i]);
 		}
-		if(p)
-			p->entry.u.mut.cpus_given[cur_cpu_state[i]]++;
-		states[cur_cpu_state[i]].cpus++;
-		cpu_set(i,states[cur_cpu_state[i]].cpumask);
 	}
-	mark_states_consistent();
-	put_debug(p,&irq_flags);
 }
 
 

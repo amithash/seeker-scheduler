@@ -34,65 +34,39 @@ struct state_sane_t state_sane;
 void hint_inc(int state)
 {
 	states[state].demand++;
-//	atomic_inc((void *)&(states[state].demand));
 }
 
 void hint_dec(int state)
 {
 	states[state].demand--;
-//	atomic_dec((void *)&(states[state].demand));
 }
 void mark_states_inconsistent(void)
 {
-#if 0
-	if(spin_is_locked(&states_lock))
-		warn("Recursive spin lock avoided");
-	else
-		spin_lock_irqsave(&states_lock,states_irq_flags);
-#else
-	unsigned long irq_flags;
-	spin_lock_irqsave(&(state_sane.lock),irq_flags);
+	spin_lock(&(state_sane.lock));
 	state_sane.val = 0;
-	spin_unlock_irqrestore(&(state_sane.lock),irq_flags);
-#endif
+	spin_unlock(&(state_sane.lock));
 }
 void mark_states_consistent(void)
 {
-#if 0
-	if(spin_is_locked(&states_lock))
-		spin_unlock_irqrestore(&states_lock,states_irq_flags);
-	else
-		warn("Recursive spin unlock avoided");
-#else
-	unsigned long irq_flags;
-	spin_lock_irqsave(&(state_sane.lock),irq_flags);
+	spin_lock(&(state_sane.lock));
 	state_sane.val = 1;
-	spin_unlock_irqrestore(&(state_sane.lock),irq_flags);
+	spin_unlock(&(state_sane.lock));
 
-#endif
 }
 
 int is_states_consistent(void)
 {
-#if 0
-	return !spin_is_locked(&states_lock);
-#else
 	int val;
-	unsigned long irq_flags;
-	spin_lock_irqsave(&(state_sane.lock),irq_flags);
+	spin_lock(&(state_sane.lock));
 	val = state_sane.val;
-	spin_unlock_irqrestore(&(state_sane.lock),irq_flags);
+	spin_unlock(&(state_sane.lock));
 	return val;
-#endif
 }
 
 
 int init_cpu_states(unsigned int how)
 {
 	int i;
-#if 0
-	spin_lock_init(&states_lock);
-#else
 	spin_lock_init(&(state_sane.lock));
 	state_sane.val = 1; /* Mark states as sane */
 	/* Actually it is not going to be, but the timer
@@ -100,7 +74,6 @@ int init_cpu_states(unsigned int how)
 	 * are going to be registered only after this function
 	 * has completed successfully, and hence it is safe to
 	 * mark them as sane, */
-#endif
 
 	for(i=0;i<total_online_cpus;i++){
 		max_state_possible[i] = get_max_states(i);

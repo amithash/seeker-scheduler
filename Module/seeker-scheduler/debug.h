@@ -16,10 +16,10 @@ void debug_exit(void);
  * !NULL before using the return value 
  * If the return value is not NULL, a 
  * spin lock is held */
-struct debug_block *get_debug(unsigned long *irq_flags);
+struct debug_block *get_debug(void);
 /* Release the spin lock held by get debug.
  * If p is NULL, then do nothing */
-void put_debug(struct debug_block *p, unsigned long *irq_flags);
+void put_debug(struct debug_block *p);
 void debug_free(struct debug_block *p);
 
 #endif

@@ -48,66 +48,61 @@ static struct kmem_cache *debug_cachep = NULL;
 /* Returns a pointer and takes a lock if allocation is
  * successful. Do not waste time. Fill it and call
  * put_debug asap! */
-struct debug_block *get_debug(unsigned long *irq_flags)
+struct debug_block *get_debug(void)
 {
 	struct debug_block *p = NULL;
-	if(!dev_open)
-		return NULL;
 	if(unlikely(!current_debug))
 		return NULL;
-	if(unlikely(!debug_cachep)){
-		debug("debug_cachep is not initialized..");
-		return NULL;
-	}
-	spin_lock_irqsave(&debug_lock,*irq_flags);
+	spin_lock(&debug_lock);
+	if(unlikely(!dev_open || !current_debug || !debug_cachep))
+		goto out;
 	/* Just in case this was waiting for the lock
 	 * and meanwhile, purge just set current_debug
 	 * to NULL. */
-	if(unlikely(!current_debug)){
-		spin_unlock_irqrestore(&debug_lock,*irq_flags);
-		return NULL;
-	}
 	p = (struct debug_block *)kmem_cache_alloc(debug_cachep, GFP_ATOMIC);
 	if(!p){
 		debug("Allocation failed");
-		spin_unlock_irqrestore(&debug_lock,*irq_flags);
-		return NULL;
+		goto out;
 	}
-	current_debug->next = p;
 	p->next = NULL;
-	current_debug = p;
 	return p;
+out:
+	spin_unlock(&debug_lock);
+	return NULL;
+
 }
 
 /* Releases the spinlock */
-void put_debug(struct debug_block *p, unsigned long *irq_flags)
+void put_debug(struct debug_block *p)
 {
-	if(p)
-		spin_unlock_irqrestore(&debug_lock,*irq_flags);
+	if(p){
+		/* Update and then release the lock */
+		current_debug->next = p;
+		current_debug = p;
+		spin_unlock(&debug_lock);
+	}
 }
 
 void debug_free(struct debug_block *p)
 {
-	if(!p)
+	if(!p || !debug_cachep)
 		return;
-
 	kmem_cache_free(debug_cachep,p);
 }
 
 void purge_debug(void)
 {
 	struct debug_block *c1,*c2;
-	unsigned long flags;
 	if(start_debug == NULL || current_debug == NULL)
 		return;
 	/* Acquire the lock, then set current debug to NULL
 	 */
 	debug("Starting safe section");
-	spin_lock_irqsave(&debug_lock,flags);
+	spin_lock(&debug_lock);
 	c1 = start_debug;
 	start_debug = NULL;
 	current_debug = NULL;
-	spin_unlock_irqrestore(&debug_lock,flags);
+	spin_unlock(&debug_lock);
 	debug("Ending safe section starting cleanup");
 	while(c1){
 		c2 = c1->next;
@@ -123,7 +118,6 @@ ssize_t seeker_debug_read(struct file *file_ptr, char __user *buf,
 	struct debug_block *log;
 	int i = 0;
 	if(unlikely(start_debug == NULL || buf == NULL || file_ptr == NULL || start_debug == current_debug)){
-		warn("Nothing read");
 		return 0;
 	}
 	if(unlikely(first_read)){

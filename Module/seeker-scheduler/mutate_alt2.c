@@ -45,9 +45,8 @@ void choose_layout(int delta)
 	int work_done = 0;
 	int winning_cpu;
 	int winning_cpu_state = 0;
-	int total;
+	int total = 0;
 	struct debug_block *p = NULL;
-	unsigned long irq_flags;
 	int low = 0;
 	int high = 0;
 	int stop = 0;
@@ -118,7 +117,7 @@ void choose_layout(int delta)
 	}
 
 	/* Record the changes in the debug log */
-	p = get_debug(&irq_flags);
+	p = get_debug();
 	if(p){
 		p->entry.type = DEBUG_MUT;
 		p->entry.u.mut.interval = interval_count;
@@ -137,17 +136,22 @@ void choose_layout(int delta)
 
 
 	for(i=0;i<total_online_cpus;i++){
+		if(p)
+			p->entry.u.mut.cpus_given[new_cpu_state[i]]++;
+		states[new_cpu_state[i]].cpus++;
+		cpu_set(i,states[new_cpu_state[i]].cpumask);
+	}
+	mark_states_consistent();
+	put_debug(p);
+	/* This is purposefully put in a different loop 
+	 * due to the intereference with put_debug();
+	 */
+	for(i=0;i<total_online_cpus;i++){
 		if(new_cpu_state[i] != cur_cpu_state[i]){
 			cur_cpu_state[i] = new_cpu_state[i];
 			set_freq(i,new_cpu_state[i]);
 		}
-		if(p)
-			p->entry.u.mut.cpus_given[cur_cpu_state[i]]++;
-		states[cur_cpu_state[i]].cpus++;
-		cpu_set(i,states[cur_cpu_state[i]].cpumask);
 	}
-	mark_states_consistent();
-	put_debug(p,&irq_flags);
 }
 
 
