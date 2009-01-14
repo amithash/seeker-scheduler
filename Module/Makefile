@@ -34,6 +34,11 @@ ARCA := C2D
 endif
 endif
 endif
+ifeq ($(uname -m),'x86_64')
+BITS := 64
+else
+BITS := 32
+endif
 
 # get what mutator should be compiled.
 ifdef ALT
@@ -100,7 +105,7 @@ KDIR    := /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)
 INCLUDE_DIRS := -I$(PWD)/include
 
-MOD_FLAGS := -DMODULE -m64 -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall
+MOD_FLAGS := -DMODULE -m$(BITS) -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall
 
 # Use -g and -O0 while defineing DEBUG for debug builds, else just use O2
 ifdef DEBUG
