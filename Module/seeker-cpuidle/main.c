@@ -77,6 +77,7 @@ MODULE_DESCRIPTION("Provides abstracted access to the cpuidle driver");
 static int __init seeker_cpuidle_init(void)
 {
 	int i;
+	int ret;
 	int total_cpus = num_online_cpus();
 	for(i=0;i<total_cpus;i++){
 		cpu_state[i].cpu = i;
@@ -88,7 +89,12 @@ static int __init seeker_cpuidle_init(void)
 		cpu_state[i].valid = 0;
 		cpu_state[i].enabled = 0;
 	}
-	return cpuidle_register_governor(&seeker_governor);
+
+	ret = cpuidle_register_governor(&seeker_governor);
+	if(!ret){
+		cpuidle_switch_governor(&seeker_governor);
+	}
+	return ret;
 }
 
 static void __exit seeker_cpuidle_exit(void)

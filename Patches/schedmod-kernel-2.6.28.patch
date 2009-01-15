@@ -1,6 +1,54 @@
-diff -Naur linux-2.6.28/include/linux/sched.h linux-2.6.28_mod/include/linux/sched.h
---- linux-2.6.28/include/linux/sched.h	2008-12-24 16:26:37.000000000 -0700
-+++ linux-2.6.28_mod/include/linux/sched.h	2009-01-04 07:34:21.000000000 -0700
+diff -Naur linux-2.6.28_clean/drivers/cpuidle/cpuidle.h linux-2.6.28_schedmod/drivers/cpuidle/cpuidle.h
+--- linux-2.6.28_clean/drivers/cpuidle/cpuidle.h	2008-12-24 16:26:37.000000000 -0700
++++ linux-2.6.28_schedmod/drivers/cpuidle/cpuidle.h	2009-01-15 11:36:29.000000000 -0700
+@@ -20,7 +20,7 @@
+ extern void cpuidle_uninstall_idle_handler(void);
+ 
+ /* governors */
+-extern int cpuidle_switch_governor(struct cpuidle_governor *gov);
++//extern int cpuidle_switch_governor(struct cpuidle_governor *gov);
+ 
+ /* sysfs */
+ extern int cpuidle_add_class_sysfs(struct sysdev_class *cls);
+diff -Naur linux-2.6.28_clean/drivers/cpuidle/governor.c linux-2.6.28_schedmod/drivers/cpuidle/governor.c
+--- linux-2.6.28_clean/drivers/cpuidle/governor.c	2008-12-24 16:26:37.000000000 -0700
++++ linux-2.6.28_schedmod/drivers/cpuidle/governor.c	2009-01-15 11:35:28.000000000 -0700
+@@ -69,6 +69,7 @@
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(cpuidle_switch_governor);
+ 
+ /**
+  * cpuidle_register_governor - registers a governor
+@@ -93,6 +94,7 @@
+ 
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(cpuidle_register_governor);
+ 
+ /**
+  * cpuidle_replace_governor - find a replacement governor
+@@ -135,4 +137,5 @@
+ 	list_del(&gov->governor_list);
+ 	mutex_unlock(&cpuidle_lock);
+ }
++EXPORT_SYMBOL_GPL(cpuidle_unregister_governor);
+ 
+diff -Naur linux-2.6.28_clean/include/linux/cpuidle.h linux-2.6.28_schedmod/include/linux/cpuidle.h
+--- linux-2.6.28_clean/include/linux/cpuidle.h	2008-12-24 16:26:37.000000000 -0700
++++ linux-2.6.28_schedmod/include/linux/cpuidle.h	2009-01-15 11:36:25.000000000 -0700
+@@ -173,6 +173,7 @@
+ 
+ extern int cpuidle_register_governor(struct cpuidle_governor *gov);
+ extern void cpuidle_unregister_governor(struct cpuidle_governor *gov);
++extern int cpuidle_switch_governor(struct cpuidle_governor *gov);
+ 
+ #else
+ 
+diff -Naur linux-2.6.28_clean/include/linux/sched.h linux-2.6.28_schedmod/include/linux/sched.h
+--- linux-2.6.28_clean/include/linux/sched.h	2008-12-24 16:26:37.000000000 -0700
++++ linux-2.6.28_schedmod/include/linux/sched.h	2009-01-15 11:34:00.000000000 -0700
 @@ -1,6 +1,8 @@
  #ifndef _LINUX_SCHED_H
  #define _LINUX_SCHED_H
@@ -34,9 +82,9 @@ diff -Naur linux-2.6.28/include/linux/sched.h linux-2.6.28_mod/include/linux/sch
  };
  
  /*
-diff -Naur linux-2.6.28/kernel/sched.c linux-2.6.28_mod/kernel/sched.c
---- linux-2.6.28/kernel/sched.c	2008-12-24 16:26:37.000000000 -0700
-+++ linux-2.6.28_mod/kernel/sched.c	2009-01-04 07:34:37.000000000 -0700
+diff -Naur linux-2.6.28_clean/kernel/sched.c linux-2.6.28_schedmod/kernel/sched.c
+--- linux-2.6.28_clean/kernel/sched.c	2008-12-24 16:26:37.000000000 -0700
++++ linux-2.6.28_schedmod/kernel/sched.c	2009-01-15 11:34:00.000000000 -0700
 @@ -1800,10 +1800,11 @@
  #ifdef CONFIG_SMP
  
