@@ -61,12 +61,18 @@ static void seeker_cpuidle_disable(struct cpuidle_device *dev)
 	cpu_state[dev->cpu].enabled = 0;
 }
 
+static int seeker_cpuidle_select(struct cpuidle_device *dev)
+{
+	return 0;
+}
+
 struct cpuidle_governor seeker_governor = {
 	.name = "seeker",
 	.owner = THIS_MODULE,
 	.rating = 1000,
-	.enable = seeker_cpuidle_enable,
-	.disable = seeker_cpuidle_disable,
+	.enable = &seeker_cpuidle_enable,
+	.disable = &seeker_cpuidle_disable,
+	.select = &seeker_cpuidle_select,
 };
 
 MODULE_LICENSE("GPL");
@@ -92,6 +98,7 @@ static int __init seeker_cpuidle_init(void)
 
 	ret = cpuidle_register_governor(&seeker_governor);
 	if(!ret){
+		info("Switching to seeker as a governor");
 		cpuidle_switch_governor(&seeker_governor);
 	}
 	return ret;
