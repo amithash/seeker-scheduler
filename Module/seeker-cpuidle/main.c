@@ -34,36 +34,39 @@
 
 #include "seeker_cpuidle.h"
 
+struct cpu_state_t{
+	int cpu;
+	int enabled;
+	int valid;
+	struct cpuidle_device *dev;
+};
+
+static struct cpu_state_t cpu_state[NR_CPUS];
+
 static int seeker_cpuidle_enable(struct cpuidle_device *dev)
 {
+	if(cpu_state[dev->cpu].valid == 0)
+		return -1;
 
+	cpu_state[dev->cpu].dev = dev;
+	cpu_state[dev->cpu].enabled = 1;
 	return 0;
 }
 
 static void seeker_cpuidle_disable(struct cpuidle_device *dev)
 {
+	if(cpu_state[dev->cpu].valid == 0)
+		return;
 
+	cpu_state[dev->cpu].enabled = 0;
 }
-
-static int seeker_cpuidle_select(struct cpuidle_device *dev)
-{
-
-	return 0;
-}
-
-static void seeker_cpuidle_reflect(struct cpuidle_device *dev)
-{
-
-}
-
 
 struct cpuidle_governor seeker_governor = {
 	.name = "seeker",
 	.owner = THIS_MODULE,
+	.rating = 1000,
 	.enable = seeker_cpuidle_enable,
 	.disable = seeker_cpuidle_disable,
-	.select = seeker_cpuidle_select,
-	.reflect = seeker_cpuidle_reflect,
 };
 
 MODULE_LICENSE("GPL");
@@ -73,17 +76,26 @@ MODULE_DESCRIPTION("Provides abstracted access to the cpuidle driver");
 
 static int __init seeker_cpuidle_init(void)
 {
-	int ret = 0;
-	ret = cpuidle_register_governor(&seeker_governor);
-	return ret;
+	int i;
+	int total_cpus = num_online_cpus();
+	for(i=0;i<total_cpus;i++){
+		cpu_state[i].cpu = i;
+		cpu_state[i].valid = 1;
+		cpu_state[i].enabled = 0;
+	}
+	for(i=total_cpus;i<NR_CPUS;i++){
+		cpu_state[i].cpu = i;
+		cpu_state[i].valid = 0;
+		cpu_state[i].enabled = 0;
+	}
+	return cpuidle_register_governor(&seeker_governor);
 }
 
-static void __exit seeker_cpufreq_exit(void)
+static void __exit seeker_cpuidle_exit(void)
 {
-
 	cpuidle_unregister_governor(&seeker_governor);
 }
 
-module_init(seeker_cpufreq_init);
-module_exit(seeker_cpufreq_exit);
+module_init(seeker_cpuidle_init);
+module_exit(seeker_cpuidle_exit);
 
