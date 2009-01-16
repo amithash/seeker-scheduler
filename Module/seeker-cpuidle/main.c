@@ -87,6 +87,9 @@ int sleep_proc(int cpu, int state)
 
 	return cpu_state[cpu].dev->states[state].enter(cpu_state[cpu].dev, &(cpu_state[cpu].dev->states[state]));
 }
+EXPORT_SYMBOL_GPL(sleep_proc);
+
+
 
 
 struct cpuidle_governor seeker_governor = {
@@ -102,11 +105,33 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
 MODULE_DESCRIPTION("Provides abstracted access to the cpuidle driver");
 
+static int ref_count = 0;
+
+void enter_seeker_cpuidle(void)
+{
+	if(ref_count == 0){
+		cpuidle_register_governor(&seeker_governor);
+		cpuidle_switch_governor(&seeker_governor);
+	}
+	ref_count++;
+}
+EXPORT_SYMBOL_GPL(enter_seeker_cpuidle);
+
+void exit_seeker_cpuidle(void)
+{
+	ref_count--;
+	if(ref_count <= 0){
+		cpuidle_switch_governor(NULL);
+		cpuidle_unregister_governor(&seeker_governor);
+	}
+}
+EXPORT_SYMBOL_GPL(exit_seeker_cpuidle);
+
+
 
 static int __init seeker_cpuidle_init(void)
 {
 	int i;
-	int ret;
 	int total_cpus = num_online_cpus();
 	for(i=0;i<total_cpus;i++){
 		cpu_state[i].cpu = i;
@@ -119,12 +144,7 @@ static int __init seeker_cpuidle_init(void)
 		cpu_state[i].enabled = 0;
 	}
 
-	ret = cpuidle_register_governor(&seeker_governor);
-	if(!ret){
-		info("Switching to seeker as a governor");
-//		cpuidle_switch_governor(&seeker_governor);
-	}
-	return ret;
+	return 0;
 }
 
 static void __exit seeker_cpuidle_exit(void)

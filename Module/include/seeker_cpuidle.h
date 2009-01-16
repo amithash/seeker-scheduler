@@ -10,5 +10,10 @@
 #define ERR_STATE_INVALID -3
 #define ALL_OK 0
 
+
+void enter_seeker_cpuidle(void);
+void exit_seeker_cpuidle(void);
+int sleep_proc(int cpu, int state);
+
 #endif
 
