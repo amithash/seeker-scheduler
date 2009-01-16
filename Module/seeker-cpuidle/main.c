@@ -38,6 +38,7 @@ struct cpu_state_t{
 	int cpu;
 	int enabled;
 	int valid;
+	int cur_state;
 	struct cpuidle_device *dev;
 };
 
@@ -50,6 +51,8 @@ static int seeker_cpuidle_enable(struct cpuidle_device *dev)
 
 	cpu_state[dev->cpu].dev = dev;
 	cpu_state[dev->cpu].enabled = 1;
+	cpu_state[dev->cpu].cur_state = 0;
+	info("Enabling seeker to idle cpu %d",dev->cpu);
 	return 0;
 }
 
@@ -59,12 +62,32 @@ static void seeker_cpuidle_disable(struct cpuidle_device *dev)
 		return;
 
 	cpu_state[dev->cpu].enabled = 0;
+	info("Disabling seeker to idle cpu %d",dev->cpu);
 }
 
 static int seeker_cpuidle_select(struct cpuidle_device *dev)
 {
+	info("Select called for cpu %d",dev->cpu);
 	return 0;
 }
+
+
+int sleep_proc(int cpu, int state)
+{
+	if(cpu_state[cpu].enabled == 0)
+		return ERR_CPU_DISABLED;
+	if(cpu_state[cpu].valid == 0)
+		return ERR_CPU_INVALID;
+	if(state <= 0)
+		return ALL_OK;
+	if(cpu_state[cpu].cur_state >= state)
+		return ALL_OK;
+	if(cpu_state[cpu].dev->state_count <= state)
+		return ERR_STATE_INVALID;
+
+	return cpu_state[cpu].dev->states[state].enter(cpu_state[cpu].dev, &(cpu_state[cpu].dev->states[state]));
+}
+
 
 struct cpuidle_governor seeker_governor = {
 	.name = "seeker",
@@ -99,13 +122,14 @@ static int __init seeker_cpuidle_init(void)
 	ret = cpuidle_register_governor(&seeker_governor);
 	if(!ret){
 		info("Switching to seeker as a governor");
-		cpuidle_switch_governor(&seeker_governor);
+//		cpuidle_switch_governor(&seeker_governor);
 	}
 	return ret;
 }
 
 static void __exit seeker_cpuidle_exit(void)
 {
+//	cpuidle_switch_governor(NULL);
 	cpuidle_unregister_governor(&seeker_governor);
 }
 
