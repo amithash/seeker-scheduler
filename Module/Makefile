@@ -34,10 +34,10 @@ ARCA := C2D
 endif
 endif
 endif
-ifeq ($(uname -m | grep X86_64 | wc -l),0)
-BITS := 32
-else
+ifeq ($(uname -m | grep x86_64 | wc -l), 1)
 BITS := 64
+else
+BITS := 32
 endif
 
 # get what mutator should be compiled.
