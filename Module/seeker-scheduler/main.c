@@ -194,6 +194,7 @@ static int scheduler_init(void)
 	 * the timer initialization. init_cpu_states makes this 
 	 * assumption */
 	init_cpu_states(init);
+	init_mutator();
 
 	if(debug_init() != 0)
 		return -ENODEV;

@@ -43,6 +43,15 @@ inline int procs(int hints,int total, int total_load)
 	return ans < 0 ? 0 : ans;
 }
 
+void init_mutator(void)
+{
+	int i;
+	for(i=0;i<NR_CPUS;i++){
+		info[i].sleep_time = 0;
+		info[i].awake = 1;
+	}
+}
+
 void update_state_matrix(int delta)
 {
 	int i,j,k;

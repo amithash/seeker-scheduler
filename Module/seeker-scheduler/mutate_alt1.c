@@ -22,6 +22,13 @@ static int new_cpu_state[NR_CPUS];
 
 u64 interval_count;
 
+struct proc_info{
+	unsigned int sleep_time;
+	unsigned int awake;
+};
+
+static struct proc_info info[NR_CPUS];
+
 inline int procs(int hints,int total, int total_load);
 
 inline int procs(int hints,int total, int total_load)
@@ -34,6 +41,15 @@ inline int procs(int hints,int total, int total_load)
 	
 	ans = div((hints * total_load),total);
 	return ans < 0 ? 0 : ans;
+}
+
+void init_mutator(void)
+{
+	int i;
+	for(i=0;i<NR_CPUS;i++){
+		info[i].sleep_time = 0;
+		info[i].awake = 1;
+	}
 }
 
 void choose_layout(int delta)
