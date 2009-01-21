@@ -10,9 +10,10 @@
 #include "state.h"
 #include "debug.h"
 
-
+static int demand_field[MAX_STATES];
 static int new_cpu_state[NR_CPUS];
 static int state_matrix[NR_CPUS][MAX_STATES];
+static int demand[MAX_STATES];
 extern struct state_desc states[MAX_STATES];
 extern unsigned int max_state_in_system;
 extern int total_online_cpus;
@@ -20,6 +21,13 @@ extern int max_allowed_states[NR_CPUS];
 extern int cur_cpu_state[NR_CPUS];
 
 u64 interval_count;
+
+struct proc_info{
+	unsigned int sleep_time;
+	unsigned int awake;
+};
+
+static struct proc_info info[NR_CPUS];
 
 inline int procs(int hints,int total, int total_load);
 
@@ -39,6 +47,11 @@ void update_state_matrix(int delta)
 {
 	int i,j,k;
 	for(i=0;i<total_online_cpus;i++){
+		if(info[i].awake == 0){
+			for(j=0;j<max_state_in_system)
+				state_matrix[i][j] = 0;
+			continue;
+		}
 		for(j=new_cpu_state[i],k=0; j<max_state_in_system; j++,k++){
 			if(k>delta)
 				state_matrix[i][j] = 0;
@@ -55,16 +68,39 @@ void update_state_matrix(int delta)
 	}
 }
 
+/* Create a demand field such that, each state
+ * gets its share and also shares half of what it
+ * gets with its friends = friend_count on either side
+ * = (max_state_in_system/2)-1.
+ */
+void update_demand_field(int friend_count)
+{
+	int i,j,k;
+	int share;
+	for(i=0;i<max_state_in_system;i++){
+		demand_field[i] = 1;
+	}
+	share = demand[i] >> 1;
+	for(i=0;i<max_state_in_system;i++){
+		demand_field[i] += (demand[i] + share);
+		for(j=i+1,k=1; j<max_state_in_system && (share - k) > 0 && k <= friend_count; j++,k++){
+			demand_field[j] += (share-k);
+		}
+		for(j=i-1,k=1; j >= 0 && (share - k) > 0 && k <= friend_count; j--,k++){
+			demand_field[j] += (share-k);
+		}
+	}
+}
+
 void choose_layout(int delta)
 {
 	int total = 0;
-	int demand[MAX_STATES];
 	int cpus_demanded[MAX_STATES];
-	int total_demand = 0;
 	int load = 0;
 	struct debug_block *p = NULL;
 	unsigned int i,j;
 	int winner=0;
+	int total_demand = 0;
 	unsigned int winner_val = 0;
 	unsigned int winner_best_proc = 0;
 	unsigned int winner_best_proc_value = 0;
@@ -75,7 +111,7 @@ void choose_layout(int delta)
 	int poison[NR_CPUS];
 	int sum;
 	int total_iter = 0;
-	int tmp_load;
+	int friends = (max_state_in_system >> 1)-1;
 
 	interval_count++;
 	if(delta < 1)
@@ -88,11 +124,7 @@ void choose_layout(int delta)
 	for(i=0;i<total_online_cpus;i++){
 		poison[i] = 1;
 		new_cpu_state[i] = cur_cpu_state[i];
-		#ifdef SEEKER_PLUGIN_PATCH
-		tmp_load = weighted_cpuload(i);
-		#endif
-		debug("weighted_cpuload(%d) = %d",i,tmp_load);
-		load += tmp_load >= SCHED_LOAD_SCALE ? 1 : 0;
+		load += weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0;
 	}
 
 	/* Total Hint */
@@ -106,8 +138,7 @@ void choose_layout(int delta)
 	 * Make sure to bring down their states. */
 	for(j=0;j<max_state_in_system;j++){
 		cpus_demanded[j] = demand[j] = procs(states[j].demand,total,load);
-		total_demand += (demand[j]);
-		debug("required cpus for state %d = %d",j,demand[j]);
+		total_demand += demand[j];
 	}
 
 	/* Now for each delta to spend, hold an auction */
@@ -120,8 +151,9 @@ void choose_layout(int delta)
 		total_iter++;
 	
 		debug("Iteration %d",total_iter);
-
+		
 		update_state_matrix(delta);
+		update_demand_field(friends);
 
 		/* There is an optimization here, so do not get confused.
 		 * Technically, each column in the state matrix is supposed
@@ -137,18 +169,20 @@ void choose_layout(int delta)
 			best_low_proc_value = -1;
 
 			/* Sum the cost over all rows */
+			/* Do here to make the longest sleeping processor to sleep more 
+			 * does this conserve more power? */
 			for(i=0;i<total_online_cpus;i++){
 				if((state_matrix[i][j] * poison[i]) > best_proc_value){
-					best_proc_value = state_matrix[i][j] * poison[i] * demand[j];
+					best_proc_value = (state_matrix[i][j] * poison[i] * demand_field[j]) - info[i].sleep_time;
 					best_proc = i;
 				} else if(state_matrix[i][j] < best_low_proc_value){
-					best_low_proc_value = state_matrix[i][j] * demand[j];
+					best_low_proc_value = (state_matrix[i][j] * demand_field[j]) - info[i].sleep_time;
 				}
 				sum += (state_matrix[i][j] * poison[i]);
 			}
 
-			sum = sum * (demand[j]+1);
-			debug("sum for state %d is %d with demand %d",j,sum,demand[j]);
+			sum = sum * demand_field[j];
+			debug("sum for state %d is %d with demand %d",j,sum,demand_field[j]);
 
 			/* Find the max sum and the sate, and its best proc 
 			 * If there is contention for that, choose the one
@@ -173,7 +207,6 @@ assign:
 			winner_best_proc= best_proc;
 			winner_best_proc_value = best_proc_value;
 			winner_best_low_proc_value = best_low_proc_value;
-
 		}
 		/* A winning val of 0 indicated a failed auction.
 		 * all contenstents are broke. Go home loosers.*/
@@ -200,7 +233,6 @@ assign:
 
 		/* Continue the auction if delta > 0  or till all cpus are allocated */
 	}
-
 	p = get_debug();
 	if(p){
 		p->entry.type = DEBUG_MUT;
@@ -221,12 +253,9 @@ assign:
 
 
 	for(i=0;i<total_online_cpus;i++){
-		/* XXX This violates DELTA. But this 
-		 * also makes sure that unused processors 
-		 * are in the lowest cpu state */
 		if(poison[i] == 1)
-			new_cpu_state[i] = 0;
-		
+			continue;
+			// new_cpu_state[i] = 0;
 		if(p)
 			p->entry.u.mut.cpus_given[new_cpu_state[i]]++;
 		states[new_cpu_state[i]].cpus++;
@@ -238,9 +267,17 @@ assign:
 	 * due to the intereference with put_debug();
 	 */
 	for(i=0;i<total_online_cpus;i++){
-		if(new_cpu_state[i] != cur_cpu_state[i]){
-			cur_cpu_state[i] = new_cpu_state[i];
-			set_freq(i,new_cpu_state[i]);
+		/* CPU is used */
+		if(poison[i] == 0){
+			info[i].sleep_time = 0;
+			info[i].awake = 1;
+			if(new_cpu_state[i] != cur_cpu_state[i]){
+				cur_cpu_state[i] = new_cpu_state[i];
+				set_freq(i,new_cpu_state[i]);
+			}
+		} else {
+			info[i].sleep_time++;
+			info[i].awake = 0;
 		}
 	}
 }
