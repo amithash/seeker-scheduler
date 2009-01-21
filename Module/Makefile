@@ -58,15 +58,11 @@ obj-m += seeker_scheduler.o           	\
 	 therm.o	       		\
 	 seeker_cpufreq.o  		\
 	 test_scpufreq.o		\
-	 seeker_cpuidle.o		\
-	 test_scpuidle.o		\
 	 power.o
 
 # The seeker cpufreq governor and its test module.
 test_scpufreq-objs += seeker-cpufreq/test.o
-test_scpuidle-objs += seeker-cpuidle/test.o
 seeker_cpufreq-objs += seeker-cpufreq/main.o
-seeker_cpuidle-objs += seeker-cpuidle/main.o
 
 # TSC Module
 tsc-objs += tsc/main.o
