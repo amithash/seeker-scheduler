@@ -1,0 +1,247 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Raw CEM Data for the SPEC2000 Benchmarks}~\label{app:raw_data}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This appendix contains raw node, edge and path data for the CEMs created for the
+SPEC2000 benchmarks. These are the same CEMs that appear in
+Appendix~\ref{app:exe_maps}. The CEMs were created with a stage size of one
+million instructions.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section{Sub section}~\label{app:raw_data_sec}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[ht!]
+\center
+\begin{tabular}{|p{1.3in}|c|c|c|}
+\hline
+Program&Nodes&Edges&Total Transitions\\
+\hline\hline
+164.gzip ref.0&50&322&71938\\
+\hline
+164.gzip ref.1&32&174&32817\\
+\hline
+164.gzip ref.2&41&324&72984\\
+\hline
+164.gzip ref.3&32&128&59294\\
+\hline
+164.gzip ref.4&57&528&150472\\
+\hline
+175.vpr ref.0&17&29&101025\\
+\hline
+175.vpr ref.1&54&167&89791\\
+\hline
+176.gcc ref.0&129&511&20781\\
+\hline
+176.gcc ref.1&270&2505&66955\\
+\hline
+176.gcc ref.2&145&538&6542\\
+\hline
+176.gcc ref.3&120&328&6716\\
+\hline
+176.gcc ref.4&224&1762&36242\\
+\hline
+181.mcf ref.0&27&136&49407\\
+\hline
+186.crafty ref.0&19&112&213207\\
+\hline
+197.parser ref.0&193&4514&291570\\
+\hline
+252.eon ref.0&7&13&67796\\
+\hline
+252.eon ref.1&7&13&48636\\
+\hline
+252.eon ref.2&7&13&86430\\
+\hline
+253.perlbmk ref.0&25&65&32433\\
+\hline
+253.perlbmk ref.1&2&3&1243\\
+\hline
+253.perlbmk ref.2&4&7&21527\\
+\hline
+253.perlbmk ref.3&39&301&108444\\
+\hline
+253.perlbmk ref.4&35&244&56711\\
+\hline
+253.perlbmk ref.5&36&263&53412\\
+\hline
+253.perlbmk ref.6&41&295&94028\\
+\hline
+254.gap ref.0&122&868&217335\\
+\hline
+255.vortex ref.0&16&97&107949\\
+\hline
+255.vortex ref.1&18&115&121251\\
+\hline
+256.bzip2 ref.0&86&738&85708\\
+\hline
+256.bzip2 ref.1&76&526&116286\\
+\hline
+256.bzip2 ref.2&100&1029&102827\\
+\hline
+300.twolf ref.0&39&100&314420\\
+\hline\hline
+168.wupwise ref.0&12&41&421162\\
+\hline
+171.swim ref.0&3&6&194374\\
+\hline
+172.mgrid ref.0&16&62&641111\\
+\hline
+173.applu ref.0&25&58&334221\\
+\hline
+177.mesa ref.0&6&13&27850\\
+\hline
+179.art ref.0&34&87&123979\\
+\hline
+179.art ref.1&34&92&127597\\
+\hline
+183.equake ref.0&19&47&126938\\
+\hline
+187.facerec ref.0&19&58&313758\\
+\hline
+188.ammp ref.0&57&161&333435\\
+\hline
+189.lucas ref.0&45&105&309411\\
+\hline
+200.sixtrack ref.0&25&71&627677\\
+\hline
+301.apsi ref.0&39&158&437544\\
+\hline
+\end{tabular}
+\caption{Base CEM stats for the SPEC2000 benchmarks.}
+\label{table:base_stats_2000}
+\end{table}
+
+\begin{table}[ht!]
+\footnotesize
+\center
+\begin{tabular}{|p{1.0in}|p{0.4in}|p{0.4in}|p{0.4in}|p{0.4in}|p{0.4in}|p{0.4in}|p{0.4in}|}
+\hline
+Program&Total Inputs&Total Nodes&Shared Nodes&Unique Nodes&Total Edges&Shared Edges&Unique Edges\\
+\hline\hline
+164.gzip&5&78&55&23&903&354&549\\
+\hline
+175.vpr&2&56&15&41&177&19&158\\
+\hline
+176.gcc&5&314&235&79&3498&1370&2128\\
+\hline
+252.eon&3&8&7&1&16&13&3\\
+\hline
+253.perlbmk&7&49&40&9&388&294&94\\
+\hline
+255.vortex&2&19&15&4&138&74&64\\
+\hline
+256.bzip2&3&120&91&29&1509&635&874\\
+\hline\hline
+179.art&2&34&34&0&92&87&5\\
+\hline
+\end{tabular}
+\caption{Composite CEM stats for the SPEC2000 benchmarks that have multiple
+inputs.}
+\label{table:composite_stats_2000}
+\end{table}
+
+\begin{table}[t!]
+\footnotesize
+\center
+\begin{tabular}{|p{1.3in}|p{1.0in}|p{1.0in}|p{1.0in}|}
+\hline
+Program&Total Paths of Length 5&Unique Paths of Length 5&Percentage of Total Paths\\
+\hline\hline
+164.gzip ref.0&71935&2730&3.80\\
+\hline
+164.gzip ref.1&32814&1818&5.54\\
+\hline
+164.gzip ref.2&72981&4827&6.61\\
+\hline
+164.gzip ref.3&59291&855&1.44\\
+\hline
+164.gzip ref.4&150469&10157&6.75\\
+\hline
+175.vpr ref.0&101022&59&0.06\\
+\hline
+175.vpr ref.1&89788&1963&2.19\\
+\hline
+176.gcc ref.0&20778&1920&9.24\\
+\hline
+176.gcc ref.1&66952&14100&21.06\\
+\hline
+176.gcc ref.2&6539&1597&24.42\\
+\hline
+176.gcc ref.3&6713&920&13.70\\
+\hline
+176.gcc ref.4&36239&9552&26.36\\
+\hline
+179.art ref.1&127594&879&3.71\\
+\hline
+181.mcf ref.0&49404&1832&1.78\\
+\hline
+186.crafty ref.0&213204&3791&28.36\\
+\hline
+197.parser ref.0&291567&82702&0.07\\
+\hline
+252.eon ref.0&67793&48&0.10\\
+\hline
+252.eon ref.1&48633&48&0.06\\
+\hline
+252.eon ref.2&86427&48&0.67\\
+\hline
+253.perlbmk ref.0&32430&216&0.48\\
+\hline
+253.perlbmk ref.1&1240&6&0.06\\
+\hline
+253.perlbmk ref.2&21524&13&5.64\\
+\hline
+253.perlbmk ref.3&108441&6112&7.04\\
+\hline
+253.perlbmk ref.4&56708&3991&7.35\\
+\hline
+253.perlbmk ref.5&53409&3926&5.62\\
+\hline
+253.perlbmk ref.6&94025&5288&2.52\\
+\hline
+254.gap ref.0&217332&5481&1.30\\
+\hline
+255.vortex ref.0&107946&1408&1.38\\
+\hline
+255.vortex ref.1&121248&1668&17.38\\
+\hline
+256.bzip2 ref.0&85705&14896&9.81\\
+\hline
+256.bzip2 ref.1&116283&11402&12.93\\
+\hline
+256.bzip2 ref.2&102824&13295&0.09\\
+\hline
+300.twolf ref.0&314417&297&0.03\\
+\hline\hline
+168.wupwise ref.0&421159&122&0.01\\
+\hline
+171.swim ref.0&194371&15&0.03\\
+\hline
+172.mgrid ref.0&641108&198&0.04\\
+\hline
+173.applu ref.0&334218&148&0.11\\
+\hline
+177.mesa ref.0&27847&31&0.19\\
+\hline
+178.galgel ref.0&366167&687&0.62\\
+\hline
+179.art ref.0&123976&771&0.69\\
+\hline
+183.equake ref.0&126935&122&0.10\\
+\hline
+187.facerec ref.0&313755&187&0.06\\
+\hline
+188.ammp ref.0&333432&1574&0.47\\
+\hline
+189.lucas ref.0&309408&279&0.09\\
+\hline
+200.sixtrack ref.0&627674&202&0.03\\
+\hline
+301.apsi ref.0&437541&478&0.11\\
+\hline
+\end{tabular}
+\caption{Stage paths of length 5 for the SPEC2000 benchmarks.}
+\label{table:stage_path_5}
+\end{table}
+

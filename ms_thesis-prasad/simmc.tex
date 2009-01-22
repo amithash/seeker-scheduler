@@ -1,0 +1,691 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Multi-Context Modeling and Prediction}~\label{chap:simmc}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Emerging multi-core processor designs create an unparalleled
+opportunity to advance the scientific and general-purpose computing
+domains.  Multi-core designs are the cornerstone of all future
+general-purpose and high-performance computing systems and will
+impact all aspects of society by increasing productivity and
+efficiency. However, performance improvements will only be possible
+with advances in software that fully utilizes the multi-core hardware.
+Realizing the full potential of multi-core machines requires an
+effective modeling system capable of predicting program-level
+interactions.
+
+Typically, operating systems might consider the processors in a
+multi-processor environment homogeneous (i.e., isomorphic mappings of
+threads to processors yield the same execution characteristics).
+Unfortunately, processors (i.e., hardware contexts or threads) in
+multi-core systems do not behave like a set of homogeneous processors,
+but instead behave as a dynamically varying set of heterogeneous
+processors.  Processors on a multi-core machine share many resources
+creating interference and system bottlenecks based on their run-time
+behavior.  As program threads with different characteristics
+execute together within a multi-core processor, the characteristics of
+the entire system change.  As such, there is need to integrate into
+the system software the capability to model multi-core interactions
+and have such information available both at run time and for off-line
+workload analysis.
+
+This chapter, demonstrates the use of the Cardinal
+framework for characterizing and modeling workloads in multi-context
+environments. Overall, there is significant benefit
+to deriving accurate models of multi-core architecture interaction
+that only require individual program properties.  For instance,
+within large data centers, various program threads can be
+co-scheduled to multi-core platforms with greater insight into the
+expected throughput performance. In addition, the approach can be used
+during the design process and has the potential to be used to guide
+run-time behaviors such as operating system scheduling and run-time
+optimization.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{SimMulticore - Using the Cardinal Framework to Model Multi-context
+Environments}~\label{sec:simmc_construction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SimMulticore (SMC) is a process of Cardinal framework that creates
+simulated runs of programs paired on multi-core systems.  During
+the process, the individual program data is integrated in a single
+Merged CEM representing likely co-phase interaction.  SMC has three
+basic sections - initialization, simulation, and data collection.
+This section gives a brief overview of each.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{SMC Initialization}~\label{sec:simmc_init}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+SMC creates threads by populating CEMs and loading their associated
+profile files.  The profile files add characteristic data to each node
+in the execution map.  Once the threads are created
+the starting point of each thread,
+called the current position, is set. The initial position is
+controlled on a thread by thread basis, and is set by a percentage of
+the total length of the internal timeline. This variability allows for
+a pairing of threads to be run at various offsets to each other. For
+example, 164.gzip could be run with 255.vortex where each program
+begins the simulation half way through its profile execution.
+
+SMC then pre-computes the next stage predictions for each node in each
+CEM using the most weighted edge traversal in the CEM. 
+The most weighted edge model gives the same result as the Markov model described
+in Chapter~\ref{chap:prediction}. The advantage of the Markov model is that it
+gives alternate possibilities and cases where a node will never be reached. The
+disadvantage of the Markov model is the computational complexity. The most
+weighted edge model is much faster and lends itself to being used at run time.
+This model predicts the next stages that will occur in the execution of the program.
+
+%Pre-population of predictions is done to increase the speed of each
+%simulation. Because each CEM is static during the simulation (no
+%stages are added or removed), visiting each node once, and predicting
+%the next N stages can be done ahead of time, and the prediction data
+%stored in the data cache in the CEM graph inside the SMC thread.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{SMC Data Collection}~\label{sec:simmc_data_collect}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The SMC data collector examines the stage predictions and checks the timeline
+of each program to check the accuracy of the predictions.
+This information is recorded at each step. The data
+collector also looks at all info keys in each node and checks the predicted
+next stages against the actual next stages to see if the predicted
+info matches the real info. If more than one thread has the same info
+key, the success of the group of threads is also checked. For example,
+if both threads of a simulation had the same info key, and if both
+threads predictions for that info are correct, the group would also
+have the correct prediction for that N step prediction at that
+specific point in the overall simulation.
+
+During the simulation, at each new step, the stage IDs at the current
+simulation position are grouped into a new stage and saved in a new
+timeline creating a timeline of execution of the combined
+states of the simulation. From this, a new type of CEM called the Merged CEM is
+created. For example, if 164.gzip is in stage 14 and
+255.vortex is in stage 26 at a given point in the simulation, a
+timeline entry of "14.26" would be created.  Further, the data
+collector examines prediction results for all nodes in the prediction
+depth at each step. Each thread has a running tally of correct
+predictions for each level of prediction depth. At any given step,
+each of the N predictions are checked against the actual timeline for
+that thread.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{SMC Simulation}~\label{sec:simmc_simulation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+After all initialization is complete, SMC begins the simulation by
+stepping the threads and calling a data collection function after each
+step. Data collection functions can be customized for any need, and
+are simply called each time the thread collection assigned to that
+data collector is stepped. Multiple data collectors could be written
+for one thread collection if desired.  SMC runs the simulation for a predefined
+length or by default it runs the 
+number of stages in the longest thread's timeline. If other threads in
+the thread collection are shorter, they are restarted. If the longest
+thread is started at an initial position that is not zero, SMC will
+restart that thread and run it until it reaches the start position
+again.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Merged CEM - A Representation of Programs Running in a Multi-context
+Environment}~\label{sec:simmc_merged}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The resulting representation from SMC is call the Merged CEM.
+A Merged CEM is another representation that can be made using the CEM system.
+Taking the CEM for two or more individual programs and combining them into one CEM
+emulates the interaction of these programs in a multi-context environment.
+Figure~\ref{fig:exemap_merged}(a) and Figure~\ref{fig:exemap_merged}(b) show
+the Base CEMs for 175.vpr and 252.eon.
+Taking the timelines for 175.vpr and 252.eon, the stages are lined up to show
+the nodes of the two programs that may be executing at the same time.
+The nodes that line up from the CEMs create merged nodes. The merged nodes then
+create the merged timeline. From the merged timeline the Merged CEM can be
+created in the same way a regular CEM is created.
+The Merged CEM for 175.vpr and 252.eon is shown in
+Figure~\ref{fig:exemap_merged}(c). Simply matching up stages from two different
+programs may not be accurate as stages from different programs take different
+amounts of time to run. The variable run time of stages is explored later in this
+chapter.
+
+%A Merge Graph is simply the combination of the CEM runs from all
+%threads in the current simulation. While SMC is stepping thought the
+%threads, at each step, the data collector crates a node for the
+%combined state of the system. This merged node is added to the end of
+%the merge run timeline. After the simulation is complete, the Cardinal
+%Library is called to create a CEM from that timeline.  The resulting
+%CEM shows the unique combination stages that were encountered during
+%the simulation, as well as the transition structure between those
+%stages. For example, given thread A with timeline (1, 1, 2, 5) and
+%thread B with timeline (1, 2, 2, 3), the resulting merge timeline will
+%be (1.1, 1.2, 2.2, 5.3). As will be discussed in the next section, the
+%merge CEM can be dramatically larger and more complex.
+
+\begin{figure}[h!]
+    \begin{tabular}{c}
+        \begin{minipage}{\textwidth}
+            \centering
+            \includegraphics[scale=0.25]{fig/175_vpr_10M} \\
+            \hspace{10pt}(a) \textit{Base CEM for 175.vpr.}
+        \end{minipage} \\
+        \begin{minipage}{\textwidth}
+            \centering
+            \includegraphics[scale=0.25]{fig/252_eon_10M} \\
+            \vspace{-0.2in}
+            \hspace{10pt}(b) \textit{Base CEM for 252.eon.}
+        \end{minipage} \\
+        \begin{minipage}{\textwidth}
+            \centering
+            \vspace{0.2in}
+            \includegraphics[scale=0.2]{fig/252_eon_175_vpr_10M_merge} \\
+            \hspace{10pt}(c) \textit{Merged CEM for 175.vpr and 252.eon.}
+        \end{minipage} \\
+    \end{tabular}
+    \caption{Base CEMs for 175.vpr in (a) and 252.eon in (b) and the resulting
+Merged CEM in (c).}
+\label{fig:exemap_merged}
+\end{figure}
+
+The creation of the Merged CEM results in graphs that are larger
+than the graphs for the individual runs of the programs. Figure
+\ref{fig:merged_heatmap} shows the number of nodes in the Merged CEM 
+when pairing SPEC2000 programs. The size of the Base CEMs is also shown. In the
+worst case, the size of the Merged CEM would be the result of multiplying the
+size of the Base CEMs in the pairing. The largest resulting Merged CEM is from
+176.gcc and 197.parser at 1327 nodes. Multiplying the Base CEM sizes together
+the worst case would be 3519 nodes showing the the Merged CEM reduces the search
+space for possible program interactions.
+
+\begin{figure}[ht!]
+    \begin{tabular}{c}
+        \begin{minipage}{\textwidth}
+            \centering
+            \includegraphics[scale=0.55]{fig/merged_heatmap} \\
+        \end{minipage} \\
+    \end{tabular}
+    \caption{Node counts for Merged CEMs resulting from pairing SPEC2000 integer
+benchmarks.}
+\label{fig:merged_heatmap}
+\end{figure}
+
+
+%\begin{figure}[ht!]
+%    \begin{tabular}{c}
+%        \begin{minipage}{\textwidth}
+%            \centering
+%            \includegraphics[scale=0.5]{fig/node_contrib.pdf} \\
+%        \end{minipage} \\
+%    \end{tabular}
+%    \caption{Merged CEM node contribution.}
+%\label{fig:2way_nodes_crap}
+%\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Multi-context Prediction Using Merged CEMs}~\label{sec:results_prediction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Prediction of multi-context runs works much in the same way as a single
+program prediction. Predictions for individual programs are gathered and then combined to
+find the overall predicted state of the system. Having this prediction system
+in place, a simple scoring system
+determines the accuracy of the model. At each step, the
+prediction vectors are found, along with the actual next stages. The
+actual next stages are found by looking in the timeline for each
+individual program. These vectors are added together to form a vector of numbers
+representing how many correct predictions are made. The scoring system give
+results for four different situations:  no individual node correct, some
+individual nodes correct, a majority of individual nodes correct and all
+individual nodes correct. The scoring shows how often the
+model is exactly correct, partially correct, or not correct at
+all. Figure \ref{fig:2way_prediction} shows the prediction accuracy
+obtained by various pairings of the SPEC2000 benchmarks. The graph in
+Figure~\ref{fig:2way_prediction} shows possible problem pairings for a
+multi-core system and also possible pairings that would result in high
+prediction accuracy. A run-time system could use this information to possibly
+only pair those programs together that result in good prediction which would
+enhance the system's awareness of program behavior.
+
+\begin{figure}[ht!]
+    \begin{tabular}{c}
+        \begin{minipage}{\textwidth}
+            \centering
+            \includegraphics[scale=0.45]{fig/2way_prediction.pdf} \\
+        \end{minipage} \\
+    \end{tabular}
+    \caption{Prediction accuracy of merged state for pairings of SPEC2000
+benchmarks.}
+\label{fig:2way_prediction}
+\end{figure}
+
+%\begin{figure}[ht!]
+%    \begin{tabular}{c}
+%        \begin{minipage}{\textwidth}
+%            \centering
+%            \includegraphics[scale=0.5]{fig/2way_pred_drop.pdf} \\
+%        \end{minipage} \\
+%    \end{tabular}
+%    \caption{Prediction accuracy of merged state for four programs.}
+%\label{fig:2way_prediction_dropoff}
+%\end{figure}
+
+Predicting the characteristic data for future stages can reveal information
+about the future state of a multi-context system.
+For this, the same scoring system as described above is used.
+used. Figure \ref{fig:2way_pred_sus_hind}(a) and Figure
+\ref{fig:2way_pred_sus_hind}(b) show the accuracy of predicting example
+metrics. The example metrics are termed susceptibility and hindrance. As
+described in~\cite{josh-thesis} susceptibility is how a program is affected by
+running with other programs and hindrance is how a program interferes while
+running with other programs. The results of predicting susceptibility and
+hindrance are better than that of predicting future merged nodes. Predicting
+characteristic data can have better results because even if the incorrect node
+is predicted, the model may still predict the correct data because two different
+nodes may be characterized the same.
+
+\begin{figure}[t!]
+    \centering
+    \begin{tabular}{cc}
+        \centering
+        \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[scale=0.25]{fig/2way_prediction_sus}
+        \hspace{2pt}
+        \end{minipage} &
+        \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[scale=0.25]{fig/2way_prediction_hind}
+        \end{minipage}
+        \\  (a) \textit{Susceptibility.} &
+            (b) \textit{Hindrance.}
+    \end{tabular} 
+    \caption{Predicting characteristic data of paired SPEC2000 benchmarks using
+the Merged CEM.}
+    \label{fig:2way_pred_sus_hind}
+\end{figure}
+
+%Predicting 4 thread runs.
+%\begin{figure}[ht!]
+%    \begin{tabular}{c}
+%        \begin{minipage}{\textwidth}
+%            \centering
+%            \includegraphics[scale=0.5]{fig/4way_prediction.pdf} \\
+%        \end{minipage} \\
+%    \end{tabular}
+%    \caption{Prediction of 4 thread runs.}
+%\label{fig:4way_prediction}
+%\end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Variable Run Time Considerations - The Scaled Merged CEM}~\label{sec:simmc_scaled}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The methodology described in the previous section suffers from one
+major assumption. The methodology assumes that each stage in each
+program takes the same amount of time to execute.
+Since different stages will have different run times, the SMC tool is adjusted to match up the
+running of paired programs.
+
+The first step in better matching up the run time of the programs is to
+characterize the run times. Using PAPI~\cite{papi}, PMU data is collected to
+using an Intel Core 2 Duo to compute the IPC of each stage. An
+average IPC is then assigned to each node by averaging the measured IPC of the
+stages that appear in each node.
+
+Since processor cycles are common between each program, the SMC tool can scale
+the stages using the computed IPC. In this way, one program may transition to
+its next stage while the other
+will remain in the same stage. This scaling of stage sizes allows the Merged CEM
+to more accurately model multi-context execution.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Scaled Merged CEM Analysis}~\label{sec:simmc_scaled_analysis}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+To explore Scaled Merged CEMs and there accuracy the experimental setup included running the
+benchmarks alone on an Intel Core 2 Duo system to measure the IPC of each stage using PMU
+readings for the SPEC2000 integer benchmarks. Once the IPC is known for each stage the
+average IPC for each node is computed. From the IPC, the cycle count for each node
+can be computed.
+
+Table~\ref{table:scaled_graph_complexity}
+shows the ratio of steps, nodes and edges resulting from the scaled
+run as compared to the non-scaled run. The notion of a step in SMC is the
+interval at which merged nodes are created. In creating the Scaled Merged CEM,
+the step size is decreased and thus, there are many more steps as compared to a
+non-scaled run. Table~\ref{table:scaled_graph_complexity} shows that while the
+number of steps increases by an order of magnitude the number distinct
+nodes and edges in the Merged CEM remains about the same.
+
+\begin{table}
+\centering
+\tiny
+\begin{tabular}{|l|l|l|l|}
+\hline
+Pairing&Steps&Nodes&Edges\\
+\hline
+\hline
+164.gzip-164.gzip&9.14&1.00&1.04\\
+\hline
+164.gzip-175.vpr&9.14&1.09&1.12\\
+\hline
+175.vpr-175.vpr&11.00&1.00&1.20\\
+\hline
+164.gzip-176.gcc&9.14&1.22&1.43\\
+\hline
+175.vpr-176.gcc&11.00&1.02&1.12\\
+\hline
+176.gcc-176.gcc&7.62&1.00&1.17\\
+\hline
+164.gzip-181.mcf&9.14&0.52&0.48\\
+\hline
+175.vpr-181.mcf&11.00&0.91&0.84\\
+\hline
+181.mcf-176.gcc&7.61&0.42&0.51\\
+\hline
+181.mcf-181.mcf&24.56&1.00&1.08\\
+\hline
+164.gzip-186.crafty&9.14&1.00&0.89\\
+\hline
+175.vpr-186.crafty&11.00&1.22&1.03\\
+\hline
+186.crafty-176.gcc&7.63&1.10&1.06\\
+\hline
+186.crafty-181.mcf&24.90&1.13&0.94\\
+\hline
+186.crafty-186.crafty&7.30&1.14&1.05\\
+\hline
+164.gzip-197.parser&9.14&1.10&0.97\\
+\hline
+175.vpr-197.parser&11.00&1.03&0.93\\
+\hline
+176.gcc-197.parser&7.62&1.21&1.15\\
+\hline
+197.parser-181.mcf&24.85&1.13&1.26\\
+\hline
+186.crafty-197.parser&7.24&1.01&0.71\\
+\hline
+197.parser-197.parser&9.83&1.00&1.02\\
+\hline
+164.gzip-252.eon&9.15&0.98&0.88\\
+\hline
+175.vpr-252.eon&11.00&1.27&1.02\\
+\hline
+176.gcc-252.eon&7.65&1.06&1.20\\
+\hline
+181.mcf-252.eon&26.09&1.10&0.90\\
+\hline
+186.crafty-252.eon&7.30&1.24&0.81\\
+\hline
+197.parser-252.eon&9.83&1.03&0.81\\
+\hline
+252.eon-252.eon&10.00&1.25&1.13\\
+\hline
+164.gzip-253.perlbmk&9.14&1.40&1.49\\
+\hline
+175.vpr-253.perlbmk&11.00&1.10&1.23\\
+\hline
+253.perlbmk-176.gcc&7.85&0.95&1.19\\
+\hline
+253.perlbmk-181.mcf&24.56&1.75&2.11\\
+\hline
+253.perlbmk-186.crafty&7.30&1.07&1.00\\
+\hline
+253.perlbmk-197.parser&9.83&1.19&1.14\\
+\hline
+253.perlbmk-252.eon&10.00&1.23&1.29\\
+\hline
+253.perlbmk-253.perlbmk&6.04&1.00&1.18\\
+\hline
+164.gzip-254.gap&9.14&1.02&1.10\\
+\hline
+175.vpr-254.gap&11.00&0.94&0.96\\
+\hline
+254.gap-176.gcc&7.63&1.14&1.33\\
+\hline
+254.gap-181.mcf&24.91&1.17&1.34\\
+\hline
+254.gap-186.crafty&7.30&1.10&1.03\\
+\hline
+197.parser-254.gap&9.83&1.17&1.31\\
+\hline
+252.eon-254.gap&10.00&1.01&0.90\\
+\hline
+254.gap-253.perlbmk&6.04&0.72&0.76\\
+\hline
+254.gap-254.gap&6.83&1.00&1.07\\
+\hline
+164.gzip-255.vortex&9.14&1.26&1.19\\
+\hline
+255.vortex-175.vpr&11.00&1.00&1.06\\
+\hline
+255.vortex-176.gcc&7.61&1.03&1.14\\
+\hline
+255.vortex-181.mcf&25.27&1.08&1.07\\
+\hline
+255.vortex-186.crafty&7.30&1.00&0.86\\
+\hline
+255.vortex-197.parser&9.83&1.10&0.99\\
+\hline
+255.vortex-252.eon&10.00&1.04&0.89\\
+\hline
+255.vortex-253.perlbmk&6.05&1.16&1.45\\
+\hline
+255.vortex-254.gap&6.83&0.90&0.97\\
+\hline
+255.vortex-255.vortex&7.96&1.00&1.15\\
+\hline
+164.gzip-256.bzip2&9.16&1.10&1.17\\
+\hline
+175.vpr-256.bzip2&11.00&1.04&1.07\\
+\hline
+256.bzip2-176.gcc&7.71&1.16&1.32\\
+\hline
+256.bzip2-181.mcf&25.42&1.19&1.37\\
+\hline
+256.bzip2-186.crafty&7.30&1.02&0.85\\
+\hline
+197.parser-256.bzip2&9.83&1.14&1.07\\
+\hline
+252.eon-256.bzip2&10.00&1.05&0.96\\
+\hline
+256.bzip2-253.perlbmk&6.04&0.94&1.11\\
+\hline
+254.gap-256.bzip2&6.83&1.04&1.10\\
+\hline
+256.bzip2-255.vortex&7.96&1.03&1.05\\
+\hline
+256.bzip2-256.bzip2&8.75&1.00&1.14\\
+\hline
+164.gzip-300.twolf&9.14&0.68&0.85\\
+\hline
+175.vpr-300.twolf&11.00&1.05&1.21\\
+\hline
+300.twolf-176.gcc&7.61&0.92&1.07\\
+\hline
+300.twolf-181.mcf&24.55&1.23&1.15\\
+\hline
+300.twolf-186.crafty&7.22&0.70&0.94\\
+\hline
+197.parser-300.twolf&9.83&0.85&0.97\\
+\hline
+252.eon-300.twolf&10.00&0.50&0.59\\
+\hline
+300.twolf-253.perlbmk&6.04&0.73&0.85\\
+\hline
+254.gap-300.twolf&6.73&0.89&1.01\\
+\hline
+300.twolf-255.vortex&7.96&0.65&0.86\\
+\hline
+300.twolf-256.bzip2&8.75&0.85&0.99\\
+\hline
+300.twolf-300.twolf&11.00&1.00&1.17\\
+\hline
+\hline
+Average&10.63&1.03&1.06\\
+\hline
+\end{tabular}
+\caption{Ratios of the Scaled Merged CEM to the Non-scaled Merged CEM for pairings of SPEC2000
+integer benchmarks.}
+\label{table:scaled_graph_complexity}
+\end{table}
+
+
+To see how well the Scaled Merged CEMs model real execution,
+comparison to running programs must be done. For this
+experiment, PMU counters are used to periodically dump the
+instruction counts and cycles completed for each program in an Intel Core 2 Duo
+system where two SPEC2000 integer benchmarks are running.
+The pairings that are run are those
+that appear in Table~\ref{table:scaled_graph_complexity}.
+
+Using the instruction counts and the number of cycles for each dump,
+samples can be made that are in the form starting point - number of
+cycles - ending point.  Combining information from both programs this
+takes the form: initial merged node - number of cycles - ending merged
+node. Taking any number of theses samples, the initial merged node can
+be looked up in the Scaled Merged CEM, the number of cycles can be read and
+finally a prediction can be made on what the ending merged node will
+be. Performing these steps will show how well the Scaled Merged CEM
+can be used to model a real run of the program.
+
+There are three possible results from doing these predictions:
+correct prediction of the future merged node, incorrect prediction of
+the future merged node, or either the current merged node from the PMU
+run is not found in the Scaled Merged CEM or the target merged node from
+the PMU run is not found in the Scaled Merged CEM.
+
+Figure~\ref{fig:pmu_comp_res} shows a stacked bar graph for each of the above results.
+The results are taken from running 66 pairings of the SPEC2000 integer
+benchmarks. Figure~\ref{fig:pmu_comp_res}(a) shows the benchmark pairings with a majority of the
+predictions being correct. In this case, 33 of the 66 pairings result in mostly
+correct predictions. The results range from near perfect prediction to about 50\%
+accuracy. Figure~\ref{fig:pmu_comp_res}(b) shows the benchmark pairings with a majority of the
+predictions being incorrect. This category consists of 28 of the 66 pairings. For
+incorrect predictions, the results vary from about 85\% incorrect to about 55\%
+incorrect. Figure~\ref{fig:pmu_comp_res}(c) shows the final 5 benchmark pairings which resulted in a
+majority of the predictions either predicting from a merged node that does not
+exist in the Merged CEM or looking to go to a merged node that does not exist.
+Two factors contribute to creating merged nodes in an actual run that do not
+exist in the Merged CEM. First, error due to averaging
+could cause the Merged CEM to miss some possible merged nodes.
+Second, the IPC values that are used to create the Merged CEMs are taken from
+individual runs of the program. IPC can change when programs run in
+parallel due to resource contention. Figure~\ref{fig:pmu_comp_res}(c) shows that
+the pairings that result in nodes that are not found are programs that are
+paired with themselves meaning that these programs cause a difference in
+performance when paired with themselves as compared to running alone.
+
+\begin{figure}[h!]
+    \centering
+    \begin{tabular}{p{2.75in}p{2.75in}}
+        \centering
+        \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[scale=0.3]{fig/merged_node_pred_correct}
+        \hspace{2pt}
+        \end{minipage} &
+        \begin{minipage}{0.5\textwidth}
+        \centering
+        \vspace{-0.15in}
+        \includegraphics[scale=0.3]{fig/merged_node_pred_incorrect}
+        \end{minipage}
+        \\ (a) \textit{Results where a majority of the predictions
+                       are correct.} &
+           (b) \textit{Results where a majority of the predictions
+                       are incorrect.}
+    \end{tabular}
+    \begin{tabular}{c}
+        \begin{minipage}{\textwidth}
+            \centering
+            \includegraphics[scale=0.3]{fig/merged_node_pred_not_found} \\
+            \hspace{10pt}(c) \textit{Results where a majority of the predictions
+                are incorrect because either the current merged node or the
+                predicted merged node is not found in the Merged CEM.}
+        \end{minipage} \\
+    \end{tabular}
+    \caption{Results of using the Scaled Merged CEM to predict events in
+        actual paired runs of SPEC2000 integer benchmarks.}
+\label{fig:pmu_comp_res}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Interval Analysis Using Merged CEMs}~\label{sec:simmc_interval}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+A Merged CEM can be created to represent a short portion of the run between
+multiple programs. If programs are paired up at different times during their run, the
+Merged CEMs can look much different.
+
+The Base CEMs shown in this thesis encompass the entire run of a
+program. It is not necessary for the CEM to represent the entire run. The CEM
+can also be used to represent just a small portion of the execution of a
+program. Likewise, the Merged CEM is not limited to whole program execution.
+
+To model real system interactions where programs are scheduled and de-scheduled
+causing only portions of programs to run together, only small runs of the
+programs may interact. To emulate this in the Merged CEM, the Merged CEMs are 
+created using just 500 scaled steps and at offsets from 0\% to 99\% of the
+paired programs. Programs may be scheduled at any time so any portion of one program may
+interact with any portion of another program.
+
+The graphs in Figure~\ref{fig:short_run_CEM} show the average number of nodes
+and edges along with the standard deviation for 130 pairings of the SPEC2000
+integer benchmarks. For the most part, the number of nodes is below 100 and the
+number of edges is below 500. Comparing the size of these interval Merged CEMs
+to those of the full run Merged CEMs, these are much smaller meaning less
+information is needed to characterize the interval runs.
+
+\begin{figure}[ht!]
+    \begin{tabular}{c}
+        \begin{minipage}{\textwidth}
+            \centering
+            \includegraphics[scale=1.0]{fig/short_runs_stats} \\
+        \end{minipage} \\
+    \end{tabular}
+    \caption{Distribution of nodes and edges for Merged CEMs created for
+interval runs of paired SPEC2000 integer benchmarks.}
+\label{fig:short_run_CEM}
+\end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Merged CEM Scalability}~\label{sec:simmc_pmu}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+As the number of cores in a system increases, it is important to consider the
+scalability of any technique. The Merged CEMs are designed in a way that they
+can handle any number of programs in creating the merged representation. To show
+the scalability of the Merged CEM, 30 random groupings of 2, 4, 8 and 16
+programs are taken from the SPEC2000 integer programs. The groupings are meant
+to represent a 2, 4, 8 or 16 core environment. The groupings are run to create
+a Merged CEM and to do a merged node prediction. The results are shown in
+Figure~\ref{fig:merged_graph_scalability}.
+
+\begin{figure}[ht!]
+    \begin{tabular}{c}
+        \begin{minipage}{\textwidth}
+            \centering
+            \includegraphics[scale=0.5]{fig/merged_graph_scalability} \\
+        \end{minipage} \\
+    \end{tabular}
+    \caption{Scalability of size and prediction accuracy for Merged CEMs for 2
+programs up to 16 programs.}
+\label{fig:merged_graph_scalability}
+\end{figure}
+
+The graph in Figure~\ref{fig:merged_graph_scalability} shows that as excepted,
+the average number of nodes in the Merged CEM increases as the number of programs
+increases. The prediction results shown in the graph are the percentage of times
+a majority of the nodes in the future merged node are predicted correctly.
+Results in Figure~\ref{fig:merged_graph_scalability} show that predicting one
+step out is the best followed by five steps out and finally 10 steps out. The
+accuracy for predicting a majority of nodes one step out is never worse than
+95\%.  For five steps out, the prediction is never worse than 89\% and for
+predicting 10 steps out the accuracy is never worse than 85\%. It is interesting
+to see that after the dip in accuracy for four programs, the accuracy increases
+at eight and 16 programs showing an increase in accuracy with an increase in
+programs.
+

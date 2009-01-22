@@ -57,7 +57,7 @@ void update_state_matrix(int delta)
 	int i,j,k;
 	for(i=0;i<total_online_cpus;i++){
 		if(info[i].awake == 0){
-			for(j=0;j<max_state_in_system)
+			for(j=0;j<max_state_in_system;j++)
 				state_matrix[i][j] = 0;
 			continue;
 		}

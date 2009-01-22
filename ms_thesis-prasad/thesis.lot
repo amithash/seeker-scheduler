@@ -1,0 +1,17 @@
+\contentsline {part} {\tablenameToC }{\relax }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces CEMs with highest evaluated similarity score.}}{23}
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Input identification results for 5 SPEC2000 benchmarks for 20 starting points over the input timeline using the unique node method.}}{33}
+\contentsline {table}{\numberline {3.2}{\ignorespaces Input identification results for 5 SPEC2000 benchmarks for 20 starting points over the input timeline using the unique node set method.}}{35}
+\contentsline {table}{\numberline {3.3}{\ignorespaces Unique paths of length 5 from SPEC2000 benchmarks with 3 or more reference inputs.}}{40}
+\contentsline {table}{\numberline {3.4}{\ignorespaces Input identification results for 5 SPEC2000 benchmarks for 20 starting points over the input timeline using the unique path method.}}{41}
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces Ratios of the Scaled Merged CEM to the Non-scaled Merged CEM for pairings of SPEC2000 integer benchmarks.}}{58}
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {B.1}{\ignorespaces Base CEM stats for the SPEC2000 benchmarks.}}{116}
+\contentsline {table}{\numberline {B.2}{\ignorespaces Composite CEM stats for the SPEC2000 benchmarks that have multiple inputs.}}{117}
+\contentsline {table}{\numberline {B.3}{\ignorespaces Stage paths of length 5 for the SPEC2000 benchmarks.}}{118}

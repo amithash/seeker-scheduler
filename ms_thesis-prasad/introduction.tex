@@ -1,0 +1,124 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Introduction}~\label{chap:introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% program behavior + representable form
+Traditionally, advances in computer performance exploit predictable
+behaviors and run-time patterns exhibited in programs. In hardware
+design, cache memory~\cite{cache-1} utilization increases based on
+temporal and spatial patterns, and branch prediction~\cite{brpr-1}
+improves pipeline performance by speculating branch outcomes based on
+near-past execution history. Compilers perform profile-based
+optimizations~\cite{com_prof-1} that speed up run-time over basic
+compilation techniques. Overall,
+there are significant advantages to capturing program
+behavior in an analyzable and representable form.
+
+% common representable form being converted
+Compilers use numerous internal representations for translated
+programs, including dependence graphs, control flow graphs, and
+call graphs. While control flow graphs illustrate static paths,
+analysis techniques such as dominator analysis~\cite{com_dom-1,
+com_dom-2} and flow-analysis~\cite{com_flow-1, com_flow-2} can
+generate run-time relationships and inferences of dynamic
+behavior. The benefit of these techniques are generally limited to statically
+modifying the
+compiled binary and do not extend to the run-time domain of applying
+optimization. In the embedded system field task graphs~\cite{task-graph} are
+used in making design decisions. Representations are key to performance gains
+and aid in the design process.
+
+% simulation:
+%  -code phsaes
+%  -phase distirbution but not transision
+Exploiting predictable behavior also advances simulation of future
+architectures~\cite{simpoint-1, simpoint-2}. In most cases the time
+to simulate the entire run of a modern program on a modeled future
+architecture is infeasible due to excessive time. To reduce the
+amount of code to simulate designers exploit
+repeating phases that make up a program. A
+phase~\cite{simpoint-1, simpoint-2} is made up of the parts of the
+program that execute similar code or access data in similar
+ways. Once phases are identified, only a fraction of each phase
+requires detailed cycle accurate simulation. The results from the phase
+simulation are then projected over the entire run of the
+program. In this scenario, the phases are individually studied in
+detail, but transitions between the phases are not closely examined.
+
+% modeling - statistical
+Analytical models are also proposed to concisely represent the
+execution behavior of a program.
+Neural networks~\cite{josh-thesis} have been used to model program interaction in
+multi-context environments. Using
+linear regression models and recursive partitioning of performance
+counter data~\cite{model-2} to develop a model have been shown to improve resource
+sharing through operating system scheduling in an SMT~\cite{SMT}
+architecture. These examples are offline models that
+require training/profiling runs. Dynamic models, constructed and used
+at run time could offer more potential to adapt program execution
+to system resources.
+
+% workload characterization
+Workload characterization is an important area related to the
+observation and analysis of program behavior. There are many ways
+to approach characterization such as statistical~\cite{workload-1},
+microarchitecture-independent~\cite{workload-2} and parallel
+\cite{workload-3, workload-4}. Another popular approach involves the
+basic block vector (BBV)~\cite{bbv-1, bbv-2} to summarize unique code points
+occurring during the program execution. The use of the BBV
+will be discussed in more detail later.
+
+% sum up prlblems from paragraphs above and introduce exe maps
+As microprocessors continue to advance and with the large movement to multi-core
+systems, the need for a common framework for workload
+characterization, modeling and run-time optimization is becoming
+greater. To this end, the \textit{Cardinal Execution Map} (CEM) is
+proposed. A CEM is a representation of the transitions between
+program phases in single and multiple execution profiles. A CEM tracks
+information for workload characterization and has the potential to be used in
+architecture, compiler and operating system research studies.
+
+% contributions
+This thesis describes the CEM framework and the advantages of integrating CEM
+components into computer system architecture research and studies. The following
+are the contributions made in this thesis:
+
+\begin{enumerate}
+
+    \item \textit{Execution Modeling Framework.}  The methodology for
+representing program execution in a condensed form is presented. The
+condensed form is a graph and is called the Cardinal Execution Map.
+Three different types of Cardinal Execution Map
+models are illustrated for various uses of modern computer systems.
+Cardinal Execution Map characteristics for SPEC2000~\cite{spec:2000} programs are
+presented to highlight key aspects of the system.
+
+    \item \textit{Program Execution Prediction and Identification.}
+Analyzes of properties of the Cardinal Execution Map are shown to predict future
+program events
+based on past execution and to distinguish different input runs of the same
+program.
+
+    \item \textit{Multi-context Modeling and Prediction.}  The
+Cardinal Execution Map of individual programs are used to model the
+potential interactions in a multi-context system.
+The accuracy of the emulated multi-context interactions are experimentally compared
+compared to actual multi-core system behavior.
+
+    \item \textit{Run-time use and creation of the Cardinal Execution Map.}
+Analysis methods for gathering run-time profiles to characterize program
+execution using the Cardinal Execution Map system are shown. Experiments are
+presented to show possible run-time use of the Cardinal Execution Map
+representation.
+
+\end{enumerate}
+
+% organization
+The rest of this thesis is organized as follows. Chapter~\ref{chap:methodology}
+presents the Cardinal Execution Map framework and analyzes key program execution
+characteristics. Chapter~\ref{chap:prediction} explores the predictive nature of
+the Cardinal Execution Map along with its ability to identify program
+inputs. Chapter~\ref{chap:simmc} details the ability of the Cardinal Execution
+Map to model a multi-context environment. Finally, Chapter~\ref{chap:conclusion}
+summarizes experimental results and the thesis contributions.
+

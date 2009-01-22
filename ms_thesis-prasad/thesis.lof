@@ -1,0 +1,89 @@
+\contentsline {part} {\figurenameToC }{\relax }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Cardinal Execution Map creation.}}{7}
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Reducing the BBV from a high dimensional representation into a more manageable form.}}{9}
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Creation and comparison of the CP-BBV.}}{10}
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Base CEM for 177.mesa.}}{13}
+\contentsline {figure}{\numberline {2.5}{\ignorespaces Composite CEM for three reference inputs of 252.eon.}}{14}
+\contentsline {figure}{\numberline {2.6}{\ignorespaces Composite CEM for a 4 thread run of the SPLASH2 benchmark fft.}}{15}
+\contentsline {figure}{\numberline {2.7}{\ignorespaces Node contributions for the SPEC2000 benchmarks.}}{16}
+\contentsline {figure}{\numberline {2.8}{\ignorespaces Contribution of 5 stage paths for programs from the SPEC2000 benchmark suite.}}{18}
+\contentsline {figure}{\numberline {2.9}{\ignorespaces Composition of paths of length 5 for the SPEC2000 benchmarks.}}{19}
+\contentsline {figure}{\numberline {2.10}{\ignorespaces Node statistics for the SPEC2000 Composite CEMs.}}{20}
+\contentsline {figure}{\numberline {2.11}{\ignorespaces Comparing CEM states, processor IPC, and L2 miss rate for 164.gzip.}}{21}
+\contentsline {figure}{\numberline {2.12}{\ignorespaces Clustering CEMs across GCC and ICC using O2 and O3 flags.}}{24}
+\contentsline {figure}{\numberline {2.13}{\ignorespaces Clustering CEMs across many different compiler optimizations.}}{25}
+\contentsline {figure}{\numberline {2.14}{\ignorespaces Effect of compiler optimizations on clustering.}}{26}
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Example CEM in (a) with the probabilities labeled in (b).}}{28}
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Probability matrix for the example CEM shown in Figure\nobreakspace {}3.1\hbox {}.}}{28}
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Calculation for prediction one stage into the future.}}{28}
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Calculation for prediction two stages into the future.}}{29}
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Formula for predicting N stages into the future for a CEM with probability matrix P.}}{29}
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Prediction accuracy for 20 of the SPEC2000 benchmarks for a range of 1 to 10 steps into the future showing the minimum, average and maximum accuracy.}}{30}
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Difference in prediction accuracy from 1 step to 5 steps for 183.equake, 187.facerec and 254.gap.}}{31}
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Identifying inputs in 176.gcc using unique nodes.}}{34}
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Identifying inputs in 176.gcc using unique node sets.}}{37}
+\contentsline {figure}{\numberline {3.10}{\ignorespaces Distribution of shared and unique nodes in program timelines for 5 of the SPEC2000 benchmarks.}}{37}
+\contentsline {figure}{\numberline {3.11}{\ignorespaces Contribution of unique nodes in SPEC2000 integer benchmarks.}}{38}
+\contentsline {figure}{\numberline {3.12}{\ignorespaces Identifying inputs in 176.gcc using unique paths.}}{42}
+\contentsline {figure}{\numberline {3.13}{\ignorespaces Contribution of unique 5 stage paths for 4 SPEC2000 benchmarks.}}{43}
+\contentsline {figure}{\numberline {3.14}{\ignorespaces Distribution of PCs in program nodes for 176.gcc and 197.parser.}}{44}
+\contentsline {figure}{\numberline {3.15}{\ignorespaces Run-time CP-BBV creation using basic block sampling for a single reference input of the SPEC2000 integer benchmarks.}}{46}
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Base CEMs for 175.vpr in (a) and 252.eon in (b) and the resulting Merged CEM in (c).}}{52}
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Node counts for Merged CEMs resulting from pairing SPEC2000 integer benchmarks.}}{53}
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Prediction accuracy of merged state for pairings of SPEC2000 benchmarks.}}{55}
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Predicting characteristic data of paired SPEC2000 benchmarks using the Merged CEM.}}{55}
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Results of using the Scaled Merged CEM to predict events in actual paired runs of SPEC2000 integer benchmarks.}}{60}
+\contentsline {figure}{\numberline {4.6}{\ignorespaces Distribution of nodes and edges for Merged CEMs created for interval runs of paired SPEC2000 integer benchmarks.}}{61}
+\contentsline {figure}{\numberline {4.7}{\ignorespaces Scalability of size and prediction accuracy for Merged CEMs for 2 programs up to 16 programs.}}{62}
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {A.1}{\ignorespaces Base CEM for 164.gzip reference input 0.}}{70}
+\contentsline {figure}{\numberline {A.2}{\ignorespaces Base CEM for 164.gzip reference input 1.}}{71}
+\contentsline {figure}{\numberline {A.3}{\ignorespaces Base CEM for 164.gzip reference input 2.}}{72}
+\contentsline {figure}{\numberline {A.4}{\ignorespaces Base CEM for 164.gzip reference input 3.}}{73}
+\contentsline {figure}{\numberline {A.5}{\ignorespaces Base CEM for 164.gzip reference input 4.}}{74}
+\contentsline {figure}{\numberline {A.6}{\ignorespaces Base CEM for 168.wupwise reference input 0.}}{75}
+\contentsline {figure}{\numberline {A.7}{\ignorespaces Base CEM for 171.swim reference input 0.}}{76}
+\contentsline {figure}{\numberline {A.8}{\ignorespaces Base CEM for 172.mgrid reference input 0.}}{77}
+\contentsline {figure}{\numberline {A.9}{\ignorespaces Base CEM for 173.applu reference input 0.}}{78}
+\contentsline {figure}{\numberline {A.10}{\ignorespaces Composite CEM for 175.vpr.}}{79}
+\contentsline {figure}{\numberline {A.11}{\ignorespaces Base CEM for 175.vpr reference input 0.}}{80}
+\contentsline {figure}{\numberline {A.12}{\ignorespaces Base CEM for 175.vpr reference input 1.}}{81}
+\contentsline {figure}{\numberline {A.13}{\ignorespaces Base CEM for 176.gcc reference input 0.}}{82}
+\contentsline {figure}{\numberline {A.14}{\ignorespaces Base CEM for 176.gcc reference input 2.}}{83}
+\contentsline {figure}{\numberline {A.15}{\ignorespaces Base CEM for 176.gcc reference input 3.}}{84}
+\contentsline {figure}{\numberline {A.16}{\ignorespaces Base CEM for 177.mesa reference input 0.}}{85}
+\contentsline {figure}{\numberline {A.17}{\ignorespaces Base CEM for 178.galgel reference input 0.}}{86}
+\contentsline {figure}{\numberline {A.18}{\ignorespaces Composite CEM for 179.art.}}{87}
+\contentsline {figure}{\numberline {A.19}{\ignorespaces Base CEM for 179.art reference input 0.}}{88}
+\contentsline {figure}{\numberline {A.20}{\ignorespaces Base CEM for 179.art reference input 1.}}{89}
+\contentsline {figure}{\numberline {A.21}{\ignorespaces Base CEM for 181.mcf reference input 0.}}{90}
+\contentsline {figure}{\numberline {A.22}{\ignorespaces Base CEM for 183.equake reference input 0.}}{91}
+\contentsline {figure}{\numberline {A.23}{\ignorespaces Base CEM for 187.facerec reference input 0.}}{92}
+\contentsline {figure}{\numberline {A.24}{\ignorespaces Base CEM for 188.ammp reference input 0.}}{93}
+\contentsline {figure}{\numberline {A.25}{\ignorespaces Base CEM for 189.lucas reference input 0.}}{94}
+\contentsline {figure}{\numberline {A.26}{\ignorespaces Base CEM for 200.sixtrack reference input 0.}}{95}
+\contentsline {figure}{\numberline {A.27}{\ignorespaces Composite CEM for 252.eon.}}{96}
+\contentsline {figure}{\numberline {A.28}{\ignorespaces Base CEM for 252.eon reference input 0.}}{97}
+\contentsline {figure}{\numberline {A.29}{\ignorespaces Base CEM for 252.eon reference input 1.}}{98}
+\contentsline {figure}{\numberline {A.30}{\ignorespaces Base CEM for 252.eon reference input 2.}}{99}
+\contentsline {figure}{\numberline {A.31}{\ignorespaces Composite CEM for 253.perlbmk.}}{100}
+\contentsline {figure}{\numberline {A.32}{\ignorespaces Base CEM for 253.perlbmk reference input 0.}}{101}
+\contentsline {figure}{\numberline {A.33}{\ignorespaces Base CEM for 253.perlbmk reference input 1.}}{102}
+\contentsline {figure}{\numberline {A.34}{\ignorespaces Base CEM for 253.perlbmk reference input 2.}}{103}
+\contentsline {figure}{\numberline {A.35}{\ignorespaces Base CEM for 253.perlbmk reference input 3.}}{104}
+\contentsline {figure}{\numberline {A.36}{\ignorespaces Base CEM for 253.perlbmk reference input 4.}}{105}
+\contentsline {figure}{\numberline {A.37}{\ignorespaces Base CEM for 253.perlbmk reference input 5.}}{106}
+\contentsline {figure}{\numberline {A.38}{\ignorespaces Base CEM for 253.perlbmk reference input 6.}}{107}
+\contentsline {figure}{\numberline {A.39}{\ignorespaces Base CEM for 254.gap reference input 0.}}{108}
+\contentsline {figure}{\numberline {A.40}{\ignorespaces Composite CEM for 255.vortex.}}{109}
+\contentsline {figure}{\numberline {A.41}{\ignorespaces Base CEM for 255.vortex reference input 0.}}{110}
+\contentsline {figure}{\numberline {A.42}{\ignorespaces Base CEM for 255.vortex reference input 1.}}{111}
+\contentsline {figure}{\numberline {A.43}{\ignorespaces Base CEM for 256.bzip2 reference input 0.}}{112}
+\contentsline {figure}{\numberline {A.44}{\ignorespaces Base CEM for 256.bzip2 reference input 1.}}{113}
+\contentsline {figure}{\numberline {A.45}{\ignorespaces Base CEM for 301.apsi reference input 0.}}{114}
+\addvspace {10\p@ }
