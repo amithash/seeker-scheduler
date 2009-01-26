@@ -268,6 +268,7 @@ static int scheduler_init(void)
 		timer_started = 1;
 		init_timer_deferrable(&state_work.timer);
 		schedule_delayed_work(&state_work, interval_jiffies);
+		info("Started Timer");
 	}
 
 	return 0;

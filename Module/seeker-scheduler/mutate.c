@@ -136,7 +136,15 @@ void choose_layout(int delta)
 		new_cpu_state[i] = cur_cpu_state[i];
 		load = ADD_LOAD(load,get_cpu_load(i));
 	}
-	load = LOAD_TO_UINT(load);
+	/* Perform a rounding only if the rounding does not make the 
+	 * load greater than total_online_cpus */
+	if(LOAD_TO_UINT(load) < total_online_cpus && ((load & 7) > 3))
+		load = LOAD_TO_UINT(load) + 1;
+	else 
+		load = LOAD_TO_UINT(load);
+
+	/* Let there be at least 1 online cpu */
+	load = load == 0 ? 1 : load; 
 	debug("load of system = %d",load);
 
 	/* Total Hint */
