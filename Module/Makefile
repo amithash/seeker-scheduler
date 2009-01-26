@@ -88,6 +88,7 @@ seeker_scheduler-objs += seeker-scheduler/main.o     \
 		       seeker-scheduler/$(MUTATE)    \
 		       seeker-scheduler/state.o      \
 		       seeker-scheduler/hwcounters.o \
+		       seeker-scheduler/stats.o	     \
 		       seeker-scheduler/debug.o
 
 # Performance Monitoring counters.

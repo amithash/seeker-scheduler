@@ -8,6 +8,7 @@
 #include <seeker_cpufreq.h>
 
 #include "state.h"
+#include "stats.h"
 #include "debug.h"
 
 static int demand_field[MAX_STATES];
@@ -133,10 +134,9 @@ void choose_layout(int delta)
 	for(i=0;i<total_online_cpus;i++){
 		poison[i] = 1;
 		new_cpu_state[i] = cur_cpu_state[i];
-#ifdef SEEKER_PLUGIN_PATCH
-		load += weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0;
-#endif
+		load = ADD_LOAD(load,get_cpu_load(i));
 	}
+	load = LOAD_TO_UINT(load);
 
 	/* Total Hint */
 	

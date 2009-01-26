@@ -194,6 +194,7 @@ static int scheduler_init(void)
 		static_layout = 1;
 	
 	total_online_cpus = num_online_cpus();
+	init_idle_logger();
 	/* Please keep this BEFORE the probe registeration and
 	 * the timer initialization. init_cpu_states makes this 
 	 * assumption */
