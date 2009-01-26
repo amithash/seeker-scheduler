@@ -38,6 +38,7 @@
 
 #include "seeker_cpufreq.h"
 #include "state.h"
+#include "stats.h"
 #include "assigncpu.h"
 #include "mutate.h"
 #include "debug.h"
