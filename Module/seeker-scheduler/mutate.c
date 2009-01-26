@@ -133,7 +133,9 @@ void choose_layout(int delta)
 	for(i=0;i<total_online_cpus;i++){
 		poison[i] = 1;
 		new_cpu_state[i] = cur_cpu_state[i];
+#ifdef SEEKER_PLUGIN_PATCH
 		load += weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0;
+#endif
 	}
 
 	/* Total Hint */

@@ -119,6 +119,20 @@ int init_cpu_states(unsigned int how)
 				set_freq(i,cur_cpu_state[i]);
 			}
 			break;
+		case NO_CHANGE:
+
+			for(i=0;i<total_online_cpus;i++){
+				unsigned int this_freq = get_freq(i);
+				if(this_freq >= max_state_in_system){
+					set_freq(i,0);
+					this_freq = 0;
+					warn("Freq state for cpu %d was not initialized and hence set to 0",i);
+				}
+				cur_cpu_state[i] = this_freq;
+				cpu_set(i,states[this_freq].cpumask);
+				states[this_freq].cpus++;
+			}
+			break;
 		default:
 			states[max_state_in_system-1].cpus = total_online_cpus;
 			for(i=0;i<total_online_cpus;i++){

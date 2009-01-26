@@ -34,7 +34,7 @@ ARCA := C2D
 endif
 endif
 endif
-ifeq ($(uname -m | grep x86_64 | wc -l), 1)
+ifeq ($(shell uname -m | grep x86_64 | wc -l), 1)
 BITS := 64
 else
 BITS := 32

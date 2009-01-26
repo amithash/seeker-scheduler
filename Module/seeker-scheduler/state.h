@@ -5,6 +5,7 @@
 #define ALL_HIGH 1
 #define BALANCE 2
 #define ALL_LOW 3
+#define NO_CHANGE 4
 
 struct state_desc{
 	short state;

@@ -38,6 +38,7 @@ extern struct state_desc states[MAX_STATES];
 extern int max_state_in_system;
 extern u64 interval_count;
 extern int cur_cpu_state[NR_CPUS];
+extern int static_layout;
 
 void put_mask_from_stats(struct task_struct *ts)
 {
@@ -97,7 +98,8 @@ void put_mask_from_stats(struct task_struct *ts)
 			}
 		}
 	}
-	hint_inc(state_req);
+	if(static_layout == 0)
+		hint_inc(state_req);
 	
 	if(new_state == -1)
 		new_state = state;
@@ -112,7 +114,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		 * if the states are consistant AND the mask is NOT empty! 
 		 * else leave it as it is */
 		mask = states[new_state].cpumask;
-		if(is_states_consistent() && !cpus_empty(mask)){
+		if(static_layout || ( is_states_consistent() && !cpus_empty(mask))){
 			ts->cpus_allowed = mask;
 			#ifdef SEEKER_PLUGIN_PATCH
 			ts->cpustate = new_state;
@@ -145,5 +147,4 @@ void put_mask_from_stats(struct task_struct *ts)
 	ts->re_cy = 0;
 #endif
 }
-
 
