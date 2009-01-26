@@ -137,6 +137,7 @@ void choose_layout(int delta)
 		load = ADD_LOAD(load,get_cpu_load(i));
 	}
 	load = LOAD_TO_UINT(load);
+	debug("load of system = %d",load);
 
 	/* Total Hint */
 	
