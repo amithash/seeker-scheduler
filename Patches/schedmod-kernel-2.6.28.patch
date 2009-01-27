@@ -1,54 +1,118 @@
-diff -Naur linux-2.6.28_clean/drivers/cpuidle/cpuidle.h linux-2.6.28_schedmod/drivers/cpuidle/cpuidle.h
---- linux-2.6.28_clean/drivers/cpuidle/cpuidle.h	2008-12-24 16:26:37.000000000 -0700
-+++ linux-2.6.28_schedmod/drivers/cpuidle/cpuidle.h	2009-01-15 11:36:29.000000000 -0700
-@@ -20,7 +20,7 @@
- extern void cpuidle_uninstall_idle_handler(void);
+diff -Naur linux-2.6.28.2_clean/arch/x86/include/asm/syscalls.h linux-2.6.28.2_mod/arch/x86/include/asm/syscalls.h
+--- linux-2.6.28.2_clean/arch/x86/include/asm/syscalls.h	2009-01-27 12:20:50.000000000 -0700
++++ linux-2.6.28.2_mod/arch/x86/include/asm/syscalls.h	2009-01-27 12:26:00.000000000 -0700
+@@ -23,6 +23,7 @@
+ #ifdef CONFIG_X86_32
+ /* kernel/process_32.c */
+ asmlinkage int sys_fork(struct pt_regs);
++asmlinkage int sys_seeker(int cmd, int parm);
+ asmlinkage int sys_clone(struct pt_regs);
+ asmlinkage int sys_vfork(struct pt_regs);
+ asmlinkage int sys_execve(struct pt_regs);
+@@ -67,6 +68,7 @@
+ /* X86_64 only */
+ /* kernel/process_64.c */
+ asmlinkage long sys_fork(struct pt_regs *);
++asmlinkage long sys_seeker(int cmd, int parm);
+ asmlinkage long sys_clone(unsigned long, unsigned long,
+ 			  void __user *, void __user *,
+ 			  struct pt_regs *);
+diff -Naur linux-2.6.28.2_clean/arch/x86/include/asm/unistd_32.h linux-2.6.28.2_mod/arch/x86/include/asm/unistd_32.h
+--- linux-2.6.28.2_clean/arch/x86/include/asm/unistd_32.h	2009-01-27 12:20:50.000000000 -0700
++++ linux-2.6.28.2_mod/arch/x86/include/asm/unistd_32.h	2009-01-27 12:24:40.000000000 -0700
+@@ -338,6 +338,7 @@
+ #define __NR_dup3		330
+ #define __NR_pipe2		331
+ #define __NR_inotify_init1	332
++#define __NR_seeker		333
  
- /* governors */
--extern int cpuidle_switch_governor(struct cpuidle_governor *gov);
-+//extern int cpuidle_switch_governor(struct cpuidle_governor *gov);
+ #ifdef __KERNEL__
  
- /* sysfs */
- extern int cpuidle_add_class_sysfs(struct sysdev_class *cls);
-diff -Naur linux-2.6.28_clean/drivers/cpuidle/governor.c linux-2.6.28_schedmod/drivers/cpuidle/governor.c
---- linux-2.6.28_clean/drivers/cpuidle/governor.c	2008-12-24 16:26:37.000000000 -0700
-+++ linux-2.6.28_schedmod/drivers/cpuidle/governor.c	2009-01-15 11:35:28.000000000 -0700
-@@ -69,6 +69,7 @@
+diff -Naur linux-2.6.28.2_clean/arch/x86/include/asm/unistd_64.h linux-2.6.28.2_mod/arch/x86/include/asm/unistd_64.h
+--- linux-2.6.28.2_clean/arch/x86/include/asm/unistd_64.h	2009-01-27 12:20:50.000000000 -0700
++++ linux-2.6.28.2_mod/arch/x86/include/asm/unistd_64.h	2009-01-27 12:25:14.000000000 -0700
+@@ -653,6 +653,8 @@
+ __SYSCALL(__NR_pipe2, sys_pipe2)
+ #define __NR_inotify_init1			294
+ __SYSCALL(__NR_inotify_init1, sys_inotify_init1)
++#define __NR_seeker				295
++__SYSCALL(__NR_seeker, sys_seeker)
  
- 	return 0;
+ 
+ #ifndef __NO_STUBS
+diff -Naur linux-2.6.28.2_clean/arch/x86/kernel/process_32.c linux-2.6.28.2_mod/arch/x86/kernel/process_32.c
+--- linux-2.6.28.2_clean/arch/x86/kernel/process_32.c	2009-01-27 12:20:50.000000000 -0700
++++ linux-2.6.28.2_mod/arch/x86/kernel/process_32.c	2009-01-27 12:33:30.000000000 -0700
+@@ -637,6 +637,27 @@
+ 	return do_fork(SIGCHLD, regs.sp, &regs, 0, NULL, NULL);
  }
-+EXPORT_SYMBOL_GPL(cpuidle_switch_governor);
  
- /**
-  * cpuidle_register_governor - registers a governor
-@@ -93,6 +94,7 @@
- 
- 	return ret;
++asmlinkage int sys_seeker(int cmd, int parm)
++{
++	switch(cmd){
++	case 0:
++		if(parm >= 0 && parm < 3){
++			current->fixed_state = parm;
++			return 0;
++		} else {
++			return -1;
++		}
++	case 1: 
++		current->fixed_state = -1;
++		return 0;
++	case 2:
++		current->seeker_scheduled = 0;
++		return 0;
++	default:
++		return -1;
++	}
++}
++
+ asmlinkage int sys_clone(struct pt_regs regs)
+ {
+ 	unsigned long clone_flags;
+diff -Naur linux-2.6.28.2_clean/arch/x86/kernel/process_64.c linux-2.6.28.2_mod/arch/x86/kernel/process_64.c
+--- linux-2.6.28.2_clean/arch/x86/kernel/process_64.c	2009-01-27 12:20:50.000000000 -0700
++++ linux-2.6.28.2_mod/arch/x86/kernel/process_64.c	2009-01-27 12:33:29.000000000 -0700
+@@ -712,6 +712,27 @@
+ 	return do_fork(SIGCHLD, regs->sp, regs, 0, NULL, NULL);
  }
-+EXPORT_SYMBOL_GPL(cpuidle_register_governor);
  
- /**
-  * cpuidle_replace_governor - find a replacement governor
-@@ -135,4 +137,5 @@
- 	list_del(&gov->governor_list);
- 	mutex_unlock(&cpuidle_lock);
- }
-+EXPORT_SYMBOL_GPL(cpuidle_unregister_governor);
- 
-diff -Naur linux-2.6.28_clean/include/linux/cpuidle.h linux-2.6.28_schedmod/include/linux/cpuidle.h
---- linux-2.6.28_clean/include/linux/cpuidle.h	2008-12-24 16:26:37.000000000 -0700
-+++ linux-2.6.28_schedmod/include/linux/cpuidle.h	2009-01-15 11:36:25.000000000 -0700
-@@ -173,6 +173,7 @@
- 
- extern int cpuidle_register_governor(struct cpuidle_governor *gov);
- extern void cpuidle_unregister_governor(struct cpuidle_governor *gov);
-+extern int cpuidle_switch_governor(struct cpuidle_governor *gov);
- 
- #else
- 
-diff -Naur linux-2.6.28_clean/include/linux/sched.h linux-2.6.28_schedmod/include/linux/sched.h
---- linux-2.6.28_clean/include/linux/sched.h	2008-12-24 16:26:37.000000000 -0700
-+++ linux-2.6.28_schedmod/include/linux/sched.h	2009-01-15 11:34:00.000000000 -0700
++asmlinkage long sys_seeker(int cmd, int parm)
++{
++	switch(cmd){
++	case 0:
++		if(parm >= 0 && parm < 3){
++			current->fixed_state = parm;
++			return 0;
++		} else {
++			return -1;
++		}
++	case 1: 
++		current->fixed_state = -1;
++		return 0;
++	case 2:
++		current->seeker_scheduled = 0;
++		return 0;
++	default:
++		return -1;
++	}
++}
++
+ asmlinkage long
+ sys_clone(unsigned long clone_flags, unsigned long newsp,
+ 	  void __user *parent_tid, void __user *child_tid, struct pt_regs *regs)
+diff -Naur linux-2.6.28.2_clean/arch/x86/kernel/syscall_table_32.S linux-2.6.28.2_mod/arch/x86/kernel/syscall_table_32.S
+--- linux-2.6.28.2_clean/arch/x86/kernel/syscall_table_32.S	2009-01-27 12:20:50.000000000 -0700
++++ linux-2.6.28.2_mod/arch/x86/kernel/syscall_table_32.S	2009-01-27 12:24:05.000000000 -0700
+@@ -332,3 +332,4 @@
+ 	.long sys_dup3			/* 330 */
+ 	.long sys_pipe2
+ 	.long sys_inotify_init1
++	.long sys_seeker
+diff -Naur linux-2.6.28.2_clean/include/linux/sched.h linux-2.6.28.2_mod/include/linux/sched.h
+--- linux-2.6.28.2_clean/include/linux/sched.h	2009-01-27 12:20:06.000000000 -0700
++++ linux-2.6.28.2_mod/include/linux/sched.h	2009-01-27 12:23:26.000000000 -0700
 @@ -1,6 +1,8 @@
  #ifndef _LINUX_SCHED_H
  #define _LINUX_SCHED_H
@@ -58,22 +122,14 @@ diff -Naur linux-2.6.28_clean/include/linux/sched.h linux-2.6.28_schedmod/includ
  /*
   * cloning flags:
   */
-@@ -135,6 +137,8 @@
- extern unsigned long nr_uninterruptible(void);
- extern unsigned long nr_active(void);
- extern unsigned long nr_iowait(void);
-+extern unsigned long weighted_cpuload(const int cpu);
-+
- 
- struct seq_file;
- struct cfs_rq;
-@@ -1356,6 +1360,14 @@
+@@ -1356,6 +1358,15 @@
  	unsigned long default_timer_slack_ns;
  
  	struct list_head	*scm_work_list;
 +
 +	/* Seeker Patch Additions */
 +	short seeker_scheduled;
++	short fixed_state;
 +	short cpustate;
 +	u64 interval;
 +	u64 inst;
@@ -82,19 +138,3 @@ diff -Naur linux-2.6.28_clean/include/linux/sched.h linux-2.6.28_schedmod/includ
  };
  
  /*
-diff -Naur linux-2.6.28_clean/kernel/sched.c linux-2.6.28_schedmod/kernel/sched.c
---- linux-2.6.28_clean/kernel/sched.c	2008-12-24 16:26:37.000000000 -0700
-+++ linux-2.6.28_schedmod/kernel/sched.c	2009-01-15 11:34:00.000000000 -0700
-@@ -1800,10 +1800,11 @@
- #ifdef CONFIG_SMP
- 
- /* Used instead of source_load when we know the type == 0 */
--static unsigned long weighted_cpuload(const int cpu)
-+unsigned long weighted_cpuload(const int cpu)
- {
- 	return cpu_rq(cpu)->load.weight;
- }
-+EXPORT_SYMBOL_GPL(weighted_cpuload);
- 
- /*
-  * Is this task likely cache-hot:
