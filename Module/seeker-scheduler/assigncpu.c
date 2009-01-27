@@ -39,6 +39,9 @@ extern int max_state_in_system;
 extern u64 interval_count;
 extern int cur_cpu_state[NR_CPUS];
 extern int static_layout;
+extern int low_state;
+extern int high_state;
+extern int mid_state;
 
 void put_mask_from_stats(struct task_struct *ts)
 {
@@ -57,6 +60,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	 * executed. Hopefully avoids messing
 	 * with short lived tasks.
 	 */
+
 	if(ts->inst < INST_THRESHOLD)
 		return;
 #endif
@@ -64,11 +68,21 @@ void put_mask_from_stats(struct task_struct *ts)
 	this_cpu = smp_processor_id();
 
 #ifdef SEEKER_PLUGIN_PATCH
-	ipc = IPC(ts->inst,ts->re_cy);
-	if(ts->cpustate != cur_cpu_state[this_cpu])
-		ts->cpustate = cur_cpu_state[this_cpu];
-
-	state_req = state = ts->cpustate;
+	switch(ts->fixed_state){
+	case 0: state_req = state = low_state;
+		break;
+	case 1: state_req = state = mid_state;
+		break;
+	case 2: state_req = state = high_state;
+		break
+	default:
+		ipc = IPC(ts->inst,ts->re_cy);
+		if(ts->cpustate != cur_cpu_state[this_cpu])
+			ts->cpustate = cur_cpu_state[this_cpu];
+	
+		state_req = state = ts->cpustate;
+		break;
+	}
 #endif
 	/*up*/
 	if(ipc >= IPC_0_750){

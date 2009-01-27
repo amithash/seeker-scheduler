@@ -23,12 +23,12 @@ int max_state_possible[NR_CPUS] = {0};
 unsigned int max_state_in_system = 0;
 int cur_cpu_state[NR_CPUS] = {0};
 struct state_desc states[MAX_STATES];
-#if 0
-static DEFINE_SPINLOCK(states_lock);
-static unsigned long states_irq_flags;
-#else
+
+int high_state;
+int low_state;
+int mid_state;
+
 struct state_sane_t state_sane;
-#endif
 
 
 void hint_inc(int state)
@@ -81,6 +81,10 @@ int init_cpu_states(unsigned int how)
 		if(max_state_in_system < max_state_possible[i])
 			max_state_in_system = max_state_possible[i];
 	}
+	low_state = 0;
+	high_state = max_state_in_system - 1;
+	mid_state = (max_state_in_system >> 1);
+
 	for(i=0;i<max_state_in_system;i++){
 		states[i].state = i;
 		states[i].cpus = 0;
