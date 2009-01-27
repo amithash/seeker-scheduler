@@ -3,8 +3,11 @@
 
 #include "../include/state_recommendations.h"
 
-//#define __NR_seeker 333
-//#define __NR_seeker 295
+#ifdef __LP64__
+#define __NR_seeker 295
+#else
+#define __NR_seeker 333
+#endif
 
 
 int low_freq(void)
