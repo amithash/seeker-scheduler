@@ -9,62 +9,19 @@
 MODULE_AUTHOR("Amithash Prasad <amithash@gmail.com>");
 MODULE_DESCRIPTION("Tests the scpufreq cpufreq governor");
 MODULE_LICENSE("GPL");
-#if defined(ARCH_C2D)
-#define IA32_MPERF 0x000000E7
-#define IA32_APERF 0x000000E8
-#else
-#define IA32_MPERF 0x000000E7
-#define IA32_APERF 0x000000E8
-#endif
 
 short int max_state[NR_CPUS];
 short int cur_state[NR_CPUS];
 static struct timer_list state_change_timer;
-static struct timer_list clk_estimate_timer;
 static int total_cpus = NR_CPUS;
 
-static u64 last_jiffies = 0;
-static unsigned long long total_clocks[NR_CPUS];
-static unsigned int count[NR_CPUS];
-static int first = 0;
-static unsigned long long last_tsc = 0;
-static 
-
-void update_stats(int cpu)
-{
-	u64 val=0,tscv;
-	u64 aperf;
-	u64 mperf;
-	aperf = native_read_msr(IA32_APERF);
-	mperf = native_read_msr(IA32_MPERF);
-	info("Running at %d of the max",(int)((aperf * 100)/mperf));
-	total_clocks[cpu] += (val * HZ )/ (jiffies - last_jiffies);
-	count[cpu]++;
-}
-void init_stats(int cpu)
-{
-	total_clocks[cpu] = 0;
-	count[cpu] = 0;
-}
+static int last_cpu = 0;
 
 void print_stats(int cpu)
 {
-	unsigned long long avg_clk;
-	if(count[cpu] == 0)
-		return;
-	avg_clk = total_clocks[cpu] / count[cpu];
-	info("CurState=%d HZ = %lld",cur_state[cpu],avg_clk);
+	info("CPU: %d CurState=%d",cpu,cur_state[cpu]);
 }
 
-
-void clk_estimate(unsigned long param)
-{
-	int cpu = get_cpu();
-	update_stats(cpu);
-	last_jiffies = jiffies;
-	mod_timer(&clk_estimate_timer,jiffies+(HZ));
-	put_cpu();
-}
 
 void state_change(unsigned long param)
 {
