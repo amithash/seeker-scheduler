@@ -72,7 +72,7 @@ int main(int argc, char **argv, char **envp)
 				printf("%llu,", sample->cycles);
 				printf("%llu",total_cycles[sample->cpu]);
 				for( i = 0; i < num_counters; i++ ) {
-					printf(",%u", sample->counters[i]);
+					printf(",%llu", sample->counters[i]);
 				}
 				printf("\n");
 				break;
@@ -93,7 +93,7 @@ debug_start:
 			case DEBUG_SCH:
 				schDef = (debug_scheduler_t *)(&entry->u);
 				printf("s");
-				printf(",%d,%d,%d,%ld,%1.4f,%d,%d\n",schDef->interval,
+				printf(",%llu,%d,%d,%llu,%1.4f,%d,%d\n",schDef->interval,
 								schDef->pid,
 								schDef->cpu,
 								schDef->inst,
@@ -111,7 +111,7 @@ debug_start:
 				break;
 			case DEBUG_MUT:
 				mutDef = (debug_mutator_t *)(&entry->u);
-				printf("m,%ld,r",mutDef->interval);
+				printf("m,%llu,r",mutDef->interval);
 				for(i=0;i<mutDef->count;i++){
 					printf(",%d",mutDef->cpus_req[i]);
 				}

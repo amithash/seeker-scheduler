@@ -199,7 +199,7 @@ int main (int argc, char** argv)
 				if( ferror(infile) ) {
 					do_exit();
 				}
-				fwrite(buf, 1, bytes_read, outfile);
+				bytes_read = fwrite(buf, 1, bytes_read, outfile);
 				if( ferror(outfile) ) {
 					do_exit();
 				}
