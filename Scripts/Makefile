@@ -34,7 +34,10 @@ all:
 	${CXX} ${CFLAGS} interp.C -o interp
 	${CXX} ${CFLAGS} maxmin.C -o maxmin
 	${CXX} ${CFLAGS} smooth.C -o smooth
+	${CC} -fPIC -c state_recommendations.c -o state_recommendations.o
+	${CC} -shared -Wl,-soname,libstate_recommendations.so -o libstate_recommendations.so state_recommendations.o -lc 
+	${CC} test_recommendations.c -o test_recommendations -lstate_recommendations -L.
 
 clean:
-	rm -f seekerd decodelog interp maxmin smooth debugd
+	rm -f seekerd decodelog interp maxmin smooth debugd test_recommendations libstate_recommendations.so state_recommendations.o
 

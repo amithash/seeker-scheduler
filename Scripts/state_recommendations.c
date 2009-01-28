@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "../include/state_recommendations.h"
+#include "state_recommendations.h"
 
 #ifdef __LP64__
 #define __NR_seeker 295
