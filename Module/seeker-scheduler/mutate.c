@@ -30,7 +30,9 @@ struct proc_info{
 
 static struct proc_info info[NR_CPUS];
 
+/* Local function declaration */
 inline int procs(int hints,int total, int total_load);
+
 
 inline int procs(int hints,int total, int total_load)
 {
@@ -209,7 +211,7 @@ void choose_layout(int delta)
 			 * with the best proc, if there is contention for both,
 			 * choose the one with the best lowest proc,
 			 * if there is contention for that too, then first come
-			 * first serve */
+			 * first serve. */
 			if(sum < winner_val)
 				continue;
 			if(sum > winner_val) 

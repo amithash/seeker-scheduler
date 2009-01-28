@@ -8,7 +8,10 @@
 
 #include "hwcounters.h"
 
+#if NUM_FIXED_COUNTERS == 0
 int sys_counters[NR_CPUS][3] = {{0,0,0}};
+#endif
+
 u64 pmu_val[NR_CPUS][3];
 int ERROR=0;
 

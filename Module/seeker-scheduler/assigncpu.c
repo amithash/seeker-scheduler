@@ -29,10 +29,9 @@
 #define IPC_0_875 7
 #define IPC_1_000 8
 
-/* Keep the threshold at 1M Instructions
- * This removes artifcats from IPC and 
- * removes IPC Computation for small tasks
- */
+#define IPC_HIGH IPC_0_750
+#define IPC_LOW  IPC_0_500
+
 
 extern struct state_desc states[MAX_STATES];
 extern int max_state_in_system;
@@ -85,7 +84,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	}
 #endif
 	/*up*/
-	if(ipc >= IPC_0_750){
+	if(ipc >= IPC_HIGH){
 		if(state < max_state_in_system-1)
 			state_req = state+1;
 		else
@@ -99,7 +98,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		}
 	}
 	/*down*/
-	if(ipc <= IPC_0_500){
+	if(ipc <= IPC_LOW){
 		if(state > 0)
 			state_req = state-1;
 		else
@@ -112,9 +111,13 @@ void put_mask_from_stats(struct task_struct *ts)
 			}
 		}
 	}
+	/* Do not worry about incrementing hint. 
+	 * for static layouts. They will not be used.
+	 */
 	if(static_layout == 0)
 		hint_inc(state_req);
 	
+	/* If IPC_LOW < IPC < IPC_HIGH maintain this state */
 	if(new_state == -1)
 		new_state = state;
 
@@ -128,6 +131,8 @@ void put_mask_from_stats(struct task_struct *ts)
 		 * if the states are consistant AND the mask is NOT empty! 
 		 * else leave it as it is */
 		mask = states[new_state].cpumask;
+
+		/* if we are using a static_layout there is no need to be so paranoid! */
 		if(static_layout || ( is_states_consistent() && !cpus_empty(mask))){
 			ts->cpus_allowed = mask;
 			#ifdef SEEKER_PLUGIN_PATCH
@@ -136,6 +141,11 @@ void put_mask_from_stats(struct task_struct *ts)
 		} else {
 			return;
 		}
+
+		/* Do one last test. Then test again with one of the following removed
+		 * Remove the one which hangs the system. If both hangs the system, well,
+		 * remove both!
+		 */
 //		set_tsk_need_resched(ts); /* Lazy */
 //		set_cpus_allowed(ts,mask); /* Unlazy */
 	}
@@ -155,6 +165,8 @@ void put_mask_from_stats(struct task_struct *ts)
 	}
 	put_debug(p);
 #ifdef SEEKER_PLUGIN_PATCH
+
+	/* Start over. Forget the IPC... */
 	ts->interval = interval_count;
 	ts->inst = 0;
 	ts->ref_cy = 0;

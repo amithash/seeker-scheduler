@@ -45,7 +45,7 @@
 #include "hwcounters.h"
 
 #define MAX_INSTRUCTIONS_BEFORE_SCHEDULE 10000000
-#define SEEKER_MAGIC_NUMBER 0x5ee
+#define SEEKER_MAGIC_NUMBER 0xDEAD
 
 
 void inst___switch_to(struct task_struct *from, struct task_struct *to);
@@ -155,6 +155,7 @@ void inst_sched_fork(struct task_struct *new, int clone_flags)
 {
 #ifdef SEEKER_PLUGIN_PATCH
 	new->seeker_scheduled = SEEKER_MAGIC_NUMBER;
+	new->fixed_state = -1;
 	new->interval = interval_count;
 	new->inst = 0;
 	new->ref_cy = 0;
@@ -208,6 +209,11 @@ static int scheduler_init(void)
 	if(debug_init() != 0)
 		return -ENODEV;
 
+	/* This piece of horse dump is because I want to support scheduling 
+	 * while sampler is used! :-(
+	 * That is the reason for so manny alternate paths. Yeah I know. It 
+	 * sucks!
+	 */
 	if(unlikely((probe_ret = register_jprobe(&jp_sched_fork)))){
 		error("Could not find sched_fork to probe, returned %d",probe_ret);
 		return -ENOSYS;

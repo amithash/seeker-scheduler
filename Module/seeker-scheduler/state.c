@@ -93,58 +93,50 @@ int init_cpu_states(unsigned int how)
 	}
 
 	switch(how){
-		case ALL_HIGH:
-			states[max_state_in_system-1].cpus = total_online_cpus;
-			for(i=0;i<total_online_cpus;i++){
-				cpu_set(i,states[max_state_in_system-1].cpumask);
-				cur_cpu_state[i] = max_state_possible[i]-1;
-				set_freq(i,cur_cpu_state[i]);
-			}
-			break;
-		case ALL_LOW:
-			states[0].cpus = total_online_cpus;
-			for(i=0;i<total_online_cpus;i++){
-				cpu_set(i,states[0].cpumask);
-				cur_cpu_state[i] = 0;
-				set_freq(i,cur_cpu_state[i]);
-			}
-			break;
-		case BALANCE:
-			states[max_state_in_system-1].cpus = total_online_cpus >> 1;
-			states[0].cpus = total_online_cpus - (total_online_cpus>>1);
-			for(i=0;i<states[max_state_in_system-1].cpus;i++){
-				cpu_set(i,states[0].cpumask);
-				cur_cpu_state[i] = 0;
-				set_freq(i,cur_cpu_state[i]);
-			}
-			for(;i<total_online_cpus;i++){
-				cpu_set(i,states[max_state_in_system-1].cpumask);
-				cur_cpu_state[i] = max_state_possible[i]-1;
-				set_freq(i,cur_cpu_state[i]);
-			}
-			break;
+	case ALL_HIGH:
+		states[max_state_in_system-1].cpus = total_online_cpus;
+		for(i=0;i<total_online_cpus;i++){
+			cpu_set(i,states[max_state_in_system-1].cpumask);
+			cur_cpu_state[i] = max_state_possible[i]-1;
+			set_freq(i,cur_cpu_state[i]);
+		}
+		break;
+	case ALL_LOW:
+		states[0].cpus = total_online_cpus;
+		for(i=0;i<total_online_cpus;i++){
+			cpu_set(i,states[0].cpumask);
+			cur_cpu_state[i] = 0;
+			set_freq(i,cur_cpu_state[i]);
+		}
+		break;
+	case BALANCE:
+		states[max_state_in_system-1].cpus = total_online_cpus >> 1;
+		states[0].cpus = total_online_cpus - (total_online_cpus>>1);
+		for(i=0;i<states[max_state_in_system-1].cpus;i++){
+			cpu_set(i,states[0].cpumask);
+			cur_cpu_state[i] = 0;
+			set_freq(i,cur_cpu_state[i]);
+		}
+		for(;i<total_online_cpus;i++){
+			cpu_set(i,states[max_state_in_system-1].cpumask);
+			cur_cpu_state[i] = max_state_possible[i]-1;
+			set_freq(i,cur_cpu_state[i]);
+		}
+		break;
 		case NO_CHANGE:
-
+	default:
 			for(i=0;i<total_online_cpus;i++){
-				unsigned int this_freq = get_freq(i);
-				if(this_freq >= max_state_in_system){
-					set_freq(i,0);
-					this_freq = 0;
-					warn("Freq state for cpu %d was not initialized and hence set to 0",i);
-				}
-				cur_cpu_state[i] = this_freq;
-				cpu_set(i,states[this_freq].cpumask);
-				states[this_freq].cpus++;
+			unsigned int this_freq = get_freq(i);
+			if(this_freq >= max_state_in_system){
+				set_freq(i,0);
+				this_freq = 0;
+				warn("Freq state for cpu %d was not initialized and hence set to 0",i);
 			}
-			break;
-		default:
-			states[max_state_in_system-1].cpus = total_online_cpus;
-			for(i=0;i<total_online_cpus;i++){
-				cpu_set(i,states[max_state_in_system-1].cpumask);
-				cur_cpu_state[i] = max_state_possible[i]-1;
-				set_freq(i,cur_cpu_state[i]);
-			}
-			break;
+			cur_cpu_state[i] = this_freq;
+			cpu_set(i,states[this_freq].cpumask);
+			states[this_freq].cpus++;
+		}
+		break;
 	}
 	return 0;
 }

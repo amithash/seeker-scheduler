@@ -10,6 +10,8 @@
 #include "state.h"
 #include "debug.h"
 
+/* NO LONGER DEVELOPED. WILL BE DELETED */
+
 
 extern struct state_desc states[MAX_STATES];
 
