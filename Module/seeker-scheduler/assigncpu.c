@@ -141,13 +141,6 @@ void put_mask_from_stats(struct task_struct *ts)
 		} else {
 			return;
 		}
-
-		/* Do one last test. Then test again with one of the following removed
-		 * Remove the one which hangs the system. If both hangs the system, well,
-		 * remove both!
-		 */
-//		set_tsk_need_resched(ts); /* Lazy */
-//		set_cpus_allowed(ts,mask); /* Unlazy */
 	}
 
 	p = get_debug();
