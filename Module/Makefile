@@ -57,8 +57,7 @@ obj-m += seeker_scheduler.o           	\
 	 tsc.o 	        		\
 	 therm.o	       		\
 	 seeker_cpufreq.o  		\
-	 test_scpufreq.o		\
-	 power.o
+	 test_scpufreq.o
 
 # The seeker cpufreq governor and its test module.
 test_scpufreq-objs += seeker-cpufreq/test.o
@@ -69,9 +68,6 @@ tsc-objs += tsc/main.o
 
 # Temperature module.
 therm-objs += therm/main.o
-
-# IPMI Power sampler
-power-objs += power/power.o
 
 # Seeker sampler. 
 seeker_sampler-objs += seeker-sampler/alloc.o   \
