@@ -34,6 +34,11 @@
 
 #include "seeker_cpufreq.h"
 
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
+MODULE_DESCRIPTION("Provides abstracted access to the cpufreq driver");
+
+/* Per cpu structure to keep the information for each cpu */
 struct freq_info_t{
 	unsigned int cpu;
 	unsigned int cur_freq;
@@ -41,9 +46,14 @@ struct freq_info_t{
 	unsigned int table[MAX_STATES];
 	struct cpufreq_policy *policy;
 };
+static DEFINE_PER_CPU(struct freq_info_t,freq_info);
+#define FREQ_INFO(cpu) (&per_cpu(freq_info,(cpu)))
 
-static int freqs = 0;
+/* module parameter */
+static int freqs_length = 0;
+static int freqs[NR_CPUS] = {0};
 
+/* the governor function. It just prints infomation when it is called */
 static int cpufreq_seeker_governor(struct cpufreq_policy *policy, unsigned int event)
 {
 	unsigned int cpu = policy->cpu;
@@ -64,6 +74,7 @@ static int cpufreq_seeker_governor(struct cpufreq_policy *policy, unsigned int e
 	return 0;
 }
 
+/* The cpufreq governor structure for this module */
 struct cpufreq_governor seeker_governor = {
 	.name = "seeker",
 	.owner = THIS_MODULE,
@@ -71,70 +82,71 @@ struct cpufreq_governor seeker_governor = {
 	.governor = cpufreq_seeker_governor,
 };
 
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
-MODULE_DESCRIPTION("Provides abstracted access to the cpufreq driver");
-
-struct freq_info_t freq_info[NR_CPUS];
-
-struct cpufreq_policy *cpu_policy[NR_CPUS] = {NULL};
-
+/* Users can get the current freq of a cpu */
 unsigned int get_freq(unsigned int cpu)
 {
-	if(freq_info[cpu].cpu >= 0){
-		if(freq_info[cpu].cur_freq != -1)
-			return freq_info[cpu].cur_freq;
+	if(FREQ_INFO(cpu)->cpu >= 0){
+		if(FREQ_INFO(cpu)->cur_freq != -1)
+			return FREQ_INFO(cpu)->cur_freq;
 	}
 	return -1;
 }
 EXPORT_SYMBOL_GPL(get_freq);
 
+/* Users can set the freq of a cpu. 
+ * Do NOT call this from within interrupt context 
+ */
 int set_freq(unsigned int cpu, unsigned int freq_ind)
 {
 	struct cpufreq_policy *policy = NULL;
-	if(unlikely(cpu >= NR_CPUS))
+	if(unlikely(cpu >= NR_CPUS || freq_ind >= FREQ_INFO(cpu)->num_states))
 		return -1;
-	if(freq_ind == freq_info[cpu].cur_freq)
+	if(freq_ind == FREQ_INFO(cpu)->cur_freq)
 		return 0;
-	if(freq_ind >= freq_info[cpu].num_states)
-		return -1;
 
-	policy = freq_info[cpu].policy;
+	policy = FREQ_INFO(cpu)->policy;
 	if(!policy){
 		error("Error, governor not initialized for cpu %d",cpu);
 		return -1;
 	}
-	policy->cur = freq_info[cpu].table[freq_ind];
-	/* Start a worker thread to do the actual update */
-	freq_info[cpu].cur_freq = freq_ind;
+	policy->cur = FREQ_INFO(cpu)->table[freq_ind];
+	FREQ_INFO(cpu)->cur_freq = freq_ind;
 	cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
 	return 0;
 }
 EXPORT_SYMBOL_GPL(set_freq);
 
+/* Increment the freq. Users need not worry on number of states. */
 int inc_freq(unsigned int cpu)
 {
-	if(freq_info[cpu].cur_freq == freq_info[cpu].num_states-1)
+	if(FREQ_INFO(cpu)->cur_freq == FREQ_INFO(cpu)->num_states-1)
 		return 0;
-	return set_freq(cpu, freq_info[cpu].cur_freq+1);
+	return set_freq(cpu, FREQ_INFO(cpu)->cur_freq+1);
 }
 EXPORT_SYMBOL_GPL(inc_freq);
 
+/* Decrement the freq. Users need not worry on going below 0 */
 int dec_freq(unsigned int cpu)
 {
-	if(freq_info[cpu].cur_freq == 0)
+	if(FREQ_INFO(cpu)->cur_freq == 0)
 		return 0;
-	return set_freq(cpu, freq_info[cpu].cur_freq-1);
+	return set_freq(cpu, FREQ_INFO(cpu)->cur_freq-1);
 }
 EXPORT_SYMBOL_GPL(dec_freq);
 
+/* Get the max states supported by cpu */
 int get_max_states(int cpu)
 {
-	return freq_info[cpu].num_states;
+	return FREQ_INFO(cpu)->num_states;
 }
 EXPORT_SYMBOL_GPL(get_max_states);
 
+/* Macro used to convert cpumask to an unsigned integer.
+ * so that it can be printed
+ */
 #define CPUMASK_TO_UINT(x) (*((unsigned int *)&(x)))
+
+/* init */
 static int __init seeker_cpufreq_init(void)
 {
 	int i,j,k,l;
@@ -144,50 +156,59 @@ static int __init seeker_cpufreq_init(void)
 	int cpus = num_online_cpus();
 	cpufreq_register_governor(&seeker_governor);
 	for(i=0;i<cpus;i++){
-		policy = freq_info[i].policy = cpufreq_cpu_get(i);
+		policy = FREQ_INFO(i)->policy = cpufreq_cpu_get(i);
 		info("Related cpus for cpu%d are (bitmask) %d",i,CPUMASK_TO_UINT(policy->related_cpus));
 		cpus_clear(policy->cpus);
 		cpu_set(i,policy->cpus);
 		//policy->update.func = &scpufreq_update_freq;
 		policy->governor = &seeker_governor;
 		cpufreq_cpu_put(policy);
-		freq_info[i].cpu = i;
-		freq_info[i].cur_freq = -1; /* Not known */
-		freq_info[i].num_states = 0;
+		FREQ_INFO(i)->cpu = i;
+		FREQ_INFO(i)->cur_freq = -1; /* Not known */
+		FREQ_INFO(i)->num_states = 0;
 		table = cpufreq_frequency_get_table(i);
 		printk("CPU %d\nFrequencies:\n",i);
 		for(j=0;table[j].frequency != CPUFREQ_TABLE_END;j++){
-			freq_info[i].num_states++;
-			freq_info[i].table[j] = table[j].frequency;
+			FREQ_INFO(i)->num_states++;
+			FREQ_INFO(i)->table[j] = table[j].frequency;
 			printk("%d ",table[j].frequency);
 		}
 		printk("\n");
-		/* Sort Table */
-		for(k=0;k<freq_info[i].num_states-1;k++){
-			for(l=0;l<freq_info[i].num_states-1;l++){
-				if(freq_info[i].table[l] > freq_info[i].table[l+1]){
-					tmp = freq_info[i].table[l];
-					freq_info[i].table[l] = freq_info[i].table[l+1];
-					freq_info[i].table[l+1] = tmp;
+		/* Sort Table. This is a one time thing, and hence, I am doing a simple bubble sort.
+		 * Nothing fancy */
+		for(k=0;k<FREQ_INFO(i)->num_states-1;k++){
+			for(l=0;l<FREQ_INFO(i)->num_states-1;l++){
+				if(FREQ_INFO(i)->table[l] > FREQ_INFO(i)->table[l+1]){
+					tmp = FREQ_INFO(i)->table[l];
+					FREQ_INFO(i)->table[l] = FREQ_INFO(i)->table[l+1];
+					FREQ_INFO(i)->table[l+1] = tmp;
 				}
 			}
 		}
 	}
 	/* From now on frequency refered by the index from freq_info. */
-	if(freqs < 0)
-		freqs = 0;
-	if(freqs >= freq_info[0].num_states)
-		freqs = freq_info[0].num_states-1;
 
-	for(i=0;i<cpus;i++){
-		if(set_freq(i,freqs))
-			warn("Param for cpu %d = %d is not valid (avaliable=0,...%d). "
-				"CPU speed is left unchanged.\n",i,freq_info[i].num_states-1,freqs);
+	if(freqs_length < 0)
+		freqs_length = 0;
+	if(freqs_length > cpus)
+		freqs_length = cpus;
+
+	/* set the initialization given in freqs 
+	 * and if cpus are left out, set them to 0 */
+	for(i=0;i<freqs_length;i++){
+		if(freqs[i] < 0)
+			freqs[i] = 0;
+		if(freqs[i] >= FREQ_INFO(i)->num_states)
+			freqs[i] = FREQ_INFO(i)->num_states-1;
+		set_freq(i,freqs[i]);
 	}
+	for(i=freqs_length;i<cpus;i++)
+		set_freq(i,0);
 
 	return 0;
 }
 
+/* Exit */
 static void __exit seeker_cpufreq_exit(void)
 {
 	/* Revert changes to cpufreq to make it useable by
@@ -204,7 +225,7 @@ static void __exit seeker_cpufreq_exit(void)
 	cpufreq_unregister_governor(&seeker_governor);
 }
 
-module_param(freqs,int, 0444);
+module_param_array(freqs,int, &freqs_length, 0444);
 MODULE_PARM_DESC(freqs, "Optional, sets the cpus with the current freq_index: 0,1,... Num states in increasing frequencies");
 
 module_init(seeker_cpufreq_init);
