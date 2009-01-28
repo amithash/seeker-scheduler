@@ -16,7 +16,7 @@ static int new_cpu_state[NR_CPUS];
 static int state_matrix[NR_CPUS][MAX_STATES];
 static int demand[MAX_STATES];
 extern struct state_desc states[MAX_STATES];
-extern unsigned int max_state_in_system;
+extern unsigned int total_states;
 extern int total_online_cpus;
 extern int max_allowed_states[NR_CPUS];
 extern int cur_cpu_state[NR_CPUS];
@@ -60,22 +60,22 @@ void update_state_matrix(int delta)
 	int i,j,k;
 	for(i=0;i<total_online_cpus;i++){
 		if(info[i].awake == 0){
-			for(j=0;j<max_state_in_system;j++)
+			for(j=0;j<total_states;j++)
 				state_matrix[i][j] = 0;
 			continue;
 		}
-		for(j=new_cpu_state[i],k=0; j<max_state_in_system; j++,k++){
+		for(j=new_cpu_state[i],k=0; j<total_states; j++,k++){
 			if(k>delta)
 				state_matrix[i][j] = 0;
 			else
-				state_matrix[i][j] = (max_state_in_system-k);
+				state_matrix[i][j] = (total_states-k);
 		}
 
 		for(j=new_cpu_state[i]-1,k=1; j>=0; j--,k++){
 			if(k>delta)
 				state_matrix[i][j] = 0;
 			else
-				state_matrix[i][j] = (max_state_in_system-k);
+				state_matrix[i][j] = (total_states-k);
 		}
 	}
 }
@@ -83,19 +83,19 @@ void update_state_matrix(int delta)
 /* Create a demand field such that, each state
  * gets its share and also shares half of what it
  * gets with its friends = friend_count on either side
- * = (max_state_in_system/2)-1.
+ * = (total_states/2)-1.
  */
 void update_demand_field(int friend_count)
 {
 	int i,j,k;
 	int share;
-	for(i=0;i<max_state_in_system;i++){
+	for(i=0;i<total_states;i++){
 		demand_field[i] = 1;
 	}
 	share = demand[i] >> 1;
-	for(i=0;i<max_state_in_system;i++){
+	for(i=0;i<total_states;i++){
 		demand_field[i] += (demand[i] + share);
-		for(j=i+1,k=1; j<max_state_in_system && (share - k) > 0 && k <= friend_count; j++,k++){
+		for(j=i+1,k=1; j<total_states && (share - k) > 0 && k <= friend_count; j++,k++){
 			demand_field[j] += (share-k);
 		}
 		for(j=i-1,k=1; j >= 0 && (share - k) > 0 && k <= friend_count; j--,k++){
@@ -123,7 +123,7 @@ void choose_layout(int delta)
 	int poison[NR_CPUS];
 	int sum;
 	int total_iter = 0;
-	int friends = (max_state_in_system >> 1)-1;
+	int friends = (total_states >> 1)-1;
 
 	interval_count++;
 	if(delta < 1)
@@ -151,14 +151,14 @@ void choose_layout(int delta)
 
 	/* Total Hint */
 	
-	for(j=0;j<max_state_in_system;j++){
+	for(j=0;j<total_states;j++){
 		total += states[j].demand;
 	}
 
 	/* Num of cpus required for this state 
 	 * SUM(demand[]) could be < cpus. 
 	 * Make sure to bring down their states. */
-	for(j=0;j<max_state_in_system;j++){
+	for(j=0;j<total_states;j++){
 		cpus_demanded[j] = demand[j] = procs(states[j].demand,total,load);
 		total_demand += demand[j];
 	}
@@ -184,7 +184,7 @@ void choose_layout(int delta)
 		 */
 
 		/* For each state, */
-		for(j=0;j<max_state_in_system;j++){
+		for(j=0;j<total_states;j++){
 			sum = 0;
 			best_proc = 0;
 			best_proc_value = 0;
@@ -259,11 +259,11 @@ assign:
 	if(p){
 		p->entry.type = DEBUG_MUT;
 		p->entry.u.mut.interval = interval_count;
-		p->entry.u.mut.count = max_state_in_system;
+		p->entry.u.mut.count = total_states;
 	}
 
 	mark_states_inconsistent();
-	for(j=0;j<max_state_in_system;j++){
+	for(j=0;j<total_states;j++){
 		states[j].cpus = 0;
 		cpus_clear(states[j].cpumask);
 		if(p){

@@ -34,7 +34,7 @@
 
 
 extern struct state_desc states[MAX_STATES];
-extern int max_state_in_system;
+extern int total_states;
 extern u64 interval_count;
 extern int cur_cpu_state[NR_CPUS];
 extern int static_layout;
@@ -85,12 +85,12 @@ void put_mask_from_stats(struct task_struct *ts)
 #endif
 	/*up*/
 	if(ipc >= IPC_HIGH){
-		if(state < max_state_in_system-1)
+		if(state < total_states-1)
 			state_req = state+1;
 		else
-			state_req = max_state_in_system-1;
+			state_req = total_states-1;
 
-		for(i=state+1;i<max_state_in_system;i++){
+		for(i=state+1;i<total_states;i++){
 			if(states[i].cpus > 0){
 				new_state = i;
 				break;

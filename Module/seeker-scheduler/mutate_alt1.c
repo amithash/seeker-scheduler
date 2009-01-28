@@ -16,7 +16,7 @@
 extern struct state_desc states[MAX_STATES];
 
 /* Runtime params decided at load time. */
-extern unsigned int max_state_in_system;
+extern unsigned int total_states;
 extern int total_online_cpus;
 
 extern int cur_cpu_state[NR_CPUS];
@@ -76,10 +76,10 @@ void choose_layout(int delta)
 		load += (weighted_cpuload(i) >= SCHED_LOAD_SCALE ? 1 : 0);
 		work_done += cur_cpu_state[i];
 	}
-	for(j=0;j<max_state_in_system;j++){
+	for(j=0;j<total_states;j++){
 		total += states[j].demand;
 	}
-	for(j=0;j<max_state_in_system;j++){
+	for(j=0;j<total_states;j++){
 		cpus_demanded[j] = procs(states[j].demand,total,load);
 		work_required += (cpus_demanded[j] * j);
 		stop += cpus_demanded[j];
@@ -106,7 +106,7 @@ void choose_layout(int delta)
 					winning_cpu = i;
 				}
 			}
-			if(new_cpu_state[winning_cpu] < (max_state_in_system-1)){
+			if(new_cpu_state[winning_cpu] < (total_states-1)){
 				new_cpu_state[winning_cpu]++;
 				delta--;
 				work_done++;
@@ -139,10 +139,10 @@ void choose_layout(int delta)
 	if(p){
 		p->entry.type = DEBUG_MUT;
 		p->entry.u.mut.interval = interval_count;
-		p->entry.u.mut.count = max_state_in_system;
+		p->entry.u.mut.count = total_states;
 	}
 	mark_states_inconsistent();
-	for(j=0;j<max_state_in_system;j++){
+	for(j=0;j<total_states;j++){
 		states[j].cpus = 0;
 		cpus_clear(states[j].cpumask);
 		if(p){
