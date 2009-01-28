@@ -191,16 +191,16 @@ static int scheduler_init(void)
 {
 #ifdef SEEKER_PLUGIN_PATCH
 	int probe_ret;
-	if(static_layout != 0)
+	if(static_layout != 0){
 		static_layout = 1;
+		init = 4;
+	}
 	
 	total_online_cpus = num_online_cpus();
 	init_idle_logger();
 	/* Please keep this BEFORE the probe registeration and
 	 * the timer initialization. init_cpu_states makes this 
 	 * assumption */
-	if(static_layout == 1)
-		init = 4;
 	init_cpu_states(init);
 	if(static_layout == 0)
 		init_mutator();
@@ -263,6 +263,7 @@ static int scheduler_init(void)
 			info("Configuring counters was successful");
 		}
 	}
+	/* static_layout = 0 implies, enabling the mutator */
 	if(static_layout == 0){
 		interval_jiffies = change_interval * HZ;
 		timer_started = 1;

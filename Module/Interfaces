@@ -22,7 +22,7 @@
 -------------------------------------------------------------------------------------------
 
 If you are porting this to another architecture, then this document should be helpful in 
-writing the drivers for ther performance monitoring counters etc etc. 
+writing the drivers for they performance monitoring counters etc etc. 
 
 General Instructions:
 

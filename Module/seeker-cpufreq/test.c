@@ -16,32 +16,15 @@ static struct timer_list state_change_timer;
 static int total_cpus = NR_CPUS;
 
 static int last_cpu = 0;
-
-void print_stats(int cpu)
-{
-	info("CPU: %d CurState=%d",cpu,cur_state[cpu]);
-}
-
+static int interval = 1;
 
 void state_change(unsigned long param)
 {
-	int i;
-	int cpu = get_cpu();
-	info("cpu for state change = %d",cpu);
-	if(first == 0){
-		first = 1;
-	} else {
-		print_stats(cpu);
-	}
-	init_stats(cpu);
-	for(i=0;i<total_cpus;i++){
-		cur_state[i] = (cur_state[i]+1)%max_state[i];
-		set_freq(i,cur_state[i]);
-	}
-	del_timer_sync(&clk_estimate_timer);
-	mod_timer(&clk_estimate_timer,jiffies+(HZ));
-	mod_timer(&state_change_timer,jiffies+(20*HZ));
-	put_cpu();
+	info("CPU: %d CurState=%d",last_cpu,cur_state[last_cpu]);
+	last_cpu = (last_cpu + 1) % total_cpus;
+	cur_state[last_cpu] = (cur_state[last_cpu]+1)%max_state[last_cpu];
+	set_freq(last_cpu,cur_state[last_cpu]);
+	mod_timer(&state_change_timer,jiffies+(interval*HZ));
 }
 
 static int init_test_scpufreq(void)
@@ -51,10 +34,9 @@ static int init_test_scpufreq(void)
 	
 	for(i=0;i<total_cpus;i++){
 		max_state[i] = get_max_states(i);
-		count[i] = 0;
-		total_clocks[i] = 0;
+		cur_state[i] = 0;
+		set_freq(i,0);
 	}
-	setup_timer(&clk_estimate_timer,clk_estimate,0);
 	setup_timer(&state_change_timer,state_change,0);
 	mod_timer(&state_change_timer,jiffies+(20*HZ));
 	return 0;
@@ -62,9 +44,13 @@ static int init_test_scpufreq(void)
 
 static void exit_test_scpufreq(void)
 {
-	del_timer_sync(&clk_estimate_timer);
 	del_timer_sync(&state_change_timer);
 }
+
+
+module_param(interval,int, 0444);
+MODULE_PARM_DESC(interval, "Set the interval at which to change.");
+
 module_init(init_test_scpufreq);
 module_exit(exit_test_scpufreq);
 
