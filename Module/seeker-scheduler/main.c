@@ -45,7 +45,7 @@
 #include "hwcounters.h"
 
 #define MAX_INSTRUCTIONS_BEFORE_SCHEDULE 10000000
-#define SEEKER_MAGIC_NUMBER 0xDEAD
+#define SEEKER_MAGIC_NUMBER 0xdea
 
 
 void inst___switch_to(struct task_struct *from, struct task_struct *to);
@@ -109,9 +109,18 @@ int static_layout = 0;
 extern u64 interval_count;
 extern int cur_cpu_state[MAX_STATES];
 extern u64 pmu_val[NR_CPUS][3];
+#ifdef DEBUG
+unsigned int schedule_count = 0;
+unsigned int scheduler_tick_count = 0;
+#endif
 
 static void state_change(struct work_struct *w)
 {
+	debug("scheduler_count=%u : scheduler_tick_count = %u",schedule_count,scheduler_tick_count);
+#ifdef DEBUG
+	schedule_count = scheduler_tick_count = 0;
+#endif
+
 	debug("State change now @ %ld",jiffies);
 	choose_layout(delta);
 	if(timer_started){
@@ -121,8 +130,12 @@ static void state_change(struct work_struct *w)
 
 void inst_scheduler_tick(void)
 {
+#ifdef DEBUG
+	scheduler_tick_count++;
+#endif
 	inst_schedule(NULL,NULL);
 	jprobe_return();
+
 }
 
 void inst_release_thread(struct task_struct *t)
@@ -146,6 +159,9 @@ void inst_release_thread(struct task_struct *t)
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 {
 	int cpu = smp_processor_id();
+#ifdef DEBUG
+	schedule_count++;
+#endif
 #ifdef SEEKER_PLUGIN_PATCH
 	if(!ts[cpu] || ts[cpu]->seeker_scheduled != SEEKER_MAGIC_NUMBER)
 		return 0;
@@ -185,8 +201,9 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	int cpu = smp_processor_id();
 	ts[cpu] = to;
 	#ifdef SEEKER_PLUGIN_PATCH
-	if(from->seeker_scheduled != SEEKER_MAGIC_NUMBER)
+	if(from->seeker_scheduled != SEEKER_MAGIC_NUMBER){
 		jprobe_return();
+	}
 	#endif
 
 	if(!using_seeker){
@@ -229,6 +246,7 @@ static int scheduler_init(void)
 	 * That is the reason for so manny alternate paths. Yeah I know. It 
 	 * sucks!
 	 */
+	
 	if(unlikely((probe_ret = register_jprobe(&jp_scheduler_tick)))){
 		error("Could not find scheduler_tick to probe, returned %d",probe_ret);
 		return -ENOSYS;
