@@ -41,6 +41,7 @@ extern int static_layout;
 extern int low_state;
 extern int high_state;
 extern int mid_state;
+extern int disable_scheduling;
 
 void put_mask_from_stats(struct task_struct *ts)
 {
@@ -134,7 +135,9 @@ void put_mask_from_stats(struct task_struct *ts)
 
 		/* if we are using a static_layout there is no need to be so paranoid! */
 		if(!static_layout && is_states_consistent() && !cpus_empty(mask)){
-			ts->cpus_allowed = mask;
+			/* Do not touch cpumask if scheduling is disabled */
+			if(!disable_scheduling)
+				ts->cpus_allowed = mask;
 			#ifdef SEEKER_PLUGIN_PATCH
 			ts->cpustate = new_state;
 			#endif

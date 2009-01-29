@@ -103,6 +103,7 @@ struct jprobe jp_inst_release_thread = {
 int total_online_cpus = 0;
 
 int change_interval = 5;
+int disable_scheduling = 0;
 int delta=1;
 int init = ALL_LOW;
 int static_layout = 0;
@@ -225,6 +226,11 @@ static int scheduler_init(void)
 #ifdef SEEKER_PLUGIN_PATCH
 	int probe_ret;
 	if(static_layout != 0){
+		static_layout = 1;
+		init = 4;
+	}
+	if(disable_scheduling != 0){
+		disable_scheduling = 1;
 		static_layout = 1;
 		init = 4;
 	}
@@ -358,6 +364,9 @@ MODULE_PARM_DESC(change_interval, "Interval in seconds to try and change the glo
 
 module_param(init,int,0444);
 MODULE_PARM_DESC(init,"Starting state of cpus: 1 - All high, 2 - half high, half low, 3 - All low");
+
+module_param(disable_scheduling,int,0444);
+MODULE_PARM_DESC(disable_scheduling,"Set to not allow scheduling. Does a dry run. Also enables static layout.");
 
 module_param(static_layout,int,0444);
 MODULE_PARM_DESC(static_layout,"Use this parameter set (>0) to use a static layout defined by seeker-cpufreq");
