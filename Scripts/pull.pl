@@ -55,18 +55,22 @@ my $line = <IN_FILE> | '';
 my $header = $line;
 my @infile = split(/\n/,join("",<IN_FILE>));
 close(IN_FILE);
+print "Making list of PID's for $process_name\n" if(defined($process_name));
+print "Making a list of all process\n" if(not defined($process_name));
 
 foreach $line (@infile){
 	if($line =~ /^p,/){
 		my @split_line = split(/,/,$line);
 		if($do_all == 0){
 			if($split_line[2] eq $process_name){
+				print "Found $process_name, with pid = $split_line[1]\n";
 				if(not defined($pid_hash{$split_line[1]})){
 					$pid_hash{$split_line[1]} = $split_line[2];
 				}
 			}
 		}
 		else{
+			print "Found $split_line[2], with pid = $split_line[1]\n";
 			if(not defined($pid_hash{$split_line[1]})){
 				$pid_hash{$split_line[1]} = $split_line[2];
 			}
@@ -80,7 +84,7 @@ foreach my $pid_key (keys(%pid_hash)){
 	my $core = -1;
 
 	foreach $line (@infile){
-		if($line =~ /^s,\d,$pid_key,/){
+		if($line =~ /^s,\d+,$pid_key,/){
 			my @split_line = split(/,/,$line);
 			if($split_line[2] eq $pid_key){
 				if($core == -1){
@@ -89,7 +93,7 @@ foreach my $pid_key (keys(%pid_hash)){
 					open OUT_FILE, "+>$log_file_name" or die "Could not create $log_file_name\n";
 					print OUT_FILE "$header";
 				}
-				if($split_line[9] == 0 && $split_line[8] == 0 && $split_line[7] == 0){
+				if($split_line[5] == 0 && $split_line[6] == 0 && $split_line[7] == 0){
 					next;
 				}
 				my $new_line = join(',',@split_line[3, 5..$#split_line]);
