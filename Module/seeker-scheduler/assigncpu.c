@@ -133,7 +133,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		mask = states[new_state].cpumask;
 
 		/* if we are using a static_layout there is no need to be so paranoid! */
-		if(static_layout || ( is_states_consistent() && !cpus_empty(mask))){
+		if(!static_layout && is_states_consistent() && !cpus_empty(mask)){
 			ts->cpus_allowed = mask;
 			#ifdef SEEKER_PLUGIN_PATCH
 			ts->cpustate = new_state;
