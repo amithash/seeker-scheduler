@@ -73,7 +73,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	case 1: state_req = state = mid_state;
 		break;
 	case 2: state_req = state = high_state;
-		break
+		break;
 	default:
 		ipc = IPC(ts->inst,ts->re_cy);
 		if(ts->cpustate != cur_cpu_state[this_cpu])
