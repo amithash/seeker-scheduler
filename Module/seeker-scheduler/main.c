@@ -52,6 +52,7 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to);
 void inst_sched_fork(struct task_struct *new, int clone_flags);
 int inst_schedule(struct kprobe *p, struct pt_regs *regs);
 void inst_release_thread(struct task_struct *t);
+void inst_scheduler_tick(void);
 
 static void state_change(struct work_struct *w);
 static DECLARE_DELAYED_WORK(state_work, state_change);
@@ -73,6 +74,14 @@ struct jprobe jp___switch_to = {
 struct jprobe jp_inst___switch_to = {
 	.entry = (kprobe_opcode_t *)inst___switch_to,
 	.kp.symbol_name = "inst___switch_to",
+};
+
+/* Consider using the scheduler_tick as a jprobe instead. 
+ * if schedule 
+ */
+struct jprobe jp_scheduler_tick = {
+	.entry = (kprobe_opcode_t *)inst_scheduler_tick,
+	.kp.symbol_name = "scheduler_tick",
 };
 
 struct kprobe kp_schedule = {
@@ -108,6 +117,12 @@ static void state_change(struct work_struct *w)
 	if(timer_started){
 		schedule_delayed_work(&state_work, interval_jiffies);
 	}
+}
+
+void inst_scheduler_tick(void)
+{
+	inst_schedule(NULL,NULL);
+	jprobe_return();
 }
 
 void inst_release_thread(struct task_struct *t)
