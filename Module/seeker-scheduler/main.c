@@ -229,6 +229,13 @@ static int scheduler_init(void)
 	 * That is the reason for so manny alternate paths. Yeah I know. It 
 	 * sucks!
 	 */
+	if(unlikely((probe_ret = register_jprobe(&jp_scheduler_tick)))){
+		error("Could not find scheduler_tick to probe, returned %d",probe_ret);
+		return -ENOSYS;
+	} else {
+		info("Registered jp_scheduler_tick");
+	}
+
 	if(unlikely((probe_ret = register_jprobe(&jp_sched_fork)))){
 		error("Could not find sched_fork to probe, returned %d",probe_ret);
 		return -ENOSYS;
@@ -311,6 +318,7 @@ static void scheduler_exit(void)
 		cancel_delayed_work(&state_work);
 	}
 	debug("Unregistering probes");
+	unregister_jprobe(&jp_scheduler_tick);	
 	unregister_jprobe(&jp_sched_fork);
 	if(using_seeker){
 		unregister_jprobe(&jp_inst___switch_to);
