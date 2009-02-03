@@ -33,7 +33,7 @@ static struct proc_info info[NR_CPUS];
 /* Local function declaration */
 inline int procs(int hints,int total, int total_load);
 
-
+/* Compute the total processors required */
 inline int procs(int hints,int total, int total_load)
 {
 	int ans;
@@ -46,6 +46,29 @@ inline int procs(int hints,int total, int total_load)
 	return ans < 0 ? 0 : ans;
 }
 
+/* Takes in the load as a fixed point and 
+ * returns the number of processors utilized
+ * as an integer */
+inline int required_load(int total_load)
+{
+	int ret = LOAD_TO_UINT(total_load);
+	if(ret < total_online_cpus){
+		/* Round to nearest integer */
+		if((total_load & 7) > 3)
+			ret ++;
+		/* if it is on the dot, then more
+		 * cpus are required. So, dub the load
+		 * up by one This also takes care of 
+		 * 0 load. */
+		else if((total_load & 7) == 0)
+			ret ++;
+		else if(ret == 0)
+			ret ++;
+	}
+	return ret;
+}
+
+/* Initializes the mutator local data structures */
 void init_mutator(void)
 {
 	int i;
@@ -55,6 +78,7 @@ void init_mutator(void)
 	}
 }
 
+/* Updates the state matrix */
 void update_state_matrix(int delta)
 {
 	int i,j,k;
@@ -140,13 +164,8 @@ void choose_layout(int delta)
 	}
 	/* Perform a rounding only if the rounding does not make the 
 	 * load greater than total_online_cpus */
-	if(LOAD_TO_UINT(load) < total_online_cpus && ((load & 7) > 3))
-		load = LOAD_TO_UINT(load) + 1;
-	else 
-		load = LOAD_TO_UINT(load);
+	load = required_load(load);
 
-	/* Let there be at least 1 online cpu */
-	load = load == 0 ? 1 : load; 
 	debug("load of system = %d",load);
 
 	/* Total Hint */

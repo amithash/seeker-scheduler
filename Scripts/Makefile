@@ -31,7 +31,7 @@ all:
 	${CC} ${CFLAGS} seekerd.c -o seekerd -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS) -DSEEKERD
 	${CC} ${CFLAGS} seekerd.c -o debugd -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS) -DDEBUGD
 	${CC} ${CFLAGS} decodelog.c -o decodelog -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS)
-	${CXX} ${CFLAGS} interp.C -o interp
+	${CXX} ${CFLAGS} interp.C -o interp -g
 	${CXX} ${CFLAGS} maxmin.C -o maxmin
 	${CXX} ${CFLAGS} smooth.C -o smooth
 	${CC} -fPIC -c state_recommendations.c -o state_recommendations.o

@@ -108,6 +108,7 @@ int main(int argc, char *argv[]){
 	for(double i=interval; i< X[-1]; i += interval){
 		while(!splines[last_index].within(i)){
 			last_index++;
+			cout << last_index << endl;
 		}
 		out.append(interval);
 		out.append(splines[last_index].predict(i));
