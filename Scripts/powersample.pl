@@ -18,6 +18,8 @@ if(! -e $ipmi || !-e $date){
 my $Voltage = "PS0/V_OUT";
 my $Current = "PS0/I_OUT";
 my $outfile = $ARGV[0];
+system("ipmitool sdr dump local.sdr");
+
 
 my $pid = fork();
 if($pid != 0){
@@ -31,7 +33,7 @@ while(1){
 	my $current = 0;
 	my $voltage = 0;
 	my $power = 0;
-	open IN, "$ipmi sensor get $Voltage $Current | grep \"Sensor Reading\" |" or warn "Could not execute $ipmi\n";
+	open IN, "$ipmi -S local.sdr sensor get $Voltage $Current | grep \"Sensor Reading\" |" or warn "Could not execute $ipmi\n";
 	my @temp = <IN>;
 	close(IN);
 	foreach my $entry (@temp){
