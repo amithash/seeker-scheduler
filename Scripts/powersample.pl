@@ -66,6 +66,7 @@ while(1){
 		my $int = int($interval) - $first;
 		print OUT "$int,$power\n";
 	}
+	sleep 1;
 }
 close(OUT);
 close(IN);
