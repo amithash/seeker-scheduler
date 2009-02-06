@@ -61,7 +61,6 @@ static u64 interval_jiffies;
 static int timer_started = 0;
 
 struct task_struct *ts[NR_CPUS] = {NULL};
-int using_seeker = 1;
 
 struct jprobe jp_sched_fork = {
 	.entry = (kprobe_opcode_t *)inst_sched_fork,
@@ -70,10 +69,6 @@ struct jprobe jp_sched_fork = {
 struct jprobe jp___switch_to = {
 	.entry = (kprobe_opcode_t *)inst___switch_to,
 	.kp.symbol_name = "__switch_to",
-};
-struct jprobe jp_inst___switch_to = {
-	.entry = (kprobe_opcode_t *)inst___switch_to,
-	.kp.symbol_name = "inst___switch_to",
 };
 
 /* Consider using the scheduler_tick as a jprobe instead. 
@@ -94,10 +89,6 @@ struct kprobe kp_schedule = {
 struct jprobe jp_release_thread = {
 	.entry = (kprobe_opcode_t *)inst_release_thread,
 	.kp.symbol_name = "release_thread",
-};
-struct jprobe jp_inst_release_thread = {
-	.entry = (kprobe_opcode_t *)inst_release_thread,
-	.kp.symbol_name = "inst_release_thread",
 };
 
 int total_online_cpus = 0;
@@ -207,16 +198,15 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	}
 	#endif
 
-	if(!using_seeker){
-		read_counters(cpu);
+	read_counters(cpu);
 	#ifdef SEEKER_PLUGIN_PATCH
-		from->interval = interval_count;
-		from->inst   += pmu_val[cpu][0];
-		from->re_cy  += pmu_val[cpu][1];
-		from->ref_cy += pmu_val[cpu][2];
+	from->interval = interval_count;
+	from->inst   += pmu_val[cpu][0];
+	from->re_cy  += pmu_val[cpu][1];
+	from->ref_cy += pmu_val[cpu][2];
 	#endif
-		clear_counters(cpu);
-	}
+	clear_counters(cpu);
+
 	put_mask_from_stats(from);
 	jprobe_return();
 }
@@ -247,74 +237,46 @@ static int scheduler_init(void)
 	if(debug_init() != 0)
 		return -ENODEV;
 
-	/* This piece of horse dump is because I want to support scheduling 
-	 * while sampler is used! :-(
-	 * That is the reason for so manny alternate paths. Yeah I know. It 
-	 * sucks!
+	/* One of the good uses of goto! For each of the registering, 
+	 * if they fail, we still need to de-register anything done
+	 * in the past and taken cared of the ordered goto's
 	 */
-	
 	if(unlikely((probe_ret = register_jprobe(&jp_scheduler_tick)))){
 		error("Could not find scheduler_tick to probe, returned %d",probe_ret);
-		return -ENOSYS;
-	} else {
-		info("Registered jp_scheduler_tick");
+		goto no_scheduler_tick;
 	}
+	info("Registered jp_scheduler_tick");
 
 	if(unlikely((probe_ret = register_jprobe(&jp_sched_fork)))){
 		error("Could not find sched_fork to probe, returned %d",probe_ret);
-		return -ENOSYS;
-	} else {
-		info("Registered jp_sched_fork");
+		goto no_sched_fork;
 	}
-	if((probe_ret = register_jprobe(&jp___switch_to)) < 0){
-		/* Seeker is loaded. probe its instrumentation functions instead */
-		info("Detected seeker-sampler to be loaded");
-		using_seeker = 1;
-		if(unlikely((probe_ret = register_jprobe(&jp_inst___switch_to)) < 0)){
-			error("Register inst___switch_to probe failed with %d",probe_ret);
-			unregister_jprobe(&jp_sched_fork);	
-			return -ENOSYS;
-		} else {
-			info("Successfully instrumented seeker-sampler's inst___switch_to function");
-		}
-		if(unlikely((probe_ret = register_jprobe(&jp_inst_release_thread)) < 0)){
-			error("Register inst_release_thread probe failed with %d",probe_ret);
-			unregister_jprobe(&jp_sched_fork);	
-			unregister_jprobe(&jp_inst___switch_to);
-			return -ENOSYS;
-		} else {
-			info("Successfully instrumented seeker-sampler's inst___switch_to function");
-		}
-	} else {
-		using_seeker = 0;
-		if(unlikely((probe_ret = register_kprobe(&kp_schedule))<0)){
-			error("schedule register successful, but schedule failed");
-			unregister_jprobe(&jp_sched_fork);
-			unregister_jprobe(&jp___switch_to);
-			return -ENOSYS;
-		} else {
-			info("Registering of kp_schedule was successful");
-		} 
-		if(unlikely((probe_ret = register_jprobe(&jp_release_thread))<0)){
-			error("schedule register successful, but schedule failed");
-			unregister_kprobe(&kp_schedule);
-			unregister_jprobe(&jp_sched_fork);
-			unregister_jprobe(&jp___switch_to);
-			return -ENOSYS;
-		} else {
-			info("Registering of kp_schedule was successful");
-		} 
-		if(configure_counters() != 0){
-			error("Configuring counters failed");
-			unregister_kprobe(&kp_schedule);
-			unregister_jprobe(&jp_sched_fork);
-			unregister_jprobe(&jp_release_thread);
-			unregister_jprobe(&jp___switch_to);
-			return -ENOSYS;
-		} else {
-			info("Configuring counters was successful");
-		}
+	info("Registered jp_sched_fork");
+
+	if(unlikely((probe_ret = register_jprobe(&jp___switch_to)))){
+		error("Could not find __switch_to to probe, returned %d",probe_ret);
+		goto no___switch_to;
 	}
+	info("Registered jp_sched_fork");
+
+	if(unlikely((probe_ret = register_kprobe(&kp_schedule))<0)){
+		error("schedule register successful, but schedule failed");
+		goto no_schedule;
+	}
+	info("Registering of kp_schedule was successful");
+
+	if(unlikely((probe_ret = register_jprobe(&jp_release_thread))<0)){
+		error("schedule register successful, but schedule failed");
+		goto no_release_thread;
+	}
+	info("Registering of kp_schedule was successful");
+
+	if(configure_counters() != 0){
+		error("Configuring counters failed");
+		goto no_counters;
+	}
+	info("Configuring counters was successful");
+
 	/* static_layout = 0 implies, enabling the mutator */
 	if(static_layout == 0){
 		interval_jiffies = change_interval * HZ;
@@ -325,6 +287,20 @@ static int scheduler_init(void)
 	}
 
 	return 0;
+
+no_counters:
+	unregister_jprobe(&jp_release_thread);
+no_release_thread:
+	unregister_kprobe(&kp_schedule);
+no_schedule:
+	unregister_jprobe(&jp___switch_to);
+no___switch_to:
+	unregister_jprobe(&jp_sched_fork);
+no_sched_fork:
+	unregister_jprobe(&jp_scheduler_tick);
+no_scheduler_tick:
+	return -ENOSYS;
+
 #else
 	error("You are trying to use this module without patching "
 		"the kernel with schedmod. Refer to the "
@@ -344,14 +320,9 @@ static void scheduler_exit(void)
 	debug("Unregistering probes");
 	unregister_jprobe(&jp_scheduler_tick);	
 	unregister_jprobe(&jp_sched_fork);
-	if(using_seeker){
-		unregister_jprobe(&jp_inst___switch_to);
-		unregister_jprobe(&jp_inst_release_thread);
-	} else {
-		unregister_kprobe(&kp_schedule);
-		unregister_jprobe(&jp___switch_to);
-		unregister_jprobe(&jp_release_thread);
-	}
+	unregister_kprobe(&kp_schedule);
+	unregister_jprobe(&jp___switch_to);
+	unregister_jprobe(&jp_release_thread);
 	debug("Debug exiting");
 	debug_exit();
 }

@@ -29,8 +29,8 @@
 #define IPC_0_875 7
 #define IPC_1_000 8
 
-#define IPC_HIGH IPC_0_750
-#define IPC_LOW  IPC_0_500
+#define IPC_HIGH IPC_1_000
+#define IPC_LOW  IPC_0_750
 
 
 extern struct state_desc states[MAX_STATES];
