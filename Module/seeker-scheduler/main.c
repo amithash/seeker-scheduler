@@ -302,6 +302,7 @@ no_scheduler_tick:
 	return -ENOSYS;
 
 #else
+#warning "This module will NOT work on this kernel"
 	error("You are trying to use this module without patching "
 		"the kernel with schedmod. Refer to the "
 		"seeker/Patches/README for details");
