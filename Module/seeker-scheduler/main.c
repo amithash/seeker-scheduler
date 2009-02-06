@@ -239,7 +239,7 @@ static int scheduler_init(void)
 
 	/* One of the good uses of goto! For each of the registering, 
 	 * if they fail, we still need to de-register anything done
-	 * in the past and taken cared of the ordered goto's
+	 * in the past and by taken cared by ordered goto's
 	 */
 	if(unlikely((probe_ret = register_jprobe(&jp_scheduler_tick)))){
 		error("Could not find scheduler_tick to probe, returned %d",probe_ret);
