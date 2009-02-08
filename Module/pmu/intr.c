@@ -33,77 +33,77 @@
 
 #include "pmu_int.h"
 
-extern evtsel_t  evtsel[NR_CPUS][NUM_COUNTERS];
+extern evtsel_t evtsel[NR_CPUS][NUM_COUNTERS];
 extern counter_t counters[NR_CPUS][NUM_COUNTERS];
 extern cleared_t cleared[NR_CPUS][NUM_COUNTERS];
 
 int pmu_configure_interrupt(int ctr, u32 low, u32 high)
 {
-	#if NUM_COUNTERS > 0
+#if NUM_COUNTERS > 0
 	int ret = 0;
 	int cpu = smp_processor_id();
-	if(likely(ctr < NUM_COUNTERS)){
+	if (likely(ctr < NUM_COUNTERS)) {
 		cleared[cpu][ctr].low = low;
 		cleared[cpu][ctr].high = high;
-		cleared[cpu][ctr].all = (u64)low | (((u64)high) << 32);
-	}
-	else{
-		ret =  -1;
+		cleared[cpu][ctr].all = (u64) low | (((u64) high) << 32);
+	} else {
+		ret = -1;
 	}
 	return -1;
-	#else
+#else
 	return 0;
-	#endif
+#endif
 }
+
 EXPORT_SYMBOL_GPL(pmu_configure_interrupt);
 
 int pmu_enable_interrupt(int ctr)
 {
-	#if NUM_COUNTERS > 0
+#if NUM_COUNTERS > 0
 	int cpu_id = smp_processor_id();
-	if(likely(cpu_id < NR_CPUS && ctr < NUM_COUNTERS)){
+	if (likely(cpu_id < NR_CPUS && ctr < NUM_COUNTERS)) {
 		evtsel[cpu_id][ctr].int_flag = 1;
 		evtsel_write(ctr);
-	}
-	else{
+	} else {
 		return -1;
 	}
 	return 0;
-	#else
+#else
 	return -1;
-	#endif
-}	
+#endif
+}
+
 EXPORT_SYMBOL_GPL(pmu_enable_interrupt);
 
 int pmu_disable_interrupt(int ctr)
 {
-	#if NUM_COUNTERS > 0
+#if NUM_COUNTERS > 0
 	int cpu;
 	cpu = smp_processor_id();
-	if(likely(ctr < NUM_COUNTERS && cpu < NR_CPUS)){
+	if (likely(ctr < NUM_COUNTERS && cpu < NR_CPUS)) {
 		cleared[cpu][ctr].low = 0;
 		cleared[cpu][ctr].high = 0;
 		cleared[cpu][ctr].all = 0;
 		evtsel[cpu][ctr].int_flag = 0;
 		evtsel_write(ctr);
-	}
-	else{
+	} else {
 		return -1;
 	}
 	return 0;
-	#else
+#else
 	return -1;
-	#endif
-}	
+#endif
+}
+
 EXPORT_SYMBOL_GPL(pmu_disable_interrupt);
 
 int pmu_is_interrupt(int ctr)
 {
-	#if NUM_COUNTERS > 0
+#if NUM_COUNTERS > 0
 
 #if defined(ARCH_C2D)
 	u32 ret = 0;
-	u32 low,high;
+	u32 low, high;
 
 	/* Unlike the C2D, the AMD Archs do not
 	 * have a way of indicating ovf status or
@@ -111,33 +111,33 @@ int pmu_is_interrupt(int ctr)
 	 * (1)
 	 */
 
-	if(unlikely(ctr >= NUM_COUNTERS))
+	if (unlikely(ctr >= NUM_COUNTERS))
 		return -1;
-	rdmsr(MSR_PERF_GLOBAL_STATUS,low,high);
-	switch(ctr){
-		#if NUM_COUNTERS > 0
-		case 0:
-			ret = low & CTR0_OVERFLOW_MASK;
-			break;
-		#endif
-		#if NUM_COUNTERS > 1
-		case 1:
-			ret = low & CTR1_OVERFLOW_MASK;
-			break;
-		#endif
-		#if NUM_COUNTERS > 2
-		case 2:
-			ret = low & CTR2_OVERFLOW_MASK;
-			break;
-		#endif
-		#if NUM_COUNTERS > 3
-		case 3:
-			ret = low & CTR3_OVERFLOW_MASK;
-			break;
-		#endif
-		default:
-			ret = -1;
-			break;
+	rdmsr(MSR_PERF_GLOBAL_STATUS, low, high);
+	switch (ctr) {
+#if NUM_COUNTERS > 0
+	case 0:
+		ret = low & CTR0_OVERFLOW_MASK;
+		break;
+#endif
+#if NUM_COUNTERS > 1
+	case 1:
+		ret = low & CTR1_OVERFLOW_MASK;
+		break;
+#endif
+#if NUM_COUNTERS > 2
+	case 2:
+		ret = low & CTR2_OVERFLOW_MASK;
+		break;
+#endif
+#if NUM_COUNTERS > 3
+	case 3:
+		ret = low & CTR3_OVERFLOW_MASK;
+		break;
+#endif
+	default:
+		ret = -1;
+		break;
 	}
 	return ret;
 #	else
@@ -147,55 +147,57 @@ int pmu_is_interrupt(int ctr)
 	return -1;
 #endif
 }
+
 EXPORT_SYMBOL_GPL(pmu_is_interrupt);
 
 int pmu_clear_ovf_status(int ctr)
 {
 	int ret = 0;
-	#if NUM_COUNTERS > 0 
-	#if defined(ARCH_C2D)
-	u32 low,high;
-	if(unlikely(ctr > NUM_COUNTERS))
+#if NUM_COUNTERS > 0
+#if defined(ARCH_C2D)
+	u32 low, high;
+	if (unlikely(ctr > NUM_COUNTERS))
 		return -1;
 	/* Unlike the C2D, the AMD Archs do not
 	 * have a way of indicating ovf status or
 	 * control. And hence just return success
 	 * (0)
 	 */
-	rdmsr(MSR_PERF_GLOBAL_OVF_CTRL,low,high);
-	switch(ctr){
-		#if NUM_COUNTERS > 0
-		case 0:
-			low &= CTR0_OVERFLOW_CLEAR_MASK;
-			break;
-		#endif
-		#if NUM_COUNTERS > 1
-		case 1:
-			low &= CTR1_OVERFLOW_CLEAR_MASK;
-			break;
-		#endif
-		#if NUM_COUNTERS > 2
-		case 2:
-			low &= CTR2_OVERFLOW_CLEAR_MASK;
-			break;
-		#endif
-		#if NUM_COUNTERS > 3
-		case 3:
-			low &= CTR3_OVERFLOW_CLEAR_MASK;
-			break;
-		#endif
-		default:
-			ret = -1;
-			break;
+	rdmsr(MSR_PERF_GLOBAL_OVF_CTRL, low, high);
+	switch (ctr) {
+#if NUM_COUNTERS > 0
+	case 0:
+		low &= CTR0_OVERFLOW_CLEAR_MASK;
+		break;
+#endif
+#if NUM_COUNTERS > 1
+	case 1:
+		low &= CTR1_OVERFLOW_CLEAR_MASK;
+		break;
+#endif
+#if NUM_COUNTERS > 2
+	case 2:
+		low &= CTR2_OVERFLOW_CLEAR_MASK;
+		break;
+#endif
+#if NUM_COUNTERS > 3
+	case 3:
+		low &= CTR3_OVERFLOW_CLEAR_MASK;
+		break;
+#endif
+	default:
+		ret = -1;
+		break;
 	}
-	if(likely(ret != -1)){
-		wrmsr(MSR_PERF_GLOBAL_OVF_CTRL,low,high);
+	if (likely(ret != -1)) {
+		wrmsr(MSR_PERF_GLOBAL_OVF_CTRL, low, high);
 	}
-	#else
+#else
 	return 0;
-	#endif
+#endif
 	return ret;
 #endif
 
 }
+
 EXPORT_SYMBOL_GPL(pmu_clear_ovf_status);

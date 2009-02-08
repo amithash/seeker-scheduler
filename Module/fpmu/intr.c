@@ -42,41 +42,42 @@ int fpmu_configure_interrupt(int ctr, u32 low, u32 high)
 {
 	int ret = 0;
 	int cpu = smp_processor_id();
-	if(likely(ctr < NUM_FIXED_COUNTERS)){
+	if (likely(ctr < NUM_FIXED_COUNTERS)) {
 		fcleared[cpu][ctr].low = low;
 		fcleared[cpu][ctr].high = high;
-		fcleared[cpu][ctr].all = (u64)low | (((u64)high) << 32);
-	}
-	else{
-		ret =  -1;
+		fcleared[cpu][ctr].all = (u64) low | (((u64) high) << 32);
+	} else {
+		ret = -1;
 	}
 	return 0;
 }
+
 EXPORT_SYMBOL_GPL(fpmu_configure_interrupt);
 
 int fpmu_enable_interrupt(int ctr)
 {
 	int ret = 0;
 	int cpu_id = smp_processor_id();
-	switch(ctr){
-		case 0:
-			fcontrol[cpu_id].pmi0 = 1;
-			break;
-		case 1:
-			fcontrol[cpu_id].pmi1 = 1;
-			break;
-		case 2:
-			fcontrol[cpu_id].pmi2 = 1;
-			break;
-		default:
-			ret = -1;
-			break;
+	switch (ctr) {
+	case 0:
+		fcontrol[cpu_id].pmi0 = 1;
+		break;
+	case 1:
+		fcontrol[cpu_id].pmi1 = 1;
+		break;
+	case 2:
+		fcontrol[cpu_id].pmi2 = 1;
+		break;
+	default:
+		ret = -1;
+		break;
 	}
-	if(likely(ret != -1)){
+	if (likely(ret != -1)) {
 		control_write();
 	}
 	return ret;
 }
+
 EXPORT_SYMBOL_GPL(fpmu_enable_interrupt);
 
 int fpmu_disable_interrupt(int ctr)
@@ -84,87 +85,87 @@ int fpmu_disable_interrupt(int ctr)
 	int ret = 0;
 #if NUM_FIXED_COUNTERS > 0
 	int cpu = smp_processor_id();
-	if(likely(ctr < NUM_FIXED_COUNTERS)){
+	if (likely(ctr < NUM_FIXED_COUNTERS)) {
 		fcleared[cpu][ctr].low = 0;
 		fcleared[cpu][ctr].high = 0;
 		fcleared[cpu][ctr].all = 0;
+	} else {
+		ret = -1;
 	}
-	else{
-		ret =  -1;
+	switch (ctr) {
+	case 0:
+		fcontrol[cpu].pmi0 = 0;
+		break;
+	case 1:
+		fcontrol[cpu].pmi1 = 0;
+		break;
+	case 2:
+		fcontrol[cpu].pmi2 = 0;
+		break;
+	default:
+		ret = -1;
+		break;
 	}
-	switch(ctr){
-		case 0:
-			fcontrol[cpu].pmi0 = 0;
-			break;
-		case 1:
-			fcontrol[cpu].pmi1 = 0;
-			break;
-		case 2:
-			fcontrol[cpu].pmi2 = 0;
-			break;
-		default:
-			ret = -1;
-			break;
-	}
-	if(likely(ret != -1)){
+	if (likely(ret != -1)) {
 		control_write();
 	}
 #endif
 	return ret;
-}       
+}
+
 EXPORT_SYMBOL_GPL(fpmu_disable_interrupt);
 
 int fpmu_is_interrupt(int ctr)
 {
 	u32 ret = 0;
 #if NUM_FIXED_COUNTERS > 0
-	u32 low,high;
-	rdmsr(MSR_PERF_GLOBAL_STATUS,low,high);
-	switch(ctr){
-		case 0:
-			ret = high & FIXED_CTR0_OVERFLOW_MASK;
-			break;
-		case 1:
-			ret = high & FIXED_CTR1_OVERFLOW_MASK;
-			break;
-		case 2:
-			ret = high & FIXED_CTR2_OVERFLOW_MASK;
-			break;
-		default:
-			ret = 0;
-			break;
+	u32 low, high;
+	rdmsr(MSR_PERF_GLOBAL_STATUS, low, high);
+	switch (ctr) {
+	case 0:
+		ret = high & FIXED_CTR0_OVERFLOW_MASK;
+		break;
+	case 1:
+		ret = high & FIXED_CTR1_OVERFLOW_MASK;
+		break;
+	case 2:
+		ret = high & FIXED_CTR2_OVERFLOW_MASK;
+		break;
+	default:
+		ret = 0;
+		break;
 	}
 #endif
 	return ret;
 }
-EXPORT_SYMBOL_GPL(fpmu_is_interrupt);
 
+EXPORT_SYMBOL_GPL(fpmu_is_interrupt);
 
 int fpmu_clear_ovf_status(int ctr)
 {
 	int ret = 0;
 #if NUM_FIXED_COUNTERS > 0
-	u32 low,high;
-	rdmsr(MSR_PERF_GLOBAL_OVF_CTRL,low,high);
-	switch(ctr){
-		case 0:
-			high &= FIXED_CTR0_OVERFLOW_CLEAR_MASK;
-			break;
-		case 1:
-			high &= FIXED_CTR1_OVERFLOW_CLEAR_MASK;
-			break;
-		case 2:
-			high &= FIXED_CTR2_OVERFLOW_CLEAR_MASK;
-			break;
-		default:
-			ret = -1;
-			break;
-        }
-	if(likely(ret != -1)){
-		wrmsr(MSR_PERF_GLOBAL_OVF_CTRL,low,high);
+	u32 low, high;
+	rdmsr(MSR_PERF_GLOBAL_OVF_CTRL, low, high);
+	switch (ctr) {
+	case 0:
+		high &= FIXED_CTR0_OVERFLOW_CLEAR_MASK;
+		break;
+	case 1:
+		high &= FIXED_CTR1_OVERFLOW_CLEAR_MASK;
+		break;
+	case 2:
+		high &= FIXED_CTR2_OVERFLOW_CLEAR_MASK;
+		break;
+	default:
+		ret = -1;
+		break;
+	}
+	if (likely(ret != -1)) {
+		wrmsr(MSR_PERF_GLOBAL_OVF_CTRL, low, high);
 	}
 #endif
 	return ret;
 }
-EXPORT_SYMBOL_GPL(fpmu_clear_ovf_status);
 
+EXPORT_SYMBOL_GPL(fpmu_clear_ovf_status);

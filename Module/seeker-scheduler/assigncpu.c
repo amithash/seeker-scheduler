@@ -32,7 +32,6 @@
 #define IPC_HIGH IPC_1_000
 #define IPC_LOW  IPC_0_750
 
-
 extern struct state_desc states[MAX_STATES];
 extern int total_states;
 extern u64 interval_count;
@@ -53,7 +52,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	int this_cpu;
 	int state_req = 0;
 	cpumask_t mask = CPU_MASK_NONE;
-	
+
 #ifdef SEEKER_PLUGIN_PATCH
 	/* Do not try to estimate anything
 	 * till INST_THRESHOLD insts are 
@@ -61,52 +60,55 @@ void put_mask_from_stats(struct task_struct *ts)
 	 * with short lived tasks.
 	 */
 
-	if(ts->inst < INST_THRESHOLD)
+	if (ts->inst < INST_THRESHOLD)
 		return;
 #endif
 
 	this_cpu = smp_processor_id();
 
 #ifdef SEEKER_PLUGIN_PATCH
-	switch(ts->fixed_state){
-	case 0: state_req = state = low_state;
+	switch (ts->fixed_state) {
+	case 0:
+		state_req = state = low_state;
 		break;
-	case 1: state_req = state = mid_state;
+	case 1:
+		state_req = state = mid_state;
 		break;
-	case 2: state_req = state = high_state;
+	case 2:
+		state_req = state = high_state;
 		break;
 	default:
-		ipc = IPC(ts->inst,ts->re_cy);
-		if(ts->cpustate != cur_cpu_state[this_cpu])
+		ipc = IPC(ts->inst, ts->re_cy);
+		if (ts->cpustate != cur_cpu_state[this_cpu])
 			ts->cpustate = cur_cpu_state[this_cpu];
-	
+
 		state_req = state = ts->cpustate;
 		break;
 	}
 #endif
-	/*up*/
-	if(ipc >= IPC_HIGH){
-		if(state < total_states-1)
-			state_req = state+1;
+	/*up */
+	if (ipc >= IPC_HIGH) {
+		if (state < total_states - 1)
+			state_req = state + 1;
 		else
-			state_req = total_states-1;
+			state_req = total_states - 1;
 
-		for(i=state+1;i<total_states;i++){
-			if(states[i].cpus > 0){
+		for (i = state + 1; i < total_states; i++) {
+			if (states[i].cpus > 0) {
 				new_state = i;
 				break;
 			}
 		}
 	}
-	/*down*/
-	if(ipc <= IPC_LOW){
-		if(state > 0)
-			state_req = state-1;
+	/*down */
+	if (ipc <= IPC_LOW) {
+		if (state > 0)
+			state_req = state - 1;
 		else
 			state_req = 0;
 
-		for(i=state-1;i>=0;i--){
-			if(states[i].cpus > 0){
+		for (i = state - 1; i >= 0; i--) {
+			if (states[i].cpus > 0) {
 				new_state = i;
 				break;
 			}
@@ -115,14 +117,14 @@ void put_mask_from_stats(struct task_struct *ts)
 	/* Do not worry about incrementing hint. 
 	 * for static layouts. They will not be used.
 	 */
-	if(static_layout == 0)
+	if (static_layout == 0)
 		hint_inc(state_req);
-	
+
 	/* If IPC_LOW < IPC < IPC_HIGH maintain this state */
-	if(new_state == -1)
+	if (new_state == -1)
 		new_state = state;
 
-	if(new_state != state){
+	if (new_state != state) {
 		/* There is no way to do this atomically except to
 		 * hold a lock which just screws performance. 
 		 * (Note this section is not only contended with mutate, but
@@ -134,25 +136,26 @@ void put_mask_from_stats(struct task_struct *ts)
 		mask = states[new_state].cpumask;
 
 		/* if we are using a static_layout there is no need to be so paranoid! */
-		if(!static_layout && is_states_consistent() && !cpus_empty(mask)){
+		if (!static_layout && is_states_consistent()
+		    && !cpus_empty(mask)) {
 			/* Do not touch cpumask if scheduling is disabled */
-			if(!disable_scheduling)
+			if (!disable_scheduling)
 				ts->cpus_allowed = mask;
-			#ifdef SEEKER_PLUGIN_PATCH
+#ifdef SEEKER_PLUGIN_PATCH
 			ts->cpustate = new_state;
-			#endif
+#endif
 		} else {
 			return;
 		}
 	}
 
 	p = get_debug();
-	if(p){
+	if (p) {
 		p->entry.type = DEBUG_SCH;
-		#ifdef SEEKER_PLUGIN_PATCH
+#ifdef SEEKER_PLUGIN_PATCH
 		p->entry.u.sch.interval = ts->interval;
 		p->entry.u.sch.inst = ts->inst;
-		#endif
+#endif
 		p->entry.u.sch.ipc = ipc;
 		p->entry.u.sch.pid = ts->pid;
 		p->entry.u.sch.state_req = state_req;
@@ -169,4 +172,3 @@ void put_mask_from_stats(struct task_struct *ts)
 	ts->re_cy = 0;
 #endif
 }
-

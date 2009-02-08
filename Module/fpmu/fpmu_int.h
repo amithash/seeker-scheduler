@@ -23,7 +23,6 @@
  * If not, see <http://www.gnu.org/licenses/>.       *
  *****************************************************/
 
-
 #ifndef _FPMU_INT_H_
 #define _FPMU_INT_H_
 
@@ -73,7 +72,7 @@ typedef struct {
 	u32 low;
 	u32 high;
 	u64 all;
-}fcleared_t;
+} fcleared_t;
 
 typedef struct {
 	u32 low:32;
@@ -84,7 +83,7 @@ typedef struct {
 /********* Extern Vars *******************************************************/
 extern fixctrl_t fcontrol[NR_CPUS];
 extern fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS];
-extern char* fcounter_names[NUM_FIXED_COUNTERS];
+extern char *fcounter_names[NUM_FIXED_COUNTERS];
 extern fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS];
 
 /********** Function Prototypes **********************************************/

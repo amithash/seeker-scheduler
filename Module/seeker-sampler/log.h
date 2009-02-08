@@ -29,7 +29,6 @@ void log_init(void);
 struct log_block *log_create(void);
 void delete_log(struct log_block *ent);
 void purge_log(void);
-int log_read(struct file* file_ptr, char *buf, size_t count, loff_t *offset);
+int log_read(struct file *file_ptr, char *buf, size_t count, loff_t * offset);
 void log_finalize(void);
 #endif
-

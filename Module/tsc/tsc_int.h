@@ -41,16 +41,14 @@ typedef struct {
 	u32 high;
 	u32 last_low;
 	u32 last_high;
-}tstamp_t;
+} tstamp_t;
 
 /********* Extern Vars *******************************************************/
 
 extern tstamp_t time_stamp[NR_CPUS];
-
 
 /********** Function Prototypes **********************************************/
 
 #include <tsc.h>
 
 #endif
-

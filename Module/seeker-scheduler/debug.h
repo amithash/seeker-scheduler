@@ -4,7 +4,7 @@
 
 #include <seeker.h>
 
-struct debug_block{
+struct debug_block {
 	debug_t entry;
 	struct debug_block *next;
 };
@@ -25,4 +25,3 @@ void put_debug(struct debug_block *p);
 void debug_free(struct debug_block *p);
 
 #endif
-

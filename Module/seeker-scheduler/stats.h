@@ -11,9 +11,7 @@
 #define LOAD_TO_UINT(a) ((a)>>3)
 #define UINT_TO_LOAD(a) ((a)<<3)
 
-
 void init_idle_logger(void);
 unsigned int get_cpu_load(int cpu);
-
 
 #endif

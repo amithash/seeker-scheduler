@@ -21,4 +21,3 @@ int configure_counters(void);
 void read_counters(int cpu);
 
 #endif
-

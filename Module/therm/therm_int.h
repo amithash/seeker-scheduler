@@ -23,7 +23,6 @@
  * If not, see <http://www.gnu.org/licenses/>.       *
  *****************************************************/
 
-
 #ifndef _THERM_INT_H_
 #define _THERM_INT_H_
 
@@ -52,4 +51,3 @@ extern int TjMax[NR_CPUS];
 #include <therm.h>
 
 #endif
-

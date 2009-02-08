@@ -39,47 +39,48 @@ MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
 MODULE_DESCRIPTION("Module provides an interface to access "
 		   "the per-core temperature sensor");
 
-int temperature[NR_CPUS] = {0};
-int TjMax[NR_CPUS] = {0};
+int temperature[NR_CPUS] = { 0 };
+int TjMax[NR_CPUS] = { 0 };
 
 int read_temp(void)
 {
-	#ifdef THERM_SUPPORTED
-	u32 low,high;
+#ifdef THERM_SUPPORTED
+	u32 low, high;
 	//read the temperature
 	int cpu = smp_processor_id();
 
-	rdmsr(IA32_THERM_STATUS,low,high);
-	if(unlikely((low & THERM_VALID_MASK) == 0)){
+	rdmsr(IA32_THERM_STATUS, low, high);
+	if (unlikely((low & THERM_VALID_MASK) == 0)) {
 		return -1;
-	}
-	else{
-		low = 0x7F & (low >> 16); // only 7 bits please...
+	} else {
+		low = 0x7F & (low >> 16);	// only 7 bits please...
 		temperature[cpu] = TjMax[cpu] - low;
 		return 0;
 	}
-	#else
+#else
 	return 0;
-	#endif
+#endif
 }
+
 EXPORT_SYMBOL_GPL(read_temp);
 
 int get_temp(int cpu)
 {
 	return temperature[cpu];
 }
+
 EXPORT_SYMBOL_GPL(get_temp);
 
 void therm_init_msrs(void *info)
 {
-	#ifdef THERM_SUPPORTED
+#ifdef THERM_SUPPORTED
 #ifdef ARCH_C2D
-	u32 low,high;
+	u32 low, high;
 #endif
 	int cpu = smp_processor_id();
 	temperature[cpu] = 0;
-	
-	#ifdef ARCH_C2D
+
+#ifdef ARCH_C2D
 	/* get the value of TjMax 
 	 * There is an undocumented MSR 0xEE
 	 * when bit 30 of this is set then
@@ -92,25 +93,25 @@ void therm_init_msrs(void *info)
 	 *
 	 */
 
-	rdmsr(0xEE,low,high);
-	if(low & 0x40000000){ // bit 30 if the MSR 0xEE
+	rdmsr(0xEE, low, high);
+	if (low & 0x40000000) {	// bit 30 if the MSR 0xEE
 		// is set. TjMax is 100 degree C
 		TjMax[cpu] = 100;
-	}
-	else{
+	} else {
 		TjMax[cpu] = 85;
 	}
-	#endif
+#endif
 	//perform the first readout.
 	read_temp();
-	#endif
+#endif
 }
+
 EXPORT_SYMBOL_GPL(therm_init_msrs);
 
 //must be called from ON_EACH_CPU
 static int __init therm_init(void)
 {
-	if(ON_EACH_CPU(therm_init_msrs,NULL,1,1) < 0){
+	if (ON_EACH_CPU(therm_init_msrs, NULL, 1, 1) < 0) {
 		error("Could not init therm on all cpus");
 		return -ENODEV;
 	}
@@ -124,4 +125,3 @@ static void __exit therm_exit(void)
 
 module_init(therm_init);
 module_exit(therm_exit);
-

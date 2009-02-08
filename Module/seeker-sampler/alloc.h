@@ -30,9 +30,7 @@ struct log_block {
 };
 
 int init_seeker_cache(void);
-struct log_block * alloc_seeker(void);
-void free_seeker(struct log_block * entry);
+struct log_block *alloc_seeker(void);
+void free_seeker(struct log_block *entry);
 void finalize_seeker_cache(void);
 #endif
-
-

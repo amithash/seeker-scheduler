@@ -27,15 +27,14 @@
 
 #include <linux/kprobes.h>
 
-#define PMU_ISR "smp_apic_pmu_interrupt" 
+#define PMU_ISR "smp_apic_pmu_interrupt"
 
 #ifdef LOCAL_PMU_VECTOR
 void inst_smp_apic_pmu_interrupt(struct pt_regs *regs);
 #endif
 int inst_schedule(struct kprobe *p, struct pt_regs *regs);
 void inst_release_thread(struct task_struct *t);
-void inst___switch_to(struct task_struct *from,
-			     struct task_struct *to);
+void inst___switch_to(struct task_struct *from, struct task_struct *to);
 /* I am going to say this only once. If you do not want to use
  * pmu_intr, then why should I force you to patch your kernel?
  * That is completely uncalled for! And hence I am checking for

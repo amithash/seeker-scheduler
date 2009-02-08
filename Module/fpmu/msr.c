@@ -41,133 +41,143 @@ extern fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS];
 // Read the fixed counter control register.
 inline u32 control_read(void)
 {
-	#if NUM_FIXED_COUNTERS > 0
+#if NUM_FIXED_COUNTERS > 0
 	u32 low, high;
 	rdmsr(MSR_PERF_FIXED_CTR_CTRL, low, high);
 	return low;
-	#else
+#else
 	return 0;
-	#endif
+#endif
 }
-EXPORT_SYMBOL_GPL(control_read);
 
+EXPORT_SYMBOL_GPL(control_read);
 
 //clears the fixed counter control registers.
 inline void control_clear(void)
 {
-	#if NUM_FIXED_COUNTERS > 0
+#if NUM_FIXED_COUNTERS > 0
 	u32 low, high;
 	rdmsr(MSR_PERF_FIXED_CTR_CTRL, low, high);
 	low &= FIXSEL_RESERVED_BITS;
 	wrmsr(MSR_PERF_FIXED_CTR_CTRL, low, high);
-	#endif
+#endif
 }
+
 EXPORT_SYMBOL_GPL(control_clear);
 
 //write to the fixed counter control registers.
 inline void control_write(void)
 {
-	#if NUM_FIXED_COUNTERS > 0
+#if NUM_FIXED_COUNTERS > 0
 	u32 low, high;
 	int cpu_id = smp_processor_id();
-	if(likely(cpu_id < NR_CPUS)){
+	if (likely(cpu_id < NR_CPUS)) {
 		fixctrl_t *cur_control = &(fcontrol[cpu_id]);
-	
+
 		rdmsr(MSR_PERF_FIXED_CTR_CTRL, low, high);
 		low &= FIXSEL_RESERVED_BITS;
-	
-		low = 	  (cur_control->os0 << 0)
-			| (cur_control->usr0 << 1)
-			| (cur_control->pmi0 << 3)
-			| (cur_control->os1 << 4)
-			| (cur_control->usr1 << 5)
-			| (cur_control->pmi1 << 7)
-			| (cur_control->os2 << 8)
-			| (cur_control->usr2 << 9)
-			| (cur_control->pmi2 << 11);
-	
+
+		low = (cur_control->os0 << 0)
+		    | (cur_control->usr0 << 1)
+		    | (cur_control->pmi0 << 3)
+		    | (cur_control->os1 << 4)
+		    | (cur_control->usr1 << 5)
+		    | (cur_control->pmi1 << 7)
+		    | (cur_control->os2 << 8)
+		    | (cur_control->usr2 << 9)
+		    | (cur_control->pmi2 << 11);
+
 		wrmsr(MSR_PERF_FIXED_CTR_CTRL, low, high);
 	}
-	#endif
+#endif
 }
+
 EXPORT_SYMBOL_GPL(control_write);
 
 //must be called using ON_EACH_CPU
 inline void fcounter_clear(u32 counter)
 {
-	#if NUM_FIXED_COUNTERS > 0
+#if NUM_FIXED_COUNTERS > 0
 	int cpu_id;
 	cpu_id = smp_processor_id();
-	if(likely(cpu_id < NR_CPUS)){
-		wrmsr(fcounters[cpu_id][counter].addr, fcleared[cpu_id][counter].low, fcleared[cpu_id][counter].high);
-		wrmsr(fcounters[cpu_id][counter].addr, fcleared[cpu_id][counter].low, fcleared[cpu_id][counter].high);
+	if (likely(cpu_id < NR_CPUS)) {
+		wrmsr(fcounters[cpu_id][counter].addr,
+		      fcleared[cpu_id][counter].low,
+		      fcleared[cpu_id][counter].high);
+		wrmsr(fcounters[cpu_id][counter].addr,
+		      fcleared[cpu_id][counter].low,
+		      fcleared[cpu_id][counter].high);
 	}
-	#endif
+#endif
 }
+
 EXPORT_SYMBOL_GPL(fcounter_clear);
 
 //must be called using ON_EACH_CPU
 void fcounter_read(void)
 {
-	#if NUM_FIXED_COUNTERS > 0
+#if NUM_FIXED_COUNTERS > 0
 	u32 low, high;
 	int cpu_id, i;
 	cpu_id = smp_processor_id();
-	if(likely(cpu_id < NR_CPUS)){
+	if (likely(cpu_id < NR_CPUS)) {
 		/* this is the "full" read of the full 64bits */
-		for(i=0;i<NUM_FIXED_COUNTERS;i++){
+		for (i = 0; i < NUM_FIXED_COUNTERS; i++) {
 			rdmsr(fcounters[cpu_id][i].addr, low, high);
 			fcounters[cpu_id][i].high = high;
 			fcounters[cpu_id][i].low = low;
 		}
 	}
-	#endif
+#endif
 }
+
 EXPORT_SYMBOL_GPL(fcounter_read);
 
 //use this to get the counter data
 u64 get_fcounter_data(u32 counter, u32 cpu_id)
 {
-	#if NUM_FIXED_COUNTERS > 0
+#if NUM_FIXED_COUNTERS > 0
 	u64 counter_val;
-	if(likely(counter < NUM_FIXED_COUNTERS && cpu_id < NR_CPUS)){
-		counter_val = (u64)fcounters[cpu_id][counter].low;
-		counter_val = counter_val | ((u64)fcounters[cpu_id][counter].high << 32);
+	if (likely(counter < NUM_FIXED_COUNTERS && cpu_id < NR_CPUS)) {
+		counter_val = (u64) fcounters[cpu_id][counter].low;
+		counter_val =
+		    counter_val | ((u64) fcounters[cpu_id][counter].high << 32);
 		return counter_val - fcleared[cpu_id][counter].all;
-	}
-	else{
+	} else {
 		return -1;
 	}
-	#else
+#else
 	return 0;
-	#endif
+#endif
 }
+
 EXPORT_SYMBOL_GPL(get_fcounter_data);
 
 //must be called using ON_EACH_CPU
 inline void fcounters_disable(void)
 {
-	#if NUM_FIXED_COUNTERS > 0
+#if NUM_FIXED_COUNTERS > 0
 	int i;
-	int cpu_id = smp_processor_id(); 
-	if(likely(cpu_id < NR_CPUS)){
-		for(i=0;i<NUM_FIXED_COUNTERS;i++){
+	int cpu_id = smp_processor_id();
+	if (likely(cpu_id < NR_CPUS)) {
+		for (i = 0; i < NUM_FIXED_COUNTERS; i++) {
 			fcounter_clear(i);
 		}
-		control_clear();			
+		control_clear();
 	}
-	#endif
+#endif
 }
+
 EXPORT_SYMBOL_GPL(fcounters_disable);
 
 //must be called using ON_EACH_CPU
 void fcounters_enable(u32 os)
 {
-	#if NUM_FIXED_COUNTERS > 0
+#if NUM_FIXED_COUNTERS > 0
 	u32 i;
 	int cpu_id = smp_processor_id();
-	if(likely(cpu_id < NR_CPUS)){
-		for(i=0;i<NUM_FIXED_COUNTERS;i++){
+	if (likely(cpu_id < NR_CPUS)) {
+		for (i = 0; i < NUM_FIXED_COUNTERS; i++) {
 			fcounter_clear(i);
 		}
 		fcontrol[cpu_id].os0 = os;
@@ -181,6 +191,7 @@ void fcounters_enable(u32 os)
 		fcontrol[cpu_id].pmi2 = 0;
 		control_write();
 	}
-	#endif
+#endif
 }
+
 EXPORT_SYMBOL_GPL(fcounters_enable);

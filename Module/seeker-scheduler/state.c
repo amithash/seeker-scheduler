@@ -19,9 +19,11 @@
  */
 
 extern int total_online_cpus;
-int max_state_possible[NR_CPUS] = {0};
+int max_state_possible[NR_CPUS] = { 0 };
+
 unsigned int total_states = 0;
-int cur_cpu_state[NR_CPUS] = {0};
+int cur_cpu_state[NR_CPUS] = { 0 };
+
 struct state_desc states[MAX_STATES];
 
 int high_state;
@@ -29,7 +31,6 @@ int low_state;
 int mid_state;
 
 struct state_sane_t state_sane;
-
 
 void hint_inc(int state)
 {
@@ -40,12 +41,14 @@ void hint_dec(int state)
 {
 	states[state].demand--;
 }
+
 void mark_states_inconsistent(void)
 {
 	spin_lock(&(state_sane.lock));
 	state_sane.val = 0;
 	spin_unlock(&(state_sane.lock));
 }
+
 void mark_states_consistent(void)
 {
 	spin_lock(&(state_sane.lock));
@@ -63,81 +66,79 @@ int is_states_consistent(void)
 	return val;
 }
 
-
 int init_cpu_states(unsigned int how)
 {
 	int i;
 	spin_lock_init(&(state_sane.lock));
-	state_sane.val = 1; /* Mark states as sane */
+	state_sane.val = 1;	/* Mark states as sane */
 	/* Actually it is not going to be, but the timer
 	 * is not going to be initialized and the probes
 	 * are going to be registered only after this function
 	 * has completed successfully, and hence it is safe to
 	 * mark them as sane, */
 
-	for(i=0;i<total_online_cpus;i++){
+	for (i = 0; i < total_online_cpus; i++) {
 		max_state_possible[i] = get_max_states(i);
-		info("Max state for cpu %d = %d",i,max_state_possible[i]);
-		if(total_states < max_state_possible[i])
+		info("Max state for cpu %d = %d", i, max_state_possible[i]);
+		if (total_states < max_state_possible[i])
 			total_states = max_state_possible[i];
 	}
 	low_state = 0;
 	high_state = total_states - 1;
 	mid_state = (total_states >> 1);
 
-	for(i=0;i<total_states;i++){
+	for (i = 0; i < total_states; i++) {
 		states[i].state = i;
 		states[i].cpus = 0;
 		states[i].demand = 0;
 		cpus_clear(states[i].cpumask);
 	}
 
-	switch(how){
+	switch (how) {
 	case ALL_HIGH:
-		states[total_states-1].cpus = total_online_cpus;
-		for(i=0;i<total_online_cpus;i++){
-			cpu_set(i,states[total_states-1].cpumask);
-			cur_cpu_state[i] = max_state_possible[i]-1;
-			set_freq(i,cur_cpu_state[i]);
+		states[total_states - 1].cpus = total_online_cpus;
+		for (i = 0; i < total_online_cpus; i++) {
+			cpu_set(i, states[total_states - 1].cpumask);
+			cur_cpu_state[i] = max_state_possible[i] - 1;
+			set_freq(i, cur_cpu_state[i]);
 		}
 		break;
 	case ALL_LOW:
 		states[0].cpus = total_online_cpus;
-		for(i=0;i<total_online_cpus;i++){
-			cpu_set(i,states[0].cpumask);
+		for (i = 0; i < total_online_cpus; i++) {
+			cpu_set(i, states[0].cpumask);
 			cur_cpu_state[i] = 0;
-			set_freq(i,cur_cpu_state[i]);
+			set_freq(i, cur_cpu_state[i]);
 		}
 		break;
 	case BALANCE:
-		states[total_states-1].cpus = total_online_cpus >> 1;
-		states[0].cpus = total_online_cpus - (total_online_cpus>>1);
-		for(i=0;i<states[total_states-1].cpus;i++){
-			cpu_set(i,states[0].cpumask);
+		states[total_states - 1].cpus = total_online_cpus >> 1;
+		states[0].cpus = total_online_cpus - (total_online_cpus >> 1);
+		for (i = 0; i < states[total_states - 1].cpus; i++) {
+			cpu_set(i, states[0].cpumask);
 			cur_cpu_state[i] = 0;
-			set_freq(i,cur_cpu_state[i]);
+			set_freq(i, cur_cpu_state[i]);
 		}
-		for(;i<total_online_cpus;i++){
-			cpu_set(i,states[total_states-1].cpumask);
-			cur_cpu_state[i] = max_state_possible[i]-1;
-			set_freq(i,cur_cpu_state[i]);
+		for (; i < total_online_cpus; i++) {
+			cpu_set(i, states[total_states - 1].cpumask);
+			cur_cpu_state[i] = max_state_possible[i] - 1;
+			set_freq(i, cur_cpu_state[i]);
 		}
 		break;
-		case NO_CHANGE:
+	case NO_CHANGE:
 	default:
-			for(i=0;i<total_online_cpus;i++){
+		for (i = 0; i < total_online_cpus; i++) {
 			unsigned int this_freq = get_freq(i);
-			if(this_freq >= total_states){
-				set_freq(i,0);
+			if (this_freq >= total_states) {
+				set_freq(i, 0);
 				this_freq = 0;
-				warn("Freq state for cpu %d was not initialized and hence set to 0",i);
+				warn("Freq state for cpu %d was not initialized and hence set to 0", i);
 			}
 			cur_cpu_state[i] = this_freq;
-			cpu_set(i,states[this_freq].cpumask);
+			cpu_set(i, states[this_freq].cpumask);
 			states[this_freq].cpus++;
 		}
 		break;
 	}
 	return 0;
 }
-

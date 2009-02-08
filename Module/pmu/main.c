@@ -34,89 +34,90 @@
 
 #include "pmu_int.h"
 
-
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
 MODULE_DESCRIPTION("Module provides an interface to access the PMU");
 
 evtsel_t evtsel[NR_CPUS][NUM_COUNTERS] = {
 	{
-		#if NUM_COUNTERS > 0
-		{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL0} /*0*/
-		#endif
-		#if NUM_COUNTERS > 1
-		,{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL1}  /*1*/
-		#endif
-		#if NUM_COUNTERS > 2
-		,{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL2} /*2*/
-		#endif
-		#if NUM_COUNTERS > 3
-		,{0,0,0,0,0,0,0,0,0,0,0x00,EVTSEL3}  /*3*/
-		#endif
-	}
+#if NUM_COUNTERS > 0
+	 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, EVTSEL0}	/*0 */
+#endif
+#if NUM_COUNTERS > 1
+	 , {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, EVTSEL1}	/*1 */
+#endif
+#if NUM_COUNTERS > 2
+	 , {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, EVTSEL2}	/*2 */
+#endif
+#if NUM_COUNTERS > 3
+	 , {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, EVTSEL3}	/*3 */
+#endif
+	 }
 };
 
 counter_t counters[NR_CPUS][NUM_COUNTERS] = {
 	{
 
-		#if NUM_COUNTERS > 0
-		{0, 0, PMC0, 0, 0, 0} /* 0 */
-		#endif
-		#if NUM_COUNTERS > 1
-		,{0, 0, PMC1, 1, 0, 0}  /* 1 */
-		#endif
-		#if NUM_COUNTERS > 2
-		,{0, 0, PMC2, 2, 0, 0} /* 2 */
-		#endif
-		#if NUM_COUNTERS > 3
-		,{0, 0, PMC3, 3, 0, 0}  /* 3 */
-		#endif
-	}
+#if NUM_COUNTERS > 0
+	 {0, 0, PMC0, 0, 0, 0}	/* 0 */
+#endif
+#if NUM_COUNTERS > 1
+	 , {0, 0, PMC1, 1, 0, 0}	/* 1 */
+#endif
+#if NUM_COUNTERS > 2
+	 , {0, 0, PMC2, 2, 0, 0}	/* 2 */
+#endif
+#if NUM_COUNTERS > 3
+	 , {0, 0, PMC3, 3, 0, 0}	/* 3 */
+#endif
+	 }
 };
 
 cleared_t cleared[NR_CPUS][NUM_COUNTERS] = {
 	{
-		#if NUM_COUNTERS > 0
-		{0,0,0} 
-		#endif
-		#if NUM_COUNTERS > 1
-		,{0,0,0}
-		#endif
-		#if NUM_COUNTERS > 2
-		,{0,0,0}
-		#endif
-		#if NUM_COUNTERS > 3
-		,{0,0,0}
-		#endif
-	}
+#if NUM_COUNTERS > 0
+	 {0, 0, 0}
+#endif
+#if NUM_COUNTERS > 1
+	 , {0, 0, 0}
+#endif
+#if NUM_COUNTERS > 2
+	 , {0, 0, 0}
+#endif
+#if NUM_COUNTERS > 3
+	 , {0, 0, 0}
+#endif
+	 }
 };
 
 //must be called from ON_EACH_CPU
 void pmu_init_msrs(void *info)
 {
-	#if NUM_COUNTERS > 0
+#if NUM_COUNTERS > 0
 	int i;
 	int cpu = get_cpu();
-	if(cpu != 0){
-		for(i=0;i<NUM_COUNTERS;i++){
+	if (cpu != 0) {
+		for (i = 0; i < NUM_COUNTERS; i++) {
 			counters[cpu][i] = counters[0][i];
 			evtsel[cpu][i] = evtsel[0][i];
 		}
 	}
-	for(i = 0; i < NUM_COUNTERS; i++) {
-		warn("cpu %d counter %d enabled %d",cpu,i,counters[cpu][i].enabled);
+	for (i = 0; i < NUM_COUNTERS; i++) {
+		warn("cpu %d counter %d enabled %d", cpu, i,
+		     counters[cpu][i].enabled);
 		evtsel_clear(i);
 		counter_disable(i);
 		counter_clear(i);
 	}
 	put_cpu();
-	#endif
+#endif
 }
+
 EXPORT_SYMBOL_GPL(pmu_init_msrs);
 
 static int __init pmu_init(void)
 {
-	if(ON_EACH_CPU(&pmu_init_msrs,NULL,1,1) < 0){
+	if (ON_EACH_CPU(&pmu_init_msrs, NULL, 1, 1) < 0) {
 		error("Could not enable all counters. Panicing and exiting");
 		return -ENODEV;
 	}
@@ -125,9 +126,9 @@ static int __init pmu_init(void)
 
 static void __exit pmu_exit(void)
 {
-	int i,j;
-	for(i=0;i<NR_CPUS;i++){
-		for(j=0;j<NUM_COUNTERS;j++){
+	int i, j;
+	for (i = 0; i < NR_CPUS; i++) {
+		for (j = 0; j < NUM_COUNTERS; j++) {
 			counters[i][j].enabled = 0;
 		}
 	}
@@ -135,5 +136,3 @@ static void __exit pmu_exit(void)
 
 module_init(pmu_init);
 module_exit(pmu_exit);
-
-

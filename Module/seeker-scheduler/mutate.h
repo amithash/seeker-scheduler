@@ -6,4 +6,3 @@ void choose_layout(int dt);
 void init_mutator(void);
 
 #endif
-

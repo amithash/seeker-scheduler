@@ -52,11 +52,11 @@ struct log_block *log_create(void)
 {
 	struct log_block *p = NULL;
 	spin_lock(&log_lock);
-	if(!seeker_log_current)
+	if (!seeker_log_current)
 		goto out;
 	p = alloc_seeker();
-	if(!p){
-		p = NULL;	
+	if (!p) {
+		p = NULL;
 		warn("Allocation failed");
 		goto out;
 	}
@@ -71,7 +71,7 @@ out:
 
 void delete_log(struct log_block *ent)
 {
-	if(!ent){
+	if (!ent) {
 		error("Trying to delete a NULL Block.");
 		return;
 	}
@@ -81,19 +81,19 @@ void delete_log(struct log_block *ent)
 /* IMP: Make sure writers are done before calling this. */
 void purge_log(void)
 {
-	struct log_block *c1,*c2;
+	struct log_block *c1, *c2;
 	/* First of all take the lock so no
 	 * one will try to access while the
 	 * purge is going on
 	 */
-	if(seeker_log_head == NULL || seeker_log_current == NULL)
+	if (seeker_log_head == NULL || seeker_log_current == NULL)
 		return;
 
 	spin_lock(&log_lock);
 	c1 = seeker_log_head;
 	seeker_log_head = NULL;
 	seeker_log_current = NULL;
-	while(c1){
+	while (c1) {
 		c2 = c1->next;
 		delete_log(c1);
 		c1 = c2;
@@ -101,20 +101,19 @@ void purge_log(void)
 	spin_unlock(&log_lock);
 }
 
-int log_read(struct file* file_ptr, 
-	     char *buf, 
-	     size_t count, 
-	     loff_t *offset)
+int log_read(struct file *file_ptr, char *buf, size_t count, loff_t * offset)
 {
 	struct log_block *log;
 	int i = 0;
 
-	if(unlikely(seeker_log_head == NULL || buf == NULL || file_ptr == NULL || seeker_log_head == seeker_log_current)){
+	if (unlikely
+	    (seeker_log_head == NULL || buf == NULL || file_ptr == NULL
+	     || seeker_log_head == seeker_log_current)) {
 		return 0;
 	}
 
-	if(unlikely(first_read)){
-		if(unlikely(!seeker_log_head->next))
+	if (unlikely(first_read)) {
+		if (unlikely(!seeker_log_head->next))
 			return 0;
 		log = seeker_log_head;
 		seeker_log_head = seeker_log_head->next;
@@ -122,22 +121,21 @@ int log_read(struct file* file_ptr,
 		first_read = 0;
 	}
 
-		
 	/* Read max till seeker_log_current, do not read seeker_log_current 
 	 * Trying to read seeker_log_current will make the reader
 	 * a competetor with the writers and creates the 
 	 * need for a lock.
 	 */
-	while(i+sizeof(seeker_sampler_entry_t) <= count  &&
-	      seeker_log_head->next && 
-	      seeker_log_head != seeker_log_current){
+	while (i + sizeof(seeker_sampler_entry_t) <= count &&
+	       seeker_log_head->next && seeker_log_head != seeker_log_current) {
 
-		memcpy(buf+i,&(seeker_log_head->sample),sizeof(seeker_sampler_entry_t));	
+		memcpy(buf + i, &(seeker_log_head->sample),
+		       sizeof(seeker_sampler_entry_t));
 		/* Check if this is the last */
 		log = seeker_log_head;
 		seeker_log_head = seeker_log_head->next;
 		delete_log(log);
-		i+=sizeof(seeker_sampler_entry_t);
+		i += sizeof(seeker_sampler_entry_t);
 	}
 	return i;
 }
@@ -147,5 +145,3 @@ void log_finalize(void)
 	purge_log();
 	finalize_seeker_cache();
 }
-
-

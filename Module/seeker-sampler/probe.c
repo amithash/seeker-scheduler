@@ -36,7 +36,6 @@
 #include "intr.h"
 #include "sample.h"
 
-
 /* Now, now, now, let me explain what exactly happened for you to realize what 
  * went on here. I developed all this on the linux 2.6.18 kernel for the core 2
  * duo, Tipp, the guy who made p4sample also used sched_exit to probe when a 
@@ -58,15 +57,16 @@ struct kprobe kp_schedule = {
 	.fault_handler = NULL,
 	.addr = (kprobe_opcode_t *) schedule,
 };
+
 #ifdef LOCAL_PMU_VECTOR
 struct jprobe jp_smp_pmu_interrupt = {
-	.entry = (kprobe_opcode_t *)inst_smp_apic_pmu_interrupt,
+	.entry = (kprobe_opcode_t *) inst_smp_apic_pmu_interrupt,
 	.kp.symbol_name = PMU_ISR,
 };
 #endif
 
 struct jprobe jp_release_thread = {
-	.entry = (kprobe_opcode_t *)inst_release_thread,
+	.entry = (kprobe_opcode_t *) inst_release_thread,
 #ifdef SCHED_EXIT_EXISTS
 	.kp.symbol_name = "sched_exit",
 #else
@@ -75,7 +75,7 @@ struct jprobe jp_release_thread = {
 };
 
 struct jprobe jp___switch_to = {
-	.entry = (kprobe_opcode_t *)inst___switch_to,
+	.entry = (kprobe_opcode_t *) inst___switch_to,
 	.kp.symbol_name = "__switch_to",
 };
 
@@ -91,25 +91,24 @@ extern int pmu_intr;
 #ifdef LOCAL_PMU_VECTOR
 void inst_smp_apic_pmu_interrupt(struct pt_regs *regs)
 {
-	int i,ovf=0;
+	int i, ovf = 0;
 	debug("inst called. APIC WOrking");
-	if(likely(int_callbacks.is_interrupt(pmu_intr) > 0)){
+	if (likely(int_callbacks.is_interrupt(pmu_intr) > 0)) {
 		int_callbacks.clear_ovf_status(pmu_intr);
-		if(likely(dev_open == 1)){
+		if (likely(dev_open == 1)) {
 			do_sample(NULL);
 		}
-	}
-	else{
-		for(i=0;i<NUM_FIXED_COUNTERS;i++){
-			if(i == pmu_intr) 
+	} else {
+		for (i = 0; i < NUM_FIXED_COUNTERS; i++) {
+			if (i == pmu_intr)
 				continue;
-			if(int_callbacks.is_interrupt(i) > 0){
+			if (int_callbacks.is_interrupt(i) > 0) {
 				int_callbacks.clear_ovf_status(i);
-				warn("Counter %d overflowed. Check if your sample_freq is unresonably large.\n",i);
-				ovf=1;
+				warn("Counter %d overflowed. Check if your sample_freq is unresonably large.\n", i);
+				ovf = 1;
 			}
 		}
-		if(ovf == 0){
+		if (ovf == 0) {
 			warn("Supposedly no counter overflowed, check if something is wrong\n");
 		}
 	}
@@ -126,11 +125,12 @@ void inst_smp_apic_pmu_interrupt(struct pt_regs *regs)
  *---------------------------------------------------------------------------*/
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 {
-	if(dev_open){
+	if (dev_open) {
 		do_sample(NULL);
 	}
 	return 0;
 }
+
 EXPORT_SYMBOL_GPL(inst_schedule);
 
 /*---------------------------------------------------------------------------*
@@ -141,12 +141,11 @@ EXPORT_SYMBOL_GPL(inst_schedule);
  *---------------------------------------------------------------------------*/
 void inst_release_thread(struct task_struct *t)
 {
-	if(dev_open){
+	if (dev_open) {
 		do_pid_log(t);
 	}
 	jprobe_return();
 }
-
 
 /*---------------------------------------------------------------------------*
  * Function: inst__switch_to
@@ -162,6 +161,5 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	ts[cpu] = to;
 	jprobe_return();
 }
+
 EXPORT_SYMBOL_GPL(inst___switch_to);
-
-

@@ -32,7 +32,6 @@
 
 #include <seeker.h>
 
-
 #define P_ASSERT_EXIT(t,i) if(!(t)) {perror((i)); exit(EXIT_FAILURE);}
 #if defined(SEEKERD)
 #define BUFFER_SIZE (4096*sizeof(seeker_sampler_entry_t))
@@ -45,9 +44,9 @@
 static char buf[BUFFER_SIZE];
 static FILE *infile, *outfile;
 #if defined(SEEKERD)
-char infile_name[] = "/dev/seeker_samples"; 
+char infile_name[] = "/dev/seeker_samples";
 #elif defined(DEBUGD)
-char infile_name[] = "/dev/seeker_debug"; 
+char infile_name[] = "/dev/seeker_debug";
 #else
 #error "Either SEEKERD or DEBUGD must be defined"
 #endif
@@ -60,12 +59,16 @@ int do_sample = 1;
 void usage(char *argv[])
 {
 	printf("Usage:\n");
-	printf("\t%s LogFormat SampleTime\n",argv[0]);
-	printf("\t%s LogFormat\t(SampleTime is assumed as 1 second)\n",argv[0]);
-	printf("\t%s\t(LogFormat is assumed to be /var/log/seeker, SampleTime is assumed to be 1 second\n",argv[0]);
+	printf("\t%s LogFormat SampleTime\n", argv[0]);
+	printf("\t%s LogFormat\t(SampleTime is assumed as 1 second)\n",
+	       argv[0]);
+	printf
+	    ("\t%s\t(LogFormat is assumed to be /var/log/seeker, "
+	     "SampleTime is assumed to be 1 second\n",
+	     argv[0]);
 }
 
-void do_exit(void) 
+void do_exit(void)
 {
 	printf("Exiting seekerd\n");
 	fflush(outfile);
@@ -75,45 +78,44 @@ void do_exit(void)
 
 void catchSig()
 {
-	
+
 	sigset_t mask;
 	sigset_t oldMask;
-	
+
 	signal(SIGUSR1, catchSig);
 	//Mask off other signals while servicing this one
 	sigfillset(&mask);
 	//oldMask contains old mask value which can be restored
 	//Not really required to do it manually as OS does it for us.
-	sigprocmask(SIG_SETMASK,&mask, &oldMask);
+	sigprocmask(SIG_SETMASK, &mask, &oldMask);
 	printf("Got your message, writing to next file!!!\n");
 	do_sample = 0;
 }
 
-
 void catchTerm()
 {
-	
+
 	sigset_t mask;
 	sigset_t oldMask;
-	
+
 	signal(SIGTERM, catchTerm);
 	//Mask off other signals while servicing this one
 	sigfillset(&mask);
 	//oldMask contains old mask value which can be restored
 	//Not really required to do it manually as OS does it for us.
-	sigprocmask(SIG_SETMASK,&mask, &oldMask);
+	sigprocmask(SIG_SETMASK, &mask, &oldMask);
 	printf("I am terminating!!!!\n");
 	fclose(infile);
 	do_exit();
 }
+
 unsigned int usleep_wrapper(unsigned int time)
 {
 	int a = usleep(time);
 	return a;
 }
 
-
-int main (int argc, char** argv) 
+int main(int argc, char **argv)
 {
 	int sleep_time;
 	float sec_to_sleep;
@@ -121,61 +123,55 @@ int main (int argc, char** argv)
 	size_t bytes_read;
 	struct timeval tv;
 	pid_t pid;
-	unsigned int (*seeker_sleep)(unsigned int);
+	unsigned int (*seeker_sleep) (unsigned int);
 
 #if defined(SEEKERD)
 	printf("Seeker daemon started!\n");
 #elif defined(DEBUGD)
 	printf("Seeker scheduler debug daemon started!\n");
 #else
-	#error "Either SEEKERD or DEBUGD must be defined"
+#error "Either SEEKERD or DEBUGD must be defined"
 #endif
 
-  
-	if( argc < 3 ) {
-		if(argc == 2){
-			if(strcmp(argv[1],"--help") == 0 || strcmp(argv[1],"-h") == 0){
+	if (argc < 3) {
+		if (argc == 2) {
+			if (strcmp(argv[1], "--help") == 0
+			    || strcmp(argv[1], "-h") == 0) {
 				usage(argv);
 				return 0;
 			}
 			/* Only 1 argument, time is assumed as 1 second */
 			sec_to_sleep = 1;
-			strcpy(outfile_prefix,argv[1]);
-		}
-		else{
+			strcpy(outfile_prefix, argv[1]);
+		} else {
 			sec_to_sleep = 1;
-			strcpy(outfile_prefix,"/var/log/seeker");
-		}		
-	}
-	else if(argc == 3){
+			strcpy(outfile_prefix, "/var/log/seeker");
+		}
+	} else if (argc == 3) {
 		sec_to_sleep = atof(argv[1]);
-		strcpy(outfile_prefix,argv[2]);
-	}
-	else{
+		strcpy(outfile_prefix, argv[2]);
+	} else {
 		usage(argv);
 		return -1;
 	}
 
-
-	if(sec_to_sleep <= 0)
+	if (sec_to_sleep <= 0)
 		sec_to_sleep = 1;
-	
-	if(sec_to_sleep >= 1.0){
-		sleep_time = (int)(sec_to_sleep + 0.5); // round to the nearst integer.
+
+	if (sec_to_sleep >= 1.0) {
+		sleep_time = (int)(sec_to_sleep + 0.5);	// round to the nearst integer.
 		seeker_sleep = &sleep;
-	}
-	else{
-		sleep_time = (int)(sec_to_sleep * 1000000); // That many micro seconds...
+	} else {
+		sleep_time = (int)(sec_to_sleep * 1000000);	// That many micro seconds...
 		seeker_sleep = &usleep_wrapper;
 	}
-  
-	strcpy(outfile_name, outfile_prefix);
-	sprintf(count_c, "%d",count);
-	strcat(outfile_name,count_c);
 
+	strcpy(outfile_name, outfile_prefix);
+	sprintf(count_c, "%d", count);
+	strcat(outfile_name, count_c);
 
 	P_ASSERT_EXIT(infile = fopen(infile_name, "r"), infile_name);
-	if( access(outfile_name, F_OK) == 0 ) {
+	if (access(outfile_name, F_OK) == 0) {
 		fprintf(stderr, "seekerd: file exists: %s\n", outfile_name);
 		exit(EXIT_FAILURE);
 	}
@@ -192,36 +188,39 @@ int main (int argc, char** argv)
 	signal(SIGUSR1, catchSig);
 	signal(SIGTERM, catchTerm);
 
-
-	while(1) {
-		if(do_sample){
-			while( (bytes_read = fread(buf, 1, BUFFER_SIZE, infile)) > 0 ) {
-				if( ferror(infile) ) {
+	while (1) {
+		if (do_sample) {
+			while ((bytes_read =
+				fread(buf, 1, BUFFER_SIZE, infile)) > 0) {
+				if (ferror(infile)) {
 					do_exit();
 				}
-				bytes_read = fwrite(buf, 1, bytes_read, outfile);
-				if( ferror(outfile) ) {
+				bytes_read =
+				    fwrite(buf, 1, bytes_read, outfile);
+				if (ferror(outfile)) {
 					do_exit();
 				}
 			}
 			seeker_sleep(sleep_time);
-			if( ferror(infile) ) {
+			if (ferror(infile)) {
 				do_exit();
 			}
-		}
-		else{
+		} else {
 			fclose(outfile);
 			fclose(infile);
 			count++;
 			strcpy(outfile_name, outfile_prefix);
-			sprintf(count_c, "%d",count);
-			strcat(outfile_name,count_c);
-			if( access(outfile_name, F_OK) == 0 ) {
-				fprintf(stderr, "seekerd: file exists: %s\n", outfile_name);
+			sprintf(count_c, "%d", count);
+			strcat(outfile_name, count_c);
+			if (access(outfile_name, F_OK) == 0) {
+				fprintf(stderr, "seekerd: file exists: %s\n",
+					outfile_name);
 				exit(EXIT_FAILURE);
 			}
-			P_ASSERT_EXIT(outfile = fopen(outfile_name, "a"), outfile_name);	
-			P_ASSERT_EXIT(infile = fopen(infile_name, "r"), infile_name);
+			P_ASSERT_EXIT(outfile =
+				      fopen(outfile_name, "a"), outfile_name);
+			P_ASSERT_EXIT(infile =
+				      fopen(infile_name, "r"), infile_name);
 
 			do_sample = 1;
 		}
@@ -229,4 +228,5 @@ int main (int argc, char** argv)
 
 	return EXIT_SUCCESS;
 }
+
 

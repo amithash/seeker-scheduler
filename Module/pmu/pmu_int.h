@@ -23,7 +23,6 @@
  * If not, see <http://www.gnu.org/licenses/>.       *
  *****************************************************/
 
-
 #ifndef _PMU_INT_H_
 #define _PMU_INT_H_
 
@@ -79,13 +78,13 @@ typedef struct {
 	u32 inv_flag:1;
 	u32 cnt_mask:8;
 	u32 addr;
-}evtsel_t;
+} evtsel_t;
 
 typedef struct {
 	u32 low;
 	u32 high;
 	u64 all;
-}cleared_t;
+} cleared_t;
 
 typedef struct {
 	u32 low:32;
@@ -94,14 +93,14 @@ typedef struct {
 	u32 event;
 	u32 mask;
 	u32 enabled;
-}counter_t;
+} counter_t;
 
 /********* Extern Vars *******************************************************/
 
 extern evtsel_t evtsel[NR_CPUS][NUM_COUNTERS];
 extern counter_t counters[NR_CPUS][NUM_COUNTERS];
-extern char* evtsel_names[NUM_COUNTERS];
-extern char* counter_names[NUM_COUNTERS];
+extern char *evtsel_names[NUM_COUNTERS];
+extern char *counter_names[NUM_COUNTERS];
 extern cleared_t cleared[NR_CPUS][NUM_COUNTERS];
 
 /********** Function Prototypes **********************************************/
@@ -112,4 +111,3 @@ inline void evtsel_clear(u32 evtsel_num);
 inline void evtsel_write(u32 evtsel_num);
 
 #endif
-

@@ -25,13 +25,12 @@
 #ifndef __INTR_H_
 #define __INTR_H_
 
-
-struct struct_int_callbacks{
-	int (*enable_interrupts)(int);
-	int (*disable_interrupts)(int);
-	int (*configure_interrupts)(int, u32, u32);
-	int (*clear_ovf_status)(int);
-	int (*is_interrupt)(int);
+struct struct_int_callbacks {
+	int (*enable_interrupts) (int);
+	int (*disable_interrupts) (int);
+	int (*configure_interrupts) (int, u32, u32);
+	int (*clear_ovf_status) (int);
+	int (*is_interrupt) (int);
 };
 
 extern struct struct_int_callbacks int_callbacks;

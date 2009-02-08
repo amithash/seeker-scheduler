@@ -32,38 +32,34 @@
 #include "alloc.h"
 #include "log.h"
 
-
 static struct kmem_cache *seeker_cachep = NULL;
 
 int init_seeker_cache(void)
 {
 	seeker_cachep = kmem_cache_create("seeker_cache",
 					  sizeof(struct log_block),
-					  0,
-					  SLAB_PANIC,
-					  NULL);
-	if(!seeker_cachep){
+					  0, SLAB_PANIC, NULL);
+	if (!seeker_cachep) {
 		error("Could not create the cache. Shit just hit the fan");
 		return -1;
 	}
 	return 0;
 }
 
-struct log_block * alloc_seeker(void)
+struct log_block *alloc_seeker(void)
 {
-	struct log_block *ent = 
-	(struct log_block *)kmem_cache_alloc(seeker_cachep, GFP_ATOMIC);
-	if(!ent){
+	struct log_block *ent =
+	    (struct log_block *)kmem_cache_alloc(seeker_cachep, GFP_ATOMIC);
+	if (!ent) {
 		warn("Allocation failed");
 		return NULL;
 	}
 	return ent;
 }
 
-
-void free_seeker(struct log_block * entry)
+void free_seeker(struct log_block *entry)
 {
-	kmem_cache_free(seeker_cachep,entry);
+	kmem_cache_free(seeker_cachep, entry);
 	entry = NULL;
 }
 
@@ -71,5 +67,3 @@ void finalize_seeker_cache(void)
 {
 	kmem_cache_destroy(seeker_cachep);
 }
-
-

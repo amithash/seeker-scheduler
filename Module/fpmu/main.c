@@ -36,76 +36,76 @@
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
-MODULE_DESCRIPTION("Module provides an interface to access the " 
+MODULE_DESCRIPTION("Module provides an interface to access the "
 		   "fixed performance monitoring counters");
 
 fixctrl_t fcontrol[NR_CPUS] = {
-	{0,0,0,0,0,0,0,0,0}
+	{0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
 fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS] = {
 	{
-		#if NUM_FIXED_COUNTERS > 0
-		{0, 0, MSR_PERF_FIXED_CTR0} /* 0 */
-		#endif
-		#if NUM_FIXED_COUNTERS > 1
-		,{0, 0, MSR_PERF_FIXED_CTR1} /* 1 */
-		#endif
-		#if NUM_FIXED_COUNTERS > 2
-		,{0, 0, MSR_PERF_FIXED_CTR2}  /* 2 */
-		#endif
-	}
+#if NUM_FIXED_COUNTERS > 0
+	 {0, 0, MSR_PERF_FIXED_CTR0}	/* 0 */
+#endif
+#if NUM_FIXED_COUNTERS > 1
+	 , {0, 0, MSR_PERF_FIXED_CTR1}	/* 1 */
+#endif
+#if NUM_FIXED_COUNTERS > 2
+	 , {0, 0, MSR_PERF_FIXED_CTR2}	/* 2 */
+#endif
+	 }
 };
-
 
 fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS] = {
 	{
-		#if NUM_FIXED_COUNTERS > 0
-		{0,0,0} 
-		#endif
-		#if NUM_FIXED_COUNTERS > 1
-		,{0,0,0}
-		#endif
-		#if NUM_FIXED_COUNTERS > 2
-		,{0,0,0}
-		#endif
-	}
+#if NUM_FIXED_COUNTERS > 0
+	 {0, 0, 0}
+#endif
+#if NUM_FIXED_COUNTERS > 1
+	 , {0, 0, 0}
+#endif
+#if NUM_FIXED_COUNTERS > 2
+	 , {0, 0, 0}
+#endif
+	 }
 };
 
 //must be called from ON_EACH_CPU
 void fpmu_init_msrs(void)
 {
-	#if NUM_FIXED_COUNTERS > 0
+#if NUM_FIXED_COUNTERS > 0
 	int i;
 	int cpu_id = get_cpu();
-	if(likely(cpu_id < NR_CPUS)){
-		for(i=0;i<NUM_FIXED_COUNTERS;i++){
-			if(cpu_id != 0){
+	if (likely(cpu_id < NR_CPUS)) {
+		for (i = 0; i < NUM_FIXED_COUNTERS; i++) {
+			if (cpu_id != 0) {
 				fcounters[cpu_id][i] = fcounters[0][i];
 				fcleared[cpu_id][i] = fcleared[0][i];
 			}
 			fcounter_clear(i);
 		}
-		if(cpu_id != 0){
+		if (cpu_id != 0) {
 			fcontrol[cpu_id] = fcontrol[0];
 		}
 		control_clear();
 		fcounters_disable();
 	}
 	put_cpu();
-	#endif
+#endif
 }
+
 EXPORT_SYMBOL_GPL(fpmu_init_msrs);
 
 //must be called from ON_EACH_CPU
 static int __init fpmu_init(void)
 {
-	#if NUM_FIXED_COUNTERS > 0
-	if(ON_EACH_CPU((void *)fpmu_init_msrs,NULL,1,1) < 0){
+#if NUM_FIXED_COUNTERS > 0
+	if (ON_EACH_CPU((void *)fpmu_init_msrs, NULL, 1, 1) < 0) {
 		error("Could not enable anything, panicing and exiting");
 		return -ENODEV;
 	}
-	#endif
+#endif
 	return 0;
 }
 
@@ -116,4 +116,3 @@ static void __exit fpmu_exit(void)
 
 module_init(fpmu_init);
 module_exit(fpmu_exit);
-
