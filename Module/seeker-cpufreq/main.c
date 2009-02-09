@@ -118,6 +118,8 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 	relation = FREQ_INFO(cpu)->table[freq_ind] > policy->cur ? CPUFREQ_RELATION_H : CPUFREQ_RELATION_L;
 	policy->cur = FREQ_INFO(cpu)->table[freq_ind];
 	ret_val = __cpufreq_driver_target(policy, policy->cur, relation);
+	if(ret_val == -EAGAIN)
+		ret_val = __cpufreq_driver_target(policy,policy->cur,relation);
 	if(ret_val)
 		error("Target did not work for cpu %d transition to %d, with a return error code: %d\n",cpu,policy->cur,ret_val);
 
