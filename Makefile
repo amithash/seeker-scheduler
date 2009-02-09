@@ -47,8 +47,10 @@ endif
 all:
 	+make -C Module ARCA=$(ARCA) $(EXTRA_ARGS) $(EXTRA)
 	+make -C Scripts ARCA=$(ARCA) CPUS=$(CPUS) $(EXTRA_ARGS)
+	+make -C SyntheticBenchmarks
 
 clean:
 	+make -C Module clean
 	+make -C Scripts clean
+	+make -C SyntheticBenchmarks clean
 
