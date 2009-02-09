@@ -101,6 +101,8 @@ EXPORT_SYMBOL_GPL(get_freq);
  */
 int set_freq(unsigned int cpu, unsigned int freq_ind)
 {
+	int ret_val;
+	unsigned int relation;
 	struct cpufreq_policy *policy = NULL;
 	if (unlikely(cpu >= NR_CPUS || freq_ind >= FREQ_INFO(cpu)->num_states))
 		return -1;
@@ -112,10 +114,14 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 		error("Error, governor not initialized for cpu %d", cpu);
 		return -1;
 	}
-	policy->cur = FREQ_INFO(cpu)->table[freq_ind];
 	FREQ_INFO(cpu)->cur_freq = freq_ind;
-	cpufreq_driver_target(policy, policy->cur, CPUFREQ_RELATION_H);
-	return 0;
+	relation = FREQ_INFO(cpu)->table[freq_ind] > policy->cur ? CPUFREQ_RELATION_H : CPUFREQ_RELATION_L;
+	policy->cur = FREQ_INFO(cpu)->table[freq_ind];
+	ret_val = __cpufreq_driver_target(policy, policy->cur, relation);
+	if(ret_val)
+		error("Target did not work for cpu %d transition to %d, with a return error code: %d\n",cpu,policy->cur,ret_val);
+
+	return ret_val;
 }
 
 EXPORT_SYMBOL_GPL(set_freq);

@@ -140,7 +140,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		    && !cpus_empty(mask)) {
 			/* Do not touch cpumask if scheduling is disabled */
 			if (!disable_scheduling)
-				ts->cpus_allowed = mask;
+				set_cpus_allowed_ptr(ts,&mask);
 #ifdef SEEKER_PLUGIN_PATCH
 			ts->cpustate = new_state;
 #endif
