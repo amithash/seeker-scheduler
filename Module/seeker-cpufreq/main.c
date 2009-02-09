@@ -185,6 +185,8 @@ static int __init seeker_cpufreq_init(void)
 		table = cpufreq_frequency_get_table(i);
 		printk("CPU %d\nFrequencies:\n", i);
 		for (j = 0; table[j].frequency != CPUFREQ_TABLE_END; j++) {
+			if (table[j].frequency == CPUFREQ_ENTRY_INVALID)
+				continue;
 			FREQ_INFO(i)->num_states++;
 			FREQ_INFO(i)->table[j] = table[j].frequency;
 			printk("%d ", table[j].frequency);
