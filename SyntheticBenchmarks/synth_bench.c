@@ -8,7 +8,7 @@
 #define MEM_SIZE 1000000
 #endif
 
-#define MEM_SIZE_INT (MEM_SIZE * 1024) / sizeof(int)
+#define MEM_SIZE_INT ((MEM_SIZE * 1024) / sizeof(int))
 
 /* kernel_cpu_bound - stress the cpu
  * @trials   = total times the inner kernel is executed.
@@ -72,13 +72,13 @@ int main(int argc, char *argv[])
 	unsigned long long nll;
 	unsigned int *big_array;
 	struct timeval start,end;
-	int sqrt_mem_size;
+	unsigned int sqrt_mem_size;
 	if(argc < 2){
 		printf("Invalid parameters, USAGE: %s [mem|cpu]\n",argv[0]);
 		return 0;
 	}
 	/* We want to use 3/4 of the mem avaliable */
-	sqrt_mem_size = (int)sqrt((MEM_SIZE_INT * 3) / 4);
+	sqrt_mem_size = (unsigned int)sqrt((MEM_SIZE_INT * 3.0) / 4.0);
 	big_array = (int *)malloc(sizeof(int) * sqrt_mem_size * sqrt_mem_size);
 	gettimeofday(&start,NULL);
 	if(strcmp(argv[1],"cpu") == 0)
