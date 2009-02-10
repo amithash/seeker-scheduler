@@ -49,10 +49,24 @@ struct freq_info_t {
 static DEFINE_PER_CPU(struct freq_info_t, freq_info);
 #define FREQ_INFO(cpu) (&per_cpu(freq_info,(cpu)))
 
-/* module parameter */
-static int freqs_length = 0;
-static int freqs[NR_CPUS] = { 0 };
+static ssize_t cpufreq_seeker_showspeed(struct cpufreq_policy *policy, char *buf)
+{
+	debug("Someone called showspeed... so let's show them something");
+	sprintf(buf,"%d",policy->cur);
+	return (strlen(buf)+1)*sizeof(char);
+}
 
+static int cpufreq_seeker_governor(struct cpufreq_policy *policy,
+				   unsigned int event);
+
+/* The cpufreq governor structure for this module */
+struct cpufreq_governor seeker_governor = {
+	.name = "seeker",
+	.owner = THIS_MODULE,
+	.max_transition_latency = CPUFREQ_ETERNAL,
+	.governor = cpufreq_seeker_governor,
+	.show_setspeed = cpufreq_seeker_showspeed,
+};
 /* the governor function. It just prints infomation when it is called */
 static int cpufreq_seeker_governor(struct cpufreq_policy *policy,
 				   unsigned int event)
@@ -61,13 +75,14 @@ static int cpufreq_seeker_governor(struct cpufreq_policy *policy,
 	switch (event) {
 	case CPUFREQ_GOV_START:
 		info("Starting governor on cpu %d", cpu);
+		FREQ_INFO(cpu)->policy = policy;
 		break;
 	case CPUFREQ_GOV_STOP:
 		info("Stopping governor on cpu %d", cpu);
+		FREQ_INFO(cpu)->policy = NULL;
 		break;
 	case CPUFREQ_GOV_LIMITS:
-		info("Setting limits %d to %d for cpu %d", policy->min,
-		     policy->max, cpu);
+		info("Ha ha, Nice try!");
 		break;
 	default:
 		info("Unknown");
@@ -75,14 +90,6 @@ static int cpufreq_seeker_governor(struct cpufreq_policy *policy,
 	}
 	return 0;
 }
-
-/* The cpufreq governor structure for this module */
-struct cpufreq_governor seeker_governor = {
-	.name = "seeker",
-	.owner = THIS_MODULE,
-	.max_transition_latency = 1000000000,
-	.governor = cpufreq_seeker_governor,
-};
 
 /* Users can get the current freq of a cpu */
 unsigned int get_freq(unsigned int cpu)
@@ -118,7 +125,9 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 	if(ret_val == -EAGAIN)
 		ret_val = cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
 	if(ret_val)
-		error("Target did not work for cpu %d transition to %d, with a return error code: %d\n",cpu,policy->cur,ret_val);
+		error("Target did not work for cpu %d transition to %d, with a return error code: %d",cpu,policy->cur,ret_val);
+	else 
+		info("Setting frequency of cpu %d to %d",cpu,policy->cur);
 
 	return ret_val;
 }
@@ -163,19 +172,10 @@ static int __init seeker_cpufreq_init(void)
 {
 	int i, j, k, l;
 	unsigned int tmp;
-	struct cpufreq_policy *policy;
 	struct cpufreq_frequency_table *table;
 	int cpus = num_online_cpus();
 	cpufreq_register_governor(&seeker_governor);
 	for (i = 0; i < cpus; i++) {
-		policy = FREQ_INFO(i)->policy = cpufreq_cpu_get(i);
-		info("Related cpus for cpu%d are (bitmask) %d", i,
-		     CPUMASK_TO_UINT(policy->related_cpus));
-		cpus_clear(policy->cpus);
-		cpu_set(i, policy->cpus);
-		//policy->update.func = &scpufreq_update_freq;
-		policy->governor = &seeker_governor;
-		cpufreq_cpu_put(policy);
 		FREQ_INFO(i)->cpu = i;
 		FREQ_INFO(i)->cur_freq = -1;	/* Not known */
 		FREQ_INFO(i)->num_states = 0;
@@ -203,49 +203,15 @@ static int __init seeker_cpufreq_init(void)
 			}
 		}
 	}
-	/* From now on frequency refered by the index from freq_info. */
-
-	if (freqs_length < 0)
-		freqs_length = 0;
-	if (freqs_length > cpus)
-		freqs_length = cpus;
-
-	/* set the initialization given in freqs 
-	 * and if cpus are left out, set them to 0 */
-	for (i = 0; i < freqs_length; i++) {
-		if (freqs[i] < 0)
-			freqs[i] = 0;
-		if (freqs[i] >= FREQ_INFO(i)->num_states)
-			freqs[i] = FREQ_INFO(i)->num_states - 1;
-		set_freq(i, freqs[i]);
-	}
-	for (i = freqs_length; i < cpus; i++)
-		set_freq(i, 0);
-
 	return 0;
 }
 
 /* Exit */
 static void __exit seeker_cpufreq_exit(void)
 {
-	/* Revert changes to cpufreq to make it useable by
-	 * user process again */
-	int i;
-	struct cpufreq_policy *policy;
-	int cpus = num_online_cpus();
-	flush_scheduled_work();
-	for (i = 0; i < cpus; i++) {
-		policy = cpufreq_cpu_get(i);
-		policy->governor = NULL;
-		cpufreq_cpu_put(policy);
-	}
 	cpufreq_unregister_governor(&seeker_governor);
 }
 
-module_param_array(freqs, int, &freqs_length, 0444);
-MODULE_PARM_DESC(freqs,
-		 "Optional, sets the cpus with the current freq_index: 0,1,... "
-		 "Num states in increasing frequencies");
-
 module_init(seeker_cpufreq_init);
 module_exit(seeker_cpufreq_exit);
+
