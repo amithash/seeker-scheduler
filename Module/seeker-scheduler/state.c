@@ -11,14 +11,10 @@
 #include "assigncpu.h"
 #include "mutate.h"
 
-/* Temp note:
- * The #if 0's sections are the working tested part.
- * The #else's are the new better untested part.
- * Once you test the better part, remove these #if 0 
- * sections AND this comment!
- */
-
 extern int total_online_cpus;
+extern int static_layout[NR_CPUS];
+extern int static_layout_length;
+
 int max_state_possible[NR_CPUS] = { 0 };
 
 unsigned int total_states = 0;
@@ -123,6 +119,24 @@ int init_cpu_states(unsigned int how)
 			cpu_set(i, states[total_states - 1].cpumask);
 			cur_cpu_state[i] = max_state_possible[i] - 1;
 			set_freq(i, cur_cpu_state[i]);
+		}
+		break;
+	case STATIC_LAYOUT:
+		for(i = 0; i < static_layout_length && i < total_online_cpus; i++) {
+			if(static_layout[i] < 0)
+				static_layout[i] = 0;
+			if(static_layout[i] >= total_states)
+				static_layout[i] = total_states-1;
+			set_freq(i,static_layout[i]);
+			cur_cpu_state[i] = static_layout[i];
+			cpu_set(i, states[static_layout[i]].cpumask);
+			states[static_layout[i]].cpus++;
+		}
+		for(i = static_layout_length; i < total_online_cpus; i++) {
+			set_freq(i,0);
+			cur_cpu_state[i] = 0;
+			cpu_set(i,states[0].cpumask);
+			states[0].cpus++;
 		}
 		break;
 	case NO_CHANGE:

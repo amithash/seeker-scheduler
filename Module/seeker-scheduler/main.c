@@ -47,6 +47,7 @@
 #define MAX_INSTRUCTIONS_BEFORE_SCHEDULE 10000000
 #define SEEKER_MAGIC_NUMBER 0xdea
 
+
 void inst___switch_to(struct task_struct *from, struct task_struct *to);
 void inst_sched_fork(struct task_struct *new, int clone_flags);
 int inst_schedule(struct kprobe *p, struct pt_regs *regs);
@@ -97,7 +98,8 @@ int change_interval = 5;
 int disable_scheduling = 0;
 int delta = 1;
 int init = ALL_LOW;
-int static_layout = 0;
+int static_layout[NR_CPUS];
+int static_layout_length = 0;
 extern u64 interval_count;
 extern int cur_cpu_state[MAX_STATES];
 extern u64 pmu_val[NR_CPUS][3];
@@ -217,23 +219,21 @@ static int scheduler_init(void)
 {
 #ifdef SEEKER_PLUGIN_PATCH
 	int probe_ret;
-	if (static_layout != 0) {
-		static_layout = 1;
-		init = 4;
+	if (static_layout_length != 0) {
+		init = STATIC_LAYOUT;
 	}
 	if (disable_scheduling != 0) {
 		disable_scheduling = 1;
-		static_layout = 1;
-		init = 4;
+		init = NO_CHANGE;
 	}
 
 	total_online_cpus = num_online_cpus();
 	init_idle_logger();
 	/* Please keep this BEFORE the probe registeration and
 	 * the timer initialization. init_cpu_states makes this 
-	 * assumption */
+	 * assumption by not taking any locks */
 	init_cpu_states(init);
-	if (static_layout == 0)
+	if (!(init == STATIC_LAYOUT || disable_scheduling))
 		init_mutator();
 
 	if (debug_init() != 0)
@@ -283,8 +283,7 @@ static int scheduler_init(void)
 	}
 	info("Configuring counters was successful");
 
-	/* static_layout = 0 implies, enabling the mutator */
-	if (static_layout == 0) {
+	if (init != STATIC_LAYOUT) {
 		interval_jiffies = change_interval * HZ;
 		timer_started = 1;
 		init_timer_deferrable(&state_work.timer);
@@ -349,9 +348,9 @@ module_param(disable_scheduling, int, 0444);
 MODULE_PARM_DESC(disable_scheduling,
 		 "Set to not allow scheduling. Does a dry run. Also enables static layout.");
 
-module_param(static_layout, int, 0444);
+module_param_array(static_layout, int, &static_layout_length, 0444);
 MODULE_PARM_DESC(static_layout,
-		 "Use this parameter set (>0) to use a static layout defined by seeker-cpufreq");
+		 "Use to set a static_layout to use");
 
 module_param(delta, int, 0444);
 MODULE_PARM_DESC(delta, "Type of state machine to use 1,2,.. default:1");
@@ -359,3 +358,4 @@ MODULE_PARM_DESC(delta, "Type of state machine to use 1,2,.. default:1");
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
 MODULE_DESCRIPTION("instruments scheduling functions to do extra work");
+
