@@ -1,3 +1,27 @@
+/*****************************************************
+ * Copyright 2008 Amithash Prasad                    *
+ *                                                   *
+ * This file is part of Seeker                       *
+ *                                                   *
+ * Seeker is free software: you can redistribute     *
+ * it and/or modify it under the terms of the        *
+ * GNU General Public License as published by        *
+ * the Free Software Foundation, either version      *
+ * 3 of the License, or (at your option) any         *
+ * later version.                                    *
+ *                                                   *
+ * This program is distributed in the hope that      *
+ * it will be useful, but WITHOUT ANY WARRANTY;      *
+ * without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR       *
+ * PURPOSE. See the GNU General Public License       *
+ * for more details.                                 *
+ *                                                   *
+ * You should have received a copy of the GNU        *
+ * General Public License along with this program.   *
+ * If not, see <http://www.gnu.org/licenses/>.       *
+ *****************************************************/
+
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/module.h>
@@ -29,19 +53,56 @@
 #define IPC_0_875 7
 #define IPC_1_000 8
 
+/* The HIGH IPC Threshold */
 #define IPC_HIGH IPC_1_000
+
+/* The LOW IPC Threshold */
 #define IPC_LOW  IPC_0_750
 
+/********************************************************************************
+ * 			External Variables 					*
+ ********************************************************************************/
+
+/* state.c: description of each state */
 extern struct state_desc states[MAX_STATES];
+
+/* state.c: total states supproted on system */
 extern int total_states;
+
+/* mutate.c: current mutater interval */
 extern u64 interval_count;
+
+/* state.c: current state of cpus */
 extern int cur_cpu_state[NR_CPUS];
+
+/* main.c: flag indicating a static layout */
 extern int static_layout;
+
+/* state.c: the lowest cpu state */
 extern int low_state;
+
+/* state.c: The highest cpu state */
 extern int high_state;
+
+/* state.c: state right at the middle */
 extern int mid_state;
+
+/* main.c: flag requesting scheduler be disabled */
 extern int disable_scheduling;
 
+/********************************************************************************
+ * 				Functions					*
+ ********************************************************************************/
+
+
+/********************************************************************************
+ * put_mask_from_stats - The fate of "ts" shall be decided!
+ * @ts - The task 
+ * @Side Effect - ts-> is evaluated if it has executed enough instructions
+ *
+ * Evaluates IPC and decides what state it needs and appropiately assigns
+ * the cpus_allowed element. 
+ ********************************************************************************/
 void put_mask_from_stats(struct task_struct *ts)
 {
 	int new_state = -1;
@@ -51,6 +112,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	int state = 0;
 	int this_cpu;
 	int state_req = 0;
+	u64 tasks_interval = 0;
 	cpumask_t mask = CPU_MASK_NONE;
 
 #ifdef SEEKER_PLUGIN_PATCH
@@ -62,6 +124,7 @@ void put_mask_from_stats(struct task_struct *ts)
 
 	if (ts->inst < INST_THRESHOLD)
 		return;
+	tasks_interval = ts->interval;
 #endif
 
 	this_cpu = smp_processor_id();
@@ -114,41 +177,28 @@ void put_mask_from_stats(struct task_struct *ts)
 			}
 		}
 	}
-	/* Do not worry about incrementing hint. 
-	 * for static layouts. They will not be used.
-	 */
-	if (static_layout == 0)
-		hint_inc(state_req);
+
+	hint_inc(state_req);
 
 	/* If IPC_LOW < IPC < IPC_HIGH maintain this state */
 	if (new_state == -1)
 		new_state = state;
 
-	if (new_state != state) {
-		/* There is no way to do this atomically except to
-		 * hold a lock which just screws performance. 
-		 * (Note this section is not only contended with mutate, but
-		 * also by other schedules on other CPUS!)
-		 * So do it non-atomically, by first getting the mask of the
-		 * state required, then assign it to the cpus_allowed ONLY
-		 * if the states are consistant AND the mask is NOT empty! 
-		 * else leave it as it is */
+	if (new_state != state || tasks_interval != interval_count) {
 		mask = states[new_state].cpumask;
-
-		/* if we are using a static_layout there is no need to be so paranoid! */
-		if (!static_layout && is_states_consistent()
+		if (!disable_scheduling && is_states_consistent()
 		    && !cpus_empty(mask)) {
-			/* Do not touch cpumask if scheduling is disabled */
-			if (!disable_scheduling)
-				set_cpus_allowed_ptr(ts,&mask);
+			set_cpus_allowed_ptr(ts,&mask);
 #ifdef SEEKER_PLUGIN_PATCH
 			ts->cpustate = new_state;
 #endif
-		} else {
-			return;
 		}
 	}
 
+	if(cpus_empty(mask))
+		return;
+
+	/* Push statastics to the debug buffer if enabled */
 	p = get_debug();
 	if (p) {
 		p->entry.type = DEBUG_SCH;
@@ -172,3 +222,5 @@ void put_mask_from_stats(struct task_struct *ts)
 	ts->re_cy = 0;
 #endif
 }
+
+

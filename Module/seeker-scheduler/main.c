@@ -21,6 +21,7 @@
  * General Public License along with this program.   *
  * If not, see <http://www.gnu.org/licenses/>.       *
  *****************************************************/
+
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/module.h>
@@ -44,42 +45,55 @@
 #include "debug.h"
 #include "hwcounters.h"
 
-#define MAX_INSTRUCTIONS_BEFORE_SCHEDULE 10000000
+/* seeker's magic short */
 #define SEEKER_MAGIC_NUMBER 0xdea
 
+/********************************************************************************
+ * 			Function Declarations 					*
+ ********************************************************************************/
 
 void inst___switch_to(struct task_struct *from, struct task_struct *to);
 void inst_sched_fork(struct task_struct *new, int clone_flags);
 int inst_schedule(struct kprobe *p, struct pt_regs *regs);
 void inst_release_thread(struct task_struct *t);
 void inst_scheduler_tick(void);
-
 static void state_change(struct work_struct *w);
+
+/********************************************************************************
+ * 			Global Datastructures 					*
+ ********************************************************************************/
+
+/* The mutataor's work struct */
 static DECLARE_DELAYED_WORK(state_work, state_change);
 
+/* Mutator interval time in jiffies */
 static u64 interval_jiffies;
+
+/* Timer started flag */
 static int timer_started = 0;
 
+/* Per-cpu task_structs updated by __switch_to */
 struct task_struct *ts[NR_CPUS] = { NULL };
 
+/* Probe for sched_fork */
 struct jprobe jp_sched_fork = {
 	.entry = (kprobe_opcode_t *) inst_sched_fork,
 	.kp.symbol_name = "sched_fork",
 };
 
+/* Probe for __switch_to */
 struct jprobe jp___switch_to = {
 	.entry = (kprobe_opcode_t *) inst___switch_to,
 	.kp.symbol_name = "__switch_to",
 };
 
-/* Consider using the scheduler_tick as a jprobe instead. 
- * if schedule 
- */
+/* Probe for scheduler_tick */
 struct jprobe jp_scheduler_tick = {
 	.entry = (kprobe_opcode_t *) inst_scheduler_tick,
 	.kp.symbol_name = "scheduler_tick",
 };
 
+/* Probe for schedule */
 struct kprobe kp_schedule = {
 	.pre_handler = inst_schedule,
 	.post_handler = NULL,
@@ -87,27 +101,71 @@ struct kprobe kp_schedule = {
 	.addr = (kprobe_opcode_t *) schedule,
 };
 
+/* Probe for release thread */
 struct jprobe jp_release_thread = {
 	.entry = (kprobe_opcode_t *) inst_release_thread,
 	.kp.symbol_name = "release_thread",
 };
 
+/* Contains the value of num_online_cpus(), updated by init */
 int total_online_cpus = 0;
 
-int change_interval = 5;
-int disable_scheduling = 0;
-int delta = 1;
-int init = ALL_LOW;
-int static_layout[NR_CPUS];
-int static_layout_length = 0;
-extern u64 interval_count;
-extern int cur_cpu_state[MAX_STATES];
-extern u64 pmu_val[NR_CPUS][3];
 #ifdef DEBUG
+/* count the times schedule was invoked */
 unsigned int schedule_count = 0;
+
+/* Count the times scheduler_tick was invoked */
 unsigned int scheduler_tick_count = 0;
 #endif
 
+/********************************************************************************
+ * 			External Variables 					*
+ ********************************************************************************/
+
+/* mutate.c: Current interval */
+extern u64 interval_count;
+
+/* state.c: Current state of cpu's */
+extern int cur_cpu_state[MAX_STATES];
+
+/* hwcounters.c: current value of counters */
+extern u64 pmu_val[NR_CPUS][3];
+
+/********************************************************************************
+ * 			Module Parameters 					*
+ ********************************************************************************/
+
+/* Mutator interval in seconds */
+int change_interval = 5;
+
+/* flag requesting disabling the scheduler and mutator */
+int disable_scheduling = 0;
+
+/* DELTA of the mutator */
+int delta = 1;
+
+/* method of initializing the states */
+int init = ALL_LOW;
+
+/* Static Layout of states */
+int static_layout[NR_CPUS];
+
+/* Count of elements in static_layout */
+int static_layout_length = 0;
+
+/********************************************************************************
+ * 				Functions					*
+ ********************************************************************************/
+
+
+/*******************************************************************************
+ * state_change - work callback 
+ * @w - the work struct calling this function.
+ * @return - None
+ * @Side Effect - Calls mutator which does its thing, and schedules itself. 
+ *
+ * The work routine responsible to call the mutator
+ *******************************************************************************/
 static void state_change(struct work_struct *w)
 {
 	debug("scheduler_count=%u : scheduler_tick_count = %u",
@@ -123,6 +181,13 @@ static void state_change(struct work_struct *w)
 	}
 }
 
+/*******************************************************************************
+ * inst_scheduler_tick - probe for scheduler_tick
+ * @return - None
+ * @Side Effect - calls the probe of scheduler.
+ *
+ * This is one of the probes (along with scheduler) to deal with scheduling
+ *******************************************************************************/
 void inst_scheduler_tick(void)
 {
 #ifdef DEBUG
@@ -133,6 +198,14 @@ void inst_scheduler_tick(void)
 
 }
 
+/*******************************************************************************
+ * inst_release_thread - probe for release_thread
+ * @t - the task which is getting released (murder!)
+ * @return - None
+ * @Side Effect - If debug has started, then pid is logged.
+ *
+ * Logs the pids and command names of threads when they die
+ *******************************************************************************/
 void inst_release_thread(struct task_struct *t)
 {
 	struct debug_block *p = NULL;
@@ -151,6 +224,17 @@ void inst_release_thread(struct task_struct *t)
 
 }
 
+/*******************************************************************************
+ * inst_schedule - Probe for schedule
+ * @p - Not used
+ * @regs - Not used
+ * @return - always 0
+ * @Side Effects - Updates the tasks counters and requests a re-schedule 
+ *                 if the total executed instructions exceed INST_THRESHOLD
+ *
+ * Responsible for updating reading/writing the performance counters.
+ * And also the one which decides when a task has executed enough
+ *******************************************************************************/
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 {
 	int cpu = smp_processor_id();
@@ -178,6 +262,18 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	return 0;
 }
 
+/*******************************************************************************
+ * inst_sched_fork - Probe for sched_fork
+ * @new - The task which is going to start
+ * @clone_flags - Not used.
+ * @return - None
+ * @Side Effects - Sets the new tasks to be managed by seeker. Inits the members
+ *                 to zero
+ *
+ * A tasks birth. Init member elements required by seeker. Assign SEEKER_MAGIC_
+ * NUMBER to seeker_scheduled to let other probes know that this is a new task
+ * and hence managed by seeker. 
+ *******************************************************************************/
 void inst_sched_fork(struct task_struct *new, int clone_flags)
 {
 #ifdef SEEKER_PLUGIN_PATCH
@@ -192,6 +288,16 @@ void inst_sched_fork(struct task_struct *new, int clone_flags)
 	jprobe_return();
 }
 
+/*******************************************************************************
+ * inst___switch_to - Probe for __switch_to
+ * @from - Previous task
+ * @to   - Next chosen task.
+ * @return - None
+ * @Side Effect - Updates ts to "to", updates counter elements, and calls 
+ *                the scheduler to decide the fate of "from".
+ *
+ * Decides the fate of "from" while remembering "to"
+ *******************************************************************************/
 void inst___switch_to(struct task_struct *from, struct task_struct *to)
 {
 	int cpu = smp_processor_id();
@@ -215,6 +321,13 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	jprobe_return();
 }
 
+/*******************************************************************************
+ * scheduler_init - Module init function
+ * @return - 0 if success, else a negative error code.
+ *
+ * Initializes the different elements, registers all the probes, starts the 
+ * mutator work. 
+ *******************************************************************************/
 static int scheduler_init(void)
 {
 #ifdef SEEKER_PLUGIN_PATCH
@@ -316,6 +429,12 @@ no_scheduler_tick:
 #endif
 }
 
+/*******************************************************************************
+ * scheduler_exit - Module exit functionn
+ *
+ * Unregisters all probes, stops the mutator work if it has started.
+ * Stops and kicks anyone using the debug interface. 
+ *******************************************************************************/
 static void scheduler_exit(void)
 {
 	debug("removing the state change timer");
@@ -332,6 +451,10 @@ static void scheduler_exit(void)
 	debug("Debug exiting");
 	debug_exit();
 }
+
+/********************************************************************************
+ * 			Module Parameters 					*
+ ********************************************************************************/
 
 module_init(scheduler_init);
 module_exit(scheduler_exit);

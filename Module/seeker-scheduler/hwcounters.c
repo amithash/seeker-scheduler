@@ -1,3 +1,27 @@
+/*****************************************************
+ * Copyright 2008 Amithash Prasad                    *
+ *                                                   *
+ * This file is part of Seeker                       *
+ *                                                   *
+ * Seeker is free software: you can redistribute     *
+ * it and/or modify it under the terms of the        *
+ * GNU General Public License as published by        *
+ * the Free Software Foundation, either version      *
+ * 3 of the License, or (at your option) any         *
+ * later version.                                    *
+ *                                                   *
+ * This program is distributed in the hope that      *
+ * it will be useful, but WITHOUT ANY WARRANTY;      *
+ * without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR       *
+ * PURPOSE. See the GNU General Public License       *
+ * for more details.                                 *
+ *                                                   *
+ * You should have received a copy of the GNU        *
+ * General Public License along with this program.   *
+ * If not, see <http://www.gnu.org/licenses/>.       *
+ *****************************************************/
+
 #include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -8,13 +32,33 @@
 
 #include "hwcounters.h"
 
+/********************************************************************************
+ * 			Global Datastructures 					*
+ ********************************************************************************/
+
 #if NUM_FIXED_COUNTERS == 0
+/* contain the counter numbers for inst, recy and rfcy for each cpu */
 int sys_counters[NR_CPUS][3] = { {0, 0, 0} };
 #endif
 
+/* Value of inst re_cy and rf_cy for each cpu */
 u64 pmu_val[NR_CPUS][3];
+
+/* Flag Indicates an error in the procedure */
 int ERROR = 0;
 
+/********************************************************************************
+ * 				Functions					*
+ ********************************************************************************/
+
+
+/********************************************************************************
+ * enable_cpu_counters - enable counters on current cpu
+ * @info - Not used
+ * @Side Effect - If PMU is used, store the counter numbers used.
+ *
+ * FPMU or PMU counters are enabled to count inst, recy and rfcy
+ ********************************************************************************/
 void enable_pmu_counters(void *info)
 {
 	int cpu = get_cpu();
@@ -44,6 +88,13 @@ void enable_pmu_counters(void *info)
 	put_cpu();
 }
 
+/********************************************************************************
+ * configure_counters - enable counters on ALL online cpus
+ * @Return - 0 for success -1 otherwise.
+ * @Side Effect - calls enable_pmu_counters on each online cpu.
+ *
+ * Enable counters on all online cpus. 
+ ********************************************************************************/
 int configure_counters(void)
 {
 	if (ON_EACH_CPU(enable_pmu_counters, NULL, 1, 1) < 0) {
@@ -56,6 +107,14 @@ int configure_counters(void)
 	return 0;
 }
 
+/********************************************************************************
+ * read_counters - Read performance counters on this cpu.
+ * @cpu - cpu number of this cpu
+ * @Side Effect - Reads the performance counters and puts them in pmu_val for the
+ * current cpu indicated by "cpu" and clear the counters.
+ *
+ * Read pmu counters into pmu_val
+ ********************************************************************************/
 void read_counters(int cpu)
 {
 #if NUM_FIXED_COUNTERS > 0
@@ -83,3 +142,4 @@ void clear_counters(int cpu)
 	counter_clear(sys_counters[cpu][2]);
 #endif
 }
+
