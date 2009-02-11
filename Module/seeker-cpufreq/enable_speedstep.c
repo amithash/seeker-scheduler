@@ -28,7 +28,7 @@
 
 #include <seeker.h>
 
-#define IA32_MISC_ENABLE 0x00000000
+#define IA32_MISC_ENABLE 0x000001A0
 #define EST_BIT 16
 #define EST_MASK (1 << (EST_BIT-1))
 
