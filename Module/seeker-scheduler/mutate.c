@@ -1,3 +1,27 @@
+/*****************************************************
+ * Copyright 2008 Amithash Prasad                    *
+ *                                                   *
+ * This file is part of Seeker                       *
+ *                                                   *
+ * Seeker is free software: you can redistribute     *
+ * it and/or modify it under the terms of the        *
+ * GNU General Public License as published by        *
+ * the Free Software Foundation, either version      *
+ * 3 of the License, or (at your option) any         *
+ * later version.                                    *
+ *                                                   *
+ * This program is distributed in the hope that      *
+ * it will be useful, but WITHOUT ANY WARRANTY;      *
+ * without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR       *
+ * PURPOSE. See the GNU General Public License       *
+ * for more details.                                 *
+ *                                                   *
+ * You should have received a copy of the GNU        *
+ * General Public License along with this program.   *
+ * If not, see <http://www.gnu.org/licenses/>.       *
+ *****************************************************/
+
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/module.h>
@@ -11,29 +35,77 @@
 #include "stats.h"
 #include "debug.h"
 
-static int demand_field[MAX_STATES];
-static int new_cpu_state[NR_CPUS];
-static int state_matrix[NR_CPUS][MAX_STATES];
-static int demand[MAX_STATES];
+/********************************************************************************
+ * 			External Variables 					*
+ ********************************************************************************/
+
+/* state.c: state descriptors */
 extern struct state_desc states[MAX_STATES];
+
+/* state.c: total states for each cpu */
 extern unsigned int total_states;
+
+/* main.c: value returned by num_online_cpus() */
 extern int total_online_cpus;
+
+/* state.c: States for each cpu */
 extern int max_allowed_states[NR_CPUS];
+
+/* state.c: current state of each cpu */
 extern int cur_cpu_state[NR_CPUS];
 
+
+/********************************************************************************
+ * 			Global Datastructures 					*
+ ********************************************************************************/
+
+/* demand field for each state */
+static int demand_field[MAX_STATES];
+
+/* Selected states for cpus */
+static int new_cpu_state[NR_CPUS];
+
+/* State matrix used to evaluate new_cpu_state */
+static int state_matrix[NR_CPUS][MAX_STATES];
+
+/* Computed demand for each state */
+static int demand[MAX_STATES];
+
+/* Mutator interval */
 u64 interval_count;
 
+/* sleep_time - intervals the cpu has been sleeping 
+ * awake - 1 if cpu is awake, 0 otherwise 
+ */
 struct proc_info {
 	unsigned int sleep_time;
 	unsigned int awake;
 };
 
+/* Proc info for each cpu */
 static struct proc_info info[NR_CPUS];
 
-/* Local function declaration */
+/********************************************************************************
+ * 			Function Declarations 					*
+ ********************************************************************************/
+
 inline int procs(int hints, int total, int total_load);
 
-/* Compute the total processors required */
+/********************************************************************************
+ * 				Functions					*
+ ********************************************************************************/
+
+
+/********************************************************************************
+ * procs - compute total processors required given hints and total
+ * @hints - the demand 
+ * @total - sum of all demands for all states.
+ * @total_load - integer load of system (number of cpus 
+ * @Side Effects - None
+ * @return - Total processors required for the state with hint = hints
+ *
+ * Take hints and compute procs = (hints / total) * total_load
+ ********************************************************************************/
 inline int procs(int hints, int total, int total_load)
 {
 	int ans;
@@ -46,9 +118,18 @@ inline int procs(int hints, int total, int total_load)
 	return ans < 0 ? 0 : ans;
 }
 
-/* Takes in the load as a fixed point and 
- * returns the number of processors utilized
- * as an integer */
+
+/********************************************************************************
+ * required_load - adjusts load
+ * @total_load - load in load units.
+ * @return - adjusted load in num processors
+ * @Side Effects - None
+ *
+ * Takes load (in load units) and adjusts it by a. rounds it as long as the 
+ * rounded number does not cross total_online_cpus. if load is an exact integer,
+ * then it is incremented (To accomadate higher load demands) and returns 1 if
+ * the load is 0. So, at least 1 cpu is avaliable for new tasks. 
+ ********************************************************************************/
 inline int required_load(int total_load)
 {
 	int ret = LOAD_TO_UINT(total_load);
@@ -68,7 +149,12 @@ inline int required_load(int total_load)
 	return ret;
 }
 
-/* Initializes the mutator local data structures */
+/********************************************************************************
+ * init_mutator - initialize mutator local structures.
+ * @Side Effects - For each cpu, sleep_time is set to 0 and is set to be awake. 
+ *
+ * Inits mutator structures. 
+ ********************************************************************************/
 void init_mutator(void)
 {
 	int i;
@@ -78,16 +164,20 @@ void init_mutator(void)
 	}
 }
 
-/* Updates the state matrix */
+/********************************************************************************
+ * update_state_matrix - updates state_matrix for the value of delta. 
+ * @delta - the delta for which state_matrix must be updated.
+ * @Side Effects - state_matrix is re-populated based on new_cpu_state and delta
+ *
+ * Takes in delta, the values in new_cpu_state and computes the state matrix 
+ * for each row (cpu) the column values is set to be total_states-distance where
+ * distance is the distance from column (cur_cpu_state) and 0 if that distance 
+ * is greater than delta.
+ ********************************************************************************/
 void update_state_matrix(int delta)
 {
 	int i, j, k;
 	for (i = 0; i < total_online_cpus; i++) {
-		if (info[i].awake == 0) {
-			for (j = 0; j < total_states; j++)
-				state_matrix[i][j] = 0;
-			continue;
-		}
 		for (j = new_cpu_state[i], k = 0; j < total_states; j++, k++) {
 			if (k > delta)
 				state_matrix[i][j] = 0;
@@ -109,6 +199,15 @@ void update_state_matrix(int delta)
  * gets with its friends = friend_count on either side
  * = (total_states/2)-1.
  */
+/********************************************************************************
+ * update_demand_field - update the demand field for a friend count.
+ * @friend_count - (total_states/2)-1
+ * @Side Effects - Updates the demand field matrix.
+ *
+ * Each and every column j state gives itself the current demand + a share which 
+ * is demnad + (demand/2). Then gives (demand/2)-distance to each and every
+ * column where distance = |i-j|<friend_count;
+ ********************************************************************************/
 void update_demand_field(int friend_count)
 {
 	int i, j, k;
@@ -131,6 +230,16 @@ void update_demand_field(int friend_count)
 	}
 }
 
+/********************************************************************************
+ * choose_layout - The mutator called every mutator interval.
+ * @delta - The delta of the system chosen at module insertion. 
+ * @Side effects - Changes cur_cpu_state and states field during which the states
+ * 		   will be incosistent. 
+ *
+ * Chooses the layout based on constraints like delta and demand. Will also set
+ * the hints to 0 so the next interval will be fresh. The function is rather 
+ * big, so it is explained inline. 
+ ********************************************************************************/
 void choose_layout(int delta)
 {
 	int total = 0;
@@ -156,30 +265,26 @@ void choose_layout(int delta)
 	if (delta < 1)
 		return;
 
-	/* Create a state matrix such that, the cell which
-	 * indicates a processors current state, gets the highest
-	 * value = iax_state_in_system^2, and parabolically decreases on either side.
+	/* Compute the system load, and initialize 
+	 * new_cpu_state to the current as no change has been made
 	 */
 	for (i = 0; i < total_online_cpus; i++) {
 		poison[i] = 1;
 		new_cpu_state[i] = cur_cpu_state[i];
 		load = ADD_LOAD(load, get_cpu_load(i));
 	}
-	/* Perform a rounding only if the rounding does not make the 
-	 * load greater than total_online_cpus */
+
+	/* Get load in terms of number of processors */
 	load = required_load(load);
 
 	debug("load of system = %d", load);
 
-	/* Total Hint */
-
+	/* Compute the total = sum of hints */
 	for (j = 0; j < total_states; j++) {
 		total += states[j].demand;
 	}
 
-	/* Num of cpus required for this state 
-	 * SUM(demand[]) could be < cpus. 
-	 * Make sure to bring down their states. */
+	/* Compute CPU's demanded for each state */
 	for (j = 0; j < total_states; j++) {
 		cpus_demanded[j] = demand[j] =
 		    procs(states[j].demand, total, load);
@@ -197,16 +302,22 @@ void choose_layout(int delta)
 
 		debug("Iteration %d", total_iter);
 
+		/* Compute the state matrix */
 		update_state_matrix(delta);
+
+		/* Compute the demand field */
 		update_demand_field(friends);
 
-		/* There is an optimization here, so do not get confused.
-		 * Technically, each column in the state matrix is supposed
-		 * to be multiplied by the demand. But that is done here,
-		 * as the demand decreases once won.
+		/* Sum along each column of state_matrix and multiply 
+		 * it with the demand field for that particular column.
+		 *
+		 * Choose the maximum. And upon a tie, choose the one
+		 * which has the largest element and also which has been
+		 * awake the most. 
+		 *
+		 * If a tie, choose the one with the highest (minimum)
+		 * along a column
 		 */
-
-		/* For each state, */
 		for (j = 0; j < total_states; j++) {
 			sum = 0;
 			best_proc = 0;
@@ -288,6 +399,8 @@ assign:
 
 		/* Continue the auction if delta > 0  or till all cpus are allocated */
 	}
+
+	/* Log with debug */
 	p = get_debug();
 	if (p) {
 		p->entry.type = DEBUG_MUT;
@@ -317,8 +430,11 @@ assign:
 	}
 	mark_states_consistent();
 	put_debug(p);
+
 	/* This is purposefully put in a different loop 
 	 * due to the intereference with put_debug();
+	 * Do not try to be smart and merge this loop with 
+	 * the above!
 	 */
 	for (i = 0; i < total_online_cpus; i++) {
 		/* CPU is used */
@@ -335,3 +451,5 @@ assign:
 		}
 	}
 }
+
+
