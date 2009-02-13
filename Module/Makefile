@@ -40,13 +40,6 @@ else
 BITS := 32
 endif
 
-# get what mutator should be compiled.
-ifdef ALT
-MUTATE := mutate_alt$(ALT).o
-else
-MUTATE := mutate.o
-endif
-
 ifneq ($(KERNELRELEASE),)
 
 # All the kernel modules 
@@ -85,10 +78,11 @@ seeker_sampler-objs += seeker-sampler/alloc.o   \
 # Seeker scheduler
 seeker_scheduler-objs += seeker-scheduler/main.o     \
 		       seeker-scheduler/assigncpu.o  \
-		       seeker-scheduler/$(MUTATE)    \
+		       seeker-scheduler/mutate.o     \
 		       seeker-scheduler/state.o      \
 		       seeker-scheduler/hwcounters.o \
 		       seeker-scheduler/stats.o	     \
+		       seeker-scheduler/tsc_intf.o   \
 		       seeker-scheduler/debug.o
 
 # Performance Monitoring counters.

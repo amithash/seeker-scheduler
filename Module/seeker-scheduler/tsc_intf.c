@@ -1,5 +1,6 @@
 
 #include <linux/kernel.h>
+#include <linux/module.h>
 #include <linux/init.h>
 
 #include <seeker.h>
@@ -20,11 +21,15 @@ unsigned long long get_tsc_cycles(void)
 
 static void init_tsc(void *info)
 {
-	tsc_val[cpu] = native_read_tsc();
+	tsc_val[smp_processor_id()] = native_read_tsc();
 }
 
-void init_tsc_intf(void)
+int init_tsc_intf(void)
 {
-	ON_EACH_CPU(init_tsc,NULL,1,1);
+	if(ON_EACH_CPU(init_tsc,NULL,1,1) < 0) {
+		error("Cound not initialize tsc_intf.");
+		return -1;
+	}
+	return 0;
 }
 

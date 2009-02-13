@@ -330,6 +330,11 @@ static int scheduler_init(void)
 
 	total_online_cpus = num_online_cpus();
 	init_idle_logger();
+
+	if(init_tsc_intf()){
+		error("Could not init tsc_intf");
+		return -ENOSYS;
+	}
 	/* Please keep this BEFORE the probe registeration and
 	 * the timer initialization. init_cpu_states makes this 
 	 * assumption by not taking any locks */
