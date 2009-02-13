@@ -76,9 +76,6 @@ int low_state;
 /* State at the mid */
 int mid_state;
 
-/* used to check if states are sane */
-struct state_sane_t state_sane;
-
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
@@ -108,49 +105,6 @@ void hint_dec(int state)
 }
 
 /********************************************************************************
- * mark_states_inconsistent - flag the states datastructure to be inconsistent
- * @Side Effect - state_sane.val is cleared in the critical region.
- *
- * Safely clear state_sane.val in a critical region.
- ********************************************************************************/
-void mark_states_inconsistent(void)
-{
-	spin_lock(&(state_sane.lock));
-	state_sane.val = 0;
-	spin_unlock(&(state_sane.lock));
-}
-
-/********************************************************************************
- * mark_states_consistent - flag the states datastructure to be consistent
- * @ Side Effects - state_sane.val is set in the critical region.
- *
- * Safely set the state)sane.val in a critical region. 
- ********************************************************************************/
-void mark_states_consistent(void)
-{
-	spin_lock(&(state_sane.lock));
-	state_sane.val = 1;
-	spin_unlock(&(state_sane.lock));
-
-}
-
-/********************************************************************************
- * is_states_consistent - query the consistency of the states datastructure
- * @return - 0 if states are inconsistent, 1 if states are consistent. 
- * @Side Effects - None
- *
- * Get the value of state_sane.val in a critical region, and return it.
- ********************************************************************************/
-int is_states_consistent(void)
-{
-	int val;
-	spin_lock(&(state_sane.lock));
-	val = state_sane.val;
-	spin_unlock(&(state_sane.lock));
-	return val;
-}
-
-/********************************************************************************
  * init_cpu_states - initialize the states sub system. 
  * @how - mentions how the states must be initialized.
  * @Side Effects - Initializes states and deems them consistent. 
@@ -162,13 +116,8 @@ int is_states_consistent(void)
 int init_cpu_states(unsigned int how)
 {
 	int i;
-	spin_lock_init(&(state_sane.lock));
-	state_sane.val = 1;	/* Mark states as sane */
-	/* Actually it is not going to be, but the timer
-	 * is not going to be initialized and the probes
-	 * are going to be registered only after this function
-	 * has completed successfully, and hence it is safe to
-	 * mark them as sane, */
+	
+	write_seqlock(&states_seq_lock);
 
 	for (i = 0; i < total_online_cpus; i++) {
 		max_state_possible[i] = get_max_states(i);
@@ -251,6 +200,9 @@ int init_cpu_states(unsigned int how)
 		}
 		break;
 	}
+
+	write_sequnlock(&states_seq_lock);
+
 	return 0;
 }
 

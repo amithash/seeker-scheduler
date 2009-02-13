@@ -42,16 +42,6 @@ struct state_desc {
 	unsigned int demand;
 };
 
-/* if val is 0, states are not sane,
- * val is 1 indicates states are sane.
- * val can only be changed by taking
- * the lock. 
- */
-struct state_sane_t {
-	short val;
-	spinlock_t lock;
-};
-
 /********************************************************************************
  * 				States API 					*
  ********************************************************************************/
@@ -59,8 +49,4 @@ struct state_sane_t {
 void hint_inc(int state);
 void hint_dec(int state);
 int init_cpu_states(unsigned int how);
-void mark_states_inconsistent(void);
-void mark_states_consistent(void);
-int is_states_consistent(void);
-
 #endif
