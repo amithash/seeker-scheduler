@@ -54,6 +54,9 @@ extern int max_allowed_states[NR_CPUS];
 /* state.c: current state of each cpu */
 extern int cur_cpu_state[NR_CPUS];
 
+/* state.c: seq lock for states */
+extern seqlock_t states_seq_lock;
+
 
 /********************************************************************************
  * 			Global Datastructures 					*
@@ -431,11 +434,11 @@ assign:
 	}
 	put_debug(p);
 
-	mark_states_inconsistent();
+	write_seqlock(&states_seq_lock);
 	for(j = 0; j < total_states; j++){
 		memcpy(&(states[j]),&(new_states[j]),sizeof(struct state_desc));
 	}
-	mark_states_consistent();
+	write_sequnlock(&states_seq_lock);
 	/* This is purposefully put in a different loop 
 	 * due to the intereference with put_debug();
 	 * Do not try to be smart and merge this loop with 

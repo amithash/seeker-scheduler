@@ -33,4 +33,10 @@ void put_mask_from_stats(struct task_struct *ts);
  */
 #define INST_THRESHOLD 10000000
 
+#ifdef SEEKER_PLUGIN_PATH
+#define TS_MEMBER(ts,member)	(ts)->##member
+#else
+#define TS_MEMBER(ts,member)	(ts)->flags
 #endif
+#endif
+

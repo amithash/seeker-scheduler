@@ -64,6 +64,9 @@ int cur_cpu_state[NR_CPUS] = { 0 };
 /* description of each state */
 struct state_desc states[MAX_STATES];
 
+/* Seq lock has to be held whenever states are used */
+seqlock_t states_seq_lock = SEQLOCK_UNLOCKED;
+
 /* Highest state */
 int high_state;
 

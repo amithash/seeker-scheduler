@@ -90,6 +90,9 @@ extern int mid_state;
 /* main.c: flag requesting scheduler be disabled */
 extern int disable_scheduling;
 
+/* states.c: states seq_lock */
+extern seqlock_t states_seq_lock;
+
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
@@ -152,93 +155,70 @@ void put_mask_from_stats(struct task_struct *ts)
 	int state = 0;
 	int this_cpu;
 	int state_req = 0;
+	unsigned int seq;
 	u64 tasks_interval = 0;
 	cpumask_t mask = CPU_MASK_NONE;
 
-#ifdef SEEKER_PLUGIN_PATCH
 	/* Do not try to estimate anything
 	 * till INST_THRESHOLD insts are 
 	 * executed. Hopefully avoids messing
 	 * with short lived tasks.
 	 */
 
-	if (ts->inst < INST_THRESHOLD)
+	if (TS_MEMBER(ts,inst) < INST_THRESHOLD)
 		return;
-	tasks_interval = ts->interval;
-#endif
+	tasks_interval = TS_MEMBER(ts,interval);
 
 	this_cpu = smp_processor_id();
 
-#ifdef SEEKER_PLUGIN_PATCH
-	switch (ts->fixed_state) {
-	case 0:
-		state_req = state = low_state;
-		break;
-	case 1:
-		state_req = state = mid_state;
-		break;
-	case 2:
-		state_req = state = high_state;
-		break;
-	default:
-		ipc = IPC(ts->inst, ts->re_cy);
-		if (ts->cpustate != cur_cpu_state[this_cpu])
-			ts->cpustate = cur_cpu_state[this_cpu];
-
-		state_req = state = ts->cpustate;
-		break;
-	}
-#endif
-	/*up */
-	if (ipc >= IPC_HIGH) {
-		new_state = get_higher_state(state);
-		state_req = higher(state);
-	} else if (ipc <= IPC_LOW) {
-		new_state = get_lower_state(state);
-		state_req = lower(state);
-	} else {
-		state_req = state;
-		if(states[state].cpus > 0){
-			new_state = state;
-		} else {
-			int new_state1 = get_higher_state(state);
-			int new_state2 = get_lower_state(state);
-			new_state = abs(state-new_state1) < abs(state-new_state2) ? new_state1 : new_state1;
-
+	do{
+		seq = read_seqbegin(&states_seq_lock);
+		switch (TS_MEMBER(ts,fixed_state)) {
+		case 0:
+			state_req = state = low_state;
+			break;
+		case 1:
+			state_req = state = mid_state;
+			break;
+		case 2:
+			state_req = state = high_state;
+			break;
+		default:
+			ipc = IPC(TS_MEMBER(ts,inst), TS_MEMBER(ts,re_cy));
+			state = cur_cpu_state[this_cpu];
+			/*up */
+			if (ipc >= IPC_HIGH) {
+				new_state = get_higher_state(state);
+				state_req = higher(state);
+			} else if (ipc <= IPC_LOW) {
+				new_state = get_lower_state(state);
+				state_req = lower(state);
+			} else {
+				state_req = state;
+				if(states[state].cpus > 0){
+					new_state = state;
+				} else {
+					int new_state1 = get_higher_state(state);
+					int new_state2 = get_lower_state(state);
+					new_state = abs(state-new_state1) < abs(state-new_state2) ? new_state1 : new_state1;		
+				}
+			}
 		}
-	}
-
-	if(new_state == -1)
-		return;
+		mask = states[new_state].cpumask;
+	} while(read_seqretry(&states_seq_lock,seq));
 
 	hint_inc(state_req);
 
-	/* If IPC_LOW < IPC < IPC_HIGH maintain this state */
-	if (new_state == -1)
-		new_state = state;
-
-	if (new_state != state || tasks_interval != interval_count) {
-		mask = states[new_state].cpumask;
-		if (!disable_scheduling && is_states_consistent()
-		    && !cpus_empty(mask)) {
-			set_cpus_allowed_ptr(ts,&mask);
-#ifdef SEEKER_PLUGIN_PATCH
-			ts->cpustate = new_state;
-#endif
-		}
-	}
-
 	if(cpus_empty(mask))
 		return;
+	set_cpus_allowed_ptr(ts,&mask);
 
 	/* Push statastics to the debug buffer if enabled */
 	p = get_debug();
 	if (p) {
 		p->entry.type = DEBUG_SCH;
-#ifdef SEEKER_PLUGIN_PATCH
-		p->entry.u.sch.interval = ts->interval;
-		p->entry.u.sch.inst = ts->inst;
-#endif
+		p->entry.u.sch.interval = TS_MEMBER(ts,interval);
+		p->entry.u.sch.inst = TS_MEMBER(ts,inst);
 		p->entry.u.sch.ipc = ipc;
 		p->entry.u.sch.pid = ts->pid;
 		p->entry.u.sch.state_req = state_req;
@@ -249,10 +229,11 @@ void put_mask_from_stats(struct task_struct *ts)
 #ifdef SEEKER_PLUGIN_PATCH
 
 	/* Start over. Forget the IPC... */
-	ts->interval = interval_count;
-	ts->inst = 0;
-	ts->ref_cy = 0;
-	ts->re_cy = 0;
+	TS_MEMBER(ts,interval) = interval_count;
+	TS_MEMBER(ts,inst) = 0;
+	TS_MEMBER(ts,ref_cy) = 0;
+	TS_MEMBER(ts,re_cy) = 0;
+	TS_MEMBER(ts,cpustate) = new_state;
 #endif
 }
 

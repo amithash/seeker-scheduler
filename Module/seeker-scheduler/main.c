@@ -209,10 +209,8 @@ void inst_scheduler_tick(void)
 void inst_release_thread(struct task_struct *t)
 {
 	struct debug_block *p = NULL;
-#ifdef SEEKER_PLUGIN_PATCH
-	if (t->seeker_scheduled != SEEKER_MAGIC_NUMBER)
+	if (TS_MEMBER(t,seeker_scheduled) != SEEKER_MAGIC_NUMBER)
 		jprobe_return();
-#endif
 	p = get_debug();
 	if (p) {
 		p->entry.type = DEBUG_PID;
@@ -241,25 +239,21 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 #ifdef DEBUG
 	schedule_count++;
 #endif
-#ifdef SEEKER_PLUGIN_PATCH
-	if (!ts[cpu] || ts[cpu]->seeker_scheduled != SEEKER_MAGIC_NUMBER)
+	if (!ts[cpu] || TS_MEMBER(ts[cpu],seeker_scheduled) != SEEKER_MAGIC_NUMBER)
 		return 0;
-#endif
 
 	read_counters(cpu);
-#ifdef SEEKER_PLUGIN_PATCH
-	if (ts[cpu]->interval != interval_count)
-		ts[cpu]->interval = interval_count;
-	ts[cpu]->inst += pmu_val[cpu][0];
-	ts[cpu]->re_cy += pmu_val[cpu][1];
-	ts[cpu]->ref_cy += pmu_val[cpu][2];
+	if (TS_MEMBER(ts[cpu],interval) != interval_count)
+		TS_MEMBER(ts[cpu],interval) = interval_count;
+	TS_MEMBER(ts[cpu],inst) += pmu_val[cpu][0];
+	TS_MEMBER(ts[cpu],re_cy) += pmu_val[cpu][1];
+	TS_MEMBER(ts[cpu],ref_cy) += pmu_val[cpu][2];
 	clear_counters(cpu);
-	if (ts[cpu]->inst > INST_THRESHOLD
-	    || ts[cpu]->cpustate != cur_cpu_state[cpu]
-	    || ts[cpu]->interval != interval_count) {
+	if (TS_MEMBER(ts[cpu],inst) > INST_THRESHOLD
+	    || TS_MEMBER(ts[cpu],cpustate) != cur_cpu_state[cpu]
+	    || TS_MEMBER(ts[cpu],interval) != interval_count) {
 		set_tsk_need_resched(ts[cpu]);	/* lazy, as we are anyway getting into schedule */
 	}
-#endif
 	return 0;
 }
 
@@ -277,15 +271,13 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
  *******************************************************************************/
 void inst_sched_fork(struct task_struct *new, int clone_flags)
 {
-#ifdef SEEKER_PLUGIN_PATCH
-	new->seeker_scheduled = SEEKER_MAGIC_NUMBER;
-	new->fixed_state = -1;
-	new->interval = interval_count;
-	new->inst = 0;
-	new->ref_cy = 0;
-	new->re_cy = 0;
-	new->cpustate = cur_cpu_state[smp_processor_id()];
-#endif
+	TS_MEMBER(new,seeker_scheduled) = SEEKER_MAGIC_NUMBER;
+	TS_MEMBER(new,fixed_state) = -1;
+	TS_MEMBER(new,interval) = interval_count;
+	TS_MEMBER(new,inst) = 0;
+	TS_MEMBER(new,ref_cy) = 0;
+	TS_MEMBER(new,re_cy) = 0;
+	TS_MEMBER(new,cpustate) = cur_cpu_state[smp_processor_id()];
 	jprobe_return();
 }
 
@@ -303,19 +295,14 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 {
 	int cpu = smp_processor_id();
 	ts[cpu] = to;
-#ifdef SEEKER_PLUGIN_PATCH
-	if (from->seeker_scheduled != SEEKER_MAGIC_NUMBER) {
+	if (TS_MEMBER(from,seeker_scheduled) != SEEKER_MAGIC_NUMBER) {
 		jprobe_return();
 	}
-#endif
 
 	read_counters(cpu);
-#ifdef SEEKER_PLUGIN_PATCH
-//	from->interval = interval_count;
-	from->inst += pmu_val[cpu][0];
-	from->re_cy += pmu_val[cpu][1];
-	from->ref_cy += pmu_val[cpu][2];
-#endif
+	TS_MEMBER(from,inst) += pmu_val[cpu][0];
+	TS_MEMBER(from,re_cy) += pmu_val[cpu][1];
+	TS_MEMBER(from,ref_cy) += pmu_val[cpu][2];
 	clear_counters(cpu);
 
 	put_mask_from_stats(from);
@@ -421,7 +408,7 @@ no_scheduler_tick:
 	return -ENOSYS;
 
 #else
-#warning "This module will NOT work on this kernel"
+	#warning "This module will NOT work on this unpatched, unblessed kernel"
 	error("You are trying to use this module without patching "
 	      "the kernel with schedmod. Refer to the "
 	      "seeker/Patches/README for details");
