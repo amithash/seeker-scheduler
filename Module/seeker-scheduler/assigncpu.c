@@ -94,6 +94,47 @@ extern int disable_scheduling;
  * 				Functions					*
  ********************************************************************************/
 
+#define higher(state) ((state) < total_states-1 ? (state)+1 : total_states-1)
+#define lower(state) ((state) > 0 ? (state)-1 : 0)
+
+int get_lower_state(int state)
+{
+	int new_state;
+	int i;
+	new_state = lower(state);
+	for(i=new_state;i>=0;i--){
+		if(states[i].cpus > 0)
+			return i;
+	}
+	if(states[state].cpus > 0)
+		return state;
+	for (i = state + 1; i < total_states; i++){
+		if (states[i].cpus > 0)
+			return i;
+	}
+	return -1;
+}
+
+
+int get_higher_state(int state)
+{
+	int new_state;
+	int i;
+	new_state = higher(state);
+	for(i=new_state;i<total_states;i++){
+		if(states[i].cpus > 0)
+			return i;
+	}
+	if(states[state].cpus > 0)
+		return state;
+	for(i=state-1;i>=0;i--){
+		if(states[i].cpus > 0)
+			return i;
+	}
+	return -1;
+}
+
+
 
 /********************************************************************************
  * put_mask_from_stats - The fate of "ts" shall be decided!
@@ -107,7 +148,6 @@ void put_mask_from_stats(struct task_struct *ts)
 {
 	int new_state = -1;
 	struct debug_block *p = NULL;
-	int i;
 	short ipc = 0;
 	int state = 0;
 	int this_cpu;
@@ -151,32 +191,25 @@ void put_mask_from_stats(struct task_struct *ts)
 #endif
 	/*up */
 	if (ipc >= IPC_HIGH) {
-		if (state < total_states - 1)
-			state_req = state + 1;
-		else
-			state_req = total_states - 1;
+		new_state = get_higher_state(state);
+		state_req = higher(state);
+	} else if (ipc <= IPC_LOW) {
+		new_state = get_lower_state(state);
+		state_req = lower(state);
+	} else {
+		state_req = state;
+		if(states[state].cpus > 0){
+			new_state = state;
+		} else {
+			int new_state1 = get_higher_state(state);
+			int new_state2 = get_lower_state(state);
+			new_state = abs(state-new_state1) < abs(state-new_state2) ? new_state1 : new_state1;
 
-		for (i = state + 1; i < total_states; i++) {
-			if (states[i].cpus > 0) {
-				new_state = i;
-				break;
-			}
 		}
 	}
-	/*down */
-	if (ipc <= IPC_LOW) {
-		if (state > 0)
-			state_req = state - 1;
-		else
-			state_req = 0;
 
-		for (i = state - 1; i >= 0; i--) {
-			if (states[i].cpus > 0) {
-				new_state = i;
-				break;
-			}
-		}
-	}
+	if(new_state == -1)
+		return;
 
 	hint_inc(state_req);
 

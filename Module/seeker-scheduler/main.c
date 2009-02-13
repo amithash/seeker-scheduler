@@ -255,7 +255,8 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	ts[cpu]->ref_cy += pmu_val[cpu][2];
 	clear_counters(cpu);
 	if (ts[cpu]->inst > INST_THRESHOLD
-	    && ts[cpu]->cpustate != cur_cpu_state[cpu]) {
+	    || ts[cpu]->cpustate != cur_cpu_state[cpu]
+	    || ts[cpu]->interval != interval_count) {
 		set_tsk_need_resched(ts[cpu]);	/* lazy, as we are anyway getting into schedule */
 	}
 #endif
@@ -310,7 +311,7 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 
 	read_counters(cpu);
 #ifdef SEEKER_PLUGIN_PATCH
-	from->interval = interval_count;
+//	from->interval = interval_count;
 	from->inst += pmu_val[cpu][0];
 	from->re_cy += pmu_val[cpu][1];
 	from->ref_cy += pmu_val[cpu][2];

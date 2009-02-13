@@ -59,6 +59,8 @@ extern int cur_cpu_state[NR_CPUS];
  * 			Global Datastructures 					*
  ********************************************************************************/
 
+static struct state_desc new_states[MAX_STATES];
+
 /* demand field for each state */
 static int demand_field[MAX_STATES];
 
@@ -125,7 +127,7 @@ inline int procs(int hints, int total, int total_load)
  * @return - adjusted load in num processors
  * @Side Effects - None
  *
- * Takes load (in load units) and adjusts it by a. rounds it as long as the 
+ * Takes load (in load units) and adjusts it by: rounds it up as long as the 
  * rounded number does not cross total_online_cpus. if load is an exact integer,
  * then it is incremented (To accomadate higher load demands) and returns 1 if
  * the load is 0. So, at least 1 cpu is avaliable for new tasks. 
@@ -408,15 +410,14 @@ assign:
 		p->entry.u.mut.count = total_states;
 	}
 
-	mark_states_inconsistent();
 	for (j = 0; j < total_states; j++) {
-		states[j].cpus = 0;
-		cpus_clear(states[j].cpumask);
+		new_states[j].cpus = 0;
+		cpus_clear(new_states[j].cpumask);
 		if (p) {
 			p->entry.u.mut.cpus_req[j] = cpus_demanded[j];
 			p->entry.u.mut.cpus_given[j] = 0;
 		}
-		states[j].demand = 0;
+		new_states[j].demand = 0;
 	}
 
 	for (i = 0; i < total_online_cpus; i++) {
@@ -425,12 +426,16 @@ assign:
 		// new_cpu_state[i] = 0;
 		if (p)
 			p->entry.u.mut.cpus_given[new_cpu_state[i]]++;
-		states[new_cpu_state[i]].cpus++;
-		cpu_set(i, states[new_cpu_state[i]].cpumask);
+		new_states[new_cpu_state[i]].cpus++;
+		cpu_set(i, new_states[new_cpu_state[i]].cpumask);
 	}
-	mark_states_consistent();
 	put_debug(p);
 
+	mark_states_inconsistent();
+	for(j = 0; j < total_states; j++){
+		memcpy(&(states[j]),&(new_states[j]),sizeof(struct state_desc));
+	}
+	mark_states_consistent();
 	/* This is purposefully put in a different loop 
 	 * due to the intereference with put_debug();
 	 * Do not try to be smart and merge this loop with 
