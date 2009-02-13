@@ -43,6 +43,8 @@ typedef struct {
 	unsigned long long interval;
 	unsigned int pid;
 	unsigned int cpu;
+	unsigned int state;
+	unsigned long long cycles;
 	unsigned int state_req;
 	unsigned int state_given;
 	unsigned int ipc;

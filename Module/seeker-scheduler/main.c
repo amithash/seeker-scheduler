@@ -44,6 +44,7 @@
 #include "mutate.h"
 #include "debug.h"
 #include "hwcounters.h"
+#include "tsc_intf.h"
 
 /* seeker's magic short */
 #define SEEKER_MAGIC_NUMBER 0xdea
@@ -109,6 +110,9 @@ struct jprobe jp_release_thread = {
 
 /* Contains the value of num_online_cpus(), updated by init */
 int total_online_cpus = 0;
+
+/* total cycles executed by a task on the current cpu */
+unsigned long long task_cycles[NR_CPUS] = {0};
 
 #ifdef DEBUG
 /* count the times schedule was invoked */
@@ -249,6 +253,7 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	TS_MEMBER(ts[cpu],re_cy) += pmu_val[cpu][1];
 	TS_MEMBER(ts[cpu],ref_cy) += pmu_val[cpu][2];
 	clear_counters(cpu);
+	task_cycles[cpu] += get_tsc_cycles();
 	if (TS_MEMBER(ts[cpu],inst) > INST_THRESHOLD
 	    || TS_MEMBER(ts[cpu],cpustate) != cur_cpu_state[cpu]
 	    || TS_MEMBER(ts[cpu],interval) != interval_count) {
