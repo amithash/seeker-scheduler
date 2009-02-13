@@ -33,10 +33,18 @@ void put_mask_from_stats(struct task_struct *ts);
  */
 #define INST_THRESHOLD 10000000
 
+/* Macro to access 'seeker' added members in
+ * task_struct (TS). This is used, to avoid
+ * the ugly #define SEEKER_PLUGIN_PATCH
+ * everywhere, just so that I can test it on
+ * an unpatched kernel for compilation errors! 
+ */
 #ifdef SEEKER_PLUGIN_PATH
-#define TS_MEMBER(ts,member)	(ts)->##member
+#	define TS_MEMBER(ts,member)	(ts)->##member
 #else
-#define TS_MEMBER(ts,member)	(ts)->flags
+#	define TS_MEMBER(ts,member)	(ts)->flags
 #endif
+
+
 #endif
 

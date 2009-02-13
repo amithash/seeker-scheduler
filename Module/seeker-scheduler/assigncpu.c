@@ -93,18 +93,35 @@ extern int disable_scheduling;
 /* states.c: states seq_lock */
 extern seqlock_t states_seq_lock;
 
+
+/********************************************************************************
+ * 				Local Macros					*
+ ********************************************************************************/
+
+/* macro to perform saturating increment with an exclusive limit */
+#define sat_inc(state,ex_limit) ((state) < ex_limit-1 ? (state)+1 : ex_limit-1)
+
+/* macro to performa a saturating decrement with an inclusive limit */
+#define sat_dec(state,inc_limit) ((state) > inc_limit ? (state)-1 : inc_limit)
+
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
 
-#define higher(state) ((state) < total_states-1 ? (state)+1 : total_states-1)
-#define lower(state) ((state) > 0 ? (state)-1 : 0)
-
-int get_lower_state(int state)
+/********************************************************************************
+ * get_lower_state - Get a state lower than current state.
+ * @state - The current state
+ * @Return - An avaliable state preferrably lower than state
+ * @Side Effects - None
+ *
+ * Returns the closest avaliable state lower than 'state'. If none are found, 
+ * return 'state' or a higher state closest to 'state' whatever is avaliable
+ ********************************************************************************/
+inline int get_lower_state(int state)
 {
 	int new_state;
 	int i;
-	new_state = lower(state);
+	new_state = sat_dec(state,0);
 	for(i=new_state;i>=0;i--){
 		if(states[i].cpus > 0)
 			return i;
@@ -119,11 +136,20 @@ int get_lower_state(int state)
 }
 
 
-int get_higher_state(int state)
+/********************************************************************************
+ * get_higher_state - Get a state higher than current state.
+ * @state - The current state
+ * @Return - An avaliable state preferrably higher than state
+ * @Side Effects - None
+ *
+ * Returns the closest avaliable state higher than 'state'. If none are found, 
+ * return 'state' or a lower state closest to 'state' whatever is avaliable.
+ ********************************************************************************/
+inline int get_higher_state(int state)
 {
 	int new_state;
 	int i;
-	new_state = higher(state);
+	new_state = sat_inc(state,total_states);
 	for(i=new_state;i<total_states;i++){
 		if(states[i].cpus > 0)
 			return i;
@@ -135,6 +161,27 @@ int get_higher_state(int state)
 			return i;
 	}
 	return -1;
+}
+
+/********************************************************************************
+ * get_closest_state - Get a state closest to the current state.
+ * @state - The current state
+ * @Return - An avaliable state closest to 'state'
+ * @Side Effects - None
+ *
+ * Returns 'state' if avaliable, or a state closest to 'state'
+ ********************************************************************************/
+inline int get_closest_state(int state)
+{
+	int state1,state2;
+	int ret_state;
+	if(states[state].cpus > 0)
+		return state;
+	state1 = get_lower_state(state);
+	state2 = get_higher_state(state);
+	ret_state = abs(state-state1) < abs(state-state2) ? 
+		state1 : state2;
+	return ret_state;
 }
 
 
@@ -175,13 +222,13 @@ void put_mask_from_stats(struct task_struct *ts)
 		seq = read_seqbegin(&states_seq_lock);
 		switch (TS_MEMBER(ts,fixed_state)) {
 		case 0:
-			state_req = state = low_state;
+			state_req = state = get_closest_state(low_state);
 			break;
 		case 1:
-			state_req = state = mid_state;
+			state_req = state = get_closest_state(mid_state);
 			break;
 		case 2:
-			state_req = state = high_state;
+			state_req = state = get_closest_state(high_state);
 			break;
 		default:
 			ipc = IPC(TS_MEMBER(ts,inst), TS_MEMBER(ts,re_cy));
@@ -189,19 +236,13 @@ void put_mask_from_stats(struct task_struct *ts)
 			/*up */
 			if (ipc >= IPC_HIGH) {
 				new_state = get_higher_state(state);
-				state_req = higher(state);
+				state_req = sat_inc(state,total_states);
 			} else if (ipc <= IPC_LOW) {
 				new_state = get_lower_state(state);
-				state_req = lower(state);
+				state_req = sat_dec(state,0);
 			} else {
 				state_req = state;
-				if(states[state].cpus > 0){
-					new_state = state;
-				} else {
-					int new_state1 = get_higher_state(state);
-					int new_state2 = get_lower_state(state);
-					new_state = abs(state-new_state1) < abs(state-new_state2) ? new_state1 : new_state1;		
-				}
+				new_state = get_closest_state(state);
 			}
 		}
 		mask = states[new_state].cpumask;
@@ -209,8 +250,10 @@ void put_mask_from_stats(struct task_struct *ts)
 
 	hint_inc(state_req);
 
+	/* What the duche? as stewie says it */
 	if(cpus_empty(mask))
 		return;
+
 	set_cpus_allowed_ptr(ts,&mask);
 
 	/* Push statastics to the debug buffer if enabled */
@@ -226,7 +269,6 @@ void put_mask_from_stats(struct task_struct *ts)
 		p->entry.u.sch.cpu = this_cpu;
 	}
 	put_debug(p);
-#ifdef SEEKER_PLUGIN_PATCH
 
 	/* Start over. Forget the IPC... */
 	TS_MEMBER(ts,interval) = interval_count;
@@ -234,7 +276,6 @@ void put_mask_from_stats(struct task_struct *ts)
 	TS_MEMBER(ts,ref_cy) = 0;
 	TS_MEMBER(ts,re_cy) = 0;
 	TS_MEMBER(ts,cpustate) = new_state;
-#endif
 }
 
 
