@@ -182,7 +182,7 @@ inline int get_closest_state(int state)
 		return state;
 	state1 = get_lower_state(state);
 	state2 = get_higher_state(state);
-	ret_state = abs(state-state1) < abs(state-state2) ? 
+	ret_state = ABS(state-state1) < ABS(state-state2) ? 
 		state1 : state2;
 	return ret_state;
 }

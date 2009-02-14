@@ -287,6 +287,7 @@ void choose_layout(int delta)
 	/* Compute the total = sum of hints */
 	for (j = 0; j < total_states; j++) {
 		total += states[j].demand;
+		debug("State: %d ; Demand: %d",l,states[j].demand);
 	}
 
 	/* Compute CPU's demanded for each state */

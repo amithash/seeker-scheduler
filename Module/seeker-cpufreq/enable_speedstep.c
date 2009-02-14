@@ -30,12 +30,13 @@
 
 #define IA32_MISC_ENABLE 0x000001A0
 #define EST_BIT 16
-#define EST_MASK (1 << (EST_BIT-1))
+#define EST_MASK (1 << (EST_BIT))
 
 static int init_enable_speedstep(void)
 {
 	u32 low,high;
 	rdmsr(IA32_MISC_ENABLE,low,high);
+	info("IA32_MISC_ENABLE = %x : %x\n",high,low);
 	if(!(low & EST_MASK)){
 		info("EST Has been disabled enabling it");
 		low = low | EST_MASK;
