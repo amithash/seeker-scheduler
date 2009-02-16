@@ -529,6 +529,9 @@ void choose_layout(int delta)
 		/* CPU is used */
 		if (poison[i] == 0) {
 			info[i].sleep_time = 0;
+			if(info[i].awake == 0){
+				debug("awaking processor %d",i);
+			}
 			info[i].awake = 1;
 			if (new_cpu_state[i] != cur_cpu_state[i]) {
 				debug("Requesting cpu %d to change state from %d to %d",
@@ -539,9 +542,10 @@ void choose_layout(int delta)
 		} else if(info[i].awake == 0){
 			info[i].sleep_time++;
 		} else {
-			cur_cpu_state[i] = 0;
+			debug("Putting cpu %d to sleep",i);
 			if(cur_cpu_state[i] != 0)
 				set_freq(i, 0);
+			cur_cpu_state[i] = 0;
 			info[i].awake = 0;
 			info[i].sleep_time = 1;
 		}
