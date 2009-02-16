@@ -115,9 +115,16 @@ int total_online_cpus = 0;
 unsigned long long task_cycles[NR_CPUS] = {0};
 
 #ifdef DEBUG
+/* counts the total number of times schedule was called */
 unsigned int total_schedules = 0;
+
+/* Counts the total number of times a negative newstates was encountered */
 unsigned int negative_newstates = 0;
+
+/* Counts the total number of times mask was empty. */
 unsigned int mask_empty_cond = 0;
+
+/* Counts the total number of times events/x was tried to be scheduled */
 unsigned int num_events = 0;
 #endif
 

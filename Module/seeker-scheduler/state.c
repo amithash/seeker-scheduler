@@ -104,6 +104,14 @@ void hint_dec(int state)
 	states[state].demand--;
 }
 
+/********************************************************************************
+ * states_copy - copy states element by element 
+ * @dest - The destination states struct
+ * @src - Source struct
+ * @Side Effects - None
+ *
+ * Copy from src to dest element by element. 
+ ********************************************************************************/
 void states_copy(struct state_desc *dest, struct state_desc *src)
 {
 	dest->state = src->state;
