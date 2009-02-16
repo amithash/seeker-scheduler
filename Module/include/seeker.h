@@ -137,6 +137,6 @@ typedef struct {
 #endif
 
 #define ABS(i) ((i) >= 0 ? (i) : (-1)*((int)(i)))
-#define div(a,b) ((b) != 0 ? ((((a) + (b) - 1))/(b))  : 0)
+#define div(a,b) ((b) != 0 ? (((((a)<<1) + (b)))/((b)<<1))  : 0)
 
 #endif
