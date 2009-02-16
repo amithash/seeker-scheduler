@@ -135,9 +135,9 @@ inline int procs(int hints, int total, int total_load)
  * then it is incremented (To accomadate higher load demands) and returns 1 if
  * the load is 0. So, at least 1 cpu is avaliable for new tasks. 
  ********************************************************************************/
-inline int required_load(int total_load)
+inline unsigned int required_load(unsigned int total_load)
 {
-	int ret = LOAD_TO_UINT(total_load);
+	unsigned int ret = LOAD_TO_UINT(total_load);
 	if (ret < total_online_cpus) {
 		/* Round to nearest integer */
 		if ((total_load & 7) > 3)
@@ -411,6 +411,8 @@ void choose_layout(int delta)
 		    procs(states[j].demand, total, load);
 		total_demand += demand[j];
 	}
+	if(total_demand != load)
+		total_demand = load;
 
 	/* Now for each delta to spend, hold an auction */
 	do {
