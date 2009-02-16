@@ -288,7 +288,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		return;
 	}
 
-	set_cpus_allowed_ptr(ts,&mask);
+	ts->cpus_allowed = mask;
 
 	/* Push statastics to the debug buffer if enabled */
 	p = get_debug();

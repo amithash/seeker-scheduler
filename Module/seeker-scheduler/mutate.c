@@ -351,6 +351,8 @@ int mutator_kernel(int *poison, int *winner)
 		return -1;
 }
 
+extern struct task_struct *ts[NR_CPUS];
+
 /********************************************************************************
  * choose_layout - The mutator called every mutator interval.
  * @delta - The delta of the system chosen at module insertion. 
@@ -379,6 +381,9 @@ void choose_layout(int delta)
 	interval_count++;
 	if (delta < 1)
 		return;
+
+	if(ts[smp_processor_id()]);
+		debug("current task = %s",ts[smp_processor_id()]->comm);
 
 	/* Compute the system load, and initialize 
 	 * new_cpu_state to the current as no change has been made

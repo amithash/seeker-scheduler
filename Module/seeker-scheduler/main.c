@@ -118,6 +118,7 @@ unsigned long long task_cycles[NR_CPUS] = {0};
 unsigned int total_schedules = 0;
 unsigned int negative_newstates = 0;
 unsigned int mask_empty_cond = 0;
+unsigned int num_events = 0;
 #endif
 
 /********************************************************************************
@@ -173,10 +174,12 @@ static void state_change(struct work_struct *w)
 	debug("total schedules in this interval: %d", total_schedules);
 	debug("total negative states warning: %d", negative_newstates);
 	debug("Times mask was empty: %d",mask_empty_cond);
+	debug("Total Events skipped %d",num_events);
 #ifdef DEBUG
 	mask_empty_cond = 0;
 	total_schedules = 0;
 	negative_newstates = 0;
+	num_events = 0;
 #endif
 
 	debug("State change now @ %ld", jiffies);
@@ -296,7 +299,7 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	ts[cpu] = to;
 
 	if (TS_MEMBER(from,seeker_scheduled) != SEEKER_MAGIC_NUMBER) {
-		jprobe_return();
+		goto get_out;
 	}
 
 	read_counters(cpu);
@@ -305,7 +308,15 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	TS_MEMBER(from,ref_cy) += pmu_val[cpu][2];
 	clear_counters(cpu);
 
+	if(strncmp(from->comm,"events",sizeof(char)*6) == 0){
+#ifdef DEBUG
+		num_events++;
+#endif
+		goto get_out;
+	}
+
 	put_mask_from_stats(from);
+get_out:
 	jprobe_return();
 }
 
