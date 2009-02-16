@@ -266,7 +266,7 @@ int per_state_kernel(int state, int *poison, int demand, int *proc,
 
 	*proc = 0;
 	*proc_val = 0;
-	*low_proc_val = -1;
+	*low_proc_val = (unsigned int)(-1);
 
 	for (i = 0; i < total_online_cpus; i++) {
 		high_val = (state_matrix[i][j] * poison[i] * demand) - info[i].sleep_time;
@@ -275,7 +275,7 @@ int per_state_kernel(int state, int *poison, int demand, int *proc,
 			*proc_val = high_val;
 			*proc = i;
 		} else if (low_val < *low_proc_val) {
-			*low_proc_val = low_val;;
+			*low_proc_val = low_val;
 		}
 		sum += (state_matrix[i][j] * poison[i]);
 	}
@@ -415,7 +415,7 @@ void choose_layout(int delta)
 		total_demand = load;
 
 	/* Now for each delta to spend, hold an auction */
-	do {
+	while (total && delta > 0 && total_iter < total_online_cpus && total_demand > 0){
 		winner = 0;
 		winner_best_proc = 0;
 		total_iter++;
@@ -455,7 +455,7 @@ void choose_layout(int delta)
 		new_cpu_state[winner_best_proc] = winner;
 
 		/* Continue the auction if delta > 0  or till all cpus are allocated */
-	} while (delta > 0 && total_iter < total_online_cpus && total_demand > 0);
+	}
 
 	debug("End of auction");
 
@@ -516,20 +516,25 @@ void choose_layout(int delta)
 	 * the above!
 	 */
 
-	debug("Doing a set_freq if required");
-
 	for (i = 0; i < total_online_cpus; i++) {
 		/* CPU is used */
 		if (poison[i] == 0) {
 			info[i].sleep_time = 0;
 			info[i].awake = 1;
 			if (new_cpu_state[i] != cur_cpu_state[i]) {
+				debug("Requesting cpu %d to change state from %d to %d",
+						i,cur_cpu_state[i],new_cpu_state[i]);
 				cur_cpu_state[i] = new_cpu_state[i];
 				set_freq(i, new_cpu_state[i]);
 			}
-		} else {
+		} else if(info[i].awake == 0){
 			info[i].sleep_time++;
+		} else {
+			cur_cpu_state[i] = 0;
+			if(cur_cpu_state[i] != 0)
+				set_freq(i, 0);
 			info[i].awake = 0;
+			info[i].sleep_time = 1;
 		}
 	}
 }
