@@ -65,7 +65,7 @@ int cur_cpu_state[NR_CPUS] = { 0 };
 struct state_desc states[MAX_STATES];
 
 /* Seq lock has to be held whenever states are used */
-seqlock_t states_seq_lock = SEQLOCK_UNLOCKED;
+DEFINE_SEQLOCK(states_seq_lock);
 
 /* Highest state */
 int high_state;
@@ -104,11 +104,11 @@ void hint_dec(int state)
 	states[state].demand--;
 }
 
-void states_copy(struct states_desc *dest, struct states_desc *src)
+void states_copy(struct state_desc *dest, struct state_desc *src)
 {
 	dest->state = src->state;
 	dest->cpumask = src->cpumask;
-	dest->cpus; src->cpus;
+	dest->cpus = src->cpus;
 	dest->demand = src->demand;
 }
 
@@ -124,9 +124,9 @@ void states_copy(struct states_desc *dest, struct states_desc *src)
 int init_cpu_states(unsigned int how)
 {
 	int i;
-	
-	write_seqlock(&states_seq_lock);
 
+	seqlock_init(&states_seq_lock);
+	
 	for (i = 0; i < total_online_cpus; i++) {
 		max_state_possible[i] = get_max_states(i);
 		info("Max state for cpu %d = %d", i, max_state_possible[i]);
@@ -208,8 +208,6 @@ int init_cpu_states(unsigned int how)
 		}
 		break;
 	}
-
-	write_sequnlock(&states_seq_lock);
 
 	return 0;
 }

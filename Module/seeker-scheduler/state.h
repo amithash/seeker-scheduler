@@ -49,6 +49,6 @@ struct state_desc {
 void hint_inc(int state);
 void hint_dec(int state);
 int init_cpu_states(unsigned int how);
-void states_copy(struct states_desc *dest, struct states_desc *src);
+void states_copy(struct state_desc *dest, struct state_desc *src);
 
 #endif

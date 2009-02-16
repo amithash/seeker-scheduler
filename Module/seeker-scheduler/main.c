@@ -116,6 +116,8 @@ unsigned long long task_cycles[NR_CPUS] = {0};
 
 #ifdef DEBUG
 unsigned int total_schedules = 0;
+unsigned int negative_newstates = 0;
+unsigned int mask_empty_cond = 0;
 #endif
 
 /********************************************************************************
@@ -169,8 +171,12 @@ int static_layout_length = 0;
 static void state_change(struct work_struct *w)
 {
 	debug("total schedules in this interval: %d", total_schedules);
+	debug("total negative states warning: %d", negative_newstates);
+	debug("Times mask was empty: %d",mask_empty_cond);
 #ifdef DEBUG
+	mask_empty_cond = 0;
 	total_schedules = 0;
+	negative_newstates = 0;
 #endif
 
 	debug("State change now @ %ld", jiffies);

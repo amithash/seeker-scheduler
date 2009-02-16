@@ -136,7 +136,7 @@ typedef struct {
 #	define debug(str,a...) do{;}while(0);
 #endif
 
-#define ABS(i) ((i) >= 0 ? (i) : (-1)*(i))
+#define ABS(i) ((i) >= 0 ? (i) : (-1)*((int)(i)))
 #define div(a,b) ((b) != 0 ? ((((a) + (b) - 1))/(b))  : 0)
 
 #endif

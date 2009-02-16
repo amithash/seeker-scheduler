@@ -256,15 +256,16 @@ void choose_layout(int delta)
 	int total_demand = 0;
 	unsigned int winner_val = 0;
 	unsigned int winner_best_proc = 0;
-	unsigned int winner_best_proc_value = 0;
+	int winner_best_proc_value = 0;
 	unsigned int winner_best_low_proc_value = 0;
-	unsigned int best_proc = 0;
-	unsigned int best_proc_value = 0;
-	unsigned int best_low_proc_value = 0;
+	int best_proc = 0;
+	int best_proc_value = 0;
+	unsigned int best_low_proc_value = -1;
 	int poison[NR_CPUS];
 	int sum;
 	int total_iter = 0;
 	int friends = (total_states >> 1) - 1;
+	int total_provided_cpus = 0;
 
 	interval_count++;
 	if (delta < 1)
@@ -334,19 +335,18 @@ void choose_layout(int delta)
 			/* Do here to make the longest sleeping processor to sleep more 
 			 * does this conserve more power? */
 			for (i = 0; i < total_online_cpus; i++) {
-				if ((state_matrix[i][j] * poison[i]) >
+				if (((state_matrix[i][j] * poison[i])-info[i].sleep_time) >
 				    best_proc_value) {
 					best_proc_value =
 					    (state_matrix[i][j] * poison[i] *
 					     demand_field[j]) -
 					    info[i].sleep_time;
 					best_proc = i;
-				} else if (state_matrix[i][j] <
+				} else if ((state_matrix[i][j] * demand_field[j]) <
 					   best_low_proc_value) {
 					best_low_proc_value =
 					    (state_matrix[i][j] *
-					     demand_field[j]) -
-					    info[i].sleep_time;
+					     demand_field[j]);
 				}
 				sum += (state_matrix[i][j] * poison[i]);
 			}
@@ -406,6 +406,8 @@ assign:
 		/* Continue the auction if delta > 0  or till all cpus are allocated */
 	}
 
+	debug("End of auction");
+
 	/* Log with debug */
 	p = get_debug();
 	if (p) {
@@ -431,20 +433,40 @@ assign:
 		if (p)
 			p->entry.u.mut.cpus_given[new_cpu_state[i]]++;
 		new_states[new_cpu_state[i]].cpus++;
+		total_provided_cpus++;
 		cpu_set(i, new_states[new_cpu_state[i]].cpumask);
 	}
+	if(total_provided_cpus == 0){
+		new_states[0].cpus++;
+		cpu_set(0, new_states[0].cpumask);
+		new_cpu_state[0] = 0;
+		poison[0] = 0;
+		if (p)
+			p->entry.u.mut.cpus_given[0]++;
+	}
+
 	put_debug(p);
+
+	debug("Debug section ended");
+
+	debug("Writing to states via a seq lock");
 
 	write_seqlock(&states_seq_lock);
 	for(j = 0; j < total_states; j++){
 		states_copy(&(states[j]),&(new_states[j]));
 	}
 	write_sequnlock(&states_seq_lock);
+
+	debug("Finished writing, lock released");
+
 	/* This is purposefully put in a different loop 
 	 * due to the intereference with put_debug();
 	 * Do not try to be smart and merge this loop with 
 	 * the above!
 	 */
+
+	debug("Doing a set_freq if required");
+
 	for (i = 0; i < total_online_cpus; i++) {
 		/* CPU is used */
 		if (poison[i] == 0) {

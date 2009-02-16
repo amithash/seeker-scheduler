@@ -100,6 +100,12 @@ extern unsigned long long task_cycles[NR_CPUS];
 #ifdef DEBUG
 /* main.c: Debugging count of the number of times schedules was called */
 extern unsigned int total_schedules;
+
+/* main.c: counts the error condition negative new states */
+extern unsigned int negative_newstates;
+
+/* main.c: counts the error condition empty masks */
+extern unsigned int mask_empty_cond;
 #endif
 
 /********************************************************************************
@@ -210,7 +216,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	int state = 0;
 	int this_cpu;
 	int state_req = 0;
-	unsigned int seq;
+	unsigned seq;
 	u64 tasks_interval = 0;
 	cpumask_t mask = CPU_MASK_NONE;
 	unsigned long long cy;
@@ -221,9 +227,6 @@ void put_mask_from_stats(struct task_struct *ts)
 	 * with short lived tasks.
 	 */
 
-#ifdef DEBUG
-	total_schedules++;
-#endif
 
 	if (TS_MEMBER(ts,inst) < INST_THRESHOLD)
 		return;
@@ -236,19 +239,24 @@ void put_mask_from_stats(struct task_struct *ts)
 
 	do{
 		seq = read_seqbegin(&states_seq_lock);
+
+		state = cur_cpu_state[this_cpu];
+
 		switch (TS_MEMBER(ts,fixed_state)) {
 		case 0:
-			state_req = state = get_closest_state(low_state);
+			new_state = get_closest_state(low_state);
+			state_req = low_state;
 			break;
 		case 1:
-			state_req = state = get_closest_state(mid_state);
+			new_state = get_closest_state(mid_state);
+			state_req = mid_state;
 			break;
 		case 2:
-			state_req = state = get_closest_state(high_state);
+			new_state = get_closest_state(high_state);
+			state_req = high_state;
 			break;
 		default:
 			ipc = IPC(TS_MEMBER(ts,inst), TS_MEMBER(ts,re_cy));
-			state = cur_cpu_state[this_cpu];
 			/*up */
 			if (ipc >= IPC_HIGH) {
 				new_state = get_higher_state(state);
@@ -261,14 +269,24 @@ void put_mask_from_stats(struct task_struct *ts)
 				new_state = get_closest_state(state);
 			}
 		}
-		mask = states[new_state].cpumask;
+		if(new_state >= 0 && new_state < total_states)
+			mask = states[new_state].cpumask;
+		#ifdef DEBUG
+		else
+			negative_newstates++;
+		#endif
+
 	} while(read_seqretry(&states_seq_lock,seq));
 
 	hint_inc(state_req);
 
 	/* What the duche? as stewie says it */
-	if(cpus_empty(mask))
+	if(cpus_empty(mask)){
+		#ifdef DEBUG
+		mask_empty_cond++;
+		#endif
 		return;
+	}
 
 	set_cpus_allowed_ptr(ts,&mask);
 
@@ -294,6 +312,10 @@ void put_mask_from_stats(struct task_struct *ts)
 	TS_MEMBER(ts,ref_cy) = 0;
 	TS_MEMBER(ts,re_cy) = 0;
 	TS_MEMBER(ts,cpustate) = new_state;
+
+#ifdef DEBUG
+	total_schedules++;
+#endif
 }
 
 
