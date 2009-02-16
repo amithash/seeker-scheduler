@@ -39,10 +39,10 @@ void put_mask_from_stats(struct task_struct *ts);
  * everywhere, just so that I can test it on
  * an unpatched kernel for compilation errors! 
  */
-#ifdef SEEKER_PLUGIN_PATH
-#	define TS_MEMBER(ts,member)	(ts)->##member
+#ifdef SEEKER_PLUGIN_PATCH
+#define TS_MEMBER(ts,member)	ts->member
 #else
-#	define TS_MEMBER(ts,member)	(ts)->flags
+#define TS_MEMBER(ts,member)	(ts)->flags
 #endif
 
 

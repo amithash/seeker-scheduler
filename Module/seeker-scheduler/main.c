@@ -115,11 +115,7 @@ int total_online_cpus = 0;
 unsigned long long task_cycles[NR_CPUS] = {0};
 
 #ifdef DEBUG
-/* count the times schedule was invoked */
-unsigned int schedule_count = 0;
-
-/* Count the times scheduler_tick was invoked */
-unsigned int scheduler_tick_count = 0;
+unsigned int total_schedules = 0;
 #endif
 
 /********************************************************************************
@@ -172,10 +168,9 @@ int static_layout_length = 0;
  *******************************************************************************/
 static void state_change(struct work_struct *w)
 {
-	debug("scheduler_count=%u : scheduler_tick_count = %u",
-	      schedule_count, scheduler_tick_count);
+	debug("total schedules in this interval: %d", total_schedules);
 #ifdef DEBUG
-	schedule_count = scheduler_tick_count = 0;
+	total_schedules = 0;
 #endif
 
 	debug("State change now @ %ld", jiffies);
@@ -194,12 +189,8 @@ static void state_change(struct work_struct *w)
  *******************************************************************************/
 void inst_scheduler_tick(void)
 {
-#ifdef DEBUG
-	scheduler_tick_count++;
-#endif
 	inst_schedule(NULL, NULL);
 	jprobe_return();
-
 }
 
 /*******************************************************************************
@@ -240,9 +231,6 @@ void inst_release_thread(struct task_struct *t)
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 {
 	int cpu = smp_processor_id();
-#ifdef DEBUG
-	schedule_count++;
-#endif
 	if (!ts[cpu] || TS_MEMBER(ts[cpu],seeker_scheduled) != SEEKER_MAGIC_NUMBER)
 		return 0;
 
@@ -300,6 +288,7 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 {
 	int cpu = smp_processor_id();
 	ts[cpu] = to;
+
 	if (TS_MEMBER(from,seeker_scheduled) != SEEKER_MAGIC_NUMBER) {
 		jprobe_return();
 	}

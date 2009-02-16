@@ -97,6 +97,11 @@ extern seqlock_t states_seq_lock;
 /* main.c: cycles run by a task on every cpu */
 extern unsigned long long task_cycles[NR_CPUS];
 
+#ifdef DEBUG
+/* main.c: Debugging count of the number of times schedules was called */
+extern unsigned int total_schedules;
+#endif
+
 /********************************************************************************
  * 				Local Macros					*
  ********************************************************************************/
@@ -215,6 +220,10 @@ void put_mask_from_stats(struct task_struct *ts)
 	 * executed. Hopefully avoids messing
 	 * with short lived tasks.
 	 */
+
+#ifdef DEBUG
+	total_schedules++;
+#endif
 
 	if (TS_MEMBER(ts,inst) < INST_THRESHOLD)
 		return;
