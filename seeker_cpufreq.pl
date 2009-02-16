@@ -14,8 +14,6 @@ if(not($ARGV[0] !~ /[Ss][Tt][Aa][Rr][Tt]/ or $ARGV[0] !~ /[Ss][Tt][Oo][Pp]/)){
 }
 
 
-print "$cpus\n";
-
 for(my $i=0;$i<$cpus;$i++){
 	if($ARGV[0] =~ /[Ss][Tt][Aa][Rr][Tt]/){
 		system("echo \"seeker\" > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor");
