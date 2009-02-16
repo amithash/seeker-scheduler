@@ -35,6 +35,8 @@
 #include "stats.h"
 #include "debug.h"
 
+#define MIN_REQUESTS 10
+
 /********************************************************************************
  * 			External Variables 					*
  ********************************************************************************/
@@ -264,12 +266,14 @@ int per_state_kernel(int state, int *poison, int demand, int *proc,
 	int high_val;
 	int low_val;
 
-	*proc = 0;
+	*proc = -1;
 	*proc_val = 0;
 	*low_proc_val = (unsigned int)(-1);
 
 	for (i = 0; i < total_online_cpus; i++) {
-		high_val = (state_matrix[i][j] * poison[i] * demand) - info[i].sleep_time;
+		if(poison[i] == 0)
+			continue;
+		high_val = ((state_matrix[i][j] * demand ) - info[i].sleep_time);
 		low_val = state_matrix[i][j] * demand;
 		if (high_val > *proc_val) {
 			*proc_val = high_val;
@@ -278,6 +282,15 @@ int per_state_kernel(int state, int *poison, int demand, int *proc,
 			*low_proc_val = low_val;
 		}
 		sum += (state_matrix[i][j] * poison[i]);
+	}
+	if(unlikely(*proc < 0)){
+		for(i=0;i<total_online_cpus; i++){
+			if(poison[i] != 0){
+				*proc = i;
+				*proc_val = ((state_matrix[i][j] * demand ) 
+					- info[i].sleep_time);
+			}
+		}
 	}
 
 	return sum * demand;
@@ -351,8 +364,6 @@ int mutator_kernel(int *poison, int *winner)
 		return -1;
 }
 
-extern struct task_struct *ts[NR_CPUS];
-
 /********************************************************************************
  * choose_layout - The mutator called every mutator interval.
  * @delta - The delta of the system chosen at module insertion. 
@@ -381,9 +392,6 @@ void choose_layout(int delta)
 	interval_count++;
 	if (delta < 1)
 		return;
-
-	if(ts[smp_processor_id()]);
-		debug("current task = %s",ts[smp_processor_id()]->comm);
 
 	/* Compute the system load, and initialize 
 	 * new_cpu_state to the current as no change has been made
@@ -415,7 +423,8 @@ void choose_layout(int delta)
 		total_demand = load;
 
 	/* Now for each delta to spend, hold an auction */
-	while (total && delta > 0 && total_iter < total_online_cpus && total_demand > 0){
+	while (total > MIN_REQUESTS && delta > 0 
+			&& total_iter < total_online_cpus){
 		winner = 0;
 		winner_best_proc = 0;
 		total_iter++;
