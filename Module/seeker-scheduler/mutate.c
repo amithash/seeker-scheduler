@@ -437,7 +437,7 @@ assign:
 
 	write_seqlock(&states_seq_lock);
 	for(j = 0; j < total_states; j++){
-		memcpy(&(states[j]),&(new_states[j]),sizeof(struct state_desc));
+		states_copy(&(states[j]),&(new_states[j]));
 	}
 	write_sequnlock(&states_seq_lock);
 	/* This is purposefully put in a different loop 

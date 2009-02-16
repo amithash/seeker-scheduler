@@ -104,6 +104,14 @@ void hint_dec(int state)
 	states[state].demand--;
 }
 
+void states_copy(struct states_desc *dest, struct states_desc *src)
+{
+	dest->state = src->state;
+	dest->cpumask = src->cpumask;
+	dest->cpus; src->cpus;
+	dest->demand = src->demand;
+}
+
 /********************************************************************************
  * init_cpu_states - initialize the states sub system. 
  * @how - mentions how the states must be initialized.
