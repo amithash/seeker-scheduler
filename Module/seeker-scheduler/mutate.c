@@ -236,6 +236,122 @@ void update_demand_field(int friend_count)
 }
 
 /********************************************************************************
+ * per_state_kernel - sum over state column and return best proc.
+ * @state - (In) The state (Column indicator)
+ * @poison - (In) array indicating free processors. 
+ * @demand - (In) demand field element for state - state;
+ * @proc - (Out) Elected processor for this state.
+ * @proc_val - (Out) Value of the elected processor
+ * @low_proc_val - (Out) Value of the losing processor. 
+ * @Return - Sum along the state column. 
+ * @Side Effects - None
+ *
+ * Compute the value of each state column and return it. In this column,
+ * elect a processor with the largest value 
+ * cell_value * poison[i] * demand - sleep_time
+ * poison - Because we do not want to elect a selected processor.
+ * sleep_time - because we want to select a processor who has slept the most.
+ * and the lowest value of cell_value * demand is computed.
+ *
+ * This is used by mutator_kernel.
+ ********************************************************************************/
+int per_state_kernel(int state, int *poison, int demand, int *proc, 
+		int *proc_val, unsigned int *low_proc_val)
+{
+	int i;
+	int j = state; /* Avoid mentioning state everywhere */
+	int sum = 0;
+	int high_val;
+	int low_val;
+
+	*proc = 0;
+	*proc_val = 0;
+	*low_proc_val = -1;
+
+	for (i = 0; i < total_online_cpus; i++) {
+		high_val = (state_matrix[i][j] * poison[i] * demand) - info[i].sleep_time;
+		low_val = state_matrix[i][j] * demand;
+		if (high_val > *proc_val) {
+			*proc_val = high_val;
+			*proc = i;
+		} else if (low_val < *low_proc_val) {
+			*low_proc_val = low_val;;
+		}
+		sum += (state_matrix[i][j] * poison[i]);
+	}
+
+	return sum * demand;
+}
+
+/********************************************************************************
+ * mutator_kernel - the base kernel of the mutator.
+ * @poison - (In) Array of poison bits
+ * @winner - (Out) winning state
+ * @Return - winning processor.
+ * @Side Effects - None
+ *
+ * Sum along the states column and multiply the row vector with the demand
+ * field vector. Choose the element with the highest value, and return the
+ * index (Processor) and the winning state (Winner).
+ * If there exists for the winning position, select the one with highest
+ * best_proc_value Even after which if there is a tie, the highest among
+ * the lowest value of each column is slected.
+ *
+ * The above is computed in the per_state_kernel.
+ ********************************************************************************/
+int mutator_kernel(int *poison, int *winner)
+{
+	int sum;
+	int j;
+	int best_proc = 0;
+	int best_proc_value = 0;
+	unsigned int best_low_proc_value = -1;
+	unsigned int winner_best_proc = 0;
+	int winner_best_proc_value = 0;
+	int winner_val = 0;
+	unsigned int winner_best_low_proc_value = 0;
+
+	for (j = 0; j < total_states; j++) {
+		/* Sum the cost over all rows */
+		/* Do here to make the longest sleeping processor to sleep more 
+		 * does this conserve more power? */
+		
+		sum = per_state_kernel(j, poison, demand_field[j], 
+				&best_proc, &best_proc_value, 
+				&best_low_proc_value);
+
+		debug("sum for state %d is %d with demand %d", j, sum, demand_field[j]);
+		/* Find the max sum and the sate, and its best proc 
+		 * If there is contention for that, choose the one
+		 * with the best proc, if there is contention for both,
+		 * choose the one with the best lowest proc,
+		 * if there is contention for that too, then first come
+		 * first serve. */
+		if (sum < winner_val)
+			continue;
+		if (sum > winner_val)
+			goto assign;
+		if (best_proc_value < winner_best_proc_value)
+			continue;
+		if (best_proc_value > winner_best_proc_value)
+			goto assign;
+		if (best_low_proc_value < winner_best_low_proc_value)
+			continue;
+	assign:
+		*winner = j;
+		winner_val = sum;
+		winner_best_proc = best_proc;
+		winner_best_proc_value = best_proc_value;
+		winner_best_low_proc_value = best_low_proc_value;
+	}
+
+	if(winner_val > 0)
+		return winner_best_proc;
+	else 
+		return -1;
+}
+
+/********************************************************************************
  * choose_layout - The mutator called every mutator interval.
  * @delta - The delta of the system chosen at module insertion. 
  * @Side effects - Changes cur_cpu_state and states field during which the states
@@ -253,16 +369,9 @@ void choose_layout(int delta)
 	struct debug_block *p = NULL;
 	unsigned int i, j;
 	int winner = 0;
-	int total_demand = 0;
-	unsigned int winner_val = 0;
 	unsigned int winner_best_proc = 0;
-	int winner_best_proc_value = 0;
-	unsigned int winner_best_low_proc_value = 0;
-	int best_proc = 0;
-	int best_proc_value = 0;
-	unsigned int best_low_proc_value = -1;
+	int total_demand = 0;
 	int poison[NR_CPUS];
-	int sum;
 	int total_iter = 0;
 	int friends = (total_states >> 1) - 1;
 	int total_provided_cpus = 0;
@@ -299,12 +408,9 @@ void choose_layout(int delta)
 	}
 
 	/* Now for each delta to spend, hold an auction */
-	while (delta > 0 && total_iter < total_online_cpus && total_demand > 0) {
+	do {
 		winner = 0;
-		winner_val = 0;
 		winner_best_proc = 0;
-		winner_best_proc_value = 0;
-		winner_best_low_proc_value = 0;
 		total_iter++;
 
 		debug("Iteration %d", total_iter);
@@ -315,73 +421,11 @@ void choose_layout(int delta)
 		/* Compute the demand field */
 		update_demand_field(friends);
 
-		/* Sum along each column of state_matrix and multiply 
-		 * it with the demand field for that particular column.
-		 *
-		 * Choose the maximum. And upon a tie, choose the one
-		 * which has the largest element and also which has been
-		 * awake the most. 
-		 *
-		 * If a tie, choose the one with the highest (minimum)
-		 * along a column
-		 */
-		for (j = 0; j < total_states; j++) {
-			sum = 0;
-			best_proc = 0;
-			best_proc_value = 0;
-			best_low_proc_value = -1;
+		winner_best_proc = mutator_kernel(poison, &winner);
 
-			/* Sum the cost over all rows */
-			/* Do here to make the longest sleeping processor to sleep more 
-			 * does this conserve more power? */
-			for (i = 0; i < total_online_cpus; i++) {
-				if (((state_matrix[i][j] * poison[i])-info[i].sleep_time) >
-				    best_proc_value) {
-					best_proc_value =
-					    (state_matrix[i][j] * poison[i] *
-					     demand_field[j]) -
-					    info[i].sleep_time;
-					best_proc = i;
-				} else if ((state_matrix[i][j] * demand_field[j]) <
-					   best_low_proc_value) {
-					best_low_proc_value =
-					    (state_matrix[i][j] *
-					     demand_field[j]);
-				}
-				sum += (state_matrix[i][j] * poison[i]);
-			}
-
-			sum = sum * demand_field[j];
-			debug("sum for state %d is %d with demand %d", j, sum,
-			      demand_field[j]);
-
-			/* Find the max sum and the sate, and its best proc 
-			 * If there is contention for that, choose the one
-			 * with the best proc, if there is contention for both,
-			 * choose the one with the best lowest proc,
-			 * if there is contention for that too, then first come
-			 * first serve. */
-			if (sum < winner_val)
-				continue;
-			if (sum > winner_val)
-				goto assign;
-			if (best_proc_value < winner_best_proc_value)
-				continue;
-			if (best_proc_value > winner_best_proc_value)
-				goto assign;
-			if (best_low_proc_value < winner_best_low_proc_value)
-				continue;
-
-assign:
-			winner = j;
-			winner_val = sum;
-			winner_best_proc = best_proc;
-			winner_best_proc_value = best_proc_value;
-			winner_best_low_proc_value = best_low_proc_value;
-		}
 		/* A winning val of 0 indicated a failed auction.
 		 * all contenstents are broke. Go home loosers.*/
-		if (winner_val <= 0)
+		if (winner_best_proc < 0)
 			break;
 
 		debug("Winner is state %d choosing cpu %d", winner,
@@ -404,7 +448,7 @@ assign:
 		new_cpu_state[winner_best_proc] = winner;
 
 		/* Continue the auction if delta > 0  or till all cpus are allocated */
-	}
+	} while (delta > 0 && total_iter < total_online_cpus && total_demand > 0);
 
 	debug("End of auction");
 
