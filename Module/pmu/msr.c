@@ -89,6 +89,8 @@ inline void evtsel_write(u32 evtsel_num)
 		    | (cur_evtsel->inv_flag << 23)
 		    | (cur_evtsel->cnt_mask << 24);
 
+		high = 0;
+
 		wrmsr(cur_evtsel->addr, low, high);
 	}
 #endif

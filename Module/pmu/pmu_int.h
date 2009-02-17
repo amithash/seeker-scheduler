@@ -111,3 +111,4 @@ inline void evtsel_clear(u32 evtsel_num);
 inline void evtsel_write(u32 evtsel_num);
 
 #endif
+
