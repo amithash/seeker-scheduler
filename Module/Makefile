@@ -44,7 +44,6 @@ ifneq ($(KERNELRELEASE),)
 
 # All the kernel modules 
 obj-m += seeker_scheduler.o           	\
-	 seeker_sampler.o             	\
 	 pmu.o  	       		\
 	 fpmu.o 	       		\
 	 tsc.o 	        		\
@@ -66,14 +65,15 @@ tsc-objs += tsc/main.o
 # Temperature module.
 therm-objs += therm/main.o
 
-# Seeker sampler. 
-seeker_sampler-objs += seeker-sampler/alloc.o   \
-		       seeker-sampler/log.o     \
-		       seeker-sampler/probe.o   \
-		       seeker-sampler/sample.o  \
-		       seeker-sampler/io.o      \
-		       seeker-sampler/intr.o    \
-		       seeker-sampler/main.o
+# Performance Monitoring counters.
+pmu-objs += pmu/main.o \
+	    pmu/intr.o \
+	    pmu/msr.o
+
+# Fixed Performance Monitoring counters.
+fpmu-objs += fpmu/main.o \
+	     fpmu/intr.o \
+	     fpmu/msr.o
 
 # Seeker scheduler
 seeker_scheduler-objs += seeker-scheduler/main.o     \
@@ -84,16 +84,6 @@ seeker_scheduler-objs += seeker-scheduler/main.o     \
 		       seeker-scheduler/stats.o	     \
 		       seeker-scheduler/tsc_intf.o   \
 		       seeker-scheduler/debug.o
-
-# Performance Monitoring counters.
-pmu-objs += pmu/main.o \
-	    pmu/intr.o \
-	    pmu/msr.o
-
-# Fixed Performance Monitoring counters.
-fpmu-objs += fpmu/main.o \
-	     fpmu/intr.o \
-	     fpmu/msr.o
 
 else
 KDIR    := /lib/modules/$(shell uname -r)/build
