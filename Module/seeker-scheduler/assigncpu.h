@@ -45,6 +45,4 @@ void put_mask_from_stats(struct task_struct *ts);
 #define TS_MEMBER(ts,member)	(ts)->flags
 #endif
 
-
 #endif
-

@@ -34,12 +34,11 @@
  ********************************************************************************/
 
 /* contains the previous value of tsc for each cpu */
-unsigned long long tsc_val[NR_CPUS] = {0};
+unsigned long long tsc_val[NR_CPUS] = { 0 };
 
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
-
 
 /********************************************************************************
  * get_tsc_cycles - get cycles from last time,
@@ -80,10 +79,9 @@ static void init_tsc(void *info)
  ********************************************************************************/
 int init_tsc_intf(void)
 {
-	if(ON_EACH_CPU(init_tsc,NULL,1,1) < 0) {
+	if (ON_EACH_CPU(init_tsc, NULL, 1, 1) < 0) {
 		error("Cound not initialize tsc_intf.");
 		return -1;
 	}
 	return 0;
 }
-

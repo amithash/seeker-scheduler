@@ -42,7 +42,6 @@ static DEFINE_PER_CPU(struct idle_info_t, idle_info);
 /* Easy define to access idle_info of a particular cpu. return's a pointer */
 #define CPU_INFO(cpu) (&per_cpu(idle_info,(cpu)))
 
-
 /********************************************************************************
  * 			External Variables 					*
  ********************************************************************************/
@@ -50,11 +49,9 @@ static DEFINE_PER_CPU(struct idle_info_t, idle_info);
 /* main.c: The mutator interval in seconds  */
 extern int change_interval;
 
-
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
-
 
 /********************************************************************************
  * init_idle_logger - Initialize each cpu's idle_time
@@ -95,4 +92,3 @@ unsigned int get_cpu_load(int cpu)
 
 	return (8 * (total_time - this_time)) / total_time;
 }
-

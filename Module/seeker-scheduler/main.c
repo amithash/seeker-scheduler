@@ -112,7 +112,7 @@ struct jprobe jp_release_thread = {
 int total_online_cpus = 0;
 
 /* total cycles executed by a task on the current cpu */
-unsigned long long task_cycles[NR_CPUS] = {0};
+unsigned long long task_cycles[NR_CPUS] = { 0 };
 
 #ifdef DEBUG
 /* counts the total number of times schedule was called */
@@ -167,7 +167,6 @@ int static_layout_length = 0;
  * 				Functions					*
  ********************************************************************************/
 
-
 /*******************************************************************************
  * state_change - work callback 
  * @w - the work struct calling this function.
@@ -180,8 +179,8 @@ static void state_change(struct work_struct *w)
 {
 	debug("total schedules in this interval: %d", total_schedules);
 	debug("total negative states warning: %d", negative_newstates);
-	debug("Times mask was empty: %d",mask_empty_cond);
-	debug("Total Events skipped %d",num_events);
+	debug("Times mask was empty: %d", mask_empty_cond);
+	debug("Total Events skipped %d", num_events);
 #ifdef DEBUG
 	mask_empty_cond = 0;
 	total_schedules = 0;
@@ -220,7 +219,7 @@ void inst_scheduler_tick(void)
 void inst_release_thread(struct task_struct *t)
 {
 	struct debug_block *p = NULL;
-	if (TS_MEMBER(t,seeker_scheduled) != SEEKER_MAGIC_NUMBER)
+	if (TS_MEMBER(t, seeker_scheduled) != SEEKER_MAGIC_NUMBER)
 		jprobe_return();
 	p = get_debug();
 	if (p) {
@@ -247,20 +246,21 @@ void inst_release_thread(struct task_struct *t)
 int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 {
 	int cpu = smp_processor_id();
-	if (!ts[cpu] || TS_MEMBER(ts[cpu],seeker_scheduled) != SEEKER_MAGIC_NUMBER)
+	if (!ts[cpu]
+	    || TS_MEMBER(ts[cpu], seeker_scheduled) != SEEKER_MAGIC_NUMBER)
 		return 0;
 
 	read_counters(cpu);
-	if (TS_MEMBER(ts[cpu],interval) != interval_count)
-		TS_MEMBER(ts[cpu],interval) = interval_count;
-	TS_MEMBER(ts[cpu],inst) += pmu_val[cpu][0];
-	TS_MEMBER(ts[cpu],re_cy) += pmu_val[cpu][1];
-	TS_MEMBER(ts[cpu],ref_cy) += pmu_val[cpu][2];
+	if (TS_MEMBER(ts[cpu], interval) != interval_count)
+		TS_MEMBER(ts[cpu], interval) = interval_count;
+	TS_MEMBER(ts[cpu], inst) += pmu_val[cpu][0];
+	TS_MEMBER(ts[cpu], re_cy) += pmu_val[cpu][1];
+	TS_MEMBER(ts[cpu], ref_cy) += pmu_val[cpu][2];
 	clear_counters(cpu);
 	task_cycles[cpu] += get_tsc_cycles();
-	if (TS_MEMBER(ts[cpu],inst) > INST_THRESHOLD
-	    || TS_MEMBER(ts[cpu],cpustate) != cur_cpu_state[cpu]
-	    || TS_MEMBER(ts[cpu],interval) != interval_count) {
+	if (TS_MEMBER(ts[cpu], inst) > INST_THRESHOLD
+	    || TS_MEMBER(ts[cpu], cpustate) != cur_cpu_state[cpu]
+	    || TS_MEMBER(ts[cpu], interval) != interval_count) {
 		set_tsk_need_resched(ts[cpu]);	/* lazy, as we are anyway getting into schedule */
 	}
 	return 0;
@@ -280,13 +280,13 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
  *******************************************************************************/
 void inst_sched_fork(struct task_struct *new, int clone_flags)
 {
-	TS_MEMBER(new,seeker_scheduled) = SEEKER_MAGIC_NUMBER;
-	TS_MEMBER(new,fixed_state) = -1;
-	TS_MEMBER(new,interval) = interval_count;
-	TS_MEMBER(new,inst) = 0;
-	TS_MEMBER(new,ref_cy) = 0;
-	TS_MEMBER(new,re_cy) = 0;
-	TS_MEMBER(new,cpustate) = cur_cpu_state[smp_processor_id()];
+	TS_MEMBER(new, seeker_scheduled) = SEEKER_MAGIC_NUMBER;
+	TS_MEMBER(new, fixed_state) = -1;
+	TS_MEMBER(new, interval) = interval_count;
+	TS_MEMBER(new, inst) = 0;
+	TS_MEMBER(new, ref_cy) = 0;
+	TS_MEMBER(new, re_cy) = 0;
+	TS_MEMBER(new, cpustate) = cur_cpu_state[smp_processor_id()];
 	jprobe_return();
 }
 
@@ -305,17 +305,17 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	int cpu = smp_processor_id();
 	ts[cpu] = to;
 
-	if (TS_MEMBER(from,seeker_scheduled) != SEEKER_MAGIC_NUMBER) {
+	if (TS_MEMBER(from, seeker_scheduled) != SEEKER_MAGIC_NUMBER) {
 		goto get_out;
 	}
 
 	read_counters(cpu);
-	TS_MEMBER(from,inst) += pmu_val[cpu][0];
-	TS_MEMBER(from,re_cy) += pmu_val[cpu][1];
-	TS_MEMBER(from,ref_cy) += pmu_val[cpu][2];
+	TS_MEMBER(from, inst) += pmu_val[cpu][0];
+	TS_MEMBER(from, re_cy) += pmu_val[cpu][1];
+	TS_MEMBER(from, ref_cy) += pmu_val[cpu][2];
 	clear_counters(cpu);
 
-	if(strncmp(from->comm,"events",sizeof(char)*6) == 0){
+	if (strncmp(from->comm, "events", sizeof(char) * 6) == 0) {
 #ifdef DEBUG
 		num_events++;
 #endif
@@ -349,7 +349,7 @@ static int scheduler_init(void)
 	total_online_cpus = num_online_cpus();
 	init_idle_logger();
 
-	if(init_tsc_intf()){
+	if (init_tsc_intf()) {
 		error("Could not init tsc_intf");
 		return -ENOSYS;
 	}
@@ -431,7 +431,7 @@ no_scheduler_tick:
 	return -ENOSYS;
 
 #else
-	#warning "This module will NOT work on this unpatched, unblessed kernel"
+#warning "This module will NOT work on this unpatched, unblessed kernel"
 	error("You are trying to use this module without patching "
 	      "the kernel with schedmod. Refer to the "
 	      "seeker/Patches/README for details");
@@ -483,8 +483,7 @@ MODULE_PARM_DESC(disable_scheduling,
 		 "Set to not allow scheduling. Does a dry run. Also enables static layout.");
 
 module_param_array(static_layout, int, &static_layout_length, 0444);
-MODULE_PARM_DESC(static_layout,
-		 "Use to set a static_layout to use");
+MODULE_PARM_DESC(static_layout, "Use to set a static_layout to use");
 
 module_param(delta, int, 0444);
 MODULE_PARM_DESC(delta, "Type of state machine to use 1,2,.. default:1");
@@ -492,4 +491,3 @@ MODULE_PARM_DESC(delta, "Type of state machine to use 1,2,.. default:1");
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
 MODULE_DESCRIPTION("instruments scheduling functions to do extra work");
-

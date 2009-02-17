@@ -51,7 +51,6 @@ int ERROR = 0;
  * 				Functions					*
  ********************************************************************************/
 
-
 /********************************************************************************
  * enable_cpu_counters - enable counters on current cpu
  * @info - Not used
@@ -142,4 +141,3 @@ void clear_counters(int cpu)
 	counter_clear(sys_counters[cpu][2]);
 #endif
 }
-

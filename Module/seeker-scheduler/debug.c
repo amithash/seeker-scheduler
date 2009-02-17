@@ -86,7 +86,6 @@ static struct kmem_cache *debug_cachep = NULL;
  * 				Functions 					*
  ********************************************************************************/
 
-
 /********************************************************************************
  * get_debug - allocate and return a debug block
  * @return - address of the debug block, NULL if failed or device not opened.
@@ -327,4 +326,3 @@ void debug_exit(void)
 		dev_created = 0;
 	}
 }
-

@@ -59,7 +59,6 @@ extern int cur_cpu_state[NR_CPUS];
 /* state.c: seq lock for states */
 extern seqlock_t states_seq_lock;
 
-
 /********************************************************************************
  * 			Global Datastructures 					*
  ********************************************************************************/
@@ -102,7 +101,6 @@ inline int procs(int hints, int total, int total_load);
  * 				Functions					*
  ********************************************************************************/
 
-
 /********************************************************************************
  * procs - compute total processors required given hints and total
  * @hints - the demand 
@@ -124,7 +122,6 @@ inline int procs(int hints, int total, int total_load)
 	ans = div((hints * total_load), total);
 	return ans < 0 ? 0 : ans;
 }
-
 
 /********************************************************************************
  * required_load - adjusts load
@@ -201,11 +198,6 @@ void update_state_matrix(int delta)
 	}
 }
 
-/* Create a demand field such that, each state
- * gets its share and also shares half of what it
- * gets with its friends = friend_count on either side
- * = (total_states/2)-1.
- */
 /********************************************************************************
  * update_demand_field - update the demand field for a friend count.
  * @friend_count - (total_states/2)-1
@@ -257,11 +249,11 @@ void update_demand_field(int friend_count)
  *
  * This is used by mutator_kernel.
  ********************************************************************************/
-int per_state_kernel(int state, int *poison, int demand, int *proc, 
-		int *proc_val, unsigned int *low_proc_val)
+int per_state_kernel(int state, int *poison, int demand, int *proc,
+		     int *proc_val, unsigned int *low_proc_val)
 {
 	int i;
-	int j = state; /* Avoid mentioning state everywhere */
+	int j = state;		/* Avoid mentioning state everywhere */
 	int sum = 0;
 	int high_val;
 	int low_val;
@@ -271,9 +263,9 @@ int per_state_kernel(int state, int *poison, int demand, int *proc,
 	*low_proc_val = (unsigned int)(-1);
 
 	for (i = 0; i < total_online_cpus; i++) {
-		if(poison[i] == 0)
+		if (poison[i] == 0)
 			continue;
-		high_val = ((state_matrix[i][j] * demand ) - info[i].sleep_time);
+		high_val = ((state_matrix[i][j] * demand) - info[i].sleep_time);
 		low_val = state_matrix[i][j] * demand;
 		if (high_val > *proc_val) {
 			*proc_val = high_val;
@@ -283,12 +275,12 @@ int per_state_kernel(int state, int *poison, int demand, int *proc,
 		}
 		sum += (state_matrix[i][j] * poison[i]);
 	}
-	if(unlikely(*proc < 0)){
-		for(i=0;i<total_online_cpus; i++){
-			if(poison[i] != 0){
+	if (unlikely(*proc < 0)) {
+		for (i = 0; i < total_online_cpus; i++) {
+			if (poison[i] != 0) {
 				*proc = i;
-				*proc_val = ((state_matrix[i][j] * demand ) 
-					- info[i].sleep_time);
+				*proc_val = ((state_matrix[i][j] * demand)
+					     - info[i].sleep_time);
 			}
 		}
 	}
@@ -328,12 +320,13 @@ int mutator_kernel(int *poison, int *winner)
 		/* Sum the cost over all rows */
 		/* Do here to make the longest sleeping processor to sleep more 
 		 * does this conserve more power? */
-		
-		sum = per_state_kernel(j, poison, demand_field[j], 
-				&best_proc, &best_proc_value, 
-				&best_low_proc_value);
 
-		debug("sum for state %d is %d with demand %d", j, sum, demand_field[j]);
+		sum = per_state_kernel(j, poison, demand_field[j],
+				       &best_proc, &best_proc_value,
+				       &best_low_proc_value);
+
+		debug("sum for state %d is %d with demand %d", j, sum,
+		      demand_field[j]);
 		/* Find the max sum and the sate, and its best proc 
 		 * If there is contention for that, choose the one
 		 * with the best proc, if there is contention for both,
@@ -350,7 +343,7 @@ int mutator_kernel(int *poison, int *winner)
 			goto assign;
 		if (best_low_proc_value < winner_best_low_proc_value)
 			continue;
-	assign:
+assign:
 		*winner = j;
 		winner_val = sum;
 		winner_best_proc = best_proc;
@@ -358,9 +351,9 @@ int mutator_kernel(int *poison, int *winner)
 		winner_best_low_proc_value = best_low_proc_value;
 	}
 
-	if(winner_val > 0)
+	if (winner_val > 0)
 		return winner_best_proc;
-	else 
+	else
 		return -1;
 }
 
@@ -410,7 +403,7 @@ void choose_layout(int delta)
 	/* Compute the total = sum of hints */
 	for (j = 0; j < total_states; j++) {
 		total += states[j].demand;
-		debug("State: %d ; Demand: %d",j,states[j].demand);
+		debug("State: %d ; Demand: %d", j, states[j].demand);
 	}
 
 	/* Compute CPU's demanded for each state */
@@ -419,12 +412,12 @@ void choose_layout(int delta)
 		    procs(states[j].demand, total, load);
 		total_demand += demand[j];
 	}
-	if(total_demand != load)
+	if (total_demand != load)
 		total_demand = load;
 
 	/* Now for each delta to spend, hold an auction */
-	while (total > MIN_REQUESTS && delta > 0 
-			&& total_iter < total_online_cpus){
+	while (total > MIN_REQUESTS && delta > 0
+	       && total_iter < total_online_cpus) {
 		winner = 0;
 		winner_best_proc = 0;
 		total_iter++;
@@ -496,7 +489,7 @@ void choose_layout(int delta)
 		total_provided_cpus++;
 		cpu_set(i, new_states[new_cpu_state[i]].cpumask);
 	}
-	if(total_provided_cpus == 0){
+	if (total_provided_cpus == 0) {
 		new_states[0].cpus++;
 		cpu_set(0, new_states[0].cpumask);
 		new_cpu_state[0] = 0;
@@ -512,8 +505,8 @@ void choose_layout(int delta)
 	debug("Writing to states via a seq lock");
 
 	write_seqlock(&states_seq_lock);
-	for(j = 0; j < total_states; j++){
-		states_copy(&(states[j]),&(new_states[j]));
+	for (j = 0; j < total_states; j++) {
+		states_copy(&(states[j]), &(new_states[j]));
 	}
 	write_sequnlock(&states_seq_lock);
 
@@ -529,21 +522,22 @@ void choose_layout(int delta)
 		/* CPU is used */
 		if (poison[i] == 0) {
 			info[i].sleep_time = 0;
-			if(info[i].awake == 0){
-				debug("awaking processor %d",i);
+			if (info[i].awake == 0) {
+				debug("awaking processor %d", i);
 			}
 			info[i].awake = 1;
 			if (new_cpu_state[i] != cur_cpu_state[i]) {
-				debug("Requesting cpu %d to change state from %d to %d",
-						i,cur_cpu_state[i],new_cpu_state[i]);
+				debug
+				    ("Requesting cpu %d to change state from %d to %d",
+				     i, cur_cpu_state[i], new_cpu_state[i]);
 				cur_cpu_state[i] = new_cpu_state[i];
 				set_freq(i, new_cpu_state[i]);
 			}
-		} else if(info[i].awake == 0){
+		} else if (info[i].awake == 0) {
 			info[i].sleep_time++;
 		} else {
-			debug("Putting cpu %d to sleep",i);
-			if(cur_cpu_state[i] != 0)
+			debug("Putting cpu %d to sleep", i);
+			if (cur_cpu_state[i] != 0)
 				set_freq(i, 0);
 			cur_cpu_state[i] = 0;
 			info[i].awake = 0;
@@ -551,5 +545,3 @@ void choose_layout(int delta)
 		}
 	}
 }
-
-

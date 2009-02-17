@@ -54,4 +54,3 @@ void init_idle_logger(void);
 unsigned int get_cpu_load(int cpu);
 
 #endif
-

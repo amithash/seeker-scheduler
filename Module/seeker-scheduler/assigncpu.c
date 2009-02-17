@@ -135,20 +135,19 @@ inline int get_lower_state(int state)
 {
 	int new_state;
 	int i;
-	new_state = sat_dec(state,0);
-	for(i=new_state;i>=0;i--){
-		if(states[i].cpus > 0)
+	new_state = sat_dec(state, 0);
+	for (i = new_state; i >= 0; i--) {
+		if (states[i].cpus > 0)
 			return i;
 	}
-	if(states[state].cpus > 0)
+	if (states[state].cpus > 0)
 		return state;
-	for (i = state + 1; i < total_states; i++){
+	for (i = state + 1; i < total_states; i++) {
 		if (states[i].cpus > 0)
 			return i;
 	}
 	return -1;
 }
-
 
 /********************************************************************************
  * get_higher_state - Get a state higher than current state.
@@ -163,15 +162,15 @@ inline int get_higher_state(int state)
 {
 	int new_state;
 	int i;
-	new_state = sat_inc(state,total_states);
-	for(i=new_state;i<total_states;i++){
-		if(states[i].cpus > 0)
+	new_state = sat_inc(state, total_states);
+	for (i = new_state; i < total_states; i++) {
+		if (states[i].cpus > 0)
 			return i;
 	}
-	if(states[state].cpus > 0)
+	if (states[state].cpus > 0)
 		return state;
-	for(i=state-1;i>=0;i--){
-		if(states[i].cpus > 0)
+	for (i = state - 1; i >= 0; i--) {
+		if (states[i].cpus > 0)
 			return i;
 	}
 	return -1;
@@ -187,18 +186,15 @@ inline int get_higher_state(int state)
  ********************************************************************************/
 inline int get_closest_state(int state)
 {
-	int state1,state2;
+	int state1, state2;
 	int ret_state;
-	if(states[state].cpus > 0)
+	if (states[state].cpus > 0)
 		return state;
 	state1 = get_lower_state(state);
 	state2 = get_higher_state(state);
-	ret_state = ABS(state-state1) < ABS(state-state2) ? 
-		state1 : state2;
+	ret_state = ABS(state - state1) < ABS(state - state2) ? state1 : state2;
 	return ret_state;
 }
-
-
 
 /********************************************************************************
  * put_mask_from_stats - The fate of "ts" shall be decided!
@@ -227,22 +223,21 @@ void put_mask_from_stats(struct task_struct *ts)
 	 * with short lived tasks.
 	 */
 
-
-	if (TS_MEMBER(ts,inst) < INST_THRESHOLD)
+	if (TS_MEMBER(ts, inst) < INST_THRESHOLD)
 		return;
-	tasks_interval = TS_MEMBER(ts,interval);
+	tasks_interval = TS_MEMBER(ts, interval);
 
 	this_cpu = smp_processor_id();
 
 	cy = task_cycles[this_cpu] + get_tsc_cycles();
 	task_cycles[this_cpu] = 0;
 
-	do{
+	do {
 		seq = read_seqbegin(&states_seq_lock);
 
 		state = cur_cpu_state[this_cpu];
 
-		switch (TS_MEMBER(ts,fixed_state)) {
+		switch (TS_MEMBER(ts, fixed_state)) {
 		case 0:
 			new_state = get_closest_state(low_state);
 			state_req = low_state;
@@ -256,35 +251,35 @@ void put_mask_from_stats(struct task_struct *ts)
 			state_req = high_state;
 			break;
 		default:
-			ipc = IPC(TS_MEMBER(ts,inst), TS_MEMBER(ts,re_cy));
+			ipc = IPC(TS_MEMBER(ts, inst), TS_MEMBER(ts, re_cy));
 			/*up */
 			if (ipc >= IPC_HIGH) {
 				new_state = get_higher_state(state);
-				state_req = sat_inc(state,total_states);
+				state_req = sat_inc(state, total_states);
 			} else if (ipc <= IPC_LOW) {
 				new_state = get_lower_state(state);
-				state_req = sat_dec(state,0);
+				state_req = sat_dec(state, 0);
 			} else {
 				state_req = state;
 				new_state = get_closest_state(state);
 			}
 		}
-		if(new_state >= 0 && new_state < total_states)
+		if (new_state >= 0 && new_state < total_states)
 			mask = states[new_state].cpumask;
-		#ifdef DEBUG
+#ifdef DEBUG
 		else
 			negative_newstates++;
-		#endif
+#endif
 
-	} while(read_seqretry(&states_seq_lock,seq));
+	} while (read_seqretry(&states_seq_lock, seq));
 
 	hint_inc(state_req);
 
 	/* What the duche? as stewie says it */
-	if(cpus_empty(mask)){
-		#ifdef DEBUG
+	if (cpus_empty(mask)) {
+#ifdef DEBUG
 		mask_empty_cond++;
-		#endif
+#endif
 		return;
 	}
 
@@ -294,8 +289,8 @@ void put_mask_from_stats(struct task_struct *ts)
 	p = get_debug();
 	if (p) {
 		p->entry.type = DEBUG_SCH;
-		p->entry.u.sch.interval = TS_MEMBER(ts,interval);
-		p->entry.u.sch.inst = TS_MEMBER(ts,inst);
+		p->entry.u.sch.interval = TS_MEMBER(ts, interval);
+		p->entry.u.sch.inst = TS_MEMBER(ts, inst);
 		p->entry.u.sch.ipc = ipc;
 		p->entry.u.sch.pid = ts->pid;
 		p->entry.u.sch.state_req = state_req;
@@ -307,15 +302,13 @@ void put_mask_from_stats(struct task_struct *ts)
 	put_debug(p);
 
 	/* Start over. Forget the IPC... */
-	TS_MEMBER(ts,interval) = interval_count;
-	TS_MEMBER(ts,inst) = 0;
-	TS_MEMBER(ts,ref_cy) = 0;
-	TS_MEMBER(ts,re_cy) = 0;
-	TS_MEMBER(ts,cpustate) = new_state;
+	TS_MEMBER(ts, interval) = interval_count;
+	TS_MEMBER(ts, inst) = 0;
+	TS_MEMBER(ts, ref_cy) = 0;
+	TS_MEMBER(ts, re_cy) = 0;
+	TS_MEMBER(ts, cpustate) = new_state;
 
 #ifdef DEBUG
 	total_schedules++;
 #endif
 }
-
-

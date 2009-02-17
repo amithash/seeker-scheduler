@@ -134,7 +134,7 @@ int init_cpu_states(unsigned int how)
 	int i;
 
 	seqlock_init(&states_seq_lock);
-	
+
 	for (i = 0; i < total_online_cpus; i++) {
 		max_state_possible[i] = get_max_states(i);
 		info("Max state for cpu %d = %d", i, max_state_possible[i]);
@@ -184,20 +184,21 @@ int init_cpu_states(unsigned int how)
 		}
 		break;
 	case STATIC_LAYOUT:
-		for(i = 0; i < static_layout_length && i < total_online_cpus; i++) {
-			if(static_layout[i] < 0)
+		for (i = 0; i < static_layout_length && i < total_online_cpus;
+		     i++) {
+			if (static_layout[i] < 0)
 				static_layout[i] = 0;
-			if(static_layout[i] >= total_states)
-				static_layout[i] = total_states-1;
-			set_freq(i,static_layout[i]);
+			if (static_layout[i] >= total_states)
+				static_layout[i] = total_states - 1;
+			set_freq(i, static_layout[i]);
 			cur_cpu_state[i] = static_layout[i];
 			cpu_set(i, states[static_layout[i]].cpumask);
 			states[static_layout[i]].cpus++;
 		}
-		for(i = static_layout_length; i < total_online_cpus; i++) {
-			set_freq(i,0);
+		for (i = static_layout_length; i < total_online_cpus; i++) {
+			set_freq(i, 0);
 			cur_cpu_state[i] = 0;
-			cpu_set(i,states[0].cpumask);
+			cpu_set(i, states[0].cpumask);
 			states[0].cpus++;
 		}
 		break;
@@ -219,4 +220,3 @@ int init_cpu_states(unsigned int how)
 
 	return 0;
 }
-
