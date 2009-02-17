@@ -66,7 +66,11 @@
 
 /********** Structure Definitions ********************************************/
 typedef struct {
+#if defined(ARCH_K8) || defined(ARCH_K10)
+	u32 ev_select:12;
+#else
 	u32 ev_select:8;
+#endif
 	u32 ev_mask:8;
 	u32 usr_flag:1;
 	u32 os_flag:1;
@@ -77,6 +81,10 @@ typedef struct {
 	u32 enabled:1;
 	u32 inv_flag:1;
 	u32 cnt_mask:8;
+#if defined(ARCH_K8) || defined(ARCH_K10)
+	u32 ho:1;
+	u32 go:1;
+#endif
 	u32 addr;
 } evtsel_t;
 

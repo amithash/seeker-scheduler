@@ -38,6 +38,26 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
 MODULE_DESCRIPTION("Module provides an interface to access the PMU");
 
+#if defined(ARCH_K8) || defined(ARCH_K10)
+evtsel_t evtsel[NR_CPUS][NUM_COUNTERS] = {
+	{
+#if NUM_COUNTERS > 0
+	 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, 0, 0, EVTSEL0}	/*0 */
+#endif
+#if NUM_COUNTERS > 1
+	 , {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, 0, 0, EVTSEL1}	/*1 */
+#endif
+#if NUM_COUNTERS > 2
+	 , {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, 0, 0, EVTSEL2}	/*2 */
+#endif
+#if NUM_COUNTERS > 3
+	 , {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, 0, 0, EVTSEL3}	/*3 */
+#endif
+	 }
+};
+
+#else
+
 evtsel_t evtsel[NR_CPUS][NUM_COUNTERS] = {
 	{
 #if NUM_COUNTERS > 0
@@ -54,6 +74,7 @@ evtsel_t evtsel[NR_CPUS][NUM_COUNTERS] = {
 #endif
 	 }
 };
+#endif
 
 counter_t counters[NR_CPUS][NUM_COUNTERS] = {
 	{
