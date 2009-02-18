@@ -55,10 +55,10 @@
 #define IPC_1_000 8
 
 /* The HIGH IPC Threshold */
-#define IPC_HIGH IPC_1_000
+#define IPC_HIGH IPC_0_875
 
 /* The LOW IPC Threshold */
-#define IPC_LOW  IPC_0_750
+#define IPC_LOW  IPC_0_625
 
 /********************************************************************************
  * 			External Variables 					*
