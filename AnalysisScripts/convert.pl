@@ -33,6 +33,8 @@ foreach my $bench (@bench_list){
 		my $req_st;
 		my $giv_st;
 		my $cpu;
+		my $state;
+		my $cy;
 		foreach my $row (@tmp){
 			my @line = split(/,/,$row);
 			$interval = $line[1];
@@ -41,7 +43,9 @@ foreach my $bench (@bench_list){
 			$cpu = $line[3];
 			$req_st = $line[6];
 			$giv_st = $line[7];
-			print OUT "$inst $interval $cpu $ipc $req_st $giv_st\n";
+			$state = $line[8];
+			$cy = $line[9];
+			print OUT "$inst $interval $cpu $ipc $req_st $giv_st $state $cy\n";
 		}
 		close(OUT);
 	} else {
