@@ -2,6 +2,23 @@
 
 use strict;
 use warnings;
+use Getopt::Long;
+
+my $ipc_stat = 0;
+my $state_stat = 0;
+my $threshold;
+
+GetOptions( 'i|ipc-stat' => \$ipc_stat,
+	    's|state-stat' => \$state_stat,
+	    't|threshold=f' => \$threshold);
+
+if(not defined($threshold)){
+	$threshold = 1.0;
+}
+
+if($ipc_stat == 0 and $state_stat == 0){
+	$ipc_stat = $state_stat = 1;
+}
 
 my %stats = (	'[0.00,0.25)' => 0,
    		'[0.25,0.50)' => 0,
@@ -27,28 +44,36 @@ my $total = 0.0;
 open IN, "$ARGV[0]" or die "Opening $ARGV[0] failed with $!\n";
 while(my $line = <IN>){
 	chomp($line);
-	my @l = split(/,/,$line);
-	my $ipc = $l[0];
-	my $cy = $l[1];
-	my $state = $l[2];
-	classify($ipc,$cy * 1.0);
-	residency($state,$cy * 1.0);
+	my @l = split(/\s/,$line);
+	my $ipc = $l[3];
+	my $cy = $l[7];
+	my $state = $l[6];
+	if($ipc_stat == 1){
+		classify($ipc,$cy * 1.0);
+	}
+	if($state_stat == 1){ 
+		residency($state,$cy * 1.0);
+	}
 	$total += ($cy*1.0);
 }
-
-foreach my $ipc (keys %stats){
-	if($stats{$ipc} == 0.0){
-		next;
+if($ipc_stat == 1){
+	foreach my $ipc (sort keys %stats){
+		if($stats{$ipc} < 1.0){
+			next;
+		}
+		my $perc = $stats{$ipc} * 100 / $total;
+		next if($perc < $threshold);
+		my $perc_s = sprintf("%.2f",$perc);
+		print "$ipc\t$perc_s\%\n";
 	}
-	my $perc = $stats{$ipc} * 100 / $total;
-	my $perc_s = sprintf("%.2f",$perc);
-	print "$ipc\t$perc_s\n";
 }
-print "\n\n";
-foreach my $state (sort keys %residency){
-	my $cyb = $residency{$state} / (10.0 ** 9);
-	my $cyb_s = sprintf("%.4f",$cyb);
-	print "$state\t$cyb_s\n";
+
+if($state_stat == 1){
+	foreach my $state (sort keys %residency){
+		my $cyb = $residency{$state} / (10.0 ** 9);
+		my $cyb_s = sprintf("%.4f",$cyb);
+		print "$state\t$cyb_s\n";
+	}
 }
 
 sub residency{
@@ -61,7 +86,7 @@ sub residency{
 	}
 }
 
-sub calassify{
+sub classify{
 	my $ipc = shift;
 	my $cy = shift;
 
