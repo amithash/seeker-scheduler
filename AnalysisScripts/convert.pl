@@ -2,6 +2,9 @@
 
 use strict;
 use warnings;
+use lib "$ENV{SEEKER_HOME}/AnalysisScripts";
+use benchmarks;
+
 if($#ARGV != 1){
 	print "Usage: $0 IN_FILE OUT_DIR\n";
 	exit;
@@ -13,7 +16,8 @@ system("mkdir $out_dir") unless(-d $out_dir);
 system("mkdir $out_dir/sch") unless(-d "$out_dir/sch");
 
 foreach my $bench (@bench_list){
-	open(IN,"grep \"$bench\" $in_file |");
+	my $bench_name = benchmarks::get_binary_name($bench);
+	open(IN,"grep \"$bench_name\" $in_file |");
 	my $line = <IN>;
 	close(IN);
 	chomp($line);
