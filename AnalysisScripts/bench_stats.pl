@@ -57,15 +57,24 @@ while(my $line = <IN>){
 	$total += ($cy*1.0);
 }
 if($ipc_stat == 1){
+	my $header = "";
+	my $data = "";
 	foreach my $ipc (sort keys %stats){
+		$header = $header . "$ipc ";
 		if($stats{$ipc} < 1.0){
+			$data = $data . "0.0 ";
 			next;
 		}
 		my $perc = $stats{$ipc} * 100 / $total;
-		next if($perc < $threshold);
+		if($perc < $threshold){
+			$data = $data . "0.0 ";
+			next;
+		}
 		my $perc_s = sprintf("%.2f",$perc);
-		print "$ipc\t$perc_s\%\n";
+		$data = $data . "$perc_s ";
 	}
+	print "$header\n";
+	print "$data\n";
 }
 
 if($state_stat == 1){
