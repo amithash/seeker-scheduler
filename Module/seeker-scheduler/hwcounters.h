@@ -41,6 +41,7 @@
 void clear_counters(int cpu);
 void enable_pmu_counters(void *info);
 int configure_counters(void);
+void exit_counters(void);
 void read_counters(int cpu);
 
 #endif

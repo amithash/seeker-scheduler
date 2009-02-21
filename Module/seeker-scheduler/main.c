@@ -460,6 +460,7 @@ static void scheduler_exit(void)
 	unregister_jprobe(&jp_release_thread);
 	debug("Debug exiting");
 	debug_exit();
+	exit_counters();
 }
 
 /********************************************************************************
