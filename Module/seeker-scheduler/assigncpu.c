@@ -283,7 +283,9 @@ void put_mask_from_stats(struct task_struct *ts)
 		return;
 	}
 
-	ts->cpus_allowed = mask;
+	/* Assign only if we have not disabled scheduling */
+	if(!disable_scheduling)
+		ts->cpus_allowed = mask;
 
 	/* Push statastics to the debug buffer if enabled */
 	p = get_debug();
