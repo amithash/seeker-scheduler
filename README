@@ -18,7 +18,12 @@
 	 You should have received a copy of the GNU General Public License      
 	 along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 
+	 All documentation is licensed under the creative common license, *except*
+	 C2D_EVENTS.pdf which is the copyright of Intel Corporation, and K8_EVENTS.pdf
+	 which is the copyright of Advanced Micro Devices which are added here for 
+	 convienence. 
 ========================================================================================
+
 
 PRE-SETUP / PRE-REQS:
 --------------------
