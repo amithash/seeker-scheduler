@@ -87,6 +87,19 @@ void enable_pmu_counters(void *info)
 	put_cpu();
 }
 
+void disable_pmu_counters(void *info)
+{
+	int cpu = get_cpu();
+#if NUM_FIXED_COUNTERS > 0
+	fcounters_disable();
+#else
+	counter_disable(sys_counters[cpu][0]);
+	counter_disable(sys_counters[cpu][1]);
+	counter_disable(sys_counters[cpu][2]);
+#endif
+	put_cpu();
+}
+
 /********************************************************************************
  * configure_counters - enable counters on ALL online cpus
  * @Return - 0 for success -1 otherwise.
@@ -104,6 +117,12 @@ int configure_counters(void)
 		return -1;
 
 	return 0;
+}
+
+void exit_counters(void){
+	if(ON_EACH_CPU(disable_pmu_counters, NULL, 1, 1) < 0) {
+		error("Counters could not be disabled");
+	}
 }
 
 /********************************************************************************
