@@ -352,6 +352,13 @@ static int scheduler_init(void)
 		error("Could not init tsc_intf");
 		return -ENOSYS;
 	}
+
+	if (configure_counters() != 0) {
+		error("Configuring counters failed");
+		return -ENOSYS;
+	}
+	info("Configuring counters was successful");
+
 	/* Please keep this BEFORE the probe registeration and
 	 * the timer initialization. init_cpu_states makes this 
 	 * assumption by not taking any locks */
@@ -400,11 +407,6 @@ static int scheduler_init(void)
 	}
 	info("Registering of kp_schedule was successful");
 
-	if (configure_counters() != 0) {
-		error("Configuring counters failed");
-		goto no_counters;
-	}
-	info("Configuring counters was successful");
 
 	if (init != STATIC_LAYOUT) {
 		interval_jiffies = change_interval * HZ;
@@ -416,8 +418,6 @@ static int scheduler_init(void)
 
 	return 0;
 
-no_counters:
-	unregister_jprobe(&jp_release_thread);
 no_release_thread:
 	unregister_kprobe(&kp_schedule);
 no_schedule:
@@ -460,6 +460,7 @@ static void scheduler_exit(void)
 	unregister_jprobe(&jp_release_thread);
 	debug("Debug exiting");
 	debug_exit();
+	debug("Exiting the counters");
 	exit_counters();
 }
 
