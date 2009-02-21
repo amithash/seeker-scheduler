@@ -343,7 +343,6 @@ static int scheduler_init(void)
 	}
 	if (disable_scheduling != 0) {
 		disable_scheduling = 1;
-		init = NO_CHANGE;
 	}
 
 	total_online_cpus = num_online_cpus();
