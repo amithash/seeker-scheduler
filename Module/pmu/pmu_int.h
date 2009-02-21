@@ -42,7 +42,7 @@
 #	define CTR1_OVERFLOW_CLEAR_MASK 0xFFFFFFFD
 #elif defined(ARCH_K8) || defined(ARCH_K10)
 #	define EVTSEL_RESERVED_BITS BITS_AT(1,21)
-#	define EVTSEL_RESERVED_BITS_HIGH (BITS_AT(4,4) | BITS_AT(22,10)
+#	define EVTSEL_RESERVED_BITS_HIGH (BITS_AT(4,4) | BITS_AT(22,10))
 #else
 #error "Architecture not supported."
 #endif
