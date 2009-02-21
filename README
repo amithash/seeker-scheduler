@@ -20,8 +20,18 @@
 
 	 All documentation is licensed under the creative common license, *except*
 	 C2D_EVENTS.pdf which is the copyright of Intel Corporation, and K8_EVENTS.pdf
-	 which is the copyright of Advanced Micro Devices which are added here for 
-	 convienence. 
+	 ( which is the copyright of Advanced Micro Devices which are added here for 
+	 convienence ) and ms_thesis-prasad/* for which I hold a restrictive non-copy
+	 rights. But this restriction will be removed as soon as I publish upon which
+	the document will become public domain and all have the same rights as other
+	academic publications.
+
+	Note most of the material here come under unpublished work currently under
+	heavy modifications and going towards my Master's thesis. So, be considerate
+	and let me graduate. You can use the code as per GPL for your unrelated work.
+	Heck, the GPL says that you can use it for related work too. But I am requesting
+	some human compassion till I graduate (May 2009). But this is not a legal binding.
+
 ========================================================================================
 
 
