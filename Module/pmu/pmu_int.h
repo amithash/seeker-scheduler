@@ -29,16 +29,18 @@
 #include <asm/types.h>
 #include <pmu_public.h>
 
+#define BITS(n) ((1 << (n)) - 1)
+
 /********** Constants ********************************************************/
 #if defined(ARCH_C2D)
 #	define EVTSEL_RESERVED_BITS (1 << 21)
+#	define EVTSEL_RESERVED_BITS_HIGH (~(0))
 #	define CTR0_OVERFLOW_MASK 0x00000001
 #	define CTR1_OVERFLOW_MASK 0x00000002
 #	define CTR0_OVERFLOW_CLEAR_MASK 0xFFFFFFFE
 #	define CTR1_OVERFLOW_CLEAR_MASK 0xFFFFFFFD
 #elif defined(ARCH_K8) || defined(ARCH_K10)
 #	define EVTSEL_RESERVED_BITS (1 << 21)
-#	define BITS(n) ((1 << (n)) - 1)
 #	define EVTSEL_RESERVED_BITS_HIGH ((BITS(4) << 4 ) | (BITS(22) << 10))
 #else
 #error "Architecture not supported."
