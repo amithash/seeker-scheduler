@@ -80,7 +80,7 @@ inline void evtsel_write(u32 evtsel_num)
 		rdmsr(cur_evtsel->addr, low, high);
 		low &= EVTSEL_RESERVED_BITS;
 
-		low = ((cur_evtsel->ev_select & BITS8) << 0)
+		low |= ((cur_evtsel->ev_select & BITS8) << 0)
 		    | (cur_evtsel->ev_mask << 8)
 		    | (cur_evtsel->usr_flag << 16)
 		    | (cur_evtsel->os_flag << 17)
@@ -92,7 +92,9 @@ inline void evtsel_write(u32 evtsel_num)
 		    | (cur_evtsel->cnt_mask << 24);
 
 #if defined(ARCH_K8) || defined(ARCH_K10)
-		high = ((cur_evtsel->ev_select >> 8) << 0)
+		high &= EVTSEL_RESERVED_BITS_HIGH;
+
+		high |= ((cur_evtsel->ev_select >> 8) << 0)
 			| (cur_evtsel->go << 8)
 			| (cur_evtsel->ho << 9);
 #endif
