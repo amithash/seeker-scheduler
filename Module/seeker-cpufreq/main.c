@@ -51,7 +51,7 @@ struct freq_info_t {
  * 				Function Declarations				*
  ********************************************************************************/
 
-static static ssize_t cpufreq_seeker_showspeed(struct cpufreq_policy *policy, 
+static ssize_t cpufreq_seeker_showspeed(struct cpufreq_policy *policy, 
 		char *buf);
 static int cpufreq_seeker_governor(struct cpufreq_policy *policy,
 				   unsigned int event);
