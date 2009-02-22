@@ -23,7 +23,7 @@
  *****************************************************/
 #ifndef _FPMU_H_
 #define _FPMU_H_
-void fpmu_init_msrs(void);
+void fpmu_init_msrs(void *info);
 
 void fcounter_clear(u32 counter);
 void fcounter_read(void);

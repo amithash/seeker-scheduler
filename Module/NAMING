@@ -1,4 +1,0 @@
-FileName.h -- Other kernel modules can include this file.
-FileName_int.h -- Only this module includes this file, and other modules are
-		  discoraged from including this.
-FileName_public.h -- User apps may include this along with other kernel modules.
