@@ -34,10 +34,16 @@
 
 #include "pmu_int.h"
 
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
-MODULE_DESCRIPTION("Module provides an interface to access the PMU");
 
+
+/********************************************************************************
+ * 			Global Datastructures 					*
+ ********************************************************************************/
+
+
+/* evtsel defined per counter per cpu. the structures are
+ * different for K8 and K10 so initialized using #ifdefs. 
+ */
 #if defined(ARCH_K8) || defined(ARCH_K10)
 evtsel_t evtsel[NR_CPUS][NUM_COUNTERS] = {
 	{
@@ -76,6 +82,7 @@ evtsel_t evtsel[NR_CPUS][NUM_COUNTERS] = {
 };
 #endif
 
+/* contains a per counter, per cpu counter information */
 counter_t counters[NR_CPUS][NUM_COUNTERS] = {
 	{
 
@@ -94,6 +101,7 @@ counter_t counters[NR_CPUS][NUM_COUNTERS] = {
 	 }
 };
 
+/* Contains the value to be stored in the counters upon a counter clear */
 cleared_t cleared[NR_CPUS][NUM_COUNTERS] = {
 	{
 #if NUM_COUNTERS > 0
@@ -111,7 +119,17 @@ cleared_t cleared[NR_CPUS][NUM_COUNTERS] = {
 	 }
 };
 
-//must be called from ON_EACH_CPU
+/********************************************************************************
+ * 				Functions					*
+ ********************************************************************************/
+
+
+/*******************************************************************************
+ * pmu_init_msrs - initialize msrs on _this_ cpu.
+ * @info - Not used.
+ *
+ * Initialize (clear and set to default values) the PMU MSR's.
+ *******************************************************************************/
 void pmu_init_msrs(void *info)
 {
 #if NUM_COUNTERS > 0
@@ -133,9 +151,15 @@ void pmu_init_msrs(void *info)
 	put_cpu();
 #endif
 }
-
 EXPORT_SYMBOL_GPL(pmu_init_msrs);
 
+/*******************************************************************************
+ * pmu_init - The init function for pmu.
+ * @Side Effects - Calls pmu_init_msrs on each cpu and hence initializing 
+ * 		   them on _all_ cpus.
+ *
+ * Initialize pmu.
+ *******************************************************************************/
 static int __init pmu_init(void)
 {
 	if (ON_EACH_CPU(&pmu_init_msrs, NULL, 1, 1) < 0) {
@@ -145,6 +169,10 @@ static int __init pmu_init(void)
 	return 0;
 }
 
+/*******************************************************************************
+ * pmu_exit - exit function for pmu.
+ * @Side Effects - Clears any counters being used. 
+ *******************************************************************************/
 static void __exit pmu_exit(void)
 {
 	int i, j;
@@ -155,5 +183,14 @@ static void __exit pmu_exit(void)
 	}
 }
 
+/********************************************************************************
+ * 			Module Parameters 					*
+ ********************************************************************************/
+
 module_init(pmu_init);
 module_exit(pmu_exit);
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
+MODULE_DESCRIPTION("Module provides an interface to access the PMU");
+

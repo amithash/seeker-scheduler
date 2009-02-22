@@ -47,29 +47,36 @@
 #error "Architecture not supported."
 #endif
 
-/********** MSR's ************************************************************/
+/********************************************************************************
+ * 			Register Address Constants				*
+ ********************************************************************************/
+
 #if defined(ARCH_C2D)
-#	define EVTSEL0 0x00000186
-#	define EVTSEL1 0x00000187
-#	define PMC0 0x000000C1
-#	define PMC1 0x000000C2
-#	define MSR_PERF_GLOBAL_STATUS 		0x0000038E
-#	define MSR_PERF_GLOBAL_CTRL		0x0000038F
+#	define EVTSEL0 			0x00000186
+#	define EVTSEL1 			0x00000187
+#	define PMC0 			0x000000C1
+#	define PMC1 			0x000000C2
+#	define MSR_PERF_GLOBAL_STATUS 	0x0000038E
+#	define MSR_PERF_GLOBAL_CTRL	0x0000038F
 #	define MSR_PERF_GLOBAL_OVF_CTRL	0x00000390
 #elif defined(ARCH_K8) || defined(ARCH_K10)
-#	define EVTSEL0 0xC0010000
-#	define EVTSEL1 0xC0010001
-#	define EVTSEL2 0xC0010002
-#	define EVTSEL3 0xC0010003
-#	define PMC0 0xC0010004
-#	define PMC1 0xC0010005
-#	define PMC2 0xC0010006
-#	define PMC3 0xC0010007
+#	define EVTSEL0 			0xC0010000
+#	define EVTSEL1 			0xC0010001
+#	define EVTSEL2 			0xC0010002
+#	define EVTSEL3 			0xC0010003
+#	define PMC0 			0xC0010004
+#	define PMC1 			0xC0010005
+#	define PMC2 			0xC0010006
+#	define PMC3 			0xC0010007
 #else
 #error "Architecture Not supported"
 #endif
 
-/********** Structure Definitions ********************************************/
+/********************************************************************************
+ * 				Prototypes 					*
+ ********************************************************************************/
+
+/* evtsel register elements */
 typedef struct {
 #if defined(ARCH_K8) || defined(ARCH_K10)
 	u32 ev_select:12;
@@ -93,12 +100,14 @@ typedef struct {
 	u32 addr;
 } evtsel_t;
 
+/* Cleared value */
 typedef struct {
 	u32 low;
 	u32 high;
 	u64 all;
 } cleared_t;
 
+/* Counter discreption */
 typedef struct {
 	u32 low:32;
 	u32 high:32;
@@ -108,15 +117,9 @@ typedef struct {
 	u32 enabled;
 } counter_t;
 
-/********* Extern Vars *******************************************************/
-
-extern evtsel_t evtsel[NR_CPUS][NUM_COUNTERS];
-extern counter_t counters[NR_CPUS][NUM_COUNTERS];
-extern char *evtsel_names[NUM_COUNTERS];
-extern char *counter_names[NUM_COUNTERS];
-extern cleared_t cleared[NR_CPUS][NUM_COUNTERS];
-
-/********** Function Prototypes **********************************************/
+/********************************************************************************
+ * 			PMU Internal API 					*
+ ********************************************************************************/
 #include <pmu.h>
 
 inline u32 evtsel_read(u32 evtsel_num);

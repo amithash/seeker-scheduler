@@ -33,10 +33,35 @@
 
 #include "pmu_int.h"
 
+/********************************************************************************
+ * 			External Variables 					*
+ ********************************************************************************/
+
+/* main.c: event select register contents */
 extern evtsel_t evtsel[NR_CPUS][NUM_COUNTERS];
+
+/* main.c: counter contents */
 extern counter_t counters[NR_CPUS][NUM_COUNTERS];
+
+/* main.c: cleared value of counters */
 extern cleared_t cleared[NR_CPUS][NUM_COUNTERS];
 
+/********************************************************************************
+ * 				Functions					*
+ ********************************************************************************/
+
+
+/*******************************************************************************
+ * pmu_configure_interrupt - Configures a counter to interrupt on _this_ cpu.
+ * @ctr - The counter to configure.
+ * @low - The low 32 bits of the counter in `cleared` state.
+ * @high - The upper 32 bits of the counter in `cleared` state.
+ * @return 0 if success, -1 on failure.
+ *
+ * Configures the cleared state of a counter on _this_ cpu. The `cleared` state
+ * is the value stored in the counter upon overflow or a counter_clear.
+ * NOTE: This does _NOT_ enable interrupts, just sets it up.
+ *******************************************************************************/
 int pmu_configure_interrupt(int ctr, u32 low, u32 high)
 {
 #if NUM_COUNTERS > 0
@@ -57,6 +82,13 @@ int pmu_configure_interrupt(int ctr, u32 low, u32 high)
 
 EXPORT_SYMBOL_GPL(pmu_configure_interrupt);
 
+/*******************************************************************************
+ * pmu_enable_interrupt - Enable interrupt for a counter on _this_ cpu.
+ * @ctr - The counter for which interrupts must be enabled.
+ * @return - 0 on success, -1 on failure
+ *
+ * Enable interrupts on counter `ctr` on _this_ cpu. 
+ *******************************************************************************/
 int pmu_enable_interrupt(int ctr)
 {
 #if NUM_COUNTERS > 0
@@ -75,6 +107,13 @@ int pmu_enable_interrupt(int ctr)
 
 EXPORT_SYMBOL_GPL(pmu_enable_interrupt);
 
+/*******************************************************************************
+ * pmu_disable_interrupt - Disable interrupts on counter ctr on _this_ cpu.
+ * @ctr - The counter on which interrupts must be disabled.
+ * @return - 0 on success, -1 on failure
+ *
+ * disables any interrupts on counter `ctr` on _this_ cpu.
+ *******************************************************************************/
 int pmu_disable_interrupt(int ctr)
 {
 #if NUM_COUNTERS > 0
@@ -97,6 +136,13 @@ int pmu_disable_interrupt(int ctr)
 
 EXPORT_SYMBOL_GPL(pmu_disable_interrupt);
 
+/*******************************************************************************
+ * pmu_is_interrupt - Has a pmu interrupt occured on _this_ cpu's counter `ctr`?
+ * @ctr - the counter to check if raised an interrupt.
+ * 
+ * Returns 1 if the pmu counter `ctr` did overflow and raise an interrupt.
+ * of course on _this_ cpu.
+ *******************************************************************************/
 int pmu_is_interrupt(int ctr)
 {
 #if NUM_COUNTERS > 0
@@ -144,12 +190,18 @@ int pmu_is_interrupt(int ctr)
 	return 0;
 #	endif
 #else
-	return -1;
+	return 0;
 #endif
 }
 
 EXPORT_SYMBOL_GPL(pmu_is_interrupt);
 
+/*******************************************************************************
+ * pmu_clear_ovf_status - Clear overflow status of counter ctr on _this_ cpu.
+ * @ctr - The counter in question.
+ *
+ * Clears the overflow status flag of counter `ctr` on _this_ cpu.
+ *******************************************************************************/
 int pmu_clear_ovf_status(int ctr)
 {
 	int ret = 0;
@@ -201,3 +253,4 @@ int pmu_clear_ovf_status(int ctr)
 }
 
 EXPORT_SYMBOL_GPL(pmu_clear_ovf_status);
+

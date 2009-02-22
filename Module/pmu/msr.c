@@ -34,17 +34,38 @@
 
 #include "pmu_int.h"
 
+/********************************************************************************
+ * 			External Variables 					*
+ ********************************************************************************/
+
+/* main.c: event select register contents */
 extern evtsel_t evtsel[NR_CPUS][NUM_COUNTERS];
+
+/* main.c: counter contents */
 extern counter_t counters[NR_CPUS][NUM_COUNTERS];
+
+/* main.c: cleared value of counters */
 extern cleared_t cleared[NR_CPUS][NUM_COUNTERS];
 
-//read the evtsel reg and return the low 32 bits
-//the high are reserved anyway
+/********************************************************************************
+ * 				Functions					*
+ ********************************************************************************/
+
+
+/*******************************************************************************
+ * evtsel_read - Read and return the low 32 bits of the evtsel reg.
+ * @evtsel_num - The counter number
+ * @Side Effects - None.
+ * @return - The low 32 bits of the evtsel register.
+ *
+ * Reads and returns the low 32 bits of the evtsel register on the 
+ * current cpu corrosponding evtsel number.
+ *******************************************************************************/
 inline u32 evtsel_read(u32 evtsel_num)
 {
 #if NUM_COUNTERS > 0
 	u32 low, high;
-	rdmsr(evtsel[0][evtsel_num].addr, low, high);
+	rdmsr(evtsel[smp_processor_id()][evtsel_num].addr, low, high);
 	return low;
 #else
 	return 0;
@@ -53,21 +74,37 @@ inline u32 evtsel_read(u32 evtsel_num)
 
 EXPORT_SYMBOL_GPL(evtsel_read);
 
-//clears the event select registers
+/*******************************************************************************
+ * evtsel_clear - Clears the evtsel register on _this_ cpu.
+ * @evtsel_num - The counter number
+ * @Side Effects - None
+ *
+ * clears the evtsel register on this cpu. 
+ *******************************************************************************/
 inline void evtsel_clear(u32 evtsel_num)
 {
 #if NUM_COUNTERS > 0
 	u32 low, high;
-	rdmsr(evtsel[0][evtsel_num].addr, low, high);
+	u32 cpu = smp_processor_id();
+	rdmsr(evtsel[cpu][evtsel_num].addr, low, high);
 	low &= EVTSEL_RESERVED_BITS;
 	high &= EVTSEL_RESERVED_BITS_HIGH;
-	wrmsr(evtsel[0][evtsel_num].addr, low, high);
+	wrmsr(evtsel[cpu][evtsel_num].addr, low, high);
 #endif
 }
 
 EXPORT_SYMBOL_GPL(evtsel_clear);
 
-//write to the respective evtsel register
+/*******************************************************************************
+ * evtsel_write - Write evtsel discreptions to register on _this_ cpu.
+ * @evtsel_num - the counter number.
+ * @Side Effects - Counter evtsel_num's configuration is written to register.
+ *
+ * This writes the configuration for counter evtsel_num in 
+ * evtsel[_this_cpu_][evtsel_num] to registers. 
+ * NOTE: It assumes that you have the values required _already_ in evtsel 
+ * before calling this function. 
+ *******************************************************************************/
 inline void evtsel_write(u32 evtsel_num)
 {
 #if NUM_COUNTERS > 0
@@ -104,7 +141,13 @@ inline void evtsel_write(u32 evtsel_num)
 
 EXPORT_SYMBOL_GPL(evtsel_write);
 
-//must be called using ON_EACH_CPU
+/*******************************************************************************
+ * counter_clear - Clears counter `counter` on _this_ cpu.
+ * @counter - The counter to be cleared.
+ * 
+ * Clears counter `counter` on _this_ cpu. Usually called using on_each_cpu
+ * or smp_cal_function_single.
+ *******************************************************************************/
 inline void counter_clear(u32 counter)
 {
 #if NUM_COUNTERS > 0
@@ -122,7 +165,14 @@ inline void counter_clear(u32 counter)
 
 EXPORT_SYMBOL_GPL(counter_clear);
 
-//must be called using ON_EACH_CPU
+/*******************************************************************************
+ * counter_read - Read all configured counters on _this_ cpu.
+ * @Side Effects - counters[_this_cpu_] is populated for each counter.
+ *
+ * Reads all enabled/configured counters on _this_ cpu and place them in
+ * counters[_this_cpu_] for each enabled counter. To get the values, use
+ * get_counter_data. 
+ *******************************************************************************/
 void counter_read(void)
 {
 #if NUM_COUNTERS > 0
@@ -132,6 +182,8 @@ void counter_read(void)
 	if (likely(cpu_id < NR_CPUS)) {
 		/* this is the "full" read of the full 48bits */
 		for (i = 0; i < NUM_COUNTERS; i++) {
+			if(counters[cpu_id][i].enabled == 0)
+				continue;
 			rdmsr(counters[cpu_id][i].addr, low, high);
 			counters[cpu_id][i].high = high;
 			counters[cpu_id][i].low = low;
@@ -142,7 +194,16 @@ void counter_read(void)
 
 EXPORT_SYMBOL_GPL(counter_read);
 
-//use this to get the counter data
+/*******************************************************************************
+ * get_counter_data - Get read counter values. 
+ * @counter - The counter's value required.
+ * @cpu - The cpu for which the counter value is required.
+ * @Side Effects - None.
+ *
+ * Gets the cached counter value for counter `counter` on cpu `cpu_id`.
+ * NOTE: This does _NOT_ read the counter value, but only returns the
+ * cached value from a prior call to counter_read. 
+ *******************************************************************************/
 u64 get_counter_data(u32 counter, u32 cpu_id)
 {
 #if NUM_COUNTERS > 0
@@ -159,12 +220,22 @@ u64 get_counter_data(u32 counter, u32 cpu_id)
 
 EXPORT_SYMBOL_GPL(get_counter_data);
 
-//must be called using ON_EACH_CPU
+/*******************************************************************************
+ * counter_disable - Disable a counter on _this_ cpu.
+ * @counter - The counter to disable. 
+ * 
+ * Disable the counter `counter` on _this_ cpu. Typical use is to call this
+ * from within a function which itself is called using smp_call_function_single
+ * or on_each_cpu. 
+ *******************************************************************************/
 inline void counter_disable(int counter)
 {
 #if NUM_COUNTERS > 0
 	int cpu_id = smp_processor_id();
 	if (unlikely(counter >= NUM_COUNTERS || cpu_id >= NR_CPUS))
+		return;
+
+	if(counters[cpu_id][counter].enabled == 0)
 		return;
 
 	evtsel_clear(counter);
@@ -177,7 +248,20 @@ inline void counter_disable(int counter)
 
 EXPORT_SYMBOL_GPL(counter_disable);
 
-//must be called using ON_EACH_CPU
+/*******************************************************************************
+ * counter_enable - Enable a counter on _this_ cpu.
+ * @event - The event for the counter to count.
+ * @ev_mask - The mask for the event for the counter (Manual, Manual, Manual).
+ * @os - If 1, counter will count even in CPL=0 (Kernel Mode). Else counts in
+ *       only User mode.
+ * @return - The counter number of the counter which was configured with these
+ *           details. -1 if a free counter was unavaliable.
+ * @Side Effects - counters and evtsel data structures are initialized.
+ *
+ * Configures and enables a counter on _this_ cpu and returns the counter number
+ * -1 if failed. Typical use is to call this from within another function which
+ *  itself is called using smp_call_function_single or on_each_cpu.
+ *******************************************************************************/
 int counter_enable(u32 event, u32 ev_mask, u32 os)
 {
 #if NUM_COUNTERS > 0
@@ -220,3 +304,4 @@ int counter_enable(u32 event, u32 ev_mask, u32 os)
 }
 
 EXPORT_SYMBOL_GPL(counter_enable);
+
