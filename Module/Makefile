@@ -46,8 +46,6 @@ ifneq ($(KERNELRELEASE),)
 obj-m += seeker_scheduler.o           	\
 	 pmu.o  	       		\
 	 fpmu.o 	       		\
-	 tsc.o 	        		\
-	 therm.o	       		\
 	 seeker_cpufreq.o  		\
 	 setspeed.o			\
 	 enable_speedstep.o		\
@@ -58,12 +56,6 @@ test_scpufreq-objs += seeker-cpufreq/test.o
 seeker_cpufreq-objs += seeker-cpufreq/main.o
 setspeed-objs += seeker-cpufreq/setspeed.o
 enable_speedstep-objs += seeker-cpufreq/enable_speedstep.o
-
-# TSC Module
-tsc-objs += tsc/main.o
-
-# Temperature module.
-therm-objs += therm/main.o
 
 # Performance Monitoring counters.
 pmu-objs += pmu/main.o \

@@ -35,13 +35,8 @@ my $sigusr1 = $signo{USR1} + 0;
 my $sigterm = $signo{TERM} + 0;
 
 my $terminate = 0;
-my $debug = 0;
-GetOptions('t|terminate'	=>	\$terminate,
-	   'd|debug'		=>	\$debug);
-my $daemon_name = "seekerd";
-if($debug == 1){
-	$daemon_name = "debugd";
-}
+GetOptions('t|terminate'	=>	\$terminate);
+my $daemon_name = "debugd";
 
 
 open PS,"ps -e | grep \"$daemon_name\" |";

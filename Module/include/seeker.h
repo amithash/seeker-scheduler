@@ -27,8 +27,6 @@
 
 #include <pmu_public.h>
 #include <fpmu_public.h>
-#include <tsc_public.h>
-#include <therm_public.h>
 #include <seeker_cpufreq.h>
 
 #define NUM_EXTRA_COUNTERS THERM_SUPPORTED
@@ -73,45 +71,6 @@ typedef struct {
 	}u;
 } debug_t;
 
-/* Seeker sampler sample data */
-
-enum {SAMPLE_DEF, SEEKER_SAMPLE, PIDTAB_ENTRY};
-
-typedef struct {
-	unsigned char num_counters;
-	unsigned char counters[MAX_COUNTERS_PER_CPU];
-	unsigned int masks[MAX_COUNTERS_PER_CPU];
-} seeker_sample_def_t;
-
-typedef struct {
-	unsigned int cpu;
-	unsigned long long cycles;
-	unsigned int pid;
-	unsigned long long counters[MAX_COUNTERS_PER_CPU];
-} seeker_sample_t; 
-
-typedef struct {
-	unsigned int pid;
-	char name[16];
-	unsigned long long instr_sum;
-	unsigned long long total_cycles;
-	unsigned long long cpu_cycles;
-} pidtab_entry_t;
-
-typedef struct {
-	int type;
-	union {
-		seeker_sample_def_t seeker_sample_def;
-		seeker_sample_t seeker_sample;
-		pidtab_entry_t pidtab_entry;
-	} u;
-} seeker_sampler_entry_t;
-
-/*
-#if !defined(KERNEL_VERSION)
-# define KERNEL_VERSION(a,b,c) (LINUX_VERSION_CODE + 1)
-#endif
-*/
 
 #include <linux/version.h>
 

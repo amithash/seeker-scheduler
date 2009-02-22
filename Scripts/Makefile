@@ -28,8 +28,7 @@ endif
 INCLUDE := -I$(shell pwd)/../Module/include
 
 all:
-	${CC} ${CFLAGS} seekerd.c -o seekerd -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS) -DSEEKERD
-	${CC} ${CFLAGS} seekerd.c -o debugd -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS) -DDEBUGD
+	${CC} ${CFLAGS} debugd.c -o debugd -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS)
 	${CC} ${CFLAGS} decodelog.c -o decodelog -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS)
 	${CXX} ${CFLAGS} interp.C -o interp -g
 	${CXX} ${CFLAGS} maxmin.C -o maxmin
@@ -39,5 +38,5 @@ all:
 	${CC} test_recommendations.c -o test_recommendations -lstate_recommendations -L.
 
 clean:
-	rm -f seekerd decodelog interp maxmin smooth debugd test_recommendations libstate_recommendations.so state_recommendations.o
+	rm -f decodelog interp maxmin smooth debugd test_recommendations libstate_recommendations.so state_recommendations.o
 

@@ -33,23 +33,11 @@
 #include <seeker.h>
 
 #define P_ASSERT_EXIT(t,i) if(!(t)) {perror((i)); exit(EXIT_FAILURE);}
-#if defined(SEEKERD)
-#define BUFFER_SIZE (4096*sizeof(seeker_sampler_entry_t))
-#elif defined(DEBUGD)
 #define BUFFER_SIZE (4096*sizeof(debug_t))
-#else
-#error "Either SEEKERD or DEBUGD must be defined"
-#endif
 
 static char buf[BUFFER_SIZE];
 static FILE *infile, *outfile;
-#if defined(SEEKERD)
-char infile_name[] = "/dev/seeker_samples";
-#elif defined(DEBUGD)
 char infile_name[] = "/dev/seeker_debug";
-#else
-#error "Either SEEKERD or DEBUGD must be defined"
-#endif
 
 char outfile_prefix[100], outfile_name[100];
 int count = 0;
@@ -70,7 +58,7 @@ void usage(char *argv[])
 
 void do_exit(void)
 {
-	printf("Exiting seekerd\n");
+	printf("Exiting debugd\n");
 	fflush(outfile);
 	fclose(outfile);
 	exit(EXIT_SUCCESS);
@@ -125,13 +113,7 @@ int main(int argc, char **argv)
 	pid_t pid;
 	unsigned int (*seeker_sleep) (unsigned int);
 
-#if defined(SEEKERD)
-	printf("Seeker daemon started!\n");
-#elif defined(DEBUGD)
 	printf("Seeker scheduler debug daemon started!\n");
-#else
-#error "Either SEEKERD or DEBUGD must be defined"
-#endif
 
 	if (argc < 3) {
 		if (argc == 2) {
@@ -172,7 +154,7 @@ int main(int argc, char **argv)
 
 	P_ASSERT_EXIT(infile = fopen(infile_name, "r"), infile_name);
 	if (access(outfile_name, F_OK) == 0) {
-		fprintf(stderr, "seekerd: file exists: %s\n", outfile_name);
+		fprintf(stderr, "debugd: file exists: %s\n", outfile_name);
 		exit(EXIT_FAILURE);
 	}
 
@@ -213,7 +195,7 @@ int main(int argc, char **argv)
 			sprintf(count_c, "%d", count);
 			strcat(outfile_name, count_c);
 			if (access(outfile_name, F_OK) == 0) {
-				fprintf(stderr, "seekerd: file exists: %s\n",
+				fprintf(stderr, "debugd: file exists: %s\n",
 					outfile_name);
 				exit(EXIT_FAILURE);
 			}
