@@ -87,6 +87,13 @@ void enable_pmu_counters(void *info)
 	put_cpu();
 }
 
+/********************************************************************************
+ * disable_pmu_coounters - disable all used counters on current cpu.
+ * @info - Not Used
+ * @Side Effect - disables counters, and instructs pmu/fpmu to free them
+ *
+ * Disable and free counters to be used by another module. 
+ ********************************************************************************/
 void disable_pmu_counters(void *info)
 {
 	int cpu = get_cpu();
@@ -119,6 +126,13 @@ int configure_counters(void)
 	return 0;
 }
 
+/********************************************************************************
+ * exit_counters - disable counters on ALL cpus.
+ * @Side Effect - calls disable_pmu_counters on each cpu.
+ *
+ * Disables counters on all cpus. Must be called before exiting the module,
+ * else re-use without reloading pmu/fpmu is not allowed. 
+ ********************************************************************************/
 void exit_counters(void){
 	if(ON_EACH_CPU(disable_pmu_counters, NULL, 1, 1) < 0) {
 		error("Counters could not be disabled");
@@ -160,3 +174,4 @@ void clear_counters(int cpu)
 	counter_clear(sys_counters[cpu][2]);
 #endif
 }
+
