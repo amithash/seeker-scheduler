@@ -34,9 +34,9 @@
 
 #include "seeker_cpufreq.h"
 
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
-MODULE_DESCRIPTION("Provides abstracted access to the cpufreq driver");
+/********************************************************************************
+ * 				Global Prototyprs 				*
+ ********************************************************************************/
 
 /* Per cpu structure to keep the information for each cpu */
 struct freq_info_t {
@@ -46,18 +46,23 @@ struct freq_info_t {
 	unsigned int table[MAX_STATES];
 	struct cpufreq_policy *policy;
 };
-static DEFINE_PER_CPU(struct freq_info_t, freq_info);
-#define FREQ_INFO(cpu) (&per_cpu(freq_info,(cpu)))
 
-static ssize_t cpufreq_seeker_showspeed(struct cpufreq_policy *policy, char *buf)
-{
-	debug("Someone called showspeed... so let's show them something");
-	sprintf(buf,"%d",policy->cur);
-	return (strlen(buf)+1)*sizeof(char);
-}
+/********************************************************************************
+ * 				Function Declarations				*
+ ********************************************************************************/
 
+static static ssize_t cpufreq_seeker_showspeed(struct cpufreq_policy *policy, 
+		char *buf);
 static int cpufreq_seeker_governor(struct cpufreq_policy *policy,
 				   unsigned int event);
+
+/********************************************************************************
+ * 				Global Datastructures 				*
+ ********************************************************************************/
+
+/* Have a per-cpu information of freq_info. */
+static DEFINE_PER_CPU(struct freq_info_t, freq_info);
+
 
 /* The cpufreq governor structure for this module */
 struct cpufreq_governor seeker_governor = {
@@ -67,7 +72,47 @@ struct cpufreq_governor seeker_governor = {
 	.governor = cpufreq_seeker_governor,
 	.show_setspeed = cpufreq_seeker_showspeed,
 };
-/* the governor function. It just prints infomation when it is called */
+
+/********************************************************************************
+ * 				Macros						*
+ ********************************************************************************/
+
+/* Macro convert cpumask to an unsigned integer so that it can be printed */
+#define CPUMASK_TO_UINT(x) (*((unsigned int *)&(x)))
+
+/* Macro to make the access of the per-cpu structure easy */
+#define FREQ_INFO(cpu) (&per_cpu(freq_info,(cpu)))
+
+/********************************************************************************
+ * 				Functions					*
+ ********************************************************************************/
+
+/*******************************************************************************
+ * cpufreq_seeker_showspeed - cpufreq governor interface to show current speed.
+ * @policy - the cpufreq policy for which the speed is required.
+ * @buf - The buffer to place the speed in kHz.
+ * @return - The number of bytes copied into buf.
+ *
+ * Copies a string which is the current speed for cpu defined in policy 
+ * into buf and returns the number of bytes copied.
+ *******************************************************************************/
+static ssize_t cpufreq_seeker_showspeed(struct cpufreq_policy *policy, char *buf)
+{
+	debug("Someone called showspeed... so let's show them something");
+	sprintf(buf,"%d",policy->cur);
+	return (strlen(buf)+1)*sizeof(char);
+}
+
+/*******************************************************************************
+ * cpufreq_seeker_governor - The governor interface to seeker_cpufreq.
+ * @policy - The policy of the cpu we are dealing with.
+ * @event - describes what we are supposed to do.
+ *
+ * event=CPUFREQ_GOV_START - Enables seeker-cpufreq on policy->cpu
+ * event=CPUFREQ_GOV_STOP  - Disables seeker-cpufreq on policy->cpu
+ * event=CPUFREQ_GOV_LIMITS - Does nothing. Stop someone from trying to change
+ * 			      speed.
+ *******************************************************************************/
 static int cpufreq_seeker_governor(struct cpufreq_policy *policy,
 				   unsigned int event)
 {
@@ -91,7 +136,12 @@ static int cpufreq_seeker_governor(struct cpufreq_policy *policy,
 	return 0;
 }
 
-/* Users can get the current freq of a cpu */
+/*******************************************************************************
+ * get_freq - Get the current performance number for cpu.
+ * @cpu - cpu for which the performance number is required.
+ *
+ * returns the performance number for cpu = `cpu`.
+ *******************************************************************************/
 unsigned int get_freq(unsigned int cpu)
 {
 	if (FREQ_INFO(cpu)->cpu >= 0) {
@@ -103,9 +153,15 @@ unsigned int get_freq(unsigned int cpu)
 
 EXPORT_SYMBOL_GPL(get_freq);
 
-/* Users can set the freq of a cpu. 
- * Do NOT call this from within interrupt context 
- */
+/*******************************************************************************
+ * set_freq - set the performance number for cpu.
+ * @cpu - The cpu to set.
+ * @freq_ind - the performance number we need to set `cpu` to.
+ *
+ * changes the frequency of `cpu` to one indicated by the performance number
+ * freq_ind. 
+ * NOTE: Do not call this from interrupt context! This function _might_ sleep.
+ *******************************************************************************/
 int set_freq(unsigned int cpu, unsigned int freq_ind)
 {
 	int ret_val;
@@ -134,7 +190,13 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 
 EXPORT_SYMBOL_GPL(set_freq);
 
-/* Increment the freq. Users need not worry on number of states. */
+/*******************************************************************************
+ * inc_freq - Increment the performnace number of cpu.
+ * @cpu - The cpu for which the performance number has to change.
+ *
+ * Increment the performance number (Increase frequency) if possible.
+ * NOTE: Do not call this from interrupt context! This function _might_ sleep.
+ *******************************************************************************/
 int inc_freq(unsigned int cpu)
 {
 	if (FREQ_INFO(cpu)->cur_freq == FREQ_INFO(cpu)->num_states - 1)
@@ -144,7 +206,13 @@ int inc_freq(unsigned int cpu)
 
 EXPORT_SYMBOL_GPL(inc_freq);
 
-/* Decrement the freq. Users need not worry on going below 0 */
+/*******************************************************************************
+ * dec_freq - Decrement the performnace number of cpu.
+ * @cpu - The cpu for which the performance number has to change.
+ *
+ * Decrement the performance number (Decrease frequency) if possible.
+ * NOTE: Do not call this from interrupt context! This function _might_ sleep.
+ *******************************************************************************/
 int dec_freq(unsigned int cpu)
 {
 	if (FREQ_INFO(cpu)->cur_freq == 0)
@@ -154,7 +222,14 @@ int dec_freq(unsigned int cpu)
 
 EXPORT_SYMBOL_GPL(dec_freq);
 
-/* Get the max states supported by cpu */
+/*******************************************************************************
+ * get_max_states - Get the max performance states for cpu.
+ * @cpu - the cpu for which the value is required.
+ * @return - The total performance states supported by cpu.
+ *
+ * Return the max number of performance states supported by cpu=`cpu` on 
+ * this system.
+ *******************************************************************************/
 int get_max_states(int cpu)
 {
 	return FREQ_INFO(cpu)->num_states;
@@ -162,12 +237,14 @@ int get_max_states(int cpu)
 
 EXPORT_SYMBOL_GPL(get_max_states);
 
-/* Macro used to convert cpumask to an unsigned integer.
- * so that it can be printed
- */
-#define CPUMASK_TO_UINT(x) (*((unsigned int *)&(x)))
 
-/* init */
+/*******************************************************************************
+ * seeker_cpufreq_init - Init function for seeker_cpufreq
+ * @return  - 0 if success, error code otherwise.
+ * @Side Effects - freq_info is populated by reading from cpufreq_table.
+ *
+ * Initialize seeker_cpufreq's data structures and register self as a governor.
+ *******************************************************************************/
 static int __init seeker_cpufreq_init(void)
 {
 	int i, j, k, l;
@@ -206,12 +283,25 @@ static int __init seeker_cpufreq_init(void)
 	return 0;
 }
 
-/* Exit */
+/*******************************************************************************
+ * seeker_cpufreq_exit - seeker_cpufreq's exit routine.
+ *
+ * Unregister self as a governor.
+ *******************************************************************************/
 static void __exit seeker_cpufreq_exit(void)
 {
 	cpufreq_unregister_governor(&seeker_governor);
 }
 
+/********************************************************************************
+ * 			Module Parameters 					*
+ ********************************************************************************/
+
 module_init(seeker_cpufreq_init);
 module_exit(seeker_cpufreq_exit);
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
+MODULE_DESCRIPTION("Provides abstracted access to the cpufreq driver");
+
 

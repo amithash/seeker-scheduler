@@ -35,13 +35,29 @@
 
 #include "seeker_cpufreq.h"
 
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
-MODULE_DESCRIPTION("Provides a method to set the current speed");
+/********************************************************************************
+ * 			Module Parameters 					*
+ ********************************************************************************/
 
+/* the freq array for each cpu */
 int freqs[NR_CPUS] = {0};
+
+/* The length of the entered array */
 int freqs_length = -1;
 
+/********************************************************************************
+ * 				Functions					*
+ ********************************************************************************/
+
+
+/*******************************************************************************
+ * setspeed_init - initialize setspeed. 
+ * @return - 0 on success, error code on failure.
+ *
+ * sets the speed of online cpus specified by the module parameter freqs.
+ * If freqs contain lesser elements than there are online cpus, then 
+ * the remainder is set to 0. 
+ *******************************************************************************/
 static int __init setspeed_init(void)
 {
 	int i;
@@ -62,10 +78,19 @@ static int __init setspeed_init(void)
 	return ret;
 }
 
+/*******************************************************************************
+ * setspeed_exit - Exit setspeed.
+ *
+ * Does nothing. Well, we need an exit routine anyway.
+ *******************************************************************************/
 static void __exit setspeed_exit(void)
 {
 	;
 }
+
+/********************************************************************************
+ * 			Module Parameters 					*
+ ********************************************************************************/
 
 module_param_array(freqs, int, &freqs_length, 0444);
 MODULE_PARM_DESC(freqs,
@@ -74,4 +99,8 @@ MODULE_PARM_DESC(freqs,
 
 module_init(setspeed_init);
 module_exit(setspeed_exit);
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
+MODULE_DESCRIPTION("Provides a method to set the current speed");
 
