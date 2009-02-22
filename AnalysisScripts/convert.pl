@@ -26,9 +26,13 @@ foreach my $bench (@bench_list){
 	if($line =~ /p,(\d+),(.+)/){
 		$pid = $1;
 		$name = $2;
-		print "Processing $name\n";
+		my $real_name;
+		if($name =~ /\d\d\d\.(.+)/){
+			$real_name = $1;
+		}
+		print "Processing $real_name\n";
 		open TMP,"grep -P \"s,\\d+,$pid,\" $in_file |" or die "could not grep on $in_file for $pid\n";
-		open OUT,"+>$out_dir/sch/$name.tsv" or die "Could not create $out_dir/sch/$name.tsv\n";
+		open OUT,"+>$out_dir/sch/$real_name.tsv" or die "Could not create $out_dir/sch/$name.tsv\n";
 		my @tmp = split(/\n/,join("",<TMP>));
 		close(TMP);
 		my $ipc;
