@@ -1,9 +1,8 @@
 ========================================================================================
-                                    SEEKER
-       A system wide performance counter and temperature sampler with 
-       			per core monitoring capabilities.
-	 		Copyright 2008 Amithash Prasad                                         
-			 This file is part of seeker                                            
+                                          SEEKER
+				Performance based scheduler
+		 		Copyright 2008 Amithash Prasad
+				 This file is part of seeker
 	                                                                        
 	 Seeker is free software: you can redistribute it and/or modify         
 	 it under the terms of the GNU General Public License as published by   
@@ -54,7 +53,8 @@ new to this:
 	    is different, just that from 2.6.24 on wards, they kicked the i386 branch
 	    and started calling it x86.
 	3b. cd to the kernel directory.
-	3c. patch -p1 < /path/to/seeker/Patches/seeker-kernel-2.6.24.4.patch
+	3c. patch -p1 < /path/to/seeker/Patches/seeker-kernel-2.6.28.patch
+	3d. patch -p1 < /path/to/seeker/Patches/schedmod-kernel-2.6.28.patch
 4. Copy /boot/config-2.6.y.y to /usr/src/linux-2.6.x.x/.config where, 
    2.6.y.y is the current booted, working kernel.
 5. cd /usr/src/linux-2.6.x.x
@@ -77,7 +77,8 @@ new to this:
     directory. For bash, edit the .bashrc in your home dir and put this line at the end:
     export SEEKER_HOME=/path/to/seeker;
 18. Make sure you have perl, gcc (Of course!) and  g++ installed. To use the plotting
-    scripts, you will need gnuplot 4.2 installed.
+    scripts, you will need gnuplot 4.2 installed. and for the matlab scripts, do install
+    octave.
 
 ========================================================================================
 
