@@ -34,10 +34,35 @@
 
 #include "fpmu_int.h"
 
+/********************************************************************************
+ * 			External Variables 					*
+ ********************************************************************************/
+
+/* main.c: fpmu control register contents */
 extern fixctrl_t fcontrol[NR_CPUS];
+
+/* main.c: counter contents */
 extern fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS];
+
+/* main.c: cleared value of counters */
 extern fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS];
 
+/********************************************************************************
+ * 				Functions					*
+ ********************************************************************************/
+
+
+/*******************************************************************************
+ * fpmu_configure_interrupt - Configures a counter to interrupt on _this_ cpu.
+ * @ctr - The counter to configure.
+ * @low - The low 32 bits of the counter in `cleared` state.
+ * @high - The upper 32 bits of the counter in `cleared` state.
+ * @return 0 if success, -1 on failure.
+ *
+ * Configures the cleared state of a counter on _this_ cpu. The `cleared` state
+ * is the value stored in the counter upon overflow or a counter_clear.
+ * NOTE: This does _NOT_ enable interrupts, just sets it up.
+ *******************************************************************************/
 int fpmu_configure_interrupt(int ctr, u32 low, u32 high)
 {
 	int ret = 0;
@@ -54,6 +79,13 @@ int fpmu_configure_interrupt(int ctr, u32 low, u32 high)
 
 EXPORT_SYMBOL_GPL(fpmu_configure_interrupt);
 
+/*******************************************************************************
+ * fpmu_enable_interrupt - Enable interrupt for a counter on _this_ cpu.
+ * @ctr - The counter for which interrupts must be enabled.
+ * @return - 0 on success, -1 on failure
+ *
+ * Enable interrupts on counter `ctr` on _this_ cpu. 
+ *******************************************************************************/
 int fpmu_enable_interrupt(int ctr)
 {
 	int ret = 0;
@@ -80,6 +112,13 @@ int fpmu_enable_interrupt(int ctr)
 
 EXPORT_SYMBOL_GPL(fpmu_enable_interrupt);
 
+/*******************************************************************************
+ * fpmu_disable_interrupt - Disable interrupts on counter ctr on _this_ cpu.
+ * @ctr - The counter on which interrupts must be disabled.
+ * @return - 0 on success, -1 on failure
+ *
+ * disables any interrupts on counter `ctr` on _this_ cpu.
+ *******************************************************************************/
 int fpmu_disable_interrupt(int ctr)
 {
 	int ret = 0;
@@ -115,6 +154,13 @@ int fpmu_disable_interrupt(int ctr)
 
 EXPORT_SYMBOL_GPL(fpmu_disable_interrupt);
 
+/*******************************************************************************
+ * fpmu_is_interrupt - Has a fpmu interrupt occured on _this_ cpu's counter `ctr`?
+ * @ctr - the counter to check if raised an interrupt.
+ * 
+ * Returns 1 if the pmu counter `ctr` did overflow and raise an interrupt.
+ * of course on _this_ cpu.
+ *******************************************************************************/
 int fpmu_is_interrupt(int ctr)
 {
 	u32 ret = 0;
@@ -141,6 +187,12 @@ int fpmu_is_interrupt(int ctr)
 
 EXPORT_SYMBOL_GPL(fpmu_is_interrupt);
 
+/*******************************************************************************
+ * fpmu_clear_ovf_status - Clear overflow status of counter ctr on _this_ cpu.
+ * @ctr - The counter in question.
+ *
+ * Clears the overflow status flag of counter `ctr` on _this_ cpu.
+ *******************************************************************************/
 int fpmu_clear_ovf_status(int ctr)
 {
 	int ret = 0;
@@ -169,3 +221,4 @@ int fpmu_clear_ovf_status(int ctr)
 }
 
 EXPORT_SYMBOL_GPL(fpmu_clear_ovf_status);
+

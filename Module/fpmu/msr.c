@@ -34,11 +34,31 @@
 
 #include "fpmu_int.h"
 
+/********************************************************************************
+ * 			External Variables 					*
+ ********************************************************************************/
+
+/* main.c: fpmu control register contents */
 extern fixctrl_t fcontrol[NR_CPUS];
+
+/* main.c: counter contents */
 extern fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS];
+
+/* main.c: cleared value of counters */
 extern fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS];
 
-// Read the fixed counter control register.
+/********************************************************************************
+ * 				Functions					*
+ ********************************************************************************/
+
+/*******************************************************************************
+ * control_read - Read and return the low 32 bits of the fpmu control reg.
+ * @Side Effects - None.
+ * @return - The low 32 bits of the evtsel register.
+ *
+ * Reads and returns the low 32 bits of the fpmu control register on the 
+ * current cpu.
+ *******************************************************************************/
 inline u32 control_read(void)
 {
 #if NUM_FIXED_COUNTERS > 0
@@ -52,7 +72,12 @@ inline u32 control_read(void)
 
 EXPORT_SYMBOL_GPL(control_read);
 
-//clears the fixed counter control registers.
+/*******************************************************************************
+ * control_clear - Clears the fpmu control register on _this_ cpu.
+ * @Side Effects - None
+ *
+ * clears the fpmu control register on this cpu. 
+ *******************************************************************************/
 inline void control_clear(void)
 {
 #if NUM_FIXED_COUNTERS > 0
@@ -65,7 +90,15 @@ inline void control_clear(void)
 
 EXPORT_SYMBOL_GPL(control_clear);
 
-//write to the fixed counter control registers.
+/*******************************************************************************
+ * control_write - Write fpmu control discreptions to register on _this_ cpu.
+ * @Side Effects - Counter configuration is written to register.
+ *
+ * This writes the configuration for the fixed counters counter 
+ * fcontrol[_this_cpu_] to registers. 
+ * NOTE: It assumes that you have the values required _already_ in fcontrol
+ * before calling this function. 
+ *******************************************************************************/
 inline void control_write(void)
 {
 #if NUM_FIXED_COUNTERS > 0
@@ -94,7 +127,13 @@ inline void control_write(void)
 
 EXPORT_SYMBOL_GPL(control_write);
 
-//must be called using ON_EACH_CPU
+/*******************************************************************************
+ * fcounter_clear - Clears counter `counter` on _this_ cpu.
+ * @counter - The counter to be cleared.
+ * 
+ * Clears counter `counter` on _this_ cpu. Usually called from a function
+ * which itself is called using on_each_cpu or smp_cal_function_single.
+ *******************************************************************************/
 inline void fcounter_clear(u32 counter)
 {
 #if NUM_FIXED_COUNTERS > 0
@@ -113,7 +152,13 @@ inline void fcounter_clear(u32 counter)
 
 EXPORT_SYMBOL_GPL(fcounter_clear);
 
-//must be called using ON_EACH_CPU
+/*******************************************************************************
+ * fcounter_read - Read all fixed counters on _this_ cpu.
+ * @Side Effects - fcounters[_this_cpu_] is populated for each counter.
+ *
+ * Reads all fixed counters on _this_ cpu and place them in fcounters[_this_cpu_]
+ * for each fixed counter. To get the values, use get_fcounter_data. 
+ *******************************************************************************/
 void fcounter_read(void)
 {
 #if NUM_FIXED_COUNTERS > 0
@@ -133,7 +178,16 @@ void fcounter_read(void)
 
 EXPORT_SYMBOL_GPL(fcounter_read);
 
-//use this to get the counter data
+/*******************************************************************************
+ * get_fcounter_data - Get read counter values. 
+ * @counter - The counter's value required.
+ * @cpu_id - The cpu for which the counter value is required.
+ * @Side Effects - None.
+ *
+ * Gets the cached counter value for counter `counter` on cpu `cpu_id`.
+ * NOTE: This does _NOT_ read the counter value, but only returns the
+ * cached value from a prior call to fcounter_read. 
+ *******************************************************************************/
 u64 get_fcounter_data(u32 counter, u32 cpu_id)
 {
 #if NUM_FIXED_COUNTERS > 0
@@ -153,7 +207,13 @@ u64 get_fcounter_data(u32 counter, u32 cpu_id)
 
 EXPORT_SYMBOL_GPL(get_fcounter_data);
 
-//must be called using ON_EACH_CPU
+/*******************************************************************************
+ * fcounter_disable - Disable all fixed counters on _this_ cpu.
+ * 
+ * Disable all fixed ounters on _this_ cpu. Typical use is to call this
+ * from within a function which itself is called using smp_call_function_single
+ * or on_each_cpu. 
+ *******************************************************************************/
 inline void fcounters_disable(void)
 {
 #if NUM_FIXED_COUNTERS > 0
@@ -170,7 +230,16 @@ inline void fcounters_disable(void)
 
 EXPORT_SYMBOL_GPL(fcounters_disable);
 
-//must be called using ON_EACH_CPU
+/*******************************************************************************
+ * fcounter_enable - Enable all fixed counters on _this_ cpu.
+ * @os - If 1, counter will count even in CPL=0 (Kernel Mode). Else counts in
+ *       only User mode.
+ * @Side Effects - fcounters and fcontrol data structures are initialized.
+ *
+ * Configures and enables all fixed counters on _this_ cpu. Typical use is to 
+ * call this from within another function which itself is called using 
+ * smp_call_function_single or on_each_cpu.
+ *******************************************************************************/
 void fcounters_enable(u32 os)
 {
 #if NUM_FIXED_COUNTERS > 0
@@ -195,3 +264,4 @@ void fcounters_enable(u32 os)
 }
 
 EXPORT_SYMBOL_GPL(fcounters_enable);
+

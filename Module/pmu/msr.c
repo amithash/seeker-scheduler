@@ -197,7 +197,7 @@ EXPORT_SYMBOL_GPL(counter_read);
 /*******************************************************************************
  * get_counter_data - Get read counter values. 
  * @counter - The counter's value required.
- * @cpu - The cpu for which the counter value is required.
+ * @cpu_id - The cpu for which the counter value is required.
  * @Side Effects - None.
  *
  * Gets the cached counter value for counter `counter` on cpu `cpu_id`.

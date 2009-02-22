@@ -34,15 +34,16 @@
 
 #include "fpmu_int.h"
 
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
-MODULE_DESCRIPTION("Module provides an interface to access the "
-		   "fixed performance monitoring counters");
+/********************************************************************************
+ * 			Global Datastructures 					*
+ ********************************************************************************/
 
+/* the control register discreption for each cpu */
 fixctrl_t fcontrol[NR_CPUS] = {
 	{0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
+/* The counter values for each cpu and counter */
 fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS] = {
 	{
 #if NUM_FIXED_COUNTERS > 0
@@ -57,6 +58,7 @@ fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS] = {
 	 }
 };
 
+/* The `cleared` state for each fixed counter */
 fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS] = {
 	{
 #if NUM_FIXED_COUNTERS > 0
@@ -71,8 +73,20 @@ fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS] = {
 	 }
 };
 
-//must be called from ON_EACH_CPU
-void fpmu_init_msrs(void)
+/********************************************************************************
+ * 				Functions					*
+ ********************************************************************************/
+
+
+
+/*******************************************************************************
+ * fpmu_init_msrs - initialize msrs on _this_ cpu.
+ * @info - Not used.
+ *
+ * Initialize (clear and set to default values) the Fixed PMU MSR's.
+ * Typical use is to call this using smp_call_function_single or on_each_cpu.
+ *******************************************************************************/
+void fpmu_init_msrs(void *info)
 {
 #if NUM_FIXED_COUNTERS > 0
 	int i;
@@ -97,11 +111,17 @@ void fpmu_init_msrs(void)
 
 EXPORT_SYMBOL_GPL(fpmu_init_msrs);
 
-//must be called from ON_EACH_CPU
+/*******************************************************************************
+ * fpmu_init - The init function for fpmu.
+ * @Side Effects - Calls fpmu_init_msrs on each cpu and hence initializing 
+ * 		   them on _all_ cpus.
+ *
+ * Initialize fpmu.
+ *******************************************************************************/
 static int __init fpmu_init(void)
 {
 #if NUM_FIXED_COUNTERS > 0
-	if (ON_EACH_CPU((void *)fpmu_init_msrs, NULL, 1, 1) < 0) {
+	if (ON_EACH_CPU(&fpmu_init_msrs, NULL, 1, 1) < 0) {
 		error("Could not enable anything, panicing and exiting");
 		return -ENODEV;
 	}
@@ -109,10 +129,26 @@ static int __init fpmu_init(void)
 	return 0;
 }
 
+/*******************************************************************************
+ * fpmu_exit - exit function for fpmu.
+ * @Side Effects - Clears any counters being used. 
+ *
+ * Does nothing. but we need an exit function.
+ *******************************************************************************/
 static void __exit fpmu_exit(void)
 {
 	;
 }
 
+/********************************************************************************
+ * 			Module Parameters 					*
+ ********************************************************************************/
+
 module_init(fpmu_init);
 module_exit(fpmu_exit);
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
+MODULE_DESCRIPTION("Module provides an interface to access the "
+		   "fixed performance monitoring counters");
+

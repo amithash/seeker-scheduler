@@ -29,33 +29,50 @@
 #include <asm/types.h>
 #include <fpmu_public.h>
 
-/********** Constants ********************************************************/
+/********************************************************************************
+ * 				Useful Macros					*
+ ********************************************************************************/
+
+#define BITS(n) ((1 << (n)) - 1)
+#define BITS_AT(nbits,at) (BITS(nbits) << (at))
+
+/********************************************************************************
+ * 			Register Mask Constants					*
+ ********************************************************************************/
+
 #ifdef ARCH_C2D
-#	define FIXSEL_RESERVED_BITS 0xFFFFF444
-#	define FIXED_CTR0_OVERFLOW_MASK 0x00000001
-#	define FIXED_CTR1_OVERFLOW_MASK 0x00000002
-#	define FIXED_CTR2_OVERFLOW_MASK 0x00000004
-#	define FIXED_CTR0_OVERFLOW_CLEAR_MASK 0xFFFFFFFE
-#	define FIXED_CTR1_OVERFLOW_CLEAR_MASK 0xFFFFFFFD
-#	define FIXED_CTR2_OVERFLOW_CLEAR_MASK 0xFFFFFFFB
+#	define FIXSEL_RESERVED_BITS \
+	(~(BITS_AT(2,0) | BITS_AT(3,3) | BITS_AT(3,7) | BITS_AT(1,11)))
+#	define FIXED_CTR0_OVERFLOW_MASK BITS_AT(1,0)
+#	define FIXED_CTR1_OVERFLOW_MASK BITS_AT(1,1)
+#	define FIXED_CTR2_OVERFLOW_MASK BITS_AT(1,2)
+#	define FIXED_CTR0_OVERFLOW_CLEAR_MASK (~BITS_AT(1,0))
+#	define FIXED_CTR1_OVERFLOW_CLEAR_MASK (~BITS_AT(1,1))
+#	define FIXED_CTR2_OVERFLOW_CLEAR_MASK (~BITS_AT(1,2))
 #elif defined(ARCH_K8) || defined(ARCH_K10)
 #else
 #	error "Architecture Not supported"
 #endif
 
-/********* MSR's *************************************************************/
+/********************************************************************************
+ * 			Register Address Constants				*
+ ********************************************************************************/
 
 #if defined(ARCH_C2D)
 #	define MSR_PERF_FIXED_CTR0 		0x00000309
 #	define MSR_PERF_FIXED_CTR1 		0x0000030A
 #	define MSR_PERF_FIXED_CTR2 		0x0000030B
-#	define MSR_PERF_FIXED_CTR_CTRL 	0x0000038D
+#	define MSR_PERF_FIXED_CTR_CTRL 		0x0000038D
 #	define MSR_PERF_GLOBAL_STATUS 		0x0000038E
 #	define MSR_PERF_GLOBAL_CTRL		0x0000038F
-#	define MSR_PERF_GLOBAL_OVF_CTRL	0x00000390
+#	define MSR_PERF_GLOBAL_OVF_CTRL		0x00000390
 #endif
 
-/********** Structure Definitions ********************************************/
+/********************************************************************************
+ * 				Prototypes 					*
+ ********************************************************************************/
+
+/* fixed counter select register elements */
 typedef struct {
 	u32 pmi0:1;
 	u32 os0:1;
@@ -68,25 +85,23 @@ typedef struct {
 	u32 usr2:1;
 } fixctrl_t;
 
+/* Cleared value */
 typedef struct {
 	u32 low;
 	u32 high;
 	u64 all;
 } fcleared_t;
 
+/* Counter discreption */
 typedef struct {
 	u32 low:32;
 	u32 high:32;
 	u32 addr;
 } fcounter_t;
 
-/********* Extern Vars *******************************************************/
-extern fixctrl_t fcontrol[NR_CPUS];
-extern fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS];
-extern char *fcounter_names[NUM_FIXED_COUNTERS];
-extern fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS];
-
-/********** Function Prototypes **********************************************/
+/********************************************************************************
+ * 			FPMU Internal API 					*
+ ********************************************************************************/
 
 inline u32 control_read(void);
 inline void control_clear(void);

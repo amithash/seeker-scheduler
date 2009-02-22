@@ -129,6 +129,7 @@ cleared_t cleared[NR_CPUS][NUM_COUNTERS] = {
  * @info - Not used.
  *
  * Initialize (clear and set to default values) the PMU MSR's.
+ * Typical use is to call this using smp_call_function_single or on_each_cpu.
  *******************************************************************************/
 void pmu_init_msrs(void *info)
 {
