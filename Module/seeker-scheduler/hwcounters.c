@@ -90,14 +90,14 @@ void enable_pmu_counters(void *info)
  ********************************************************************************/
 void disable_pmu_counters(void *info)
 {
-	int cpu = get_cpu();
 #if NUM_FIXED_COUNTERS > 0
 	fcounters_disable();
 #else
+	int cpu = get_cpu();
 	counter_disable(sys_counters[cpu][0]);
 	counter_disable(sys_counters[cpu][1]);
-#endif
 	put_cpu();
+#endif
 }
 
 /********************************************************************************
