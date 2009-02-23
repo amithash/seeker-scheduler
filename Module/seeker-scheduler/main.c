@@ -111,9 +111,6 @@ struct jprobe jp_release_thread = {
 /* Contains the value of num_online_cpus(), updated by init */
 int total_online_cpus = 0;
 
-/* total cycles executed by a task on the current cpu */
-unsigned long long task_cycles[NR_CPUS] = { 0 };
-
 #ifdef DEBUG
 /* counts the total number of times schedule was called */
 unsigned int total_schedules = 0;
@@ -255,9 +252,8 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 		TS_MEMBER(ts[cpu], interval) = interval_count;
 	TS_MEMBER(ts[cpu], inst) += pmu_val[cpu][0];
 	TS_MEMBER(ts[cpu], re_cy) += pmu_val[cpu][1];
-	TS_MEMBER(ts[cpu], ref_cy) += pmu_val[cpu][2];
+	TS_MEMBER(ts[cpu], ref_cy) += get_tsc_cycles();
 	clear_counters(cpu);
-	task_cycles[cpu] += get_tsc_cycles();
 	if (TS_MEMBER(ts[cpu], inst) > INST_THRESHOLD
 	    || TS_MEMBER(ts[cpu], cpustate) != cur_cpu_state[cpu]
 	    || TS_MEMBER(ts[cpu], interval) != interval_count) {
@@ -284,6 +280,7 @@ void inst_sched_fork(struct task_struct *new, int clone_flags)
 	TS_MEMBER(new, fixed_state) = -1;
 	TS_MEMBER(new, interval) = interval_count;
 	TS_MEMBER(new, inst) = 0;
+	TS_MEMBER(new, ref_cy) = get_tsc_cycles();
 	TS_MEMBER(new, ref_cy) = 0;
 	TS_MEMBER(new, re_cy) = 0;
 	TS_MEMBER(new, cpustate) = cur_cpu_state[smp_processor_id()];
@@ -312,7 +309,7 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	read_counters(cpu);
 	TS_MEMBER(from, inst) += pmu_val[cpu][0];
 	TS_MEMBER(from, re_cy) += pmu_val[cpu][1];
-	TS_MEMBER(from, ref_cy) += pmu_val[cpu][2];
+	TS_MEMBER(from, ref_cy) += get_tsc_cycles();
 	clear_counters(cpu);
 
 	if (strncmp(from->comm, "events", sizeof(char) * 6) == 0) {

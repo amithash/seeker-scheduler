@@ -38,7 +38,7 @@
 
 #if NUM_FIXED_COUNTERS == 0
 /* contain the counter numbers for inst, recy and rfcy for each cpu */
-int sys_counters[NR_CPUS][3] = { {0, 0, 0} };
+int sys_counters[NR_CPUS][2] = { {0, 0} };
 #endif
 
 /* Value of inst re_cy and rf_cy for each cpu */
@@ -76,12 +76,6 @@ void enable_pmu_counters(void *info)
 		sys_counters[cpu][1] = 1;
 		ERROR = 1;
 	}
-	if ((sys_counters[cpu][2] =
-	     counter_enable(PMU_RFCY_EVTSEL, PMU_RFCY_MASK, 0)) < 0) {
-		error("Could not enable RFCY on cpu %d", cpu);
-		sys_counters[cpu][2] = 2;
-		ERROR = 1;
-	}
 #endif
 	clear_counters(cpu);
 	put_cpu();
@@ -102,7 +96,6 @@ void disable_pmu_counters(void *info)
 #else
 	counter_disable(sys_counters[cpu][0]);
 	counter_disable(sys_counters[cpu][1]);
-	counter_disable(sys_counters[cpu][2]);
 #endif
 	put_cpu();
 }
@@ -153,12 +146,10 @@ void read_counters(int cpu)
 	fcounter_read();
 	pmu_val[cpu][0] = get_fcounter_data(0, cpu);
 	pmu_val[cpu][1] = get_fcounter_data(1, cpu);
-	pmu_val[cpu][2] = get_fcounter_data(2, cpu);
 #else
 	counter_read();
 	pmu_val[cpu][0] = get_counter_data(sys_counters[cpu][0], cpu);
 	pmu_val[cpu][1] = get_counter_data(sys_counters[cpu][1], cpu);
-	pmu_val[cpu][2] = get_counter_data(sys_counters[cpu][2], cpu);
 #endif
 }
 
@@ -167,11 +158,9 @@ void clear_counters(int cpu)
 #if NUM_FIXED_COUNTERS > 0
 	fcounter_clear(0);
 	fcounter_clear(1);
-	fcounter_clear(2);
 #else
 	counter_clear(sys_counters[cpu][0]);
 	counter_clear(sys_counters[cpu][1]);
-	counter_clear(sys_counters[cpu][2]);
 #endif
 }
 

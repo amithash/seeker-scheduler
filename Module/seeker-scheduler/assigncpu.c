@@ -94,9 +94,6 @@ extern int disable_scheduling;
 /* states.c: states seq_lock */
 extern seqlock_t states_seq_lock;
 
-/* main.c: cycles run by a task on every cpu */
-extern unsigned long long task_cycles[NR_CPUS];
-
 #ifdef DEBUG
 /* main.c: Debugging count of the number of times schedules was called */
 extern unsigned int total_schedules;
@@ -215,7 +212,6 @@ void put_mask_from_stats(struct task_struct *ts)
 	unsigned seq;
 	u64 tasks_interval = 0;
 	cpumask_t mask = CPU_MASK_NONE;
-	unsigned long long cy;
 
 	/* Do not try to estimate anything
 	 * till INST_THRESHOLD insts are 
@@ -228,9 +224,6 @@ void put_mask_from_stats(struct task_struct *ts)
 	tasks_interval = TS_MEMBER(ts, interval);
 
 	this_cpu = smp_processor_id();
-
-	cy = task_cycles[this_cpu] + get_tsc_cycles();
-	task_cycles[this_cpu] = 0;
 
 	do {
 		seq = read_seqbegin(&states_seq_lock);
@@ -299,7 +292,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		p->entry.u.sch.state_given = new_state;
 		p->entry.u.sch.cpu = this_cpu;
 		p->entry.u.sch.state = state;
-		p->entry.u.sch.cycles = cy;
+		p->entry.u.sch.cycles = TS_MEMBER(ts, ref_cy);
 	}
 	put_debug(p);
 
