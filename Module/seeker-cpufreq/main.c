@@ -44,6 +44,7 @@ struct freq_info_t {
 	unsigned int cur_freq;
 	unsigned int num_states;
 	unsigned int table[MAX_STATES];
+	unsigned int latency;
 	struct cpufreq_policy *policy;
 };
 
@@ -121,6 +122,8 @@ static int cpufreq_seeker_governor(struct cpufreq_policy *policy,
 	case CPUFREQ_GOV_START:
 		info("Starting governor on cpu %d", cpu);
 		FREQ_INFO(cpu)->policy = policy;
+		FREQ_INFO(cpu)->latency = policy->cpuinfo.transition_latency;
+		info("Latency for cpu %d = %d nanoseconds",cpu,FREQ_INFO(cpu)->latency);
 		break;
 	case CPUFREQ_GOV_STOP:
 		info("Stopping governor on cpu %d", cpu);
