@@ -445,6 +445,7 @@ no_scheduler_tick:
 static void scheduler_exit(void)
 {
 	debug("removing the state change timer");
+	exit_cpu_states();
 	if (timer_started) {
 		timer_started = 0;
 		cancel_delayed_work(&state_work);

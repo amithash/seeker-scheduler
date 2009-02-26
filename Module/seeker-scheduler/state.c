@@ -36,6 +36,12 @@
 #include "mutate.h"
 
 /********************************************************************************
+ * 			Function Declarations 					*
+ ********************************************************************************/
+
+int seeker_cpufreq_inform(int cpu, int state);
+
+/********************************************************************************
  * 			External Variables 					*
  ********************************************************************************/
 
@@ -75,6 +81,10 @@ int low_state;
 
 /* State at the mid */
 int mid_state;
+
+struct scpufreq_user seeker_scheduler_user = {
+	.inform = &seeker_cpufreq_inform,
+};
 
 /********************************************************************************
  * 				Functions					*
@@ -121,6 +131,32 @@ void states_copy(struct state_desc *dest, struct state_desc *src)
 }
 
 /********************************************************************************
+ * seeker_cpufreq_inform - The inform callback function for seeker_cpufreq,
+ * @cpu - The cpu for which frequency has changed.
+ * @state - the new state of cpu `cpu`.
+ * @Side Effects - states, and cur_cpu_state data structures are changed
+ *                 to reflect this change.
+ *
+ * This allows seeker_cpufreq to inform us if someone other than us
+ * changed the frequency of a particular cpu. 
+ ********************************************************************************/
+int seeker_cpufreq_inform(int cpu, int state)
+{
+	if(cur_cpu_state[cpu] != state){
+		debug("State of cpu %d changed to %d",cpu,state);
+		write_seqlock(&states_seq_lock);
+		cpu_set(cpu,states[state].cpumask);
+		cpu_clear(cpu,states[cur_cpu_state[cpu]].cpumask);
+		states[state].cpus++;
+		states[cur_cpu_state[cpu]].cpus--;
+		cur_cpu_state[cpu] = state;
+		write_sequnlock(&states_seq_lock);
+	}
+	return 0;
+}
+
+
+/********************************************************************************
  * init_cpu_states - initialize the states sub system. 
  * @how - mentions how the states must be initialized.
  * @Side Effects - Initializes states and deems them consistent. 
@@ -134,6 +170,11 @@ int init_cpu_states(unsigned int how)
 	int i;
 
 	seqlock_init(&states_seq_lock);
+
+	if(register_scpufreq_user(&seeker_scheduler_user)){
+		error("Registering with seeker_cpufreq failed.");
+		return -1;
+	}
 
 	for (i = 0; i < total_online_cpus; i++) {
 		max_state_possible[i] = get_max_states(i);
@@ -220,3 +261,15 @@ int init_cpu_states(unsigned int how)
 
 	return 0;
 }
+
+/********************************************************************************
+ * exit_cpu_states - Clean up states section.
+ *
+ * Exit and cleanup. Currently the only use is to deregister itself from
+ * seeker_cpufreq. 
+ ********************************************************************************/
+void exit_cpu_states(void)
+{
+	deregister_scpufreq_user(&seeker_scheduler_user);
+}
+

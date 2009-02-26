@@ -81,10 +81,14 @@ struct cpufreq_governor seeker_governor = {
 	.show_setspeed = cpufreq_seeker_showspeed,
 };
 
+/* List of registered users */
 struct scpufreq_user_list *user_head = NULL;
+
+/* Lock to be held whenever accessing user_head. */
 static DEFINE_SPINLOCK(user_lock);
 
-static int current_highest_id = 0;
+/* The counter to give a unique un-used id 4B ids can be provided.*/
+static unsigned int current_highest_id = 0;
 
 /********************************************************************************
  * 				Macros						*
@@ -151,16 +155,13 @@ static int cpufreq_seeker_governor(struct cpufreq_policy *policy,
 	return 0;
 }
 
-struct scpufreq_user_list *search_user(int id)
-{
-	struct scpufreq_user_list *i;
-	for(i=user_head;i;i=i->next){
-		if(i->user->user_id == id)
-			return i;
-	}
-	return NULL;
-}
-
+/*******************************************************************************
+ * create_user - creates a new user in the user list.
+ * @u - The user struct.
+ * @return - 0 on success, error code on failure
+ *
+ * Create a new user node and link into the users list. 
+ *******************************************************************************/
 static int create_user(struct scpufreq_user *u)
 {
 	struct scpufreq_user_list *i;
@@ -187,6 +188,14 @@ static int create_user(struct scpufreq_user *u)
 	return 0;
 }
 
+/*******************************************************************************
+ * destroy_user - Removes and deallocated a user from the users list.
+ * @u - The user struct
+ * @return - 0 on success, error code on failure.
+ *
+ * Search for a user in the list with id = u->user_id and if found, unlink 
+ * from the list and de-allocate the memory.
+ *******************************************************************************/
 static int destroy_user(struct scpufreq_user *u)
 {
 	struct scpufreq_user_list *i,*j;
@@ -210,6 +219,15 @@ static int destroy_user(struct scpufreq_user *u)
 	kfree(i);
 	return 0;
 }
+
+
+/*******************************************************************************
+ * inform_freq_change - Infrom all registered users of a freq change.
+ * @cpu - The cpu for which freq is changing.
+ * @state - The new state cpu will take.
+ *
+ * Call the inform callback for every registered users. 
+ *******************************************************************************/
 void inform_freq_change(int cpu, int state)
 {
 	struct scpufreq_user_list *i;
@@ -224,12 +242,24 @@ void inform_freq_change(int cpu, int state)
 	}
 }
 
+/*******************************************************************************
+ * register_scpufreq_user - Register a new user of scpufreq.
+ * @u - The user struct for the calling user.
+ * 
+ * Register user u with scpufreq. All notifications will be sent. 
+ *******************************************************************************/
 int register_scpufreq_user(struct scpufreq_user *u)
 {
 	return create_user(u);
 }
 EXPORT_SYMBOL_GPL(register_scpufreq_user);
 
+/*******************************************************************************
+ * deregister_scpufreq_user - Un-register a new user of scpufreq.
+ * @u - The user struct for the calling user.
+ * 
+ * Un-register user u with scpufreq. All notifications will no longer be sent. 
+ *******************************************************************************/
 int deregister_scpufreq_user(struct scpufreq_user *u)
 {
 	return destroy_user(u);
@@ -284,6 +314,8 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 		error("Target did not work for cpu %d transition to %d, with a return error code: %d",cpu,policy->cur,ret_val);
 	else 
 		info("Setting frequency of cpu %d to %d",cpu,policy->cur);
+
+	inform_freq_change(cpu,freq_ind);
 
 	return ret_val;
 }
