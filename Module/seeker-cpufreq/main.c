@@ -48,6 +48,13 @@ struct freq_info_t {
 	struct cpufreq_policy *policy;
 };
 
+
+struct scpufreq_user_list{
+	struct scpufreq_user *user;
+	struct scpufreq_user_list *next;
+};
+
+
 /********************************************************************************
  * 				Function Declarations				*
  ********************************************************************************/
@@ -73,6 +80,11 @@ struct cpufreq_governor seeker_governor = {
 	.governor = cpufreq_seeker_governor,
 	.show_setspeed = cpufreq_seeker_showspeed,
 };
+
+struct scpufreq_user_list *user_head = NULL;
+static DEFINE_SPINLOCK(user_lock);
+
+static int current_highest_id = 0;
 
 /********************************************************************************
  * 				Macros						*
@@ -138,6 +150,91 @@ static int cpufreq_seeker_governor(struct cpufreq_policy *policy,
 	}
 	return 0;
 }
+
+struct scpufreq_user_list *search_user(int id)
+{
+	struct scpufreq_user_list *i;
+	for(i=user_head;i;i=i->next){
+		if(i->user->user_id == id)
+			return i;
+	}
+	return NULL;
+}
+
+static int create_user(struct scpufreq_user *u)
+{
+	struct scpufreq_user_list *i;
+	if(!u)
+		return ERR_INV_USER;
+	if(!u->inform)
+		return ERR_INV_CALLBACK;
+	spin_lock(&user_lock);
+	if(user_head){
+		for(i=user_head;i->next;i=i->next);
+		i->next = kmalloc(sizeof(struct scpufreq_user_list), GFP_KERNEL);
+		i = i->next;
+	} else {
+		i = user_head = kmalloc(sizeof(struct scpufreq_user_list), GFP_KERNEL);
+	}
+	if(!i){
+		spin_unlock(&user_lock);
+		return ERR_USER_MEM_LOW;
+	}
+	i->next = NULL;
+	i->user = u;
+	i->user->user_id = current_highest_id++;
+	spin_unlock(&user_lock);
+	return 0;
+}
+
+static int destroy_user(struct scpufreq_user *u)
+{
+	struct scpufreq_user_list *i,*j;
+	if(!u)
+		return ERR_INV_USER;
+	if(!u->inform)
+		return ERR_INV_CALLBACK;
+	spin_lock(&user_lock);
+
+	for(i=user_head,j=NULL;i && i->user->user_id != u->user_id ;j=i,i=i->next);
+
+	if(!i){
+		spin_unlock(&user_lock);
+		return ERR_INV_USER;
+	}
+	if(!j)
+		user_head = i->next;
+	else
+		j->next = i->next;
+	spin_unlock(&user_lock);
+	kfree(i);
+	return 0;
+}
+void inform_freq_change(int cpu, int state)
+{
+	struct scpufreq_user_list *i;
+	int dummy_ret = 0;
+
+	for(i=user_head;i;i=i->next){
+		if(i->user->inform)
+			dummy_ret |= i->user->inform(cpu,state);
+	}
+	if(dummy_ret){
+		warn("Some of the users returned an error code which was lost");
+	}
+}
+
+int register_scpufreq_user(struct scpufreq_user *u)
+{
+	return create_user(u);
+}
+EXPORT_SYMBOL_GPL(register_scpufreq_user);
+
+int deregister_scpufreq_user(struct scpufreq_user *u)
+{
+	return destroy_user(u);
+}
+EXPORT_SYMBOL_GPL(deregister_scpufreq_user);
 
 /*******************************************************************************
  * get_freq - Get the current performance number for cpu.
@@ -255,6 +352,10 @@ static int __init seeker_cpufreq_init(void)
 	struct cpufreq_frequency_table *table;
 	int cpus = num_online_cpus();
 	cpufreq_register_governor(&seeker_governor);
+
+	user_head = NULL;
+	spin_lock_init(&user_lock);
+
 	for (i = 0; i < cpus; i++) {
 		FREQ_INFO(i)->cpu = i;
 		FREQ_INFO(i)->cur_freq = -1;	/* Not known */
@@ -293,6 +394,16 @@ static int __init seeker_cpufreq_init(void)
  *******************************************************************************/
 static void __exit seeker_cpufreq_exit(void)
 {
+	struct scpufreq_user_list *i,*j;
+
+	spin_lock(&user_lock);
+	for(i=user_head;i;){
+		j = i->next;
+		kfree(i);
+		i = j;
+	}
+	user_head = NULL;
+	spin_unlock(&user_lock);
 	cpufreq_unregister_governor(&seeker_governor);
 }
 
