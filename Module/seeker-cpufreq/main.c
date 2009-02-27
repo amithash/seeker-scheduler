@@ -63,6 +63,8 @@ static ssize_t cpufreq_seeker_showspeed(struct cpufreq_policy *policy,
 		char *buf);
 static int cpufreq_seeker_governor(struct cpufreq_policy *policy,
 				   unsigned int event);
+static int cpufreq_seeker_setspeed(struct cpufreq_policy *policy, 
+				   unsigned int freq);
 
 /********************************************************************************
  * 				Global Datastructures 				*
@@ -79,6 +81,7 @@ struct cpufreq_governor seeker_governor = {
 	.max_transition_latency = CPUFREQ_ETERNAL,
 	.governor = cpufreq_seeker_governor,
 	.show_setspeed = cpufreq_seeker_showspeed,
+	.store_setspeed = cpufreq_seeker_setspeed,
 };
 
 /* List of registered users */
@@ -103,6 +106,12 @@ static unsigned int current_highest_id = 0;
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
+
+static int cpufreq_seeker_setspeed(struct cpufreq_policy *policy, unsigned int freq)
+{
+	debug("User wants speed to be %u on cpu %d",freq,policy->cpu);
+	return __set_freq(policy->cpu,freq);
+}
 
 /*******************************************************************************
  * cpufreq_seeker_showspeed - cpufreq governor interface to show current speed.
@@ -321,6 +330,45 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 }
 
 EXPORT_SYMBOL_GPL(set_freq);
+
+/*******************************************************************************
+ * __set_freq - set the performance number for cpu. (Non locking)
+ * @cpu - The cpu to set.
+ * @freq_ind - the performance number we need to set `cpu` to.
+ *
+ * changes the frequency of `cpu` to one indicated by the performance number
+ * freq_ind. 
+ * NOTE: Do not call this from interrupt context! This function _might_ sleep.
+ * but it promises that no locks will be held.
+ *******************************************************************************/
+int __set_freq(unsigned int cpu, unsigned int freq_ind)
+{
+	int ret_val;
+	struct cpufreq_policy *policy = NULL;
+	if (unlikely(cpu >= NR_CPUS || freq_ind >= FREQ_INFO(cpu)->num_states))
+		return -1;
+	if (freq_ind == FREQ_INFO(cpu)->cur_freq)
+		return 0;
+
+	policy = FREQ_INFO(cpu)->policy;
+	if (!policy) {
+		error("Error, governor not initialized for cpu %d", cpu);
+		return -1;
+	}
+	policy->cur = FREQ_INFO(cpu)->table[freq_ind];
+	ret_val = __cpufreq_driver_target(policy, policy->cur, CPUFREQ_RELATION_H);
+	if(ret_val == -EAGAIN)
+		ret_val = __cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
+	if(ret_val)
+		error("Target did not work for cpu %d transition to %d, with a return error code: %d",cpu,policy->cur,ret_val);
+	else 
+		info("Setting frequency of cpu %d to %d",cpu,policy->cur);
+
+	inform_freq_change(cpu,freq_ind);
+
+	return ret_val;
+}
+EXPORT_SYMBOL_GPL(__set_freq);
 
 /*******************************************************************************
  * inc_freq - Increment the performnace number of cpu.

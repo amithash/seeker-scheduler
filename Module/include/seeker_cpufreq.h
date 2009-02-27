@@ -21,6 +21,7 @@ int register_scpufreq_user(struct scpufreq_user *u);
 int deregister_scpufreq_user(struct scpufreq_user *u);
 
 int set_freq(unsigned int cpu,unsigned int freq_ind);
+int __set_freq(unsigned int cpu,unsigned int freq_ind);
 unsigned int get_freq(unsigned int cpu);
 int inc_freq(unsigned int cpu);
 int dec_freq(unsigned int cpu);
