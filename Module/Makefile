@@ -47,13 +47,11 @@ obj-m += seeker_scheduler.o           	\
 	 pmu.o  	       		\
 	 fpmu.o 	       		\
 	 seeker_cpufreq.o  		\
-	 setspeed.o			\
 	 test_scpufreq.o
 
 # The seeker cpufreq governor and its test module.
 test_scpufreq-objs += seeker-cpufreq/test.o
 seeker_cpufreq-objs += seeker-cpufreq/main.o
-setspeed-objs += seeker-cpufreq/setspeed.o
 
 # Performance Monitoring counters.
 pmu-objs += pmu/main.o \
