@@ -63,7 +63,7 @@ foreach my $b (@bench){
 	}
 	my $rn = benchmarks::run($b,"$bench_root/bench");
 	if((not defined($rn)) or $rn eq ""){
-		print "$rn is not a valid benchmark. exiting.\n";
+		print "$b is not a valid benchmark. exiting.\n";
 		exit;
 	}
 	push @run,$rn;
