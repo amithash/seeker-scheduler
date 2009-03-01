@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use Getopt::Long;
-use Time::HiRes;
+use Time::HiRes qw( usleep );
 
 my $s_pattern;
 my $interval;
@@ -38,6 +38,12 @@ for(my $i=0;$i < scalar @pattern; $i++){
 		print "Valid states are in the interval [0,$max)\n";
 		exit;
 	}
+}
+
+# Daemonize.
+my $pid = fork;
+if($pid != 0){
+	exit;
 }
 
 #Kernel. 
