@@ -143,7 +143,7 @@ extern u64 pmu_val[NR_CPUS][3];
  ********************************************************************************/
 
 /* Mutator interval in seconds */
-int change_interval = 5;
+int change_interval = 1000;
 
 /* flag requesting disabling the scheduler and mutator */
 int disable_scheduling = 0;
@@ -406,7 +406,15 @@ static int scheduler_init(void)
 
 
 	if (init != STATIC_LAYOUT) {
-		interval_jiffies = change_interval * HZ;
+		interval_jiffies = (change_interval * HZ) / 1000;
+		if(interval_jiffies < 1){
+			warn("change_interval=%dms makes the interval lower"
+				"than the scheduling quanta. adjusting it to equal"
+				"to the quanta = %dms",change_interval,(1000/HZ));
+			interval_jiffies = 1;
+			change_interval = 1000 / HZ;
+		}
+
 		timer_started = 1;
 		init_timer_deferrable(&state_work.timer);
 		schedule_delayed_work(&state_work, interval_jiffies);
@@ -471,7 +479,7 @@ module_exit(scheduler_exit);
 
 module_param(change_interval, int, 0444);
 MODULE_PARM_DESC(change_interval,
-		 "Interval in seconds to try and change the global state (Default 5 seconds)");
+		 "Interval in ms to change the global state (Default: 1000)");
 
 module_param(init, int, 0444);
 MODULE_PARM_DESC(init,
