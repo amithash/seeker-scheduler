@@ -49,8 +49,6 @@ if(defined($bench_list)){
 	close(BL);
 }
 
-my $br = $ENV{BENCH_ROOT};
-
 my $s = "";
 my $c = "";
 my @run = ();
