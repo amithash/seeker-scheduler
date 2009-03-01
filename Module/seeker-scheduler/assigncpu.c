@@ -276,7 +276,11 @@ void put_mask_from_stats(struct task_struct *ts)
 		return;
 	}
 
-	/* Assign only if we have not disabled scheduling */
+	/* Assign only if we have not disabled scheduling 
+	 * NOTE: Of course, we do not need to execute this
+	 * function, but this is done to have the same 
+	 * overhead
+	 */
 	if(!disable_scheduling)
 		ts->cpus_allowed = mask;
 
