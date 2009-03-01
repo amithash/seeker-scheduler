@@ -32,7 +32,7 @@ GetOptions( 'b|bench=s{,}' => \@bench ,
 	    'seq=i'	=> \$seq,
 	    'o|output=s' => \$output);
 
-$output = "+>run.sh" unless(defined($output));
+$output = "run.sh" unless(defined($output));
 $any = 0 unless(defined($any));
 $log = "LOG" unless(defined($log));
 $pre_ex = " " unless(defined($pre_ex));
