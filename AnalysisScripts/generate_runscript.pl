@@ -20,6 +20,7 @@ my $post_ex;
 my $seq;
 my $finalize;
 my $bench_list;
+my $output;
 
 GetOptions( 'b|bench=s{,}' => \@bench ,
 	    'benchlist=s' => \$bench_list,
@@ -28,8 +29,10 @@ GetOptions( 'b|bench=s{,}' => \@bench ,
 	    'prefix=s'    => \$pre_ex,
 	    'postfix=s'	=> \$post_ex,
 	    'finalize=s' => \$finalize,
-	    'seq=i'	=> \$seq);
+	    'seq=i'	=> \$seq,
+	    'o|output=s' => \$output);
 
+$output = "+>run.sh" unless(defined($output));
 $any = 0 unless(defined($any));
 $log = "LOG" unless(defined($log));
 $pre_ex = " " unless(defined($pre_ex));
@@ -87,7 +90,7 @@ foreach my $r (@run){
 }
 $run_cmd = "$pre_ex\n$run_cmd >> $log\n$post_ex\n" unless(defined($seq));
 
-open R,"+>run.sh" or die "Could not create run.sh\n";
+open R,"+>$output" or die "Could not create run.sh\n";
 print R "#!/bin/sh\n\n";
 print R "$s\n\n";
 print R "$run_cmd\n\n";
@@ -95,4 +98,5 @@ print R "$finalize\n\n";
 print R "$c\n\n";
 
 close(R);
+system("chmod +x $output");
 
