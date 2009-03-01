@@ -160,6 +160,9 @@ int static_layout[NR_CPUS];
 /* Count of elements in static_layout */
 int static_layout_length = 0;
 
+/* allowed cpus to limit total cpus used. */
+int allowed_cpus = 0;
+
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
@@ -343,6 +346,12 @@ static int scheduler_init(void)
 	}
 
 	total_online_cpus = num_online_cpus();
+
+	if(allowed_cpus != 0){
+		if(allowed_cpus <= total_online_cpus)
+			total_online_cpus = allowed_cpus;
+	}
+
 	init_idle_logger();
 
 	if (init_tsc_intf()) {
@@ -484,6 +493,8 @@ MODULE_PARM_DESC(change_interval,
 module_param(init, int, 0444);
 MODULE_PARM_DESC(init,
 		 "Starting state of cpus: 1 - All high, 2 - half high, half low, 3 - All low");
+module_param(allowed_cpus, int, 0444);
+MODULE_PARM_DESC(allowed_cpus, "Limit cpus to this number, default is all online cpus.");
 
 module_param(disable_scheduling, int, 0444);
 MODULE_PARM_DESC(disable_scheduling,
