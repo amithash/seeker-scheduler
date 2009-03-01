@@ -50,12 +50,19 @@ my $s = "";
 my $c = "";
 my @run = ();
 
+my %cs_hash;
+
 foreach my $b (@bench){
-	$c = $c . benchmarks::cleanup($b,"$br/bench") . "\n";
-	$s = $s . benchmarks::setup($b,"$br/bench") . "\n";
+	if(not defined($cs_hash{$b})){
+		$c = $c . benchmarks::cleanup($b,"$br/bench") . "\n";
+		$s = $s . benchmarks::setup($b,"$br/bench") . "\n";
+		$cs_hash{$b} = 1;
+	}
 	my $rn = benchmarks::run($b,"$br/bench");
-	next if(not defined($rn));
-	next if($rn eq "");
+	if((not defined($rn)) or $rn eq ""){
+		print "$rn is not a valid benchmark. exiting.\n";
+		exit;
+	}
 	push @run,$rn;
 }
 my $cpu = 0;
