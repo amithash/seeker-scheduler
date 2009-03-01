@@ -43,6 +43,10 @@ while(my $line = <IN>){
 	my $ipc = $l[3];
 	my $cy = $l[7];
 	my $state = $l[6];
+	if($cy > 100000000000.0){
+		print STDERR "$ARGV[0] warn\n";
+		next;
+	}
 	if($ipc_stat == 1){
 		classify($ipc,$cy * 1.0);
 	}
