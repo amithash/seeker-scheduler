@@ -11,6 +11,8 @@ my $nr_cpus = `cat /proc/cpuinfo | grep MHz | wc -l`;
 chomp($nr_cpus);
 $nr_cpus = int($nr_cpus);
 
+my $bench_root = "$ENV{SEEKER_HOME}/AnalysisScripts";
+
 my $any;
 my $log;
 my $pre_ex;
@@ -51,9 +53,9 @@ my $c = "";
 my @run = ();
 
 foreach my $b (@bench){
-	$c = $c . benchmarks::cleanup($b,"$br/bench") . "\n";
-	$s = $s . benchmarks::setup($b,"$br/bench") . "\n";
-	my $rn = benchmarks::run($b,"$br/bench");
+	$c = $c . benchmarks::cleanup($b,"$bench_root/bench") . "\n";
+	$s = $s . benchmarks::setup($b,"$bench_root/bench") . "\n";
+	my $rn = benchmarks::run($b,"$bench_root/bench");
 	next if(not defined($rn));
 	next if($rn eq "");
 	push @run,$rn;
