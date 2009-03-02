@@ -31,6 +31,7 @@
 #include <signal.h>
 
 #include <seeker.h>
+#include "../generic.h"
 
 #define P_ASSERT_EXIT(t,i) if(!(t)) {perror((i)); exit(EXIT_FAILURE);}
 #define BUFFER_SIZE (4096*sizeof(debug_t))
@@ -76,7 +77,7 @@ void catchSig()
 	//oldMask contains old mask value which can be restored
 	//Not really required to do it manually as OS does it for us.
 	sigprocmask(SIG_SETMASK, &mask, &oldMask);
-	printf("Got your message, writing to next file!!!\n");
+	debug("Got your message, writing to next file!!!");
 	do_sample = 0;
 }
 
@@ -92,7 +93,7 @@ void catchTerm()
 	//oldMask contains old mask value which can be restored
 	//Not really required to do it manually as OS does it for us.
 	sigprocmask(SIG_SETMASK, &mask, &oldMask);
-	printf("I am terminating!!!!\n");
+	debug("I am terminating!!!!");
 	fclose(infile);
 	do_exit();
 }
@@ -113,7 +114,7 @@ int main(int argc, char **argv)
 	pid_t pid;
 	unsigned int (*seeker_sleep) (unsigned int);
 
-	printf("Seeker scheduler debug daemon started!\n");
+	info("Seeker scheduler debug daemon started!");
 
 	if (argc < 3) {
 		if (argc == 2) {
@@ -154,7 +155,7 @@ int main(int argc, char **argv)
 
 	P_ASSERT_EXIT(infile = fopen(infile_name, "r"), infile_name);
 	if (access(outfile_name, F_OK) == 0) {
-		fprintf(stderr, "debugd: file exists: %s\n", outfile_name);
+		error("file exists: %s", outfile_name);
 		exit(EXIT_FAILURE);
 	}
 
@@ -195,7 +196,7 @@ int main(int argc, char **argv)
 			sprintf(count_c, "%d", count);
 			strcat(outfile_name, count_c);
 			if (access(outfile_name, F_OK) == 0) {
-				fprintf(stderr, "debugd: file exists: %s\n",
+				error("file exists: %s",
 					outfile_name);
 				exit(EXIT_FAILURE);
 			}

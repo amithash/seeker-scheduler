@@ -23,6 +23,7 @@
 #include <signal.h>
 
 #include <seeker.h>
+#include "../generic.h"
 
 int main(int argc, char **argv, char **envp)
 {
@@ -75,7 +76,7 @@ int main(int argc, char **argv, char **envp)
 					     stateDef->residency_time);
 			break;
 		default:
-			fprintf(stderr, "WTF?!!\n");
+			debug("WTF?!!\n");
 		}
 	}
 	return EXIT_SUCCESS;
