@@ -40,6 +40,7 @@ int main(int argc, char **argv, char **envp)
 			debug_scheduler_t *schDef;
 			debug_mutator_t *mutDef;
 			debug_pid_t *pidDef;
+			debug_state_t *stateDef;
 		case DEBUG_SCH:
 			schDef = (debug_scheduler_t *) (&entry->u);
 			printf("s");
@@ -66,6 +67,12 @@ int main(int argc, char **argv, char **envp)
 				printf(",%d", mutDef->cpus_given[i]);
 			}
 			printf("\n");
+			break;
+		case DEBUG_STATE:
+			stateDef = (debug_state_t *) &(entry->u);
+			printf("t,%d,%d,%lu\n",stateDef->cpu,
+			      		     stateDef->state,
+					     stateDef->residency_time);
 			break;
 		default:
 			fprintf(stderr, "WTF?!!\n");
