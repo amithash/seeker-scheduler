@@ -307,9 +307,6 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 	struct cpufreq_policy *policy = NULL;
 	if (unlikely(cpu >= NR_CPUS || freq_ind >= FREQ_INFO(cpu)->num_states))
 		return -1;
-	if (freq_ind == FREQ_INFO(cpu)->cur_freq)
-		return 0;
-
 	policy = FREQ_INFO(cpu)->policy;
 	if (!policy) {
 		error("Error, governor not initialized for cpu %d", cpu);
