@@ -17,10 +17,6 @@
 # You should have received a copy of the GNU General Public License      *
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
 #*************************************************************************
-ifdef DEBUG
-EXTRA_ARGS += "DEBUG=1"
-endif
-
 ifndef ARCA
 ARCA := $(shell cat /proc/cpuinfo | grep -i AuthenticAMD | wc -l)
 ifneq ($(ARCA), 0)
@@ -45,6 +41,10 @@ all:
 	+make -C Scripts ARCA=$(ARCA) CPUS=$(CPUS) $(EXTRA_ARGS)
 	+make -C SyntheticBenchmarks
 
+debug:
+	+make -C Module ARCA=$(ARCA) $(EXTRA_ARGS) debug
+	+make -C Scripts ARCA=$(ARCA) CPUS=$(CPUS) $(EXTRA_ARGS) debug
+	+make -C SyntheticBenchmarks debug
 clean:
 	+make -C Module clean
 	+make -C Scripts clean

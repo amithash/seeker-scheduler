@@ -30,13 +30,22 @@ INCLUDE := -I$(shell pwd)/../Module/include
 all:
 	${CC} ${CFLAGS} debugd.c -o debugd -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS)
 	${CC} ${CFLAGS} decodelog.c -o decodelog -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS)
-	${CXX} ${CFLAGS} interp.C -o interp -g
+	${CXX} ${CFLAGS} interp.C -o interp
 	${CXX} ${CFLAGS} maxmin.C -o maxmin
 	${CXX} ${CFLAGS} smooth.C -o smooth
 	${CC} -fPIC -c state_recommendations.c -o state_recommendations.o
 	${CC} -shared -Wl,-soname,libstate_recommendations.so -o libstate_recommendations.so state_recommendations.o -lc 
 	${CC} test_recommendations.c -o test_recommendations -lstate_recommendations -L.
 
+debug:
+	${CC} ${CFLAGS} debugd.c -o debugd -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS) -DDEBUG
+	${CC} ${CFLAGS} decodelog.c -o decodelog -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS) -DDEBUG
+	${CXX} ${CFLAGS} interp.C -o interp -DDEBUG
+	${CXX} ${CFLAGS} maxmin.C -o maxmin -DDEBUG
+	${CXX} ${CFLAGS} smooth.C -o smooth -DDEBUG
+	${CC} -fPIC -c state_recommendations.c -o state_recommendations.o -DDEBUG
+	${CC} -shared -Wl,-soname,libstate_recommendations.so -o libstate_recommendations.so state_recommendations.o -lc 
+	${CC} test_recommendations.c -o test_recommendations -lstate_recommendations -L. -DDEBUG
 clean:
 	rm -f decodelog interp maxmin smooth debugd test_recommendations libstate_recommendations.so state_recommendations.o
 

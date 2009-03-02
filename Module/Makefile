@@ -78,19 +78,18 @@ KDIR    := /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)
 INCLUDE_DIRS := -I$(PWD)/include
 
-MOD_FLAGS := -DMODULE -m$(BITS) -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall
-
-# Use -g and -O0 while defineing DEBUG for debug builds, else just use O2
-ifdef DEBUG
-MOD_FLAGS += -DDEBUG -g -O0
-else
-MOD_FLAGS += -O2
-endif
+MOD_FLAGS := -DMODULE -m$(BITS) -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall -O2
+MOD_DEBUG_FLAGS := -DMODULE -m$(BITS) -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall -O0 -DDEBUG -g
 
 default:
 	$(MAKE) -C $(KDIR) M=$(PWD) CFLAGS_MODULE="$(MOD_FLAGS)" modules
 	$(shell if ! test -d ../Build; then mkdir ../Build; fi )
 	cp `find . | grep ".ko"` ../Build/
+debug:
+	$(MAKE) -C $(KDIR) M=$(PWD) CFLAGS_MODULE="$(MOD_DEBUG_FLAGS)" modules
+	$(shell if ! test -d ../Build; then mkdir ../Build; fi )
+	cp `find . | grep ".ko"` ../Build/
+
 .PHONY: clean
 clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
