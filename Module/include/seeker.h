@@ -35,7 +35,7 @@
 
 /* Seeker-scheduler sample data */
 
-enum {DEBUG_SCH, DEBUG_MUT, DEBUG_PID};
+enum {DEBUG_SCH, DEBUG_MUT, DEBUG_PID, DEBUG_STATE};
 
 typedef struct {
 	unsigned long long interval;
@@ -48,6 +48,12 @@ typedef struct {
 	unsigned int ipc;
 	unsigned long long inst;
 } debug_scheduler_t;
+
+typedef struct {
+	int cpu;
+	int state;
+	unsigned long residency_time;
+} debug_state_t;
 
 typedef struct {
 	unsigned long long interval;
@@ -68,6 +74,7 @@ typedef struct {
 		debug_scheduler_t sch;
 		debug_mutator_t mut;
 		debug_pid_t tpid;
+		debug_state_t state;
 	}u;
 } debug_t;
 

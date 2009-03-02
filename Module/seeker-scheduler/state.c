@@ -34,6 +34,7 @@
 #include "seeker_cpufreq.h"
 #include "assigncpu.h"
 #include "mutate.h"
+#include "debug.h"
 
 /********************************************************************************
  * 			Function Declarations 					*
@@ -85,6 +86,8 @@ int mid_state;
 struct scpufreq_user seeker_scheduler_user = {
 	.inform = &seeker_cpufreq_inform,
 };
+
+unsigned long long current_jiffies[NR_CPUS] = {0};
 
 /********************************************************************************
  * 				Functions					*
@@ -142,6 +145,7 @@ void states_copy(struct state_desc *dest, struct state_desc *src)
  ********************************************************************************/
 int seeker_cpufreq_inform(int cpu, int state)
 {
+	struct debug_block *p = NULL;
 	if(cur_cpu_state[cpu] != state){
 		debug("State of cpu %d changed to %d",cpu,state);
 		write_seqlock(&states_seq_lock);
@@ -152,6 +156,17 @@ int seeker_cpufreq_inform(int cpu, int state)
 		cur_cpu_state[cpu] = state;
 		write_sequnlock(&states_seq_lock);
 	}
+	p = get_debug();
+	if(p){
+		p->entry.type = DEBUG_STATE;
+		p->entry.u.state.cpu = cpu;
+		p->entry.u.state.state = cur_cpu_state[cpu];
+		p->entry.u.state.residency_time = jiffies - current_jiffies[cpu];
+	}
+	put_debug(p);
+	cur_cpu_state[cpu] = state;
+	current_jiffies[cpu] = jiffies;
+
 	return 0;
 }
 
@@ -176,6 +191,10 @@ int init_cpu_states(unsigned int how)
 		return -1;
 	}
 
+	for(i = 0; i < total_online_cpus; i++) {
+		current_jiffies[i] = jiffies;
+	}
+
 	for (i = 0; i < total_online_cpus; i++) {
 		max_state_possible[i] = get_max_states(i);
 		info("Max state for cpu %d = %d", i, max_state_possible[i]);
@@ -198,16 +217,14 @@ int init_cpu_states(unsigned int how)
 		states[total_states - 1].cpus = total_online_cpus;
 		for (i = 0; i < total_online_cpus; i++) {
 			cpu_set(i, states[total_states - 1].cpumask);
-			cur_cpu_state[i] = max_state_possible[i] - 1;
-			set_freq(i, cur_cpu_state[i]);
+			set_freq(i, max_state_possible[i]-1);
 		}
 		break;
 	case ALL_LOW:
 		states[0].cpus = total_online_cpus;
 		for (i = 0; i < total_online_cpus; i++) {
 			cpu_set(i, states[0].cpumask);
-			cur_cpu_state[i] = 0;
-			set_freq(i, cur_cpu_state[i]);
+			set_freq(i,0);
 		}
 		break;
 	case BALANCE:
@@ -215,13 +232,11 @@ int init_cpu_states(unsigned int how)
 		states[0].cpus = total_online_cpus - (total_online_cpus >> 1);
 		for (i = 0; i < states[total_states - 1].cpus; i++) {
 			cpu_set(i, states[0].cpumask);
-			cur_cpu_state[i] = 0;
-			set_freq(i, cur_cpu_state[i]);
+			set_freq(i, 0);
 		}
 		for (; i < total_online_cpus; i++) {
 			cpu_set(i, states[total_states - 1].cpumask);
-			cur_cpu_state[i] = max_state_possible[i] - 1;
-			set_freq(i, cur_cpu_state[i]);
+			set_freq(i, max_state_possible[i]-1);
 		}
 		break;
 	case STATIC_LAYOUT:
@@ -232,13 +247,11 @@ int init_cpu_states(unsigned int how)
 			if (static_layout[i] >= total_states)
 				static_layout[i] = total_states - 1;
 			set_freq(i, static_layout[i]);
-			cur_cpu_state[i] = static_layout[i];
 			cpu_set(i, states[static_layout[i]].cpumask);
 			states[static_layout[i]].cpus++;
 		}
 		for (i = static_layout_length; i < total_online_cpus; i++) {
 			set_freq(i, 0);
-			cur_cpu_state[i] = 0;
 			cpu_set(i, states[0].cpumask);
 			states[0].cpus++;
 		}
@@ -252,7 +265,6 @@ int init_cpu_states(unsigned int how)
 				this_freq = 0;
 				warn("Freq state for cpu %d was not initialized and hence set to 0", i);
 			}
-			cur_cpu_state[i] = this_freq;
 			cpu_set(i, states[this_freq].cpumask);
 			states[this_freq].cpus++;
 		}

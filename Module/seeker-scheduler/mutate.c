@@ -530,7 +530,6 @@ void choose_layout(int delta)
 				debug
 				    ("Requesting cpu %d to change state from %d to %d",
 				     i, cur_cpu_state[i], new_cpu_state[i]);
-				cur_cpu_state[i] = new_cpu_state[i];
 				set_freq(i, new_cpu_state[i]);
 			}
 		} else if (info[i].awake == 0) {
@@ -539,7 +538,6 @@ void choose_layout(int delta)
 			debug("Putting cpu %d to sleep", i);
 			if (cur_cpu_state[i] != 0)
 				set_freq(i, 0);
-			cur_cpu_state[i] = 0;
 			info[i].awake = 0;
 			info[i].sleep_time = 1;
 		}
