@@ -19,28 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
 #*************************************************************************/
 
-# First try and get the architecture...
-
-ifndef ARCA
-ARCA := $(shell cat /proc/cpuinfo | grep -i AuthenticAMD | wc -l)
-ifneq ($(ARCA), 0)
-ARCA := K10
-else
-ARCA := $(shell cat /proc/cpuinfo | grep -i AuthenticIntel | wc -l)
-ifneq ($(ARCA), 0)
-ARCA := C2D
-else 
-ARCA := C2D
-endif
-endif
-endif
-ifeq ($(shell uname -m | grep x86_64 | wc -l), 1)
-BITS := 64
-else
-BITS := 32
-endif
-
-ifneq ($(KERNELRELEASE),)
+include $(SEEKER_HOME)/Makefile.defaults
 
 # All the kernel modules 
 obj-m += seeker_scheduler.o           	\
@@ -73,7 +52,6 @@ seeker_scheduler-objs += seeker-scheduler/main.o     \
 		       seeker-scheduler/tsc_intf.o   \
 		       seeker-scheduler/debug.o
 
-else
 KDIR    := /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)
 INCLUDE_DIRS := -I$(PWD)/include
@@ -97,4 +75,3 @@ clean:
 	rm -f ../Build/*.ko
 	rm -f ../Build/.*.ko*
 	
-endif

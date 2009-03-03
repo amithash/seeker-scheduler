@@ -1,0 +1,22 @@
+
+# First try and get the architecture...
+ifndef ARCA
+ifneq ($(shell cat /proc/cpuinfo | grep -i AuthenticAMD | wc -l), 0)
+ARCA := K10
+endif
+ifneq ($(shell cat /proc/cpuinfo | grep -i GenuineIntel | wc -l), 0)
+ARCA := C2D
+endif
+endif
+
+
+ifeq ($(shell uname -m | grep x86_64 | wc -l), 1)
+BITS := 64
+else
+BITS := 32
+endif
+
+ifndef CPUS
+CPUS := $(shell cat /proc/cpuinfo | grep processor | wc -l)
+endif
+

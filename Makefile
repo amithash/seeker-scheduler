@@ -17,33 +17,21 @@
 # You should have received a copy of the GNU General Public License      *
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
 #*************************************************************************
-ifndef ARCA
-ARCA := $(shell cat /proc/cpuinfo | grep -i AuthenticAMD | wc -l)
-ifneq ($(ARCA), 0)
-ARCA := K10
-else
-ARCA := $(shell cat /proc/cpuinfo | grep -i AuthenticIntel | wc -l)
-ifneq ($(ARCA), 0)
-ARCA := C2D
-else 
-ARCA := C2D
+ifdef CPUS
+EXTRA_ARGS+=CPUS=$(CPUS)
 endif
-endif
-#ARCA := C2D
-endif
-
-ifndef CPUS
-CPUS := $(shell cat /proc/cpuinfo | grep processor | wc -l)
+ifdef ARCA
+EXTRA_ARGS+=ARCA=$(ARCA)
 endif
 
 all:
-	+make -C Module ARCA=$(ARCA) $(EXTRA_ARGS)
-	+make -C Scripts ARCA=$(ARCA) CPUS=$(CPUS) $(EXTRA_ARGS)
+	+make -C Module $(EXTRA_ARGS)
+	+make -C Scripts $(EXTRA_ARGS)
 	+make -C SyntheticBenchmarks
 
 debug:
-	+make -C Module ARCA=$(ARCA) $(EXTRA_ARGS) debug
-	+make -C Scripts ARCA=$(ARCA) CPUS=$(CPUS) $(EXTRA_ARGS) debug
+	+make -C Module ARCA=$(ARCA) debug
+	+make -C Scripts ARCA=$(ARCA) CPUS=$(CPUS) debug
 	+make -C SyntheticBenchmarks debug
 clean:
 	+make -C Module clean

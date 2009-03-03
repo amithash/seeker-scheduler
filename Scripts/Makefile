@@ -16,15 +16,12 @@
 # You should have received a copy of the GNU General Public License      *
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
 #*************************************************************************
-ifndef CPUS
-CPUS := $(shell cat /proc/cpuinfo | grep processor | wc -l)
-endif
+
+include $(SEEKER_HOME)/Makefile.defaults
+
 CFLAGS = -O3
 CC = gcc
 CXX = g++
-ifndef ARCA
-ARCA := C2D
-endif
 INCLUDE := -I$(shell pwd)/../Module/include
 
 all:
