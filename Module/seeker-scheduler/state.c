@@ -161,7 +161,7 @@ int seeker_cpufreq_inform(int cpu, int state)
 		p->entry.type = DEBUG_STATE;
 		p->entry.u.state.cpu = cpu;
 		p->entry.u.state.state = cur_cpu_state[cpu];
-		p->entry.u.state.residency_time = jiffies - current_jiffies[cpu];
+		p->entry.u.state.residency_time = ((jiffies - current_jiffies[cpu]) * 1000) / HZ;
 	}
 	put_debug(p);
 	cur_cpu_state[cpu] = state;
