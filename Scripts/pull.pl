@@ -23,16 +23,23 @@ use warnings;
 use Getopt::Long;
 use File::Find;
 use Cwd;
+use lib "$ENV{SEEKER_HOME}/libs";
+use benchmarks;
 
 my $input_file_name;
 my $output_dir;
-my $process_name;
+my $bench;
 my $do_all = 0;
 my %pid_hash;
+my $what;
+my $benchlist;
 
 GetOptions ('input:s' => \$input_file_name,
 	    'output:s' => \$output_dir,
-	    'name:s'  => \$process_name);
+	    'b|bench:s'  => \$bench,
+	    'what:s'  => \$what,
+	    'benchlist:s'  => \$benchlist);
+$what = "all" unless(defined($what));
 
 if(not defined($input_file_name)){
 	print "-i flag is mandatory.\n";
@@ -40,68 +47,120 @@ if(not defined($input_file_name)){
 	exit(1);
 }
 
-if(not defined($output_dir)){
-	$output_dir = cwd();
-	print "Logs are in $output_dir\n";
+unless(-e $input_file_name){
+	print "$input_file_name is not a valid path\n";
+	exit;
 }
 
-if(not defined($process_name)){
+if(not defined($output_dir)){
+	$output_dir = cwd();
+}
+unless(-d $output_dir){
+	system("mkdir -p $output_dir");
+}
+print "Logs are in $output_dir\n";
+
+my %process;
+if(defined($benchlist)){
+	open PL,"$benchlist" or die "could not open $benchlist\n";
+	while(my $l = <PL>){
+		chomp($l);
+		if(not defined($process{$l})){
+			my $bin = benchmarks::get_binary_name($l)));
+			$process{$bin} = $l;
+		}
+	}
+	close(PL);
+}
+
+if(defined($bench)){
+	my $bin = benchmarks::get_binary_name($bench);
+	$process{$bin} = $bench;
+}
+
+if((not defined($process_name)) and (not defined($process_list_path))){
 	$do_all = 1;
 }
 
-open IN_FILE, "<$input_file_name" or die "Could not open $input_file_name, check path.\n";
+# Get pids from file
+my %pids;
+open INF, "grep -P \"^p,\" $input_file_name |";
+while(my $line = <INF>){
+	chomp($line);
+	if($line =~ /^p,(\d+),(.+)$/){
+		my $p = $1;
+		my $n = $2;
+		# If we care about this process.
+		if($do_all == 1){
+			$pids{$p} = $n;
+		} elsif(defined($process{$n})){
+			$pids{$p} = $process{$n};
+		}
+	}
+}
+close(INF);
 
-my $line = <IN_FILE> | '';
-my $header = $line;
-my @infile = split(/\n/,join("",<IN_FILE>));
-close(IN_FILE);
-print "Making list of PID's for $process_name\n" if(defined($process_name));
-print "Making a list of all process\n" if(not defined($process_name));
-
-foreach $line (@infile){
-	if($line =~ /^p,/){
-		my @split_line = split(/,/,$line);
-		if($do_all == 0){
-			if($split_line[2] eq $process_name){
-				print "Found $process_name, with pid = $split_line[1]\n";
-				if(not defined($pid_hash{$split_line[1]})){
-					$pid_hash{$split_line[1]} = $split_line[2];
-				}
+# All, or sch
+if($what eq "sch" or $what eq "all"){
+	foreach my $pid (keys %pids){
+		open IN, "grep -P \"^s,\d+,$pid,\" $input_file_name |";
+		open OUT,"+>$out_dir/$pids{$pid}.$pid.sch";
+		my $tot_inst = 0.0;
+		my $tot_refcy = 0.0;
+		while(my $l = <IN>){
+                        #       Interval,pid,cpu,insts,ipc,req,giv,prev_state,cy
+			if($l =~ /s,(\d+),$pid,(\d+),(\d+),(\d\.\d+),(\d),(\d),(\d),(\d+)$/){
+				my $interval = $1;
+				my $cpu = $2;
+				my $insts = $3;
+				my $ipc = $4;
+				my $req = $5;
+				my $giv = $6;
+				my $state = $7;
+				my $cy = $8;
+				$tot_inst += 1.0 * ($insts);
+				$tot_refcy += 1.0 * ($cy);
+				print OUT "$tot_inst $tot_refcy $interval $insts $cy $cpu $ipc $state $req $giv\n";
+			} else {
+				print "This should never happen\n";
 			}
 		}
-		else{
-			print "Found $split_line[2], with pid = $split_line[1]\n";
-			if(not defined($pid_hash{$split_line[1]})){
-				$pid_hash{$split_line[1]} = $split_line[2];
-			}
-		}
+		close(IN);
+		close(OUT);
 	}
 }
 
 
-
-foreach my $pid_key (keys(%pid_hash)){
-	my $core = -1;
-
-	foreach $line (@infile){
-		if($line =~ /^s,\d+,$pid_key,/){
-			my @split_line = split(/,/,$line);
-			if($split_line[2] eq $pid_key){
-				if($core == -1){
-					$core = $split_line[1];
-					my $log_file_name = "$output_dir/$pid_hash{$pid_key}.$pid_key.p$core.log";
-					open OUT_FILE, "+>$log_file_name" or die "Could not create $log_file_name\n";
-					print OUT_FILE "$header";
-				}
-				if($split_line[5] == 0 && $split_line[6] == 0 && $split_line[7] == 0){
-					next;
-				}
-				my $new_line = join(',',@split_line[3, 5..$#split_line]);
-				print OUT_FILE "$new_line\n";
-			}
-		}
+if($what eq "mut" or $what eq "all"){
+	open IN, "grep -P \"^m,\" $input_file_name |";
+	open OUT, "+>MUT_GIV";
+	while(my $line = <IN>){
+		chomp($line);
+		         #     interval req cpu giv cpus
+		if($line =~ /^m,(\d+),r,(.+),g,(.+)$/){
+			my $interval = $1;
+			my $req_str = $2;
+			my $giv_str = $3;
+			my @req = split(/,/,$req_str);
+			my @giv = split(/,/,$giv_str);
+			# XXX Work on this based on what works.
 	}
-	close(OUT_FILE);
+	close(IN);
+	close(OUT);
 }
 
+if($what eq "st" or $what eq "all"){
+	open IN, "grep -P \"^t,\" $input_file_name |";
+	open OUT,"+>CPU_ST";
+	while(my $line = <IN>){
+		chomp($line);
+		  #          
+		if($line = ~/t,(\d+),(\d),(\d+)$/){
+			my $cpu = $1;
+			my $state = $2;
+			my $time = $3;
+			# XXX work on this based on what is needed.
+		}
+	}
+}
 
