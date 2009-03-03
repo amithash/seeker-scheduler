@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use Getopt::Long;
-use lib "$ENV{SEEKER_HOME}/AnalysisScripts";
+use lib "$ENV{SEEKER_HOME}/lib";
 use benchmarks; 
 
 my @bench;

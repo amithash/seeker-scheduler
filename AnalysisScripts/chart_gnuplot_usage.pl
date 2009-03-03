@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use lib "$ENV{SEEKER_HOME}/AnalysisScripts/Chart-Gnuplot-0.07/lib";
+use lib "$ENV{SEEKER_HOME}/lib/Chart-Gnuplot-0.07/lib";
 use Chart::Gnuplot;
 
 

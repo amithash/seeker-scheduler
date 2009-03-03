@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use lib "$ENV{SEEKER_HOME}/AnalysisScripts";
+use lib "$ENV{SEEKER_HOME}/lib";
 use benchmarks;
 
 if($#ARGV != 1){
