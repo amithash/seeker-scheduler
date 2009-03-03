@@ -1,4 +1,3 @@
-
 #*************************************************************************
 # Copyright 2008 Amithash Prasad                                         *
 #                                                                        *
@@ -17,27 +16,20 @@
 # You should have received a copy of the GNU General Public License      *
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
 #*************************************************************************
-ifdef CPUS
-EXTRA_ARGS+=CPUS=$(CPUS)
-endif
-ifdef ARCA
-EXTRA_ARGS+=ARCA=$(ARCA)
-endif
+
+include $(SEEKER_HOME)/Makefile.defaults
+
+CFLAGS = -O3
+CC = gcc
+CXX = g++
 
 all:
-	+make -C Module $(EXTRA_ARGS)
-	+make -C Scripts $(EXTRA_ARGS)
-	+make -C SyntheticBenchmarks
-	+make -C lib $(EXTRA_ARGS)
+	${CC} -fPIC -c state_recommendations.c -o state_recommendations.o
+	${CC} -shared -Wl,-soname,libstate_recommendations.so -o libstate_recommendations.so state_recommendations.o -lc 
 
 debug:
-	+make -C Module ARCA=$(ARCA) debug
-	+make -C Scripts ARCA=$(ARCA) CPUS=$(CPUS) debug
-	+make -C SyntheticBenchmarks debug
-	+make -C lib $(EXTRA_ARGS) debug
+	${CC} -fPIC -c state_recommendations.c -o state_recommendations.o -DDEBUG
+	${CC} -shared -Wl,-soname,libstate_recommendations.so -o libstate_recommendations.so state_recommendations.o -lc 
 clean:
-	+make -C Module clean
-	+make -C Scripts clean
-	+make -C SyntheticBenchmarks clean
-	+make -C lib clean
+	rm -f libstate_recommendations.so state_recommendations.o
 
