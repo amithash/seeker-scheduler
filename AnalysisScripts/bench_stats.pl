@@ -40,9 +40,9 @@ open IN, "$ARGV[0]" or die "Opening $ARGV[0] failed with $!\n";
 while(my $line = <IN>){
 	chomp($line);
 	my @l = split(/\s/,$line);
-	my $ipc = $l[3];
-	my $cy = $l[7];
-	my $state = $l[6];
+	my $ipc = $l[4];
+	my $cy = $l[6];
+	my $state = $l[7];
 	if($cy > 100000000000.0){
 		print STDERR "$ARGV[0] warn\n";
 		next;
