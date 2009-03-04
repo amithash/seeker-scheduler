@@ -51,5 +51,6 @@ void hint_dec(int state);
 int init_cpu_states(unsigned int how);
 void exit_cpu_states(void);
 void states_copy(struct state_desc *dest, struct state_desc *src);
+void log_cpu_state(int cpu);
 
 #endif

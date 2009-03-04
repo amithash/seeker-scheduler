@@ -135,6 +135,26 @@ void states_copy(struct state_desc *dest, struct state_desc *src)
 }
 
 /********************************************************************************
+ * log_cpu_state - log the state of cpu. 
+ * @cpu - the cpu for which state has to be logged.
+ *
+ * log with debug the states transition.
+ ********************************************************************************/
+void log_cpu_state(int cpu)
+{
+	struct debug_block *p = NULL;
+	p = get_debug();
+	if(p){
+		p->entry.type = DEBUG_STATE;
+		p->entry.u.state.cpu = cpu;
+		p->entry.u.state.state = cur_cpu_state[cpu];
+		p->entry.u.state.residency_time = ((jiffies - current_jiffies[cpu]) * 1000) / HZ;
+	}
+	current_jiffies[cpu] = jiffies;
+	put_debug(p);
+}
+	
+/********************************************************************************
  * seeker_cpufreq_inform - The inform callback function for seeker_cpufreq,
  * @cpu - The cpu for which frequency has changed.
  * @state - the new state of cpu `cpu`.
@@ -146,9 +166,8 @@ void states_copy(struct state_desc *dest, struct state_desc *src)
  ********************************************************************************/
 int seeker_cpufreq_inform(int cpu, int state)
 {
-	struct debug_block *p = NULL;
+	debug("State of cpu %d changed to %d",cpu,state);
 	if(cur_cpu_state[cpu] != state){
-		debug("State of cpu %d changed to %d",cpu,state);
 		write_seqlock(&states_seq_lock);
 		cpu_set(cpu,states[state].cpumask);
 		cpu_clear(cpu,states[cur_cpu_state[cpu]].cpumask);
@@ -157,16 +176,10 @@ int seeker_cpufreq_inform(int cpu, int state)
 		cur_cpu_state[cpu] = state;
 		write_sequnlock(&states_seq_lock);
 	}
-	p = get_debug();
-	if(p){
-		p->entry.type = DEBUG_STATE;
-		p->entry.u.state.cpu = cpu;
-		p->entry.u.state.state = cur_cpu_state[cpu];
-		p->entry.u.state.residency_time = ((jiffies - current_jiffies[cpu]) * 1000) / HZ;
-	}
-	put_debug(p);
+
+	log_cpu_state(cpu);
+
 	cur_cpu_state[cpu] = state;
-	current_jiffies[cpu] = jiffies;
 
 	return 0;
 }
