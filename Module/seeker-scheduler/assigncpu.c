@@ -230,12 +230,20 @@ void put_mask_from_stats(struct task_struct *ts)
 	 * executed. Hopefully avoids messing
 	 * with short lived tasks.
 	 */
+	this_cpu = smp_processor_id();
+#ifdef DEBUG
+	if(strcmp(ts->comm,"445.gobmk") == 0 ||
+	  strcmp(ts->comm,"456.hmmer") == 0  ||
+	  strcmp(ts->comm,"464.h264ref") == 0  ||
+	  strcmp(ts->comm,"482.sphinx3") == 0){
+		assigncpu_debug("%s, mask=0x%x, cpu %d\n",ts->comm,CPUMASK_TO_UINT(ts->cpus_allowed),this_cpu);
+	}
+#endif
 
 	if (TS_MEMBER(ts, inst) < INST_THRESHOLD)
 		return;
 	tasks_interval = TS_MEMBER(ts, interval);
 
-	this_cpu = smp_processor_id();
 
 	do {
 		seq = read_seqbegin(&states_seq_lock);
@@ -294,7 +302,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	 * overhead
 	 */
 	if(!disable_scheduling)
-		ts->cpus_allowed = mask;
+		set_cpus_allowed_ptr(ts, mask);
 
 	/* Push statastics to the debug buffer if enabled */
 	p = get_debug();
@@ -341,10 +349,10 @@ void initial_mask(struct task_struct *ts)
 	} while (read_seqretry(&states_seq_lock, seq));
 
 	if(cpus_empty(mask)){
-		ts->cpus_allowed = total_online_mask;
+		set_cpus_allowed_ptr(ts, total_online_mask);
 		TS_MEMBER(ts, cpustate) = cur_cpu_state[smp_processor_id()];
 	} else {
-		ts->cpus_allowed = mask;
+		set_cpus_allowed_ptr(ts, mask);
 		TS_MEMBER(ts, cpustate) = state;
 	}
 }
