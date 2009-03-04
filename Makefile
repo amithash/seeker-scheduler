@@ -31,9 +31,9 @@ all:
 	+make -C SyntheticBenchmarks
 
 debug:
-	+make -C Module ARCA=$(ARCA) debug
-	+make -C lib $(EXTRA_ARGS) debug
-	+make -C Scripts ARCA=$(ARCA) CPUS=$(CPUS) debug
+	+make -C Module debug $(EXTRA_ARGS)
+	+make -C lib debug $(EXTRA_ARGS)
+	+make -C Scripts debug $(EXTRA_ARGS)
 	+make -C SyntheticBenchmarks debug
 clean:
 	+make -C Module clean
