@@ -39,8 +39,6 @@
 #include "debug.h"
 #include "tsc_intf.h"
 
-/* Works for a max of 32 processors */
-#define CPUMASK_TO_UINT(x) (*((unsigned int *)&(x)))
 
 /* IPC of 8 Corrospondents to IPC of 1.0. */
 #define IPC(inst,cy) div(((inst)<<3),(cy))

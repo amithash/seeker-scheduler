@@ -34,6 +34,9 @@ void initial_mask(struct task_struct *ts);
  */
 #define INST_THRESHOLD 10000000
 
+/* Works for a max of 32 processors */
+#define CPUMASK_TO_UINT(x) (*((unsigned int *)&(x)))
+
 /* Macro to access 'seeker' added members in
  * task_struct (TS). This is used, to avoid
  * the ugly #define SEEKER_PLUGIN_PATCH

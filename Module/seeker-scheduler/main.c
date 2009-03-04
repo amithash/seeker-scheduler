@@ -358,7 +358,7 @@ static int scheduler_init(void)
 		if(allowed_cpus <= total_online_cpus)
 			total_online_cpus = allowed_cpus;
 	}
-
+	cpus_clear(total_online_mask);
 	for(i=0;i<total_online_cpus;i++){
 		cpu_set(i,total_online_mask);
 	}
