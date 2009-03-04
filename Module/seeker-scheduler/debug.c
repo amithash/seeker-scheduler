@@ -205,10 +205,6 @@ ssize_t seeker_debug_read(struct file *file_ptr, char __user * buf,
 	struct debug_block *log;
 	int i = 0;
 
-	for(i=0;i<total_online_cpus;i++){
-		log_cpu_state(i);
-	}
-
 	if (unlikely
 	    (start_debug == NULL || buf == NULL || file_ptr == NULL
 	     || start_debug == current_debug)) {
@@ -246,6 +242,7 @@ ssize_t seeker_debug_read(struct file *file_ptr, char __user * buf,
 int seeker_debug_open(struct inode *in, struct file *f)
 {
 	debug("Device opened");
+	start_state_logger();
 	dev_open = 1;
 	return 0;
 }
@@ -260,6 +257,7 @@ int seeker_debug_close(struct inode *in, struct file *f)
 {
 	debug("Device closed");
 	dev_open = 0;
+	stop_state_logger();
 	return 0;
 }
 

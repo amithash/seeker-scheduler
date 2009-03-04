@@ -467,6 +467,7 @@ static void scheduler_exit(void)
 		timer_started = 0;
 		cancel_delayed_work(&state_work);
 	}
+	stop_state_logger();
 	debug("Unregistering probes");
 	unregister_jprobe(&jp_scheduler_tick);
 	unregister_jprobe(&jp_sched_fork);

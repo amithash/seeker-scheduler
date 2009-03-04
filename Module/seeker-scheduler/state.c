@@ -28,6 +28,7 @@
 #include <linux/spinlock.h>
 #include <linux/cpumask.h>
 #include <linux/timer.h>
+#include <linux/workqueue.h>
 
 #include <seeker.h>
 
@@ -42,6 +43,7 @@
  ********************************************************************************/
 
 int seeker_cpufreq_inform(int cpu, int state);
+static void state_logger(struct work_struct *w);
 
 /********************************************************************************
  * 			External Variables 					*
@@ -84,11 +86,20 @@ int low_state;
 /* State at the mid */
 int mid_state;
 
+/* scpufreq user structure */
 struct scpufreq_user seeker_scheduler_user = {
 	.inform = &seeker_cpufreq_inform,
 };
 
+/* holds the jiffies of the last time data was read. */
 unsigned long long current_jiffies[NR_CPUS] = {0};
+
+/* Indicates that the state logger is running */
+int state_logger_started = 0;
+
+/* states logger work */
+static DECLARE_DELAYED_WORK(state_logger_work, state_logger);
+
 
 /********************************************************************************
  * 				Functions					*
@@ -182,6 +193,36 @@ int seeker_cpufreq_inform(int cpu, int state)
 	cur_cpu_state[cpu] = state;
 
 	return 0;
+}
+
+void state_logger(struct work_struct *w)
+{
+	int i;
+	for (i=0; i<total_online_cpus; i++){
+		log_cpu_state(i);
+	}
+
+	if (state_logger_started) {
+		schedule_delayed_work(&state_logger_work, (HZ >> 8));
+	}
+
+}
+
+void start_state_logger(void)
+{
+	if(state_logger_started)
+		return;
+	init_timer_deferrable(&state_logger_work.timer);
+	schedule_delayed_work(&state_logger_work, (HZ >> 8));
+	state_logger_started = 1;
+}
+
+void stop_state_logger(void)
+{
+	if(!state_logger_started)
+		return;
+	state_logger_started = 0;
+	cancel_delayed_work(&state_logger_work);
 }
 
 
