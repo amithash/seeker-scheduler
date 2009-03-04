@@ -142,6 +142,10 @@ extern int cur_cpu_state[MAX_STATES];
 /* hwcounters.c: current value of counters */
 extern u64 pmu_val[NR_CPUS][3];
 
+#ifdef DEBUG
+extern char debug_string[1024];
+#endif
+
 /********************************************************************************
  * 			Module Parameters 					*
  ********************************************************************************/
@@ -185,6 +189,7 @@ static void state_change(struct work_struct *w)
 	debug("total negative states warning: %d", negative_newstates);
 	debug("Times mask was empty: %d", mask_empty_cond);
 	debug("Total Events skipped %d", num_events);
+	assigncpu_debug_print();
 #ifdef DEBUG
 	mask_empty_cond = 0;
 	total_schedules = 0;
@@ -355,13 +360,18 @@ static int scheduler_init(void)
 	total_online_cpus = num_online_cpus();
 
 	if(allowed_cpus != 0){
-		if(allowed_cpus <= total_online_cpus)
+		if(allowed_cpus >= 0 && allowed_cpus <= total_online_cpus){
 			total_online_cpus = allowed_cpus;
+		} else {
+			warn("allowed_cpus has to be within [0,%d]",total_online_cpus);
+		}
 	}
 	cpus_clear(total_online_mask);
 	for(i=0;i<total_online_cpus;i++){
 		cpu_set(i,total_online_mask);
 	}
+
+	info("Total online mask = %x\n",CPUMASK_TO_UINT(total_online_mask));
 
 	init_idle_logger();
 

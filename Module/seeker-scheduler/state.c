@@ -288,6 +288,7 @@ int init_cpu_states(unsigned int how)
 
 	switch (how) {
 	case ALL_HIGH:
+		info("All states starting of high");
 		states[total_states - 1].cpus = total_online_cpus;
 		for (i = 0; i < total_online_cpus; i++) {
 			cpu_set(i, states[total_states - 1].cpumask);
@@ -295,6 +296,7 @@ int init_cpu_states(unsigned int how)
 		}
 		break;
 	case ALL_LOW:
+		info("All states starting off low");
 		states[0].cpus = total_online_cpus;
 		for (i = 0; i < total_online_cpus; i++) {
 			cpu_set(i, states[0].cpumask);
@@ -302,6 +304,7 @@ int init_cpu_states(unsigned int how)
 		}
 		break;
 	case BALANCE:
+		info("Half the cpus are starting of high, while the other half low");
 		states[total_states - 1].cpus = total_online_cpus >> 1;
 		states[0].cpus = total_online_cpus - (total_online_cpus >> 1);
 		for (i = 0; i < states[total_states - 1].cpus; i++) {
@@ -314,6 +317,7 @@ int init_cpu_states(unsigned int how)
 		}
 		break;
 	case STATIC_LAYOUT:
+		info("A statc layout was chosen");
 		for (i = 0; i < static_layout_length && i < total_online_cpus;
 		     i++) {
 			if (static_layout[i] < 0)
@@ -332,6 +336,7 @@ int init_cpu_states(unsigned int how)
 		break;
 	case NO_CHANGE:
 	default:
+		info("No change is done. The current freq is read");
 		for (i = 0; i < total_online_cpus; i++) {
 			unsigned int this_freq = get_freq(i);
 			if (this_freq >= total_states) {

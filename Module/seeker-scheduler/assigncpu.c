@@ -40,23 +40,6 @@
 #include "tsc_intf.h"
 
 
-/* IPC of 8 Corrospondents to IPC of 1.0. */
-#define IPC(inst,cy) div(((inst)<<3),(cy))
-#define IPC_0_000 0
-#define IPC_0_125 1
-#define IPC_0_250 2
-#define IPC_0_375 3
-#define IPC_0_500 4
-#define IPC_0_625 5
-#define IPC_0_750 6
-#define IPC_0_875 7
-#define IPC_1_000 8
-
-/* The HIGH IPC Threshold */
-#define IPC_HIGH IPC_0_875
-
-/* The LOW IPC Threshold */
-#define IPC_LOW  IPC_0_625
 
 /********************************************************************************
  * 			External Variables 					*
@@ -107,14 +90,42 @@ extern unsigned int mask_empty_cond;
 #endif
 
 /********************************************************************************
+ * 				global_variables				*
+ ********************************************************************************/
+#ifdef DEBUG
+/* temp storage for assigncpu messages */
+char debug_string[1024] = "";
+#endif
+
+/********************************************************************************
  * 				Local Macros					*
  ********************************************************************************/
+
+
 
 /* macro to perform saturating increment with an exclusive limit */
 #define sat_inc(state,ex_limit) ((state) < ex_limit-1 ? (state)+1 : ex_limit-1)
 
 /* macro to performa a saturating decrement with an inclusive limit */
 #define sat_dec(state,inc_limit) ((state) > inc_limit ? (state)-1 : inc_limit)
+
+/* IPC of 8 Corrospondents to IPC of 1.0. */
+#define IPC(inst,cy) div(((inst)<<3),(cy))
+#define IPC_0_000 0
+#define IPC_0_125 1
+#define IPC_0_250 2
+#define IPC_0_375 3
+#define IPC_0_500 4
+#define IPC_0_625 5
+#define IPC_0_750 6
+#define IPC_0_875 7
+#define IPC_1_000 8
+
+/* The HIGH IPC Threshold */
+#define IPC_HIGH IPC_0_875
+
+/* The LOW IPC Threshold */
+#define IPC_LOW  IPC_0_625
 
 /********************************************************************************
  * 				Functions					*
@@ -260,10 +271,8 @@ void put_mask_from_stats(struct task_struct *ts)
 		}
 		if (new_state >= 0 && new_state < total_states)
 			mask = states[new_state].cpumask;
-#ifdef DEBUG
 		else
 			negative_newstates++;
-#endif
 
 	} while (read_seqretry(&states_seq_lock, seq));
 
@@ -331,8 +340,10 @@ void initial_mask(struct task_struct *ts)
 
 	if(cpus_empty(mask)){
 		ts->cpus_allowed = total_online_mask;
+		TS_MEMBER(ts, cpustate) = cur_cpu_state[smp_processor_id()];
 	} else {
 		ts->cpus_allowed = mask;
+		TS_MEMBER(ts, cpustate) = state;
 	}
 }
 
