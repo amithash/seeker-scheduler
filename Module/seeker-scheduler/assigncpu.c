@@ -271,8 +271,10 @@ void put_mask_from_stats(struct task_struct *ts)
 		}
 		if (new_state >= 0 && new_state < total_states)
 			mask = states[new_state].cpumask;
+#ifdef DEBUG
 		else
 			negative_newstates++;
+#endif
 
 	} while (read_seqretry(&states_seq_lock, seq));
 
