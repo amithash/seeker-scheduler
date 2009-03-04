@@ -30,6 +30,7 @@
 #include <linux/sched.h>
 #include <linux/spinlock.h>
 #include <linux/string.h>
+#include <linux/workqueue.h>
 
 #include <seeker.h>
 
@@ -205,6 +206,27 @@ inline int get_closest_state(int state)
 	return ret_state;
 }
 
+struct mask_work{
+	struct work_struct w;
+	struct task_struct *t;
+};
+
+void change_cpus(struct work_struct *w)
+{
+	struct mask_work *mw = container_of(w,struct mask_work,w);
+	struct task_struct *ts = mw->t;
+	set_cpus_allowed_ptr(ts, &(ts->cpus_allowed));
+	kfree(mw);
+}
+
+void put_work(struct task_struct *ts)
+{
+	struct mask_work *mw = kmalloc(sizeof(struct mask_work),GFP_KERNEL);
+	INIT_WORK(&(mw->w),change_cpus);
+	schedule_work(&(mw->w));
+}
+
+
 /********************************************************************************
  * put_mask_from_stats - The fate of "ts" shall be decided!
  * @ts - The task 
@@ -213,6 +235,7 @@ inline int get_closest_state(int state)
  * Evaluates IPC and decides what state it needs and appropiately assigns
  * the cpus_allowed element. 
  ********************************************************************************/
+
 void put_mask_from_stats(struct task_struct *ts)
 {
 	int new_state = -1;
@@ -293,8 +316,11 @@ void put_mask_from_stats(struct task_struct *ts)
 	 * function, but this is done to have the same 
 	 * overhead
 	 */
-	if(!disable_scheduling)
+	if(!disable_scheduling){
 		ts->cpus_allowed = mask;
+		put_work(ts);
+	}
+
 
 	/* Push statastics to the debug buffer if enabled */
 	p = get_debug();
@@ -347,5 +373,7 @@ void initial_mask(struct task_struct *ts)
 		ts->cpus_allowed = mask;
 		TS_MEMBER(ts, cpustate) = state;
 	}
+	put_work(ts);
 }
+
 
