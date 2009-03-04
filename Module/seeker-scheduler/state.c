@@ -38,6 +38,9 @@
 #include "mutate.h"
 #include "debug.h"
 
+/* Define the logger interval */
+#define LOGGER_INTERVAL (HZ >> 8)
+
 /********************************************************************************
  * 			Function Declarations 					*
  ********************************************************************************/
@@ -195,6 +198,12 @@ int seeker_cpufreq_inform(int cpu, int state)
 	return 0;
 }
 
+/********************************************************************************
+ * state_logger - Logs the state of all cpus. started as a delayed work.
+ * @w - the work struct responsible, not used.
+ *
+ * Log states of all cpus. and schedule self for later.
+ ********************************************************************************/
 void state_logger(struct work_struct *w)
 {
 	int i;
@@ -203,20 +212,30 @@ void state_logger(struct work_struct *w)
 	}
 
 	if (state_logger_started) {
-		schedule_delayed_work(&state_logger_work, (HZ >> 8));
+		schedule_delayed_work(&state_logger_work, LOGGER_INTERVAL);
 	}
 
 }
 
+/********************************************************************************
+ * start_state_logger - Start the state logger task.
+ *
+ * Start the state logger task. 
+ ********************************************************************************/
 void start_state_logger(void)
 {
 	if(state_logger_started)
 		return;
 	init_timer_deferrable(&state_logger_work.timer);
-	schedule_delayed_work(&state_logger_work, (HZ >> 8));
+	schedule_delayed_work(&state_logger_work, LOGGER_INTERVAL);
 	state_logger_started = 1;
 }
 
+/********************************************************************************
+ * stop_state_logger - Stop the state logger task
+ *
+ * Stop the state logger task. 
+ ********************************************************************************/
 void stop_state_logger(void)
 {
 	if(!state_logger_started)
