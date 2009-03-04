@@ -32,6 +32,7 @@
 #include <seeker.h>
 
 #include "debug.h"
+#include "state.h"
 
 /********************************************************************************
  * 			Function Declarations 					*
@@ -41,6 +42,13 @@ int seeker_debug_close(struct inode *in, struct file *f);
 int seeker_debug_open(struct inode *in, struct file *f);
 ssize_t seeker_debug_read(struct file *file_ptr, char __user * buf,
 			  size_t count, loff_t * offset);
+
+/********************************************************************************
+ * 			External Variables 					*
+ ********************************************************************************/
+
+/* main.c: total online cpus */
+extern int total_online_cpus;
 
 /********************************************************************************
  * 			Global Datastructures 					*
@@ -196,6 +204,11 @@ ssize_t seeker_debug_read(struct file *file_ptr, char __user * buf,
 {
 	struct debug_block *log;
 	int i = 0;
+
+	for(i=0;i<total_online_cpus;i++){
+		log_cpu_state(i);
+	}
+
 	if (unlikely
 	    (start_debug == NULL || buf == NULL || file_ptr == NULL
 	     || start_debug == current_debug)) {
