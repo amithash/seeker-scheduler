@@ -26,18 +26,18 @@ endif
 
 all:
 	+make -C Module $(EXTRA_ARGS)
+	+make -C lib $(EXTRA_ARGS)
 	+make -C Scripts $(EXTRA_ARGS)
 	+make -C SyntheticBenchmarks
-	+make -C lib $(EXTRA_ARGS)
 
 debug:
 	+make -C Module ARCA=$(ARCA) debug
+	+make -C lib $(EXTRA_ARGS) debug
 	+make -C Scripts ARCA=$(ARCA) CPUS=$(CPUS) debug
 	+make -C SyntheticBenchmarks debug
-	+make -C lib $(EXTRA_ARGS) debug
 clean:
 	+make -C Module clean
+	+make -C lib clean
 	+make -C Scripts clean
 	+make -C SyntheticBenchmarks clean
-	+make -C lib clean
 
