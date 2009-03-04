@@ -27,6 +27,7 @@
 #include <linux/init.h>
 #include <linux/spinlock.h>
 #include <linux/cpumask.h>
+#include <linux/timer.h>
 
 #include <seeker.h>
 
