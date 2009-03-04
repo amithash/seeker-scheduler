@@ -14,7 +14,7 @@ my %bench_script = (
 	"milc" => "433.milc.ref0.sh",
 	"hmmer" => "456.hmmer.ref1.sh",
 	"h264ref" => "464.h264ref.ref2.sh",
-	"astar" => "473.astar.ref1.sh",
+	"astar" => "473.astar.ref1.sh"
 );
 
 my %bench_bin = (
@@ -31,8 +31,34 @@ my %bench_bin = (
 	"milc" => "433.milc",
 	"hmmer" => "456.hmmer",
 	"h264ref" => "464.h264ref",
-	"astar" => "473.astar",
+	"astar" => "473.astar"
 );
+
+my %bin_bench = (
+	"401.bzip2" => "bzip2",
+	"445.gobmk" => "gobmk",
+	"458.sjeng" => "sjeng",
+	"470.lbm" => "lbm",
+	"482.sphinx3" => "sphinx3",
+	"429.mcf" => "mcf",
+	"453.povray" => "povray",
+	"462.libquantum" => "libquantum",
+	"471.omnetpp" => "omnetpp",
+	"483.xalancbmk" => "xalancbmk",
+	"433.milc" => "milc",
+	"456.hmmer" => "hmmer",
+	"464.h264ref" => "h264ref",
+	"473.astar" => "astar"
+);
+
+sub get_bench_name{
+	my $bin = shift;
+	if(defined($bin_bench{$bin})){
+		return $bin_bench{$bin};
+	} else {
+		return "";
+	}
+}
 
 sub get_binary_name{
 	my $bench = shift;
