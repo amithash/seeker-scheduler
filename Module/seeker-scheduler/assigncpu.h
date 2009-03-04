@@ -26,6 +26,7 @@
 #define __ASSIGNCPU_H_
 
 void put_mask_from_stats(struct task_struct *ts);
+void initial_mask(struct task_struct *ts);
 
 /* Keep the threshold at 1M Instructions
  * This removes artifcats from IPC and 

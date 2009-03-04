@@ -94,6 +94,9 @@ extern int disable_scheduling;
 /* states.c: states seq_lock */
 extern seqlock_t states_seq_lock;
 
+/* main.c: mask of all allowed/online cpus */
+extern cpumask_t total_online_mask;
+
 #ifdef DEBUG
 /* main.c: Debugging count of the number of times schedules was called */
 extern unsigned int total_schedules;
@@ -311,3 +314,27 @@ void put_mask_from_stats(struct task_struct *ts)
 	total_schedules++;
 #endif
 }
+
+void initial_mask(struct task_struct *ts)
+{
+	int state = 0;
+	cpumask_t mask = CPU_MASK_NONE;
+	unsigned seq;
+	do {
+		seq = read_seqbegin(&states_seq_lock);
+		state = get_closest_state(0);
+		if (state >= 0 && state < total_states)
+			mask = states[state].cpumask;
+#ifdef DEBUG
+		else
+			negative_newstates++;
+#endif
+	} while (read_seqretry(&states_seq_lock, seq));
+
+	if(cpus_empty(mask)){
+		ts->cpus_allowed = total_online_mask;
+	} else {
+		ts->cpus_allowed = mask;
+	}
+}
+

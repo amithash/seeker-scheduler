@@ -31,6 +31,7 @@
 #include <linux/sched.h>
 #include <linux/workqueue.h>
 #include <linux/interrupt.h>
+#include <linux/cpumask.h>
 
 #include <seeker.h>
 
@@ -110,6 +111,9 @@ struct jprobe jp_release_thread = {
 
 /* Contains the value of num_online_cpus(), updated by init */
 int total_online_cpus = 0;
+
+/* Mask of all allowed cpus */
+cpumask_t total_online_mask = CPU_MASK_NONE;
 
 #ifdef DEBUG
 /* counts the total number of times schedule was called */
@@ -286,7 +290,9 @@ void inst_sched_fork(struct task_struct *new, int clone_flags)
 	TS_MEMBER(new, ref_cy) = get_tsc_cycles();
 	TS_MEMBER(new, ref_cy) = 0;
 	TS_MEMBER(new, re_cy) = 0;
-	TS_MEMBER(new, cpustate) = cur_cpu_state[smp_processor_id()];
+
+	initial_mask(new);
+
 	jprobe_return();
 }
 
@@ -338,6 +344,7 @@ static int scheduler_init(void)
 {
 #ifdef SEEKER_PLUGIN_PATCH
 	int probe_ret;
+	int i;
 	if (static_layout_length != 0) {
 		init = STATIC_LAYOUT;
 	}
@@ -350,6 +357,10 @@ static int scheduler_init(void)
 	if(allowed_cpus != 0){
 		if(allowed_cpus <= total_online_cpus)
 			total_online_cpus = allowed_cpus;
+	}
+
+	for(i=0;i<total_online_cpus;i++){
+		cpu_set(i,total_online_mask);
 	}
 
 	init_idle_logger();
