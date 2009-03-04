@@ -142,9 +142,6 @@ extern int cur_cpu_state[MAX_STATES];
 /* hwcounters.c: current value of counters */
 extern u64 pmu_val[NR_CPUS][3];
 
-#ifdef DEBUG
-extern char debug_string[1024];
-#endif
 
 /********************************************************************************
  * 			Module Parameters 					*
@@ -189,7 +186,6 @@ static void state_change(struct work_struct *w)
 	debug("total negative states warning: %d", negative_newstates);
 	debug("Times mask was empty: %d", mask_empty_cond);
 	debug("Total Events skipped %d", num_events);
-	assigncpu_debug_print();
 #ifdef DEBUG
 	mask_empty_cond = 0;
 	total_schedules = 0;

@@ -61,6 +61,10 @@ extern int static_layout[NR_CPUS];
 /* main.c: Contains the number of cpu's static layout */
 extern int static_layout_length;
 
+#ifdef DEBUG
+/* assigncpu.c: the debug string */
+extern char debug_string[1024];
+#endif
 /********************************************************************************
  * 			Global Datastructures 					*
  ********************************************************************************/
@@ -207,6 +211,9 @@ int seeker_cpufreq_inform(int cpu, int state)
 void state_logger(struct work_struct *w)
 {
 	int i;
+
+	assigncpu_debug_print();
+
 	for (i=0; i<total_online_cpus; i++){
 		log_cpu_state(i);
 	}
