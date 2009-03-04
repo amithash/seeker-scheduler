@@ -19,30 +19,35 @@
 
 include $(SEEKER_HOME)/Makefile.defaults
 
+ifeq ($(MAKECMDGOALS),debug)
+CFLAGS = -O0 -DDEBUG
+else
 CFLAGS = -O3
+endif
+
 CC = gcc
 CXX = g++
-INCLUDE := -I$(shell pwd)/../Module/include
+SEEKER_INCLUDE := -I$(shell pwd)/../Module/include
+STATE_LIB := $(shell pwd)/../lib
 
-all:
-	${CC} ${CFLAGS} debugd.c -o debugd -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS)
-	${CC} ${CFLAGS} decodelog.c -o decodelog -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS)
-	${CXX} ${CFLAGS} interp.C -o interp
-	${CXX} ${CFLAGS} maxmin.C -o maxmin
-	${CXX} ${CFLAGS} smooth.C -o smooth
-	${CC} -fPIC -c state_recommendations.c -o state_recommendations.o
-	${CC} -shared -Wl,-soname,libstate_recommendations.so -o libstate_recommendations.so state_recommendations.o -lc 
-	${CC} test_recommendations.c -o test_recommendations -lstate_recommendations -L.
 
-debug:
-	${CC} ${CFLAGS} debugd.c -o debugd -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS) -DDEBUG
-	${CC} ${CFLAGS} decodelog.c -o decodelog -DARCH_$(ARCA) $(INCLUDE) -DNR_CPUS=$(CPUS) -DDEBUG
-	${CXX} ${CFLAGS} interp.C -o interp -DDEBUG
-	${CXX} ${CFLAGS} maxmin.C -o maxmin -DDEBUG
-	${CXX} ${CFLAGS} smooth.C -o smooth -DDEBUG
-	${CC} -fPIC -c state_recommendations.c -o state_recommendations.o -DDEBUG
-	${CC} -shared -Wl,-soname,libstate_recommendations.so -o libstate_recommendations.so state_recommendations.o -lc 
-	${CC} test_recommendations.c -o test_recommendations -lstate_recommendations -L. -DDEBUG
+all: decodelog debugd test_recommendations interp maxmin smooth
+
+debug: decodelog debugd test_recommendations interp maxmin smooth
+
+decodelog: decodelog.c
+	$(CC) $(CFLAGS) $? $(LDFLAGS) $(SEEKER_INCLUDE) -DNR_CPUS=$(CPUS) -DARCH_$(ARCA) -o $@
+debugd: debugd.c
+	$(CC) $(CFLAGS) $? $(LDFLAGS) $(SEEKER_INCLUDE) -DNR_CPUS=$(CPUS) -DARCH_$(ARCA) -o $@
+test_recommendations: test_recommendations.c
+	$(CC) $(CFLAGS) $? $(LDFLAGS) -lstate_recommendations -L$(STATE_LIB) -o $@
+interp: interp.C
+	$(CXX) $(CFLAGS) $? $(LDFLAGS) -o $@
+maxmin: maxmin.C
+	$(CXX) $(CFLAGS) $? $(LDFLAGS) -o $@
+smooth: smooth.C
+	$(CXX) $(CFLAGS) $? $(LDFLAGS) -o $@
+
 clean:
-	rm -f decodelog interp maxmin smooth debugd test_recommendations libstate_recommendations.so state_recommendations.o
+	rm -f decodelog interp maxmin smooth debugd test_recommendations
 
