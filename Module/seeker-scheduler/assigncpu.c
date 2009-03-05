@@ -209,20 +209,23 @@ inline int get_closest_state(int state)
 struct mask_work{
 	struct work_struct w;
 	struct task_struct *t;
+	cpumask_t mask;
 };
 
 void change_cpus(struct work_struct *w)
 {
 	struct mask_work *mw = container_of(w,struct mask_work,w);
 	struct task_struct *ts = mw->t;
-	set_cpus_allowed_ptr(ts, &(ts->cpus_allowed));
+	set_cpus_allowed_ptr(ts, &(mw->mask));
 	kfree(mw);
 }
 
-void put_work(struct task_struct *ts)
+void put_work(struct task_struct *ts, cpumask_t mask)
 {
 	struct mask_work *mw = kmalloc(sizeof(struct mask_work),GFP_KERNEL);
 	INIT_WORK(&(mw->w),change_cpus);
+	mw->mask = mask;
+	mw->t = ts;
 	schedule_work(&(mw->w));
 }
 
@@ -325,8 +328,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	 * overhead
 	 */
 	if(!disable_scheduling){
-		ts->cpus_allowed = mask;
-		put_work(ts);
+		put_work(ts,mask);
 	}
 
 	/* Push statastics to the debug buffer if enabled */
@@ -374,13 +376,12 @@ void initial_mask(struct task_struct *ts)
 	} while (read_seqretry(&states_seq_lock, seq));
 
 	if(cpus_empty(mask)){
-		ts->cpus_allowed = total_online_mask;
+		mask = total_online_mask;
 		TS_MEMBER(ts, cpustate) = cur_cpu_state[smp_processor_id()];
 	} else {
-		ts->cpus_allowed = mask;
 		TS_MEMBER(ts, cpustate) = state;
 	}
-	put_work(ts);
+	put_work(ts,mask);
 }
 
 
