@@ -380,6 +380,8 @@ static int scheduler_init(void)
 
 	info("Total online mask = %x\n",CPUMASK_TO_UINT(total_online_mask));
 
+	init_mig_pool();
+
 	init_idle_logger();
 
 	if (init_tsc_intf()) {

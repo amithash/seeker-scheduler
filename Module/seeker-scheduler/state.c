@@ -185,7 +185,7 @@ void log_cpu_state(int cpu)
  ********************************************************************************/
 int seeker_cpufreq_inform(int cpu, int state)
 {
-	debug("State of cpu %d changed to %d",cpu,state);
+	info("State of cpu %d changed to %d",cpu,state);
 	if(cur_cpu_state[cpu] != state){
 		write_seqlock(&states_seq_lock);
 		cpu_set(cpu,states[state].cpumask);

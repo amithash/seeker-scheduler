@@ -208,12 +208,12 @@ inline int get_closest_state(int state)
 }
 
 struct mask_work{
-	struct work_struct work;
+	struct delayed_work work;
 	struct task_struct *task;
 	cpumask_t mask;
 	int free;
 };
-DECLARE_SPINLOCK(mig_pool_lock);
+static DEFINE_SPINLOCK(mig_pool_lock);
 
 #define MIG_POOL_SIZE (NR_CPUS * 4)
 
@@ -223,12 +223,20 @@ struct mask_work mig_pool[MIG_POOL_SIZE];
 void change_cpus(struct work_struct *w)
 {
 	int retval;
-	struct mask_work *mw = container_of(w,struct mask_work,work);
+	struct delayed_work *wrk = container_of(w,struct delayed_work,work);
+	struct mask_work *mw = container_of(wrk,struct mask_work,work);
 	struct task_struct *ts = mw->task;
-	
+	debug("Changing state if %s to 0x%x",ts->comm,
+			CPUMASK_TO_UINT(mw->mask));
+	if(cpus_equal(mw->mask,ts->cpus_allowed)){
+		debug("No change required");
+		return;
+	}
+
 	retval = set_cpus_allowed_ptr(ts, &(mw->mask));
 	if(retval)
 		set_cpus_allowed_ptr(ts, &(mw->mask));
+
 	mw->free = 1;
 }
 
@@ -237,7 +245,7 @@ void init_mig_pool(void)
 {
 	int i;
 	for(i=0; i < MIG_POOL_SIZE; i++){
-		INIT_WORK(&(mig_pool[i].work), change_cpus);
+		INIT_DELAYED_WORK(&(mig_pool[i].work), change_cpus);
 		mig_pool[i].free = 1;
 	}
 	spin_lock_init(&mig_pool_lock);
@@ -260,10 +268,10 @@ void put_work(struct task_struct *ts, cpumask_t mask)
 		return;
 	}
 
-	PREPARE_WORK(&(mig_pool[i].work),change_cpus);
+	PREPARE_DELAYED_WORK(&(mig_pool[i].work),change_cpus);
 	mig_pool[i].mask = mask;
 	mig_pool[i].task = ts;
-	schedule_work(&(mig_pool[i].work));
+	schedule_delayed_work(&(mig_pool[i].work),1);
 }
 
 
@@ -359,14 +367,6 @@ void put_mask_from_stats(struct task_struct *ts)
 		return;
 	}
 
-	/* Assign only if we have not disabled scheduling 
-	 * NOTE: Of course, we do not need to execute this
-	 * function, but this is done to have the same 
-	 * overhead
-	 */
-	if(!disable_scheduling){
-		put_work(ts,mask);
-	}
 
 	/* Push statastics to the debug buffer if enabled */
 	p = get_debug();
@@ -394,6 +394,14 @@ void put_mask_from_stats(struct task_struct *ts)
 #ifdef DEBUG
 	total_schedules++;
 #endif
+	/* Assign only if we have not disabled scheduling 
+	 * NOTE: Of course, we do not need to execute this
+	 * function, but this is done to have the same 
+	 * overhead
+	 */
+	if(!disable_scheduling){
+		put_work(ts,mask);
+	}
 }
 
 void initial_mask(struct task_struct *ts)
