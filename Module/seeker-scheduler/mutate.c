@@ -381,6 +381,7 @@ void choose_layout(int delta)
 	int total_iter = 0;
 	int friends = (total_states >> 1) - 1;
 	int total_provided_cpus = 0;
+	int total_selected_cpus = 0;
 
 	interval_count++;
 	if (delta < 1)
@@ -415,6 +416,30 @@ void choose_layout(int delta)
 	if (total_demand != load)
 		total_demand = load;
 
+
+	/* First lets find "total_demand" processors and wake them up */
+	for(i=0; i<total_demand; i++){
+		int total = 0;
+		unsigned int min_sleep_time = -1;
+		unsigned int wake_up_proc = -1;
+		for(j=0; j < total_online_cpus; j++){
+			if(info[j].sleep_time == 0){
+				total++;
+				continue;
+			}
+			if(info[j].sleep_time < min_sleep_time){
+				wake_up_proc = j;
+				min_sleep_time = info[j].sleep_time;
+			}
+		}
+		if(total >= total_demand)
+			break;
+		if(wake_up_proc < total_online_cpus){
+			info[wake_up_proc].sleep_time = 0;
+			info[wake_up_proc].awake = 1;
+		}
+	}
+				
 	/* Now for each delta to spend, hold an auction */
 	while (total > MIN_REQUESTS && delta > 0
 	       && total_iter < total_online_cpus) {
@@ -449,6 +474,7 @@ void choose_layout(int delta)
 		/* The best processor is best_proc */
 		/* Poison the choosen processor element */
 		poison[winner_best_proc] = 0;
+		total_selected_cpus++;
 
 		/* Subtract that from the delta */
 		delta -= ABS(cur_cpu_state[winner_best_proc] - winner);
@@ -457,6 +483,15 @@ void choose_layout(int delta)
 		new_cpu_state[winner_best_proc] = winner;
 
 		/* Continue the auction if delta > 0  or till all cpus are allocated */
+	}
+
+	for(i=0; i < total_online_cpus; i++){
+		if(poison[i] == 0)
+			continue;
+		if(total_selected_cpus >= load)
+			break;
+		if(info[i].sleep_time == 0)
+			poison[i] = 0;
 	}
 
 	debug("End of auction");
@@ -543,3 +578,4 @@ void choose_layout(int delta)
 		}
 	}
 }
+

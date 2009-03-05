@@ -291,6 +291,7 @@ int init_cpu_states(unsigned int how)
 		states[i].state = i;
 		states[i].cpus = 0;
 		states[i].demand = 0;
+		states[i].usage = 0;
 		cpus_clear(states[i].cpumask);
 	}
 

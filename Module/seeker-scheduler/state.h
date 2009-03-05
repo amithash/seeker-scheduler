@@ -40,6 +40,7 @@ struct state_desc {
 	cpumask_t cpumask;
 	short cpus;
 	unsigned int demand;
+	unsigned int usage;
 };
 
 /********************************************************************************
