@@ -207,15 +207,15 @@ inline int get_closest_state(int state)
 }
 
 struct mask_work{
-	struct work_struct w;
-	struct task_struct *t;
+	struct work_struct work;
+	struct task_struct *task;
 	cpumask_t mask;
 };
 
 void change_cpus(struct work_struct *w)
 {
-	struct mask_work *mw = container_of(w,struct mask_work,w);
-	struct task_struct *ts = mw->t;
+	struct mask_work *mw = container_of(w,struct mask_work,work);
+	struct task_struct *ts = mw->task;
 	set_cpus_allowed_ptr(ts, &(mw->mask));
 	kfree(mw);
 }
@@ -223,10 +223,10 @@ void change_cpus(struct work_struct *w)
 void put_work(struct task_struct *ts, cpumask_t mask)
 {
 	struct mask_work *mw = kmalloc(sizeof(struct mask_work),GFP_KERNEL);
-	INIT_WORK(&(mw->w),change_cpus);
+	INIT_WORK(&(mw->work),change_cpus);
 	mw->mask = mask;
-	mw->t = ts;
-	schedule_work(&(mw->w));
+	mw->task = ts;
+	schedule_work(&(mw->work));
 }
 
 
