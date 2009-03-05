@@ -211,7 +211,14 @@ struct mask_work{
 	struct work_struct work;
 	struct task_struct *task;
 	cpumask_t mask;
+	int free;
 };
+DECLARE_SPINLOCK(mig_pool_lock);
+
+#define MIG_POOL_SIZE (NR_CPUS * 4)
+
+struct mask_work mig_pool[MIG_POOL_SIZE];
+
 
 void change_cpus(struct work_struct *w)
 {
@@ -219,25 +226,44 @@ void change_cpus(struct work_struct *w)
 	struct mask_work *mw = container_of(w,struct mask_work,work);
 	struct task_struct *ts = mw->task;
 	
-	get_online_cpus();
-	get_task_struct(ts);
 	retval = set_cpus_allowed_ptr(ts, &(mw->mask));
 	if(retval)
 		set_cpus_allowed_ptr(ts, &(mw->mask));
-	put_task_struct(ts);
-	put_online_cpus();
-	
-	//sched_setaffinity(ts->pid,&(mw->mask));
-	kfree(mw);
+	mw->free = 1;
 }
+
+
+void init_mig_pool(void)
+{
+	int i;
+	for(i=0; i < MIG_POOL_SIZE; i++){
+		INIT_WORK(&(mig_pool[i].work), change_cpus);
+		mig_pool[i].free = 1;
+	}
+	spin_lock_init(&mig_pool_lock);
+}
+
 
 void put_work(struct task_struct *ts, cpumask_t mask)
 {
-	struct mask_work *mw = kmalloc(sizeof(struct mask_work),GFP_KERNEL);
-	INIT_WORK(&(mw->work),change_cpus);
-	mw->mask = mask;
-	mw->task = ts;
-	schedule_work(&(mw->work));
+	int i;
+	spin_lock(&mig_pool_lock);
+	for(i=0; i < MIG_POOL_SIZE; i++) {
+		if(mig_pool[i].free == 1){
+			mig_pool[i].free = 0;
+			break;
+		}
+	}
+	spin_unlock(&mig_pool_lock);
+	if(i == MIG_POOL_SIZE){
+		assigncpu_debug("Migrtion pool is empty");
+		return;
+	}
+
+	PREPARE_WORK(&(mig_pool[i].work),change_cpus);
+	mig_pool[i].mask = mask;
+	mig_pool[i].task = ts;
+	schedule_work(&(mig_pool[i].work));
 }
 
 
@@ -380,10 +406,6 @@ void initial_mask(struct task_struct *ts)
 		state = get_closest_state(0);
 		if (state >= 0 && state < total_states)
 			mask = states[state].cpumask;
-#ifdef DEBUG
-		else
-			negative_newstates++;
-#endif
 	} while (read_seqretry(&states_seq_lock, seq));
 
 	if(cpus_empty(mask)){
