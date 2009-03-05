@@ -42,6 +42,17 @@
 #include "tsc_intf.h"
 
 
+/********************************************************************************
+ * 			Local Prototype 					*
+ ********************************************************************************/
+
+struct mask_work{
+	struct delayed_work work;
+	struct task_struct *task;
+	cpumask_t mask;
+	int free;
+};
+
 
 /********************************************************************************
  * 			External Variables 					*
@@ -91,19 +102,10 @@ extern unsigned int negative_newstates;
 extern unsigned int mask_empty_cond;
 #endif
 
-/********************************************************************************
- * 				global_variables				*
- ********************************************************************************/
-#ifdef DEBUG
-/* temp storage for assigncpu messages */
-char debug_string[1024] = "";
-#endif
 
 /********************************************************************************
  * 				Local Macros					*
  ********************************************************************************/
-
-
 
 /* macro to perform saturating increment with an exclusive limit */
 #define sat_inc(state,ex_limit) ((state) < ex_limit-1 ? (state)+1 : ex_limit-1)
@@ -128,6 +130,24 @@ char debug_string[1024] = "";
 
 /* The LOW IPC Threshold */
 #define IPC_LOW  IPC_0_625
+
+/* migration pool size */
+#define MIG_POOL_SIZE (NR_CPUS * 4)
+
+/********************************************************************************
+ * 				global_variables				*
+ ********************************************************************************/
+#ifdef DEBUG
+/* temp storage for assigncpu messages */
+char debug_string[1024] = "";
+#endif
+
+/* migration pool spin lock */
+static DEFINE_SPINLOCK(mig_pool_lock);
+
+/* The migration pool */
+struct mask_work mig_pool[MIG_POOL_SIZE];
+
 
 /********************************************************************************
  * 				Functions					*
@@ -207,19 +227,13 @@ inline int get_closest_state(int state)
 	return ret_state;
 }
 
-struct mask_work{
-	struct delayed_work work;
-	struct task_struct *task;
-	cpumask_t mask;
-	int free;
-};
-static DEFINE_SPINLOCK(mig_pool_lock);
 
-#define MIG_POOL_SIZE (NR_CPUS * 4)
-
-struct mask_work mig_pool[MIG_POOL_SIZE];
-
-
+/********************************************************************************
+ * change_cpus - Perform migration if required.
+ * @w - The work struct responsible for this call.
+ *
+ * Perfom a migration if required for mw->task to mask mw->mask
+ ********************************************************************************/
 void change_cpus(struct work_struct *w)
 {
 	int retval;
@@ -241,6 +255,11 @@ void change_cpus(struct work_struct *w)
 }
 
 
+/********************************************************************************
+ * init_mig_pool - initialize the migration pool
+ *
+ * Initialize all elements in the migration pool.
+ ********************************************************************************/
 void init_mig_pool(void)
 {
 	int i;
@@ -252,6 +271,14 @@ void init_mig_pool(void)
 }
 
 
+/********************************************************************************
+ * put_work - Start a migration work item.
+ * @ts - The task for which a change might be required.
+ * @mask - the mask for which ts should execute on.
+ *
+ * Start some delayed work to change the current executed cpus for ts
+ * to mask.
+ ********************************************************************************/
 void put_work(struct task_struct *ts, cpumask_t mask)
 {
 	int i;
@@ -404,6 +431,12 @@ void put_mask_from_stats(struct task_struct *ts)
 	}
 }
 
+/********************************************************************************
+ * initial_mask - initialize mask for the starting task.
+ * @ts - the task which is about to start.
+ *
+ * Initialize the task which is about to start.
+ ********************************************************************************/
 void initial_mask(struct task_struct *ts)
 {
 	int state = 0;
