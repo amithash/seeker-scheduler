@@ -486,12 +486,14 @@ void choose_layout(int delta)
 	}
 
 	for(i=0; i < total_online_cpus; i++){
-		if(poison[i] == 0)
-			continue;
 		if(total_selected_cpus >= load)
 			break;
-		if(info[i].sleep_time == 0)
+		if(poison[i] == 0)
+			continue;
+		if(info[i].sleep_time == 0){
+			total_selected_cpus++;
 			poison[i] = 0;
+		}
 	}
 
 	debug("End of auction");
