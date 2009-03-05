@@ -237,6 +237,18 @@ void inst_release_thread(struct task_struct *t)
 
 }
 
+int is_blacklist_task(struct task_struct *p)
+{
+	if(strncmp(p->comm,"events/",7) == 0)
+		return 1;
+	if(strncmp(p->comm,"migration/",10) == 0)
+		return 1;
+	if(strncmp(p->comm,"ksoftirqd/",10) == 0)
+		return 1;
+	return 0;
+}
+
+
 /*******************************************************************************
  * inst_schedule - Probe for schedule
  * @p - Not used
@@ -253,6 +265,9 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	int cpu = smp_processor_id();
 	if (!ts[cpu]
 	    || TS_MEMBER(ts[cpu], seeker_scheduled) != SEEKER_MAGIC_NUMBER)
+		return 0;
+
+	if(is_blacklist_task(ts[cpu]))
 		return 0;
 
 	read_counters(cpu);
@@ -292,7 +307,8 @@ void inst_sched_fork(struct task_struct *new, int clone_flags)
 	TS_MEMBER(new, ref_cy) = 0;
 	TS_MEMBER(new, re_cy) = 0;
 
-	initial_mask(new);
+	if(is_blacklist_task(new) == 0)
+		initial_mask(new);
 
 	jprobe_return();
 }
@@ -316,20 +332,15 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 		goto get_out;
 	}
 
+
 	read_counters(cpu);
 	TS_MEMBER(from, inst) += pmu_val[cpu][0];
 	TS_MEMBER(from, re_cy) += pmu_val[cpu][1];
 	TS_MEMBER(from, ref_cy) += get_tsc_cycles();
 	clear_counters(cpu);
 
-	if (strncmp(from->comm, "events", sizeof(char) * 6) == 0) {
-#ifdef DEBUG
-		num_events++;
-#endif
-		goto get_out;
-	}
-
-	put_mask_from_stats(from);
+	if(is_blacklist_task(from) == 0)
+		put_mask_from_stats(from);
 get_out:
 	jprobe_return();
 }

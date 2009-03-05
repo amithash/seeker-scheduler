@@ -31,6 +31,7 @@
 #include <linux/spinlock.h>
 #include <linux/string.h>
 #include <linux/workqueue.h>
+#include <linux/cpu.h>
 
 #include <seeker.h>
 
@@ -214,9 +215,19 @@ struct mask_work{
 
 void change_cpus(struct work_struct *w)
 {
+	int retval;
 	struct mask_work *mw = container_of(w,struct mask_work,work);
 	struct task_struct *ts = mw->task;
-	set_cpus_allowed_ptr(ts, &(mw->mask));
+	
+	get_online_cpus();
+	get_task_struct(ts);
+	retval = set_cpus_allowed_ptr(ts, &(mw->mask));
+	if(retval)
+		set_cpus_allowed_ptr(ts, &(mw->mask));
+	put_task_struct(ts);
+	put_online_cpus();
+	
+	//sched_setaffinity(ts->pid,&(mw->mask));
 	kfree(mw);
 }
 
