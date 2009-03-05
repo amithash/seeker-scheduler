@@ -166,7 +166,8 @@ void log_cpu_state(int cpu)
 		p->entry.type = DEBUG_STATE;
 		p->entry.u.state.cpu = cpu;
 		p->entry.u.state.state = cur_cpu_state[cpu];
-		p->entry.u.state.residency_time = ((jiffies - current_jiffies[cpu]) * 1000) / HZ;
+		p->entry.u.state.residency_time = (jiffies - current_jiffies[cpu]) * 1000;
+		p->entry.u.state.residency_time = do_div(p->entry.u.state.residency_time,HZ);
 	}
 	current_jiffies[cpu] = jiffies;
 	put_debug(p);
