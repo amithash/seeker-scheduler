@@ -206,6 +206,7 @@ void update_state_matrix(int delta)
  * Each and every column j state gives itself the current demand + a share which 
  * is demnad + (demand/2). Then gives (demand/2)-distance to each and every
  * column where distance = |i-j|<friend_count;
+ * And friends are helped only if they are broke. 
  ********************************************************************************/
 void update_demand_field(int friend_count)
 {
@@ -220,10 +221,14 @@ void update_demand_field(int friend_count)
 		for (j = i + 1, k = 1;
 		     j < total_states && (share - k) > 0 && k <= friend_count;
 		     j++, k++) {
+			if(demand[j] != 0)
+				break;
 			demand_field[j] += (share - k);
 		}
 		for (j = i - 1, k = 1;
 		     j >= 0 && (share - k) > 0 && k <= friend_count; j--, k++) {
+			if(demand[j] != 0)
+				break;
 			demand_field[j] += (share - k);
 		}
 	}
