@@ -132,7 +132,7 @@ extern unsigned int mask_empty_cond;
 #define IPC_LOW  IPC_0_625
 
 /* migration pool size */
-#define MIG_POOL_SIZE (NR_CPUS * 4)
+#define MIG_POOL_SIZE (NR_CPUS * 8)
 
 /********************************************************************************
  * 				global_variables				*
@@ -153,6 +153,34 @@ struct mask_work mig_pool[MIG_POOL_SIZE];
  * 				Functions					*
  ********************************************************************************/
 
+inline int state_free(int state)
+{
+	if(states[state].cpus > 0 && states[state].usage < states[state].cpus)
+		return 1;
+	return 0;
+}
+
+int lowest_loaded_state(void)
+{
+	int min_load = states[0].usage - states[0].cpus;
+	int min_state = 0;
+	int this_load;
+	int i;
+	for(i=1;i<total_states;i++){
+		if(states[i].cpus <= 0)
+			continue;
+		this_load = states[i].usage - states[i].cpus;
+		if(this_load < min_load){
+			min_load = this_load;
+			min_state = i;
+		}
+	}
+	if(states[min_state].cpus == 0)
+		return -1;
+	return min_state;
+}
+		
+
 /********************************************************************************
  * get_lower_state - Get a state lower than current state.
  * @state - The current state
@@ -168,16 +196,16 @@ inline int get_lower_state(int state)
 	int i;
 	new_state = sat_dec(state, 0);
 	for (i = new_state; i >= 0; i--) {
-		if (states[i].cpus > 0)
+		if (state_free(i))
 			return i;
 	}
-	if (states[state].cpus > 0)
+	if (state_free(state))
 		return state;
 	for (i = state + 1; i < total_states; i++) {
-		if (states[i].cpus > 0)
+		if (state_free(i))
 			return i;
 	}
-	return -1;
+	return lowest_loaded_state();
 }
 
 /********************************************************************************
@@ -195,16 +223,16 @@ inline int get_higher_state(int state)
 	int i;
 	new_state = sat_inc(state, total_states);
 	for (i = new_state; i < total_states; i++) {
-		if (states[i].cpus > 0)
+		if (state_free(i))
 			return i;
 	}
-	if (states[state].cpus > 0)
+	if (state_free(state))
 		return state;
 	for (i = state - 1; i >= 0; i--) {
-		if (states[i].cpus > 0)
+		if (state_free(i))
 			return i;
 	}
-	return -1;
+	return lowest_loaded_state();
 }
 
 /********************************************************************************
@@ -219,10 +247,13 @@ inline int get_closest_state(int state)
 {
 	int state1, state2;
 	int ret_state;
-	if (states[state].cpus > 0)
+	if (state_free(state))
 		return state;
 	state1 = get_lower_state(state);
 	state2 = get_higher_state(state);
+	if(state1 == -1 && state2 == -1)
+		return lowest_loaded_state();
+
 	ret_state = ABS(state - state1) < ABS(state - state2) ? state1 : state2;
 	return ret_state;
 }
@@ -244,13 +275,13 @@ void change_cpus(struct work_struct *w)
 			CPUMASK_TO_UINT(mw->mask));
 	if(cpus_equal(mw->mask,ts->cpus_allowed)){
 		debug("No change required");
-		return;
+		goto change_cpus_out;
 	}
 
 	retval = set_cpus_allowed_ptr(ts, &(mw->mask));
 	if(retval)
 		set_cpus_allowed_ptr(ts, &(mw->mask));
-
+change_cpus_out:
 	mw->free = 1;
 }
 
@@ -341,7 +372,6 @@ void put_mask_from_stats(struct task_struct *ts)
 	if (TS_MEMBER(ts, inst) < INST_THRESHOLD)
 		return;
 	tasks_interval = TS_MEMBER(ts, interval);
-
 
 	do {
 		seq = read_seqbegin(&states_seq_lock);
