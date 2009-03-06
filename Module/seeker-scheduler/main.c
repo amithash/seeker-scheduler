@@ -137,10 +137,12 @@ unsigned int num_events = 0;
 extern u64 interval_count;
 
 /* state.c: Current state of cpu's */
-extern int cur_cpu_state[MAX_STATES];
+extern int cur_cpu_state[NR_CPUS];
 
 /* hwcounters.c: current value of counters */
 extern u64 pmu_val[NR_CPUS][3];
+
+extern struct state_desc states[MAX_STATES];
 
 
 /********************************************************************************
@@ -328,9 +330,14 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	int cpu = smp_processor_id();
 	ts[cpu] = to;
 
+	if(TS_MEMBER(to, seeker_scheduled) == SEEKER_MAGIC_NUMBER)
+		states[to->cpustate].usage++;
+
 	if (TS_MEMBER(from, seeker_scheduled) != SEEKER_MAGIC_NUMBER) {
 		goto get_out;
 	}
+
+	states[TS_MEMBER(from, cpustate)].usage--;
 
 
 	read_counters(cpu);
