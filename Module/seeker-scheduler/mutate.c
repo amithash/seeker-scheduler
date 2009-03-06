@@ -35,7 +35,7 @@
 #include "stats.h"
 #include "debug.h"
 
-#define MIN_REQUESTS 10
+#define MIN_REQUESTS 4
 
 /********************************************************************************
  * 			External Variables 					*
@@ -273,7 +273,7 @@ int per_state_kernel(int state, int *poison, int demand, int *proc,
 		} else if (low_val < *low_proc_val) {
 			*low_proc_val = low_val;
 		}
-		sum += (state_matrix[i][j] * poison[i]);
+		sum += state_matrix[i][j];
 	}
 	if (unlikely(*proc < 0)) {
 		for (i = 0; i < total_online_cpus; i++) {
