@@ -29,15 +29,18 @@ all:
 	+make -C lib $(EXTRA_ARGS)
 	+make -C Scripts $(EXTRA_ARGS)
 	+make -C SyntheticBenchmarks
+	dot -Tpng design.dot -o design.png
 
 debug:
 	+make -C Module debug $(EXTRA_ARGS)
 	+make -C lib debug $(EXTRA_ARGS)
 	+make -C Scripts debug $(EXTRA_ARGS)
 	+make -C SyntheticBenchmarks debug
+	dot -Tpng design.dot -o design.png
 clean:
 	+make -C Module clean
 	+make -C lib clean
 	+make -C Scripts clean
 	+make -C SyntheticBenchmarks clean
+	-rm design.png
 

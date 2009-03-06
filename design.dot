@@ -1,0 +1,54 @@
+digraph G {
+
+  	subgraph cluster_mine{
+	color=white;
+	scheduler_hints [shape=rectangle,fillcolor=lightgrey,style=filled,label="State Demand"];
+	state [shape=rectangle,fillcolor=lightgrey,style=filled,label="Processor Layout"];
+	load [shape=rectangle,fillcolor=lightgrey,style=filled,label="Total Loaded CPU's"];
+	
+
+	subgraph cluster_mutator {
+	    color=lightgrey;
+	    style=filled;
+	    node [shape=rectangle,style=filled,color=grey];
+	    layout [shape=ellipse, label="Change Layout"];
+	    label="Mutator";
+	}
+	subgraph cluster_scheduler {
+		color=lightgrey;
+		style=filled;
+		node [shape=rectangle,style=filled,color=grey];
+		task [shape=rectangle,label="Task"];
+		schedule [shape=ellipse];
+		schedule -> task ;
+		label = "Scheduling Unit"
+	}
+	}
+	subgraph cluster_all{
+	  color=white;
+	subgraph cluster_cpufreq {
+		label="CPUFREQ Interface";
+		color=lightgrey;
+		style=filled;
+		node [shape=rectangle,style=filled,color=grey];
+		set_freq [label="Set Clock Speed"];
+	}
+	subgraph cluster_pmus {
+		color=lightgrey;
+		style=filled;
+		node [shape=rectangle,style=filled,color=grey];
+		ctrs [label="Hardware Performance Counters"];
+		pmu_interface [label="PMU Driver"];
+		pmu_interface -> ctrs [dir=both];
+		label = "Performance Monitoring Unit"
+	}
+	}
+	load -> layout [constraint=false];
+	state -> schedule;
+	state -> layout;
+	schedule -> scheduler_hints;
+	scheduler_hints -> layout;
+	layout -> set_freq;
+	set_freq -> state;
+	pmu_interface -> schedule [dir=both];
+}
