@@ -214,8 +214,8 @@ void update_demand_field(int friend_count)
 	for (i = 0; i < total_states; i++) {
 		demand_field[i] = 1;
 	}
-	share = demand[i] >> 1;
 	for (i = 0; i < total_states; i++) {
+		share = demand[i] >> 1;
 		demand_field[i] += (demand[i] + share);
 		for (j = i + 1, k = 1;
 		     j < total_states && (share - k) > 0 && k <= friend_count;
@@ -379,7 +379,7 @@ void choose_layout(int delta)
 	int total_demand = 0;
 	int poison[NR_CPUS];
 	int total_iter = 0;
-	int friends = (total_states >> 1) - 1;
+	int friends = (total_states | 1) == 0 ?  (total_states >> 1) - 1 : (total_states >> 1);
 	int total_provided_cpus = 0;
 	int total_selected_cpus = 0;
 
