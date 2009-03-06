@@ -153,6 +153,13 @@ struct mask_work mig_pool[MIG_POOL_SIZE];
  * 				Functions					*
  ********************************************************************************/
 
+/********************************************************************************
+ * state_free - Is state free?
+ * @state - State to check.
+ * @Return - 1 if state is free, 0 otherwise.
+ *
+ * Returns 1 if state is free to execute on. 
+ ********************************************************************************/
 inline int state_free(int state)
 {
 	if(states[state].cpus > 0 && states[state].usage < states[state].cpus)
@@ -160,6 +167,12 @@ inline int state_free(int state)
 	return 0;
 }
 
+/********************************************************************************
+ * lowest_loaded_state - Returns the state which is least loaded.
+ * @Return - The state which is loaded the least.
+ *
+ * Search for a state which is the least loaded. 
+ ********************************************************************************/
 int lowest_loaded_state(void)
 {
 	int min_load = states[0].usage - states[0].cpus;
@@ -167,7 +180,7 @@ int lowest_loaded_state(void)
 	int this_load;
 	int i;
 	for(i=1;i<total_states;i++){
-		if(states[i].cpus <= 0)
+		if(states[i].cpus == 0)
 			continue;
 		this_load = states[i].usage - states[i].cpus;
 		if(this_load < min_load){
@@ -175,8 +188,9 @@ int lowest_loaded_state(void)
 			min_state = i;
 		}
 	}
-	if(states[min_state].cpus == 0)
+	if(min_state == total_states || states[min_state].cpus == 0)
 		return -1;
+
 	return min_state;
 }
 		
@@ -253,8 +267,12 @@ inline int get_closest_state(int state)
 	state2 = get_higher_state(state);
 	if(state1 == -1 && state2 == -1)
 		return lowest_loaded_state();
-
+	if(state1 == -1)
+		return state2;
+	if(state2 == -1)
+		return state1;
 	ret_state = ABS(state - state1) < ABS(state - state2) ? state1 : state2;
+
 	return ret_state;
 }
 
