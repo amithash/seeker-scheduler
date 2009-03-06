@@ -35,7 +35,7 @@
 #include "stats.h"
 #include "debug.h"
 
-#define MIN_REQUESTS 10
+#define MIN_REQUESTS 4
 
 /********************************************************************************
  * 			External Variables 					*
