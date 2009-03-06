@@ -234,6 +234,8 @@ void inst_release_thread(struct task_struct *t)
 		p->entry.u.tpid.pid = (u32) (t->pid);
 		memcpy(&(p->entry.u.tpid.name[0]), t->comm, 16);
 	}
+	states[TS_MEMBER(t, cpustate)].usage--;
+
 	put_debug(p);
 	jprobe_return();
 
@@ -330,15 +332,9 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	int cpu = smp_processor_id();
 	ts[cpu] = to;
 
-	if(TS_MEMBER(to, seeker_scheduled) == SEEKER_MAGIC_NUMBER)
-		states[to->cpustate].usage++;
-
 	if (TS_MEMBER(from, seeker_scheduled) != SEEKER_MAGIC_NUMBER) {
 		goto get_out;
 	}
-
-	states[TS_MEMBER(from, cpustate)].usage--;
-
 
 	read_counters(cpu);
 	TS_MEMBER(from, inst) += pmu_val[cpu][0];

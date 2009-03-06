@@ -424,7 +424,6 @@ void put_mask_from_stats(struct task_struct *ts)
 		return;
 	}
 
-
 	/* Push statastics to the debug buffer if enabled */
 	p = get_debug();
 	if (p) {
@@ -458,6 +457,11 @@ void put_mask_from_stats(struct task_struct *ts)
 	 */
 	if(!disable_scheduling){
 		put_work(ts,mask);
+	}
+
+	if(state != new_state){
+		states[state].usage--;
+		states[new_state].usage++;
 	}
 }
 
