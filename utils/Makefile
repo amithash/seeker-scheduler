@@ -1,4 +1,3 @@
-
 #*************************************************************************
 # Copyright 2008 Amithash Prasad                                         *
 #                                                                        *
@@ -17,33 +16,32 @@
 # You should have received a copy of the GNU General Public License      *
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
 #*************************************************************************
-ifdef CPUS
-EXTRA_ARGS+=CPUS=$(CPUS)
-endif
-ifdef ARCA
-EXTRA_ARGS+=ARCA=$(ARCA)
+
+ifeq ($(MAKECMDGOALS),debug)
+CFLAGS = -O0 -DDEBUG
+else
+CFLAGS = -O3
 endif
 
-all:
-	+make -C Module $(EXTRA_ARGS)
-	+make -C lib $(EXTRA_ARGS)
-	+make -C Scripts $(EXTRA_ARGS)
-	+make -C SyntheticBenchmarks
-	+make -C utils
-	dot -Tpng design.dot -o design.png
+ifdef OPTI
+FLAGS += -DKEYWORD='"$(OPTI)"'
+endif
 
-debug:
-	+make -C Module debug $(EXTRA_ARGS)
-	+make -C lib debug $(EXTRA_ARGS)
-	+make -C Scripts debug $(EXTRA_ARGS)
-	+make -C SyntheticBenchmarks debug
-	+make -C utils debug
-	dot -Tpng design.dot -o design.png
-clean:
-	+make -C Module clean
-	+make -C lib clean
-	+make -C Scripts clean
-	+make -C SyntheticBenchmarks clean
-	+make -C utils clean
-	-rm design.png
+
+all: launch
+
+debug: launch
+
+launch: launch.c 
+	$(CC) $(CFLAGS) -o launch launch.c $(FLAGS)
+
+clean: 
+	rm launch
+
+install:
+	cp launch /usr/bin
+
+uninstall: 
+	rm -f /usr/bin/launch
+
 
