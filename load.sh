@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #*************************************************************************
 # Copyright 2008 Amithash Prasad                                         *
 #                                                                        *
@@ -18,32 +18,50 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
 #*************************************************************************
 
-for MOD in "pmu" "fpmu" "tsc" "therm" "seeker_sampler"; do
-	lsmod | grep "${MOD} "
-	if [ "$?" != "0" ]; then
-		if [ -f $SEEKER_HOME/Build/$MOD.ko ]; then
-			echo "Trying to load $MOD";
-		else
-			echo "Please build seeker (make) before trying to load the modules";
-			exit;
-		fi
-		if [ "${MOD}" = "seeker_sampler" ]; then
-			insmod $SEEKER_HOME/Build/$MOD.ko $@;
-		else
-			insmod $SEEKER_HOME/Build/$MOD.ko;
-		fi
-		if [ "$?" != "0" ]; then
-			echo "Problems encountered in loading $MOD"
-		else
-			echo "Successfully loaded $MOD."
-		fi
-	else
-		echo "$MOD seems to be already loaded. Please run unload.sh"
+function remove_if_exists {
+	MOD=$1
+	if [ `lsmod | grep $MOD | wc -l` != "0" ]; then
+		echo "${MOD} exists, removing it";
+		rmmod $MOD
 	fi
-done
+}
 
+function insert_if_not_exists {
+	MOD=$1
+	if [ `lsmod | grep $MOD | wc -l` = "0" ]; then
+		echo "$MOD does not exist, inserting it"
+		modprobe $MOD
+	fi
+}
 
+function load {
+	MOD=$1
+	if [ -f $SEEKER_HOME/Build/$MOD.ko ]; then
+		echo "Trying to load $MOD";
+	else
+		echo "Please build seeker (make) before trying to load the modules";
+		exit;
+	fi
+	remove_if_exists $MOD
+
+	if [ "${MOD}" = "seeker_cpufreq" ]; then
+		insert_if_not_exists "powernow_k8"
+	fi
+
+	if [ "${MOD}" = "seeker_scheduler" ]; then
+		insmod $SEEKER_HOME/Build/$MOD.ko $2 $3 $4 $5 $6;
+	else
+		insmod $SEEKER_HOME/Build/$MOD.ko;
+	fi
+
+	if [ "${MOD}" = "seeker_cpufreq" ]; then
+		$SEEKER_HOME/seeker_cpufreq.pl start
+	fi
+}
+
+load "pmu"
+load "seeker_cpufreq"
+load "seeker_scheduler" $@
 
 echo Done!
-
 
