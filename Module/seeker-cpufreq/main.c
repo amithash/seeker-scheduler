@@ -356,10 +356,12 @@ int __set_freq(unsigned int cpu, unsigned int freq_ind)
 	ret_val = __cpufreq_driver_target(policy, policy->cur, CPUFREQ_RELATION_H);
 	if(ret_val == -EAGAIN)
 		ret_val = __cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
+#ifdef DEBUG
 	if(ret_val)
-		debug("Target did not work for cpu %d transition to %d",cpu,policy->cur,ret_val);
+		debug("Target did not work for cpu %d transition to %d",cpu,policy->cur);
 	else 
 		debug("Setting frequency of cpu %d to %d",cpu,policy->cur);
+#endif
 
 	inform_freq_change(cpu,freq_ind);
 
