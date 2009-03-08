@@ -18,23 +18,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
 #*************************************************************************
 
-for MOD in "seeker_sampler" "pmu" "fpmu" "tsc" "therm"; do
-	lsmod | grep "$MOD "
-	if [ "$?" != "0" ]; then
-		echo "$MOD does not seem to be loaded."
-	else
-		rmmod $MOD;
-		sleep 1;
-		lsmod | grep "$MOD "
-		if [ "$?" != "0" ]; then
-			echo "Successfully unloaded $MOD."
-		else
-			echo "Problems encountered in unloading $MOD"
-		fi
+function remove {
+	MOD=$1
+	if [ `lsmod | grep $MOD | wc -l` != "0" ]; then
+		echo "${MOD} exists, removing it";
+		rmmod $MOD
 	fi
-done
+}
 
-
+remove "seeker_scheduler"
+remove "pmu"
+$SEEKER_HOME/seeker_cpufreq.pl stop
+remove "seeker_cpufreq"
 
 echo Done!
 
