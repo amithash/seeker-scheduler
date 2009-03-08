@@ -357,9 +357,9 @@ int __set_freq(unsigned int cpu, unsigned int freq_ind)
 	if(ret_val == -EAGAIN)
 		ret_val = __cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
 	if(ret_val)
-		error("Target did not work for cpu %d transition to %d, with a return error code: %d",cpu,policy->cur,ret_val);
+		debug("Target did not work for cpu %d transition to %d",cpu,policy->cur,ret_val);
 	else 
-		info("Setting frequency of cpu %d to %d",cpu,policy->cur);
+		debug("Setting frequency of cpu %d to %d",cpu,policy->cur);
 
 	inform_freq_change(cpu,freq_ind);
 
