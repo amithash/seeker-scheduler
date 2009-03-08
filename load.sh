@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
 #*************************************************************************
 
-function remove_if_exists {
+function remove {
 	MOD=$1
 	if [ `lsmod | grep $MOD | wc -l` != "0" ]; then
 		echo "${MOD} exists, removing it";
@@ -26,7 +26,7 @@ function remove_if_exists {
 	fi
 }
 
-function insert_if_not_exists {
+function insert {
 	MOD=$1
 	if [ `lsmod | grep $MOD | wc -l` = "0" ]; then
 		echo "$MOD does not exist, inserting it"
@@ -42,10 +42,10 @@ function load {
 		echo "Please build seeker (make) before trying to load the modules";
 		exit;
 	fi
-	remove_if_exists $MOD
+	remove $MOD
 
 	if [ "${MOD}" = "seeker_cpufreq" ]; then
-		insert_if_not_exists "powernow_k8"
+		insert "powernow_k8"
 	fi
 
 	if [ "${MOD}" = "seeker_scheduler" ]; then
