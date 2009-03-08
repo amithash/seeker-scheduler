@@ -7,8 +7,10 @@ use Time::HiRes qw( usleep );
 
 my $s_pattern;
 my $interval;
+my $core;
 GetOptions('p|pattern=s'   => \$s_pattern,
-	   'i|interval=i'  => \$interval);
+	   'i|interval=i'  => \$interval,
+	   'c|core=i'      => \$core);
 
 # Defaults.
 $s_pattern = "0000" unless(defined($s_pattern));
@@ -40,6 +42,13 @@ for(my $i=0;$i < scalar @pattern; $i++){
 	}
 }
 
+if(defined($core)){
+	if($core < 0 and $core >= $total_cpus){
+		print "-c|--core option has an invalid processor\n";
+		exit;
+	}
+}
+
 # Daemonize.
 my $pid = fork;
 if($pid != 0){
@@ -47,9 +56,17 @@ if($pid != 0){
 }
 
 #Kernel. 
+if(not defined($core)
+	while(1){
+		foreach my $p (@pattern){
+			set_speed_all($p);
+			usleep($interval * 1000);
+		}
+	}
+}
 while(1){
 	foreach my $p (@pattern){
-		set_speed_all($p);
+		set_speed($core,$p);
 		usleep($interval * 1000);
 	}
 }
