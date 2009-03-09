@@ -44,6 +44,7 @@ struct freq_info_t {
 	unsigned int cur_freq;
 	unsigned int num_states;
 	unsigned int table[MAX_STATES];
+	unsigned int valid_entry[MAX_STATES];
 	unsigned int latency;
 	struct cpufreq_policy *policy;
 };
@@ -92,6 +93,12 @@ static DEFINE_SPINLOCK(user_lock);
 
 /* The counter to give a unique un-used id 4B ids can be provided.*/
 static unsigned int current_highest_id = 0;
+
+/* parameter for user to specify states allowed */
+static int allowed_states[MAX_STATES];
+
+/* Length of the allowed_states array */
+static int allowed_states_length = 0;
 
 /********************************************************************************
  * 				Macros						*
@@ -430,6 +437,7 @@ static int __init seeker_cpufreq_init(void)
 	unsigned int tmp;
 	struct cpufreq_frequency_table *table;
 	int cpus = num_online_cpus();
+
 	cpufreq_register_governor(&seeker_governor);
 
 	user_head = NULL;
@@ -446,9 +454,13 @@ static int __init seeker_cpufreq_init(void)
 				continue;
 			FREQ_INFO(i)->num_states++;
 			FREQ_INFO(i)->table[j] = table[j].frequency;
+			FREQ_INFO(i)->valid_entry[j] = 1;
 			printk("%d ", table[j].frequency);
 		}
 		printk("\n");
+		for(j=FREQ_INFO(i)->num_states;j<MAX_STATES;j++){
+			FREQ_INFO(i)->valid_entry[j] = 0;
+		}
 		/* Sort Table. This is a one time thing, and hence, I am doing a simple bubble sort.
 		 * Nothing fancy */
 		for (k = 0; k < FREQ_INFO(i)->num_states - 1; k++) {
@@ -462,7 +474,28 @@ static int __init seeker_cpufreq_init(void)
 				}
 			}
 		}
+		if(allowed_states_length){
+			for(j=0;j<MAX_STATES && j < FREQ_INFO(i)->num_states; j++){
+				if(allowed_states[j] < 0 || 
+				   allowed_states[j] >= FREQ_INFO(i)->num_states){
+					error("Entry %d = %d is not a valid state, must be in [0,%d)",
+						j,allowed_states[j],FREQ_INFO(i)->num_states);
+						
+					continue;
+				}
+				FREQ_INFO(i)->valid_entry[allowed_states[j]] = 2;
+			}
+			for(j=0;j<MAX_STATES-1;j++){
+				if(FREQ_INFO(i)->valid_entry[j] != 2){
+					FREQ_INFO(i)->valid_entry[j] = FREQ_INFO(i)->valid_entry[j+1];
+					FREQ_INFO(i)->table[j] = FREQ_INFO(i)->table[j+1];
+					j--;
+					FREQ_INFO(i)->num_states--;
+				}
+			}
+		}
 	}
+
 	return 0;
 }
 
@@ -492,6 +525,9 @@ static void __exit seeker_cpufreq_exit(void)
 
 module_init(seeker_cpufreq_init);
 module_exit(seeker_cpufreq_exit);
+
+module_param_array(allowed_states, int, &allowed_states_length, 0444);
+MODULE_PARM_DESC(allowed_states, "Use this to provide an array for allowed states.");
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
