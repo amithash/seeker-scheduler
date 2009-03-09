@@ -297,8 +297,6 @@ void change_cpus(struct work_struct *w)
 	}
 
 	retval = set_cpus_allowed_ptr(ts, &(mw->mask));
-	if(retval)
-		set_cpus_allowed_ptr(ts, &(mw->mask));
 change_cpus_out:
 	mw->free = 1;
 }
@@ -473,7 +471,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	 * function, but this is done to have the same 
 	 * overhead
 	 */
-	if(!disable_scheduling){
+	if(disable_scheduling == 0){
 		put_work(ts,mask);
 	}
 
@@ -507,7 +505,7 @@ void initial_mask(struct task_struct *ts)
 	} else {
 		TS_MEMBER(ts, cpustate) = state;
 	}
-	if(!disable_scheduling)
+	if(disable_scheduling == 0)
 		put_work(ts,mask);
 }
 
