@@ -448,16 +448,13 @@ static int __init seeker_cpufreq_init(void)
 		FREQ_INFO(i)->cur_freq = -1;	/* Not known */
 		FREQ_INFO(i)->num_states = 0;
 		table = cpufreq_frequency_get_table(i);
-		printk("CPU %d\nFrequencies:\n", i);
 		for (j = 0; table[j].frequency != CPUFREQ_TABLE_END; j++) {
 			if (table[j].frequency == CPUFREQ_ENTRY_INVALID)
 				continue;
 			FREQ_INFO(i)->num_states++;
 			FREQ_INFO(i)->table[j] = table[j].frequency;
 			FREQ_INFO(i)->valid_entry[j] = 1;
-			printk("%d ", table[j].frequency);
 		}
-		printk("\n");
 		for(j=FREQ_INFO(i)->num_states;j<MAX_STATES;j++){
 			FREQ_INFO(i)->valid_entry[j] = 0;
 		}
@@ -475,28 +472,50 @@ static int __init seeker_cpufreq_init(void)
 			}
 		}
 		if(allowed_states_length){
+
+			/* validate number of entries */
+			if(allowed_states_length < 1 || 
+					allowed_states_length > FREQ_INFO(i)->num_states){
+				goto err_fatal;
+			}
+
+			/* validate entries and mark them */
 			for(j=0;j<MAX_STATES && j < FREQ_INFO(i)->num_states; j++){
 				if(allowed_states[j] < 0 || 
 				   allowed_states[j] >= FREQ_INFO(i)->num_states){
 					error("Entry %d = %d is not a valid state, must be in [0,%d)",
 						j,allowed_states[j],FREQ_INFO(i)->num_states);
 						
-					continue;
+					goto err_fatal;
 				}
 				FREQ_INFO(i)->valid_entry[allowed_states[j]] = 2;
 			}
-			for(j=0;j<MAX_STATES-1;j++){
-				if(FREQ_INFO(i)->valid_entry[j] != 2){
-					FREQ_INFO(i)->valid_entry[j] = FREQ_INFO(i)->valid_entry[j+1];
-					FREQ_INFO(i)->table[j] = FREQ_INFO(i)->table[j+1];
-					j--;
-					FREQ_INFO(i)->num_states--;
+			for(j=0;j<allowed_states_length;j++){
+				int k;
+				if(FREQ_INFO(i)->valid_entry[j] == 2){
+					continue;
 				}
+				/* shift left */
+				for(k=j;k<MAX_STATES-1;k++){
+					FREQ_INFO(i)->valid_entry[k] = FREQ_INFO(i)->valid_entry[k+1];
+					FREQ_INFO(i)->table[k] = FREQ_INFO(i)->table[k+1];
+				}
+				j--;
+				FREQ_INFO(i)->num_states--;
 			}
 		}
+		/* Print to user */
+		printk(KERN_INFO "FREQUENCY(%d)",i);
+		for(j=0;j<FREQ_INFO(i)->num_states;j++){
+			printk(" %d",FREQ_INFO(i)->table[j]);
+		}
+		printk("\n");
 	}
 
 	return 0;
+err_fatal:
+	cpufreq_unregister_governor(&seeker_governor);
+	return -ENODEV;
 }
 
 /*******************************************************************************
