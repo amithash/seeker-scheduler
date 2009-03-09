@@ -43,7 +43,7 @@ for(my $i=0;$i < scalar @pattern; $i++){
 }
 
 if(defined($core)){
-	if($core < 0 and $core >= $total_cpus){
+	if($core < 0 or $core >= $total_cpus){
 		print "-c|--core option has an invalid processor\n";
 		exit;
 	}
@@ -56,7 +56,7 @@ if($pid != 0){
 }
 
 #Kernel. 
-if(not defined($core)
+if(not defined($core)){
 	while(1){
 		foreach my $p (@pattern){
 			set_speed_all($p);
