@@ -165,13 +165,12 @@ if($what eq "st" or $what eq "all"){
 			my $state = $2;
 			my $time = $3;
 			if(not defined($cpu_time{$cpu})){
-				$cpu_time{$cpu} = {};
+				$cpu_time{$cpu} = [];
 			}
-			print "$time\n";
-			if(not defined($cpu_time{$cpu}->{$state})){
-				$cpu_time{$cpu}->{$state} = $time;
+			if(not defined($cpu_time{$cpu}->[$state])){
+				$cpu_time{$cpu}->[$state] = $time;
 			} else {
-				$cpu_time{$cpu}->{$state} += $time;
+				$cpu_time{$cpu}->[$state] += $time;
 			}
 		} else {
 			print "Something is wrong\n";
@@ -180,9 +179,13 @@ if($what eq "st" or $what eq "all"){
 	foreach my $cpu (sort keys %cpu_time){
 		print OUT "CPU$cpu ";
 		my $cpu_ref = $cpu_time{$cpu};
-		my %cpu_h = %$cpu_ref;
-		foreach my $state (sort keys %cpu_h){
-			print OUT " $cpu_h{$state}";
+		my @cpu_h = @$cpu_ref;
+		foreach my $state (@cpu_h){
+			if(defined($state)){
+				print OUT " $state";
+			} else {
+				print OUT " 0";
+			}
 		}
 		print OUT "\n";
 	}
