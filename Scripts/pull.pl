@@ -23,7 +23,7 @@ use warnings;
 use Getopt::Long;
 use File::Find;
 use Cwd;
-use lib "$ENV{SEEKER_HOME}/libs";
+use lib "$ENV{SEEKER_HOME}/lib";
 use benchmarks;
 
 my $input_file_name;
@@ -66,7 +66,7 @@ if(defined($benchlist)){
 	while(my $l = <PL>){
 		chomp($l);
 		if(not defined($process{$l})){
-			my $bin = benchmarks::get_binary_name($l)));
+			my $bin = benchmarks::get_binary_name($l);
 			$process{$bin} = $l;
 		}
 	}
@@ -78,7 +78,7 @@ if(defined($bench)){
 	$process{$bin} = $bench;
 }
 
-if((not defined($process_name)) and (not defined($process_list_path))){
+if((not defined($bench)) and (not defined($benchlist))){
 	$do_all = 1;
 }
 
@@ -103,8 +103,8 @@ close(INF);
 # All, or sch
 if($what eq "sch" or $what eq "all"){
 	foreach my $pid (keys %pids){
-		open IN, "grep -P \"^s,\d+,$pid,\" $input_file_name |";
-		open OUT,"+>$out_dir/$pids{$pid}.$pid.sch";
+		open IN, "grep -P \"^s,\\d+,$pid,\" $input_file_name |";
+		open OUT,"+>$output_dir/$pids{$pid}.$pid.sch";
 		my $tot_inst = 0.0;
 		my $tot_refcy = 0.0;
 		while(my $l = <IN>){
@@ -144,23 +144,43 @@ if($what eq "mut" or $what eq "all"){
 			my @req = split(/,/,$req_str);
 			my @giv = split(/,/,$giv_str);
 			# XXX Work on this based on what works.
+		}
 	}
 	close(IN);
 	close(OUT);
 }
-
+my %cpu_time;
 if($what eq "st" or $what eq "all"){
 	open IN, "grep -P \"^t,\" $input_file_name |";
 	open OUT,"+>CPU_ST";
 	while(my $line = <IN>){
 		chomp($line);
 		  #          
-		if($line = ~/t,(\d+),(\d),(\d+)$/){
+		if($line =~ /t,(\d+),(\d),(\d+)$/){
 			my $cpu = $1;
 			my $state = $2;
 			my $time = $3;
-			# XXX work on this based on what is needed.
+			if(not defined($cpu_time{$cpu})){
+				$cpu_time{$cpu} = {};
+			}
+			print "$time\n";
+			if(not defined($cpu_time{$cpu}->{$state})){
+				$cpu_time{$cpu}->{$state} = $time;
+			} else {
+				$cpu_time{$cpu}->{$state} += $time;
+			}
+		} else {
+			print "Something is wrong\n";
 		}
+	}
+	foreach my $cpu (sort keys %cpu_time){
+		print OUT "CPU$cpu ";
+		my $cpu_ref = $cpu_time{$cpu};
+		my %cpu_h = %$cpu_ref;
+		foreach my $state (sort keys %cpu_h){
+			print OUT " $cpu_h{$state}";
+		}
+		print OUT "\n";
 	}
 }
 
