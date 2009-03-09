@@ -2,6 +2,7 @@ digraph G {
 
   	subgraph cluster_mine{
 	color=white;
+	rank=8;
 	scheduler_hints [shape=rectangle,fillcolor=lightgrey,style=filled,label="State Demand"];
 	state [shape=rectangle,fillcolor=lightgrey,style=filled,label="Processor Layout"];
 	load [shape=rectangle,fillcolor=lightgrey,style=filled,label="Total Loaded CPU's"];
@@ -26,6 +27,7 @@ digraph G {
 	}
 	subgraph cluster_all{
 	  color=white;
+	  rank=4;
 	subgraph cluster_cpufreq {
 		label="CPUFREQ Interface";
 		color=lightgrey;
@@ -43,12 +45,12 @@ digraph G {
 		label = "Performance Monitoring Unit"
 	}
 	}
-	load -> layout [constraint=false];
-	state -> schedule;
-	state -> layout;
-	schedule -> scheduler_hints;
+	load -> layout [weight=8];
+	state -> schedule [weight=8]
+	state -> layout [weight=8]
+	schedule -> scheduler_hints [weight=8];
 	scheduler_hints -> layout;
-	layout -> set_freq;
-	set_freq -> state;
-	pmu_interface -> schedule [dir=both];
+	layout -> set_freq [weight=5];
+	set_freq -> state [weight=8]
+	pmu_interface -> schedule [dir=both,weight=8];
 }
