@@ -133,7 +133,8 @@ if($what eq "sch" or $what eq "all"){
 
 if($what eq "mut" or $what eq "all"){
 	open IN, "grep -P \"^m,\" $input_file_name |";
-	open OUT, "+>MUT_GIV";
+	open OUTG, "+>$output_dir/MUT_GIV";
+	open OUTR, "+>$output_dir/MUT_REQ";
 	while(my $line = <IN>){
 		chomp($line);
 		         #     interval req cpu giv cpus
@@ -141,18 +142,21 @@ if($what eq "mut" or $what eq "all"){
 			my $interval = $1;
 			my $req_str = $2;
 			my $giv_str = $3;
-			my @req = split(/,/,$req_str);
-			my @giv = split(/,/,$giv_str);
-			# XXX Work on this based on what works.
+			my $req = join(' ',split(/,/,$req_str));
+			my $giv = join(' ',split(/,/,$giv_str));
+			print OUTG "$interval $req\n";
+			print OUTG "$interval $giv\n";
 		}
 	}
 	close(IN);
-	close(OUT);
+	close(OUTG);
+	close(OUTR);
 }
-my %cpu_time;
+
 if($what eq "st" or $what eq "all"){
+	my %cpu_time;
 	open IN, "grep -P \"^t,\" $input_file_name |";
-	open OUT,"+>CPU_ST";
+	open OUT,"+>$output_dir/CPU_ST";
 	while(my $line = <IN>){
 		chomp($line);
 		  #          
