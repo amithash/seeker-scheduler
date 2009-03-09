@@ -41,7 +41,7 @@ while(my $line = <IN>){
 	chomp($line);
 	my @l = split(/\s/,$line);
 	my $ipc = $l[6];
-	my $cy = $l[1];
+	my $cy = $l[4];
 	my $state = $l[7];
 	if($cy > 100000000000.0){
 		print STDERR "$ARGV[0] warn\n";
