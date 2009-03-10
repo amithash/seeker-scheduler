@@ -5,19 +5,13 @@ use warnings;
 use Getopt::Long;
 use Time::HiRes qw( usleep );
 
-my $s_pattern;
-my $interval;
+my $usage = "USAGE: $0 -p S0 S1 S2 -i I0 I1 I2 [-c processor_number]\nExample: $0 -p 0 4 -i 50 100\nWill have the effect State_0 (For 50ms) State_4 (for 100ms) and back\n";
+my @pattern;
+my @interval;
 my $core;
-GetOptions('p|pattern=s'   => \$s_pattern,
-	   'i|interval=i'  => \$interval,
+GetOptions('p|pattern=i@{1,}'   => \@pattern,
+	   'i|interval=i@{1,}'  => \@interval,
 	   'c|core=i'      => \$core);
-
-# Defaults.
-$s_pattern = "0000" unless(defined($s_pattern));
-$interval = 1000 unless(defined($interval));
-
-# Get real pattern. 
-my @pattern = split(//,$s_pattern);
 
 # Get total online cpus.
 my $total_cpus = `cat /proc/cpuinfo | grep MHz | wc -l`;
@@ -27,24 +21,45 @@ $total_cpus = int($total_cpus);
 # Get max states a core can have.
 my $max = get_max_states();
 
+# Validate parameters; 
+
+if(scalar(@pattern) == 0 or scalar(@interval) == 0){
+	print "Required Parameters not provided (-p and -i)\n$usage";
+	exit;
+}
+
+if($#pattern != $#interval){
+	print "Unequal pattern and interval.\n$usage";
+	exit;
+}
+
+
 # validate pattern.
 for(my $i=0;$i < scalar @pattern; $i++){
 	if($pattern[$i] =~ /^\d$/){
 		$pattern[$i] = int($pattern[$i]);
 	} else {
-		print "Pattern $s_pattern contains non-numeric values\n";
+		print "Pattern[$i] = $pattern[$i] contains non-numeric values\n$usage";
 		exit;
 	}
-	if($pattern[$i] >= $max){
-		print "$pattern[$i] (${i}th from the left) is not a valid state\n";
-		print "Valid states are in the interval [0,$max)\n";
+	if($interval[$i] =~ /^\d+$/){
+		$interval[$i] = int($interval[$i]);
+	} else {
+		print "Interval[$i] = $interval[$i] contains non-numeric values\n$usage";
+		exit;
+	}
+
+	if($pattern[$i] >= $max or $pattern[$i] < 0){
+		print "Pattern[$i] = $pattern[$i] is not a valid state\n";
+		print "Valid states are in the interval [0,$max)\n$usage";
 		exit;
 	}
 }
 
+# validate core.
 if(defined($core)){
 	if($core < 0 or $core >= $total_cpus){
-		print "-c|--core option has an invalid processor\n";
+		print "-c|--core option has an invalid processor, valid options=[0,$total_cpus)\n$usage";
 		exit;
 	}
 }
@@ -55,19 +70,21 @@ if($pid != 0){
 	exit;
 }
 
-#Kernel. 
+#Kernel all procs
 if(not defined($core)){
 	while(1){
-		foreach my $p (@pattern){
-			set_speed_all($p);
-			usleep($interval * 1000);
+		for(my $i=0;$i < scalar(@pattern); $i++){
+			set_speed_all($pattern[$i]);
+			usleep($interval[$i] * 1000);
 		}
 	}
-}
+} 
+
+# Kernel single proc
 while(1){
-	foreach my $p (@pattern){
-		set_speed($core,$p);
-		usleep($interval * 1000);
+	for(my $i=0;$i < scalar(@pattern); $i++){
+		set_speed($core,$pattern[$i]);
+		usleep($interval[$i] * 1000);
 	}
 }
 
