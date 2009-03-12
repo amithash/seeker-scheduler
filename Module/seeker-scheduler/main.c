@@ -511,6 +511,7 @@ static void scheduler_exit(void)
 	debug_exit();
 	debug("Exiting the counters");
 	exit_counters();
+	exit_mig_pool();
 }
 
 /********************************************************************************

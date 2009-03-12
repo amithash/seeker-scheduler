@@ -318,6 +318,25 @@ void init_mig_pool(void)
 	spin_lock_init(&mig_pool_lock);
 }
 
+/********************************************************************************
+ * exit_mig_pool - Cleanup and gracefully exit mig pools
+ *
+ * Cancel all delayed work and mark all pools as busy. 
+ ********************************************************************************/
+void exit_mig_pool(void)
+{
+	spin_lock(&mig_pool_lock);
+	for(i=0; i < MIG_POOL_SIZE; i++){
+		if(mig_pool[i].free = 1){
+			mig_pool[i].free = 0;
+		} else {
+			cancel_delayed_work(&mig_pool[i].work);
+			mig_pool[i].free = 0;
+		}
+	}
+	spin_unlock(&mig_pool_lock);
+}
+
 
 /********************************************************************************
  * put_work - Start a migration work item.
@@ -507,8 +526,10 @@ void initial_mask(struct task_struct *ts)
 		TS_MEMBER(ts, cpustate) = state;
 		states[state].usage++;
 	}
-	if(disable_scheduling == 0)
+	ts->cpus_allowed = mask;
+/*	if(disable_scheduling == 0)
 		put_work(ts,mask);
+*/
 }
 
 
