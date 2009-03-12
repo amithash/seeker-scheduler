@@ -36,7 +36,7 @@ launch: launch.c
 	$(CC) $(CFLAGS) -o launch launch.c $(FLAGS)
 
 clean: 
-	rm launch
+	-rm launch
 
 install:
 	cp launch /usr/bin
