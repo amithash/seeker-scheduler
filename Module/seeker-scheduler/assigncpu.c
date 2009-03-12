@@ -179,7 +179,8 @@ int lowest_loaded_state(void)
 	int min_state = 0;
 	int this_load;
 	int i;
-	for(i=1;i<total_states;i++){
+	for(i=0;i<total_states;i++){
+		assigncpu_debug("usage[%d]=%d, cpus[%d] = %d",i,states[i].usage,i,states[i].cpus);
 		if(states[i].cpus == 0)
 			continue;
 		this_load = states[i].usage - states[i].cpus;
@@ -369,6 +370,9 @@ void put_mask_from_stats(struct task_struct *ts)
 	unsigned seq;
 	u64 tasks_interval = 0;
 	cpumask_t mask = CPU_MASK_NONE;
+#ifdef DEBUG
+	int i;
+#endif
 
 	/* Do not try to estimate anything
 	 * till INST_THRESHOLD insts are 
@@ -377,11 +381,8 @@ void put_mask_from_stats(struct task_struct *ts)
 	 */
 	this_cpu = smp_processor_id();
 #ifdef DEBUG
-	if(strcmp(ts->comm,"445.gobmk") == 0 ||
-	  strcmp(ts->comm,"456.hmmer") == 0  ||
-	  strcmp(ts->comm,"464.h264ref") == 0  ||
-	  strcmp(ts->comm,"482.sphinx3") == 0){
-		assigncpu_debug("%s, mask=0x%x, cpu %d\n",ts->comm,CPUMASK_TO_UINT(ts->cpus_allowed),this_cpu);
+	for(i=0;i<total_states;i++){
+		assigncpu_debug("usage[%d]=%d, cpus[%d]=%d",i,states[i].usage,i,states[i].cpus);
 	}
 #endif
 
@@ -504,6 +505,7 @@ void initial_mask(struct task_struct *ts)
 		TS_MEMBER(ts, cpustate) = cur_cpu_state[smp_processor_id()];
 	} else {
 		TS_MEMBER(ts, cpustate) = state;
+		states[state].usage++;
 	}
 	if(disable_scheduling == 0)
 		put_work(ts,mask);
