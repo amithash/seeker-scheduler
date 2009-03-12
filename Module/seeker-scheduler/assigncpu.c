@@ -328,7 +328,7 @@ void exit_mig_pool(void)
 	int i;
 	spin_lock(&mig_pool_lock);
 	for(i=0; i < MIG_POOL_SIZE; i++){
-		if(mig_pool[i].free = 1){
+		if(mig_pool[i].free == 1){
 			mig_pool[i].free = 0;
 		} else {
 			cancel_delayed_work(&mig_pool[i].work);
