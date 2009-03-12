@@ -271,11 +271,6 @@ int init_cpu_states(unsigned int how)
 
 	seqlock_init(&states_seq_lock);
 
-	if(register_scpufreq_user(&seeker_scheduler_user)){
-		error("Registering with seeker_cpufreq failed.");
-		return -1;
-	}
-
 	for(i = 0; i < total_online_cpus; i++) {
 		current_jiffies[i] = jiffies;
 	}
@@ -305,6 +300,7 @@ int init_cpu_states(unsigned int how)
 		for (i = 0; i < total_online_cpus; i++) {
 			cpu_set(i, states[total_states - 1].cpumask);
 			set_freq(i, max_state_possible[i]-1);
+			cur_cpu_state[i] = max_state_possible[i]-1;
 		}
 		break;
 	case ALL_LOW:
@@ -313,6 +309,7 @@ int init_cpu_states(unsigned int how)
 		for (i = 0; i < total_online_cpus; i++) {
 			cpu_set(i, states[0].cpumask);
 			set_freq(i,0);
+			cur_cpu_state[i] = 0;
 		}
 		break;
 	case BALANCE:
@@ -322,10 +319,12 @@ int init_cpu_states(unsigned int how)
 		for (i = 0; i < states[total_states - 1].cpus; i++) {
 			cpu_set(i, states[0].cpumask);
 			set_freq(i, 0);
+			cur_cpu_state[i] = 0;
 		}
 		for (; i < total_online_cpus; i++) {
 			cpu_set(i, states[total_states - 1].cpumask);
 			set_freq(i, max_state_possible[i]-1);
+			cur_cpu_state[i] = max_state_possible[i]-1;
 		}
 		break;
 	case STATIC_LAYOUT:
@@ -336,14 +335,17 @@ int init_cpu_states(unsigned int how)
 				static_layout[i] = 0;
 			if (static_layout[i] >= total_states)
 				static_layout[i] = total_states - 1;
+			info("raw_static[%d]=%d",i,static_layout[i]);
 			set_freq(i, static_layout[i]);
 			cpu_set(i, states[static_layout[i]].cpumask);
 			states[static_layout[i]].cpus++;
+			cur_cpu_state[i] = static_layout[i];
 		}
 		for (i = static_layout_length; i < total_online_cpus; i++) {
 			set_freq(i, 0);
 			cpu_set(i, states[0].cpumask);
 			states[0].cpus++;
+			cur_cpu_state[i] = 0;
 		}
 		break;
 	case NO_CHANGE:
@@ -356,10 +358,17 @@ int init_cpu_states(unsigned int how)
 				this_freq = 0;
 				warn("Freq state for cpu %d was not initialized and hence set to 0", i);
 			}
+			cur_cpu_state[i] = this_freq;
 			cpu_set(i, states[this_freq].cpumask);
 			states[this_freq].cpus++;
 		}
 		break;
+	}
+
+
+	if(register_scpufreq_user(&seeker_scheduler_user)){
+		error("Registering with seeker_cpufreq failed.");
+		return -1;
 	}
 
 	return 0;
