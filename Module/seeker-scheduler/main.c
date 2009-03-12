@@ -370,10 +370,10 @@ static int scheduler_init(void)
 	total_online_cpus = num_online_cpus();
 
 	if(allowed_cpus != 0){
-		if(allowed_cpus >= 0 && allowed_cpus <= total_online_cpus){
+		if(allowed_cpus > 0 && allowed_cpus <= total_online_cpus){
 			total_online_cpus = allowed_cpus;
 		} else {
-			warn("allowed_cpus has to be within [0,%d]",total_online_cpus);
+			warn("allowed_cpus has to be within (0,%d]",total_online_cpus);
 		}
 	}
 	cpus_clear(total_online_mask);
