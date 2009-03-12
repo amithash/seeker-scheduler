@@ -237,6 +237,10 @@ void inst_release_thread(struct task_struct *t)
 	states[TS_MEMBER(t, cpustate)].usage--;
 
 	put_debug(p);
+
+	/* Make sure there is no pending work on this task */
+	cancel_task_work(t);
+
 	jprobe_return();
 
 }

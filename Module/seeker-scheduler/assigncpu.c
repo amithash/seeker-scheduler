@@ -325,6 +325,7 @@ void init_mig_pool(void)
  ********************************************************************************/
 void exit_mig_pool(void)
 {
+	int i;
 	spin_lock(&mig_pool_lock);
 	for(i=0; i < MIG_POOL_SIZE; i++){
 		if(mig_pool[i].free = 1){
@@ -366,6 +367,26 @@ void put_work(struct task_struct *ts, cpumask_t mask)
 	mig_pool[i].mask = mask;
 	mig_pool[i].task = ts;
 	schedule_delayed_work(&(mig_pool[i].work),1);
+}
+
+/********************************************************************************
+ * cancel_task_work - Cancel all pending work for ts if any.
+ *
+ * Cancels all pending work if any for task ts. Should be called from
+ * release_thread.
+ ********************************************************************************/
+void cancel_task_work(struct task_struct *ts)
+{
+	int i;
+	spin_lock(&mig_pool_lock);
+	for(i=0;i<MIG_POOL_SIZE;i++){
+		if(mig_pool[i].free == 0 && 
+		   ts->pid == mig_pool[i].task->pid){
+			cancel_delayed_work(&mig_pool[i].work);
+			mig_pool[i].free = 1;
+		}
+	}
+	spin_unlock(&mig_pool_lock);
 }
 
 
@@ -526,10 +547,9 @@ void initial_mask(struct task_struct *ts)
 		TS_MEMBER(ts, cpustate) = state;
 		states[state].usage++;
 	}
-	ts->cpus_allowed = mask;
-/*	if(disable_scheduling == 0)
+	if(disable_scheduling == 0)
 		put_work(ts,mask);
-*/
+
 }
 
 
