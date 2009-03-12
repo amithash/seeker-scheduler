@@ -6,8 +6,8 @@ mkdir /root/group_4
 mkdir /root/group_8
 
 function mailme {
-	cat /root/mother.err > /root/tmp_mail
-	cat /root/mother.out >> /root/tmp_mail
+	cat /root/fixed.err > /root/tmp_mail
+	cat /root/fixed.out >> /root/tmp_mail
 	echo "Regards, AMDBox" >> /root/tmp_mail
 	cat /root/tmp_mail | mail -s "$1" amithash@gmail.com
 }
@@ -23,7 +23,7 @@ insmod $SEEKER_HOME/Build/seeker_cpufreq.ko
 $SEEKER_HOME/seeker_cpufreq.pl start
 
 BLS=( HighIPC0 HighIPC1 Low-HighIPC0 Low-HighIPC1 LowIPC0 LowIPC1 PhaseHigh-High PhaseHigh-Low PhaseHigh-PhaseLow PhaseLow-High PhaseLow-Low )
-BLS_NAMES=( High0 High1 Low-High0 Low-High1 Low0 Low1 PHigh-High PHigh-Loww PHigh-PLow PLow-High PLow-Low )
+BLS_NAME=( High0 High1 Low-High0 Low-High1 Low0 Low1 PHigh-High PHigh-Low PHigh-PLow PLow-High PLow-Low )
 BLS_LEN=${#BLS[@]}
 
 CPUS=( 4 8 );
