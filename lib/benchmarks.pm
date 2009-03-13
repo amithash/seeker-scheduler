@@ -51,6 +51,8 @@ my %bin_bench = (
 	"473.astar" => "astar"
 );
 
+my $path = "$ENV{SEEKER_HOME}/AnalysisScripts/bench";
+
 sub get_bench_name{
 	my $bin = shift;
 	if(defined($bin_bench{$bin})){
@@ -80,7 +82,6 @@ sub get_execute_script{
 
 sub cleanup{
 	my $bench_script_name = shift;
-	my $path = shift;
 	my $bench_script_ex = get_execute_script($bench_script_name);
 	open IN,"$path/cleanup/$bench_script_ex";
 	my $a = join("",<IN>);
@@ -89,7 +90,6 @@ sub cleanup{
 }
 sub setup{
 	my $bench_script_name = shift;
-	my $path = shift;
 	my $bench_script_ex = get_execute_script($bench_script_name);
 	open IN,"$path/setup/$bench_script_ex";
 	my $a = join("",<IN>);
@@ -98,7 +98,6 @@ sub setup{
 }
 sub run{
 	my $bench_script_name = shift;
-	my $path = shift;
 	my $bench_script_ex = get_execute_script($bench_script_name);
 	open IN,"$path/run/$bench_script_ex";
 	my $a = <IN>;
