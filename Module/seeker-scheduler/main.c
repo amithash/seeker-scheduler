@@ -319,7 +319,6 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
  *******************************************************************************/
 void inst_sched_fork(struct task_struct *new, int clone_flags)
 {
-	TS_MEMBER(new, seeker_scheduled) = SEEKER_MAGIC_NUMBER;
 	TS_MEMBER(new, fixed_state) = -1;
 	TS_MEMBER(new, interval) = interval_count;
 	TS_MEMBER(new, inst) = 0;
@@ -327,8 +326,10 @@ void inst_sched_fork(struct task_struct *new, int clone_flags)
 	TS_MEMBER(new, ref_cy) = 0;
 	TS_MEMBER(new, re_cy) = 0;
 
-	if(is_blacklist_task(new) == 0)
+	if(is_blacklist_task(new) == 0){
+		TS_MEMBER(new, seeker_scheduled) = SEEKER_MAGIC_NUMBER;
 		initial_mask(new);
+	}
 
 	jprobe_return();
 }
