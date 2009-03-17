@@ -429,6 +429,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		return;
 	tasks_interval = TS_MEMBER(ts, interval);
 	old_state = TS_MEMBER(ts,cpustate);
+	states[old_state].usage--;
 
 	do {
 		seq = read_seqbegin(&states_seq_lock);
@@ -478,6 +479,7 @@ void put_mask_from_stats(struct task_struct *ts)
 #ifdef DEBUG
 		mask_empty_cond++;
 #endif
+		states[old_state].usage++;
 		return;
 	}
 
@@ -516,10 +518,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		put_work(ts,mask);
 	}
 
-	if(old_state != new_state){
-		states[old_state].usage--;
-		states[new_state].usage++;
-	}
+	states[new_state].usage++;
 }
 
 /********************************************************************************
