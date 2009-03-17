@@ -479,6 +479,7 @@ static int scheduler_init(void)
 		schedule_delayed_work(&state_work, interval_jiffies);
 		info("Started Timer");
 	}
+	init_assigncpu_logger();
 
 	return 0;
 
@@ -513,6 +514,7 @@ static void scheduler_exit(void)
 {
 	debug("removing the state change timer");
 	exit_cpu_states();
+	exit_assigncpu_logger();
 	if (timer_started) {
 		timer_started = 0;
 		cancel_delayed_work(&state_work);

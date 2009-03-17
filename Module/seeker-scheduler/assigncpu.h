@@ -30,6 +30,8 @@ void initial_mask(struct task_struct *ts);
 void cancel_task_work(struct task_struct *ts);
 void init_mig_pool(void);
 void exit_mig_pool(void);
+void init_assigncpu_logger(void);
+void exit_assigncpu_logger(void);
 
 /* Keep the threshold at 1M Instructions
  * This removes artifcats from IPC and 
@@ -65,18 +67,15 @@ void exit_mig_pool(void);
 #define assigncpu_debug(str,a...) do{					  	     \
 					int __len = strlen(debug_string); 	     \
 					char __tmp_str[100];		 	     \
+					spin_lock(&assigncpu_logger_lock);	     \
 					sprintf(__tmp_str,"SAD: " str "\n",## a);    \
 					if((strlen(__tmp_str) + __len + 1) < 1024){  \
 						strcat(debug_string,__tmp_str);      \
 					}					     \
-				} while(0)
-#define assigncpu_debug_print()	do {					\
-					printk("%s",debug_string);	\
-					debug_string[0] = '\0';		\
+					spin_unlock(&assigncpu_logger_lock);	     \
 				} while(0)
 #else
 #define assigncpu_debug(str,a...) do{;}while(0)
-#define assigncpu_debug_print()   do{;}while(0)
 #endif
 
 #endif

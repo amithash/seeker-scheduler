@@ -41,6 +41,12 @@
 #include "debug.h"
 #include "tsc_intf.h"
 
+#define ASSIGNCPU_LOGGER_INTERVAL (HZ/10)
+
+/********************************************************************************
+ * 			Function Declarations 					*
+ ********************************************************************************/
+void assigncpu_logger(struct work_struct *w);
 
 /********************************************************************************
  * 			Local Prototype 					*
@@ -100,6 +106,8 @@ extern unsigned int negative_newstates;
 
 /* main.c: counts the error condition empty masks */
 extern unsigned int mask_empty_cond;
+
+static DECLARE_DELAYED_WORK(assigncpu_logger_work, assigncpu_logger);
 #endif
 
 
@@ -140,6 +148,8 @@ extern unsigned int mask_empty_cond;
 #ifdef DEBUG
 /* temp storage for assigncpu messages */
 char debug_string[1024] = "";
+DEFINE_SPINLOCK(assigncpu_logger_lock);
+int assigncpu_logger_started = 0;
 #endif
 
 /* migration pool spin lock */
@@ -152,6 +162,46 @@ struct mask_work mig_pool[MIG_POOL_SIZE];
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
+#ifdef DEBUG
+void assigncpu_logger(struct work_struct *w)
+{
+	spin_lock(&assigncpu_logger_lock);
+	printk("%s",debug_string);
+	debug_string[0] = '\0';
+	spin_unlock(&assigncpu_logger_lock);
+	if(assigncpu_logger_started)
+		schedule_delayed_work(&assigncpu_logger_work, ASSIGNCPU_LOGGER_INTERVAL);	
+}
+
+void init_assigncpu_logger(void)
+{
+	assigncpu_logger_started = 1;
+	schedule_delayed_work(&assigncpu_logger_work, ASSIGNCPU_LOGGER_INTERVAL);	
+	return;
+}
+
+void exit_assigncpu_logger(void)
+{
+	if(assigncpu_logger_started){
+		assigncpu_logger_started = 0;
+		cancel_delayed_work(&assigncpu_logger_work);
+	}
+}
+
+#else
+void assigncpu_logger(struct work_struct *w)
+{
+	return;
+}
+void init_assigncpu_logger(void)
+{
+	return;
+}
+void exit_assigncpu_logger(void)
+{
+	return;
+}
+#endif
 
 /********************************************************************************
  * state_free - Is state free?
