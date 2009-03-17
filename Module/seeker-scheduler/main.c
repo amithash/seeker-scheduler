@@ -60,6 +60,7 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs);
 void inst_release_thread(struct task_struct *t);
 void inst_scheduler_tick(void);
 static void state_change(struct work_struct *w);
+int is_blacklist_task(struct task_struct *p);
 
 /********************************************************************************
  * 			Global Datastructures 					*
@@ -227,7 +228,9 @@ void inst_release_thread(struct task_struct *t)
 {
 	struct debug_block *p = NULL;
 	if (TS_MEMBER(t, seeker_scheduled) != SEEKER_MAGIC_NUMBER)
-		jprobe_return();
+		goto out;
+	if(is_blacklist_task(t))
+		goto out;
 	p = get_debug();
 	if (p) {
 		p->entry.type = DEBUG_PID;
@@ -240,13 +243,22 @@ void inst_release_thread(struct task_struct *t)
 
 	/* Make sure there is no pending work on this task */
 	cancel_task_work(t);
-
+out:
 	jprobe_return();
 
 }
 
+/*******************************************************************************
+ * is_blacklist_task - Should seeker manage this task?
+ * p -> task struct of the task to check.
+ * @return - 1 if it is a blacklist task, 0 otherwise.
+ * 
+ * Return 1 if this is a blacklist task. 
+ *******************************************************************************/
 int is_blacklist_task(struct task_struct *p)
 {
+	if(strcmp(p->comm,"debugd") == 0)
+		return 1;
 	if(strncmp(p->comm,"events/",7) == 0)
 		return 1;
 	if(strncmp(p->comm,"migration/",10) == 0)
