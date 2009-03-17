@@ -543,6 +543,7 @@ void initial_mask(struct task_struct *ts)
 	if(cpus_empty(mask)){
 		mask = total_online_mask;
 		TS_MEMBER(ts, cpustate) = cur_cpu_state[smp_processor_id()];
+		states[cur_cpu_state[smp_processor_id()]].usage++;
 	} else {
 		TS_MEMBER(ts, cpustate) = state;
 		states[state].usage++;
