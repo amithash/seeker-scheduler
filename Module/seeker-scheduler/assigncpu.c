@@ -461,9 +461,6 @@ void put_mask_from_stats(struct task_struct *ts)
 	int old_state;
 	u64 tasks_interval = 0;
 	cpumask_t mask = CPU_MASK_NONE;
-#ifdef DEBUG
-	int i;
-#endif
 
 	/* Do not try to estimate anything
 	 * till INST_THRESHOLD insts are 
@@ -471,17 +468,14 @@ void put_mask_from_stats(struct task_struct *ts)
 	 * with short lived tasks.
 	 */
 	this_cpu = smp_processor_id();
-#ifdef DEBUG
-	for(i=0;i<total_states;i++){
-		assigncpu_debug("usage[%d]=%d, cpus[%d]=%d",i,states[i].usage,i,states[i].cpus);
-	}
-#endif
 
 	if (TS_MEMBER(ts, inst) < INST_THRESHOLD)
 		return;
 	tasks_interval = TS_MEMBER(ts, interval);
 	old_state = TS_MEMBER(ts,cpustate);
 	states[old_state].usage--;
+
+	assigncpu_debug("P:%s:%d:%d",ts->comm,old_state,states[old_state].usage);
 
 	do {
 		seq = read_seqbegin(&states_seq_lock);
@@ -571,6 +565,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	}
 
 	states[new_state].usage++;
+	assigncpu_debug("O:%s:%d:%d",ts->comm,new_state,states[new_state].usage);
 }
 
 /********************************************************************************
@@ -594,11 +589,12 @@ void initial_mask(struct task_struct *ts)
 	if(cpus_empty(mask)){
 		mask = total_online_mask;
 		TS_MEMBER(ts, cpustate) = cur_cpu_state[smp_processor_id()];
-		states[cur_cpu_state[smp_processor_id()]].usage++;
 	} else {
 		TS_MEMBER(ts, cpustate) = state;
-		states[state].usage++;
 	}
+	states[TS_MEMBER(ts, cpustate)].usage++;
+	assigncpu_debug("I:%s:%d:%d",ts->comm,TS_MEMBER(ts, cpustate),states[TS_MEMBER(ts, cpustate)].usage);
+
 	if(disable_scheduling == 0)
 		put_work(ts,mask);
 
