@@ -56,11 +56,10 @@ void exit_assigncpu_logger(void);
 
 /* You cannot call printk in any of the scheduler related functions. 
  * So this is a little hack to that. Call assigncpu_debug instead
- * of debug. and periodically call assigncpu_debug_print in a 
- * non-scheduler function. Which will print out the buffered messages.
- *
- * There are NO info,warn and error counterparts. as this is quiet heavy.
- * and consumes 1kB of space to temporarily hold the buffer.
+ * NOTE: here is a list of things to know.
+ *   1. It tries to get a spin lock. so do not nest it in other critical sections.
+ *   2. If you do not have to use it, do not use it.. use debug instead.
+ *   3. Keep messages short and sweet not an autobiography. 
  */
 
 #ifdef DEBUG
