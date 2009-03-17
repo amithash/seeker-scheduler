@@ -186,6 +186,8 @@ void exit_assigncpu_logger(void)
 		assigncpu_logger_started = 0;
 		cancel_delayed_work(&assigncpu_logger_work);
 	}
+	if(spin_is_locked(&assigncpu_logger_lock))
+		spin_unlock(&assigncpu_logger_lock);
 }
 
 #else

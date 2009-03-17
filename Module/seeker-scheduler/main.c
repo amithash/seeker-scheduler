@@ -514,7 +514,6 @@ static void scheduler_exit(void)
 {
 	debug("removing the state change timer");
 	exit_cpu_states();
-	exit_assigncpu_logger();
 	if (timer_started) {
 		timer_started = 0;
 		cancel_delayed_work(&state_work);
@@ -531,6 +530,7 @@ static void scheduler_exit(void)
 	debug("Exiting the counters");
 	exit_counters();
 	exit_mig_pool();
+	exit_assigncpu_logger();
 }
 
 /********************************************************************************
