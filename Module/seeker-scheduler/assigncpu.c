@@ -408,6 +408,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	int this_cpu;
 	int state_req = 0;
 	unsigned seq;
+	int old_state;
 	u64 tasks_interval = 0;
 	cpumask_t mask = CPU_MASK_NONE;
 #ifdef DEBUG
@@ -429,6 +430,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	if (TS_MEMBER(ts, inst) < INST_THRESHOLD)
 		return;
 	tasks_interval = TS_MEMBER(ts, interval);
+	old_state = TS_MEMBER(ts,cpustate);
 
 	do {
 		seq = read_seqbegin(&states_seq_lock);
@@ -516,8 +518,8 @@ void put_mask_from_stats(struct task_struct *ts)
 		put_work(ts,mask);
 	}
 
-	if(state != new_state){
-		states[state].usage--;
+	if(old_state != new_state){
+		states[old_state].usage--;
 		states[new_state].usage++;
 	}
 }
