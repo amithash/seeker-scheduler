@@ -34,7 +34,6 @@
 
 #include "state.h"
 #include "seeker_cpufreq.h"
-#include "assigncpu.h"
 #include "mutate.h"
 #include "debug.h"
 
