@@ -21,9 +21,10 @@
 	 C2D_EVENTS.pdf which is the copyright of Intel Corporation, and K8_EVENTS.pdf
 	 which is the copyright of Advanced Micro Devices ( added here for 
 	 convienence ) and ms_thesis-prasad/* for which I hold a restrictive non-copy
-	 rights. But this restriction will be removed as soon as I publish upon which
-	the document will become public domain and all have the same rights as other
-	academic publications.
+	 non-distribute rights. But this restriction will be removed as soon as I 
+	 publish upon which the document will become public domain and all have 
+	 the same rights as other academic publications. This is currently not in
+	 git HEAD, as I am using a seperate repositary for it. 
 
 	Note most of the material here come under unpublished work currently under
 	heavy modifications and going towards my Master's thesis. So, be considerate
