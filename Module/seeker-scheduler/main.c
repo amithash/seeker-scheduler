@@ -237,7 +237,6 @@ void inst_release_thread(struct task_struct *t)
 		p->entry.u.tpid.pid = (u32) (t->pid);
 		memcpy(&(p->entry.u.tpid.name[0]), t->comm, 16);
 	}
-	usage_dec(TS_MEMBER(t, cpustate));
 
 	put_debug(p);
 
@@ -352,6 +351,13 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	if (TS_MEMBER(from, seeker_scheduled) != SEEKER_MAGIC_NUMBER) {
 		goto get_out;
 	}
+	if(!is_blacklist_task(to))
+		usage_inc(TS_MEMBER(to, cpustate));
+
+	if(is_blacklist_task(from))
+		goto get_out;
+
+	usage_dec(TS_MEMBER(from, cpustate));
 
 	read_counters(cpu);
 	TS_MEMBER(from, inst) += pmu_val[cpu][0];

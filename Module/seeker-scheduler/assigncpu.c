@@ -474,7 +474,6 @@ void put_mask_from_stats(struct task_struct *ts)
 		return;
 	tasks_interval = TS_MEMBER(ts, interval);
 	old_state = TS_MEMBER(ts,cpustate);
-	usage_dec(old_state);
 
 	assigncpu_debug("P:%s:%d:%d",ts->comm,old_state,usage_get(old_state));
 
@@ -526,7 +525,6 @@ void put_mask_from_stats(struct task_struct *ts)
 #ifdef DEBUG
 		mask_empty_cond++;
 #endif
-		usage_inc(old_state);
 		return;
 	}
 
@@ -565,7 +563,6 @@ void put_mask_from_stats(struct task_struct *ts)
 		put_work(ts,mask);
 	}
 
-	usage_inc(new_state);
 	assigncpu_debug("O:%s:%d:%d",ts->comm,new_state,usage_get(new_state));
 }
 
@@ -593,7 +590,6 @@ void initial_mask(struct task_struct *ts)
 	} else {
 		TS_MEMBER(ts, cpustate) = state;
 	}
-	usage_inc(TS_MEMBER(ts, cpustate));
 	assigncpu_debug("I:%s:%d:%d",ts->comm,TS_MEMBER(ts, cpustate),usage_get(TS_MEMBER(ts,cpustate)));
 
 	if(disable_scheduling == 0)
