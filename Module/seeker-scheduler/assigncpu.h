@@ -63,15 +63,15 @@ void exit_assigncpu_logger(void);
  */
 
 #ifdef DEBUG
-#define assigncpu_debug(str,a...) do{					  	     \
-					int __len = strlen(debug_string); 	     \
-					char __tmp_str[100];		 	     \
-					spin_lock(&assigncpu_logger_lock);	     \
-					sprintf(__tmp_str,"SAD: " str "\n",## a);    \
-					if((strlen(__tmp_str) + __len + 1) < 1024){  \
-						strcat(debug_string,__tmp_str);      \
-					}					     \
-					spin_unlock(&assigncpu_logger_lock);	     \
+#define assigncpu_debug(str,a...) do{ 								\
+					int __len = strlen(debug_string) + 1;			\
+					char __tmp_str[100];		 			\
+					__len += sprintf(__tmp_str,"SAD: " str "\n",## a);    	\
+					if( __len < ASSIGNCPU_DEBUG_LEN ){			\
+						spin_lock(&assigncpu_logger_lock);		\
+						strcat(debug_string,__tmp_str);			\
+						spin_unlock(&assigncpu_logger_lock);		\
+					}							\
 				} while(0)
 #else
 #define assigncpu_debug(str,a...) do{;}while(0)

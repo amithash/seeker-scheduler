@@ -42,6 +42,7 @@
 #include "tsc_intf.h"
 
 #define ASSIGNCPU_LOGGER_INTERVAL (HZ/10)
+#define ASSIGNCPU_DEBUG_LEN 1024
 
 /********************************************************************************
  * 			Function Declarations 					*
@@ -147,7 +148,7 @@ static DECLARE_DELAYED_WORK(assigncpu_logger_work, assigncpu_logger);
  ********************************************************************************/
 #ifdef DEBUG
 /* temp storage for assigncpu messages */
-char debug_string[1024] = "";
+char debug_string[ASSIGNCPU_DEBUG_LEN] = "";
 DEFINE_SPINLOCK(assigncpu_logger_lock);
 int assigncpu_logger_started = 0;
 #endif
