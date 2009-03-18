@@ -214,7 +214,7 @@ void exit_assigncpu_logger(void)
  ********************************************************************************/
 inline int state_free(int state)
 {
-	if(states[state].cpus > 0 && states[state].usage < states[state].cpus)
+	if(states[state].cpus > 0 && usage_get(state) < states[state].cpus)
 		return 1;
 	return 0;
 }
@@ -227,15 +227,15 @@ inline int state_free(int state)
  ********************************************************************************/
 int lowest_loaded_state(void)
 {
-	int min_load = states[0].usage - states[0].cpus;
+	int min_load = usage_get(0) - states[0].cpus;
 	int min_state = 0;
 	int this_load;
 	int i;
 	for(i=0;i<total_states;i++){
-		assigncpu_debug("usage[%d]=%d, cpus[%d] = %d",i,states[i].usage,i,states[i].cpus);
+		assigncpu_debug("usage[%d]=%d, cpus[%d] = %d",i,usage_get(i),i,states[i].cpus);
 		if(states[i].cpus == 0)
 			continue;
-		this_load = states[i].usage - states[i].cpus;
+		this_load = usage_get(i) - states[i].cpus;
 		if(this_load < min_load){
 			min_load = this_load;
 			min_state = i;
@@ -473,9 +473,9 @@ void put_mask_from_stats(struct task_struct *ts)
 		return;
 	tasks_interval = TS_MEMBER(ts, interval);
 	old_state = TS_MEMBER(ts,cpustate);
-	states[old_state].usage--;
+	usage_dec(old_state);
 
-	assigncpu_debug("P:%s:%d:%d",ts->comm,old_state,states[old_state].usage);
+	assigncpu_debug("P:%s:%d:%d",ts->comm,old_state,usage_get(old_state));
 
 	do {
 		seq = read_seqbegin(&states_seq_lock);
@@ -525,7 +525,7 @@ void put_mask_from_stats(struct task_struct *ts)
 #ifdef DEBUG
 		mask_empty_cond++;
 #endif
-		states[old_state].usage++;
+		usage_inc(old_state);
 		return;
 	}
 
@@ -564,8 +564,8 @@ void put_mask_from_stats(struct task_struct *ts)
 		put_work(ts,mask);
 	}
 
-	states[new_state].usage++;
-	assigncpu_debug("O:%s:%d:%d",ts->comm,new_state,states[new_state].usage);
+	usage_inc(new_state);
+	assigncpu_debug("O:%s:%d:%d",ts->comm,new_state,usage_get(new_state));
 }
 
 /********************************************************************************
@@ -592,8 +592,8 @@ void initial_mask(struct task_struct *ts)
 	} else {
 		TS_MEMBER(ts, cpustate) = state;
 	}
-	states[TS_MEMBER(ts, cpustate)].usage++;
-	assigncpu_debug("I:%s:%d:%d",ts->comm,TS_MEMBER(ts, cpustate),states[TS_MEMBER(ts, cpustate)].usage);
+	usage_inc(TS_MEMBER(ts, cpustate));
+	assigncpu_debug("I:%s:%d:%d",ts->comm,TS_MEMBER(ts, cpustate),usage_get(TS_MEMBER(ts,cpustate)));
 
 	if(disable_scheduling == 0)
 		put_work(ts,mask);

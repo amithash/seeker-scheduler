@@ -237,7 +237,7 @@ void inst_release_thread(struct task_struct *t)
 		p->entry.u.tpid.pid = (u32) (t->pid);
 		memcpy(&(p->entry.u.tpid.name[0]), t->comm, 16);
 	}
-	states[TS_MEMBER(t, cpustate)].usage--;
+	usage_dec(TS_MEMBER(t, cpustate));
 
 	put_debug(p);
 

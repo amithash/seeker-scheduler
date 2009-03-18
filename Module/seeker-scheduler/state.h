@@ -39,8 +39,8 @@ struct state_desc {
 	short state;
 	cpumask_t cpumask;
 	short cpus;
-	unsigned int demand;
-	unsigned int usage;
+	atomic_t demand;
+	atomic_t usage;
 };
 
 /********************************************************************************
@@ -49,6 +49,14 @@ struct state_desc {
 
 void hint_inc(int state);
 void hint_dec(int state);
+int hint_get(int state);
+void hint_clear(int state);
+
+void usage_inc(int state);
+void usage_dec(int state);
+int usage_get(int state);
+void usage_clear(int state);
+
 int init_cpu_states(unsigned int how);
 void exit_cpu_states(void);
 void states_copy(struct state_desc *dest, struct state_desc *src);

@@ -204,7 +204,7 @@ void update_state_matrix(int delta)
  * @Side Effects - Updates the demand field matrix.
  *
  * Each and every column j state gives itself the current demand + a share which 
- * is demnad + (demand/2). Then gives (demand/2)-distance to each and every
+ * is demand + (demand/2). Then gives (demand/2)-distance to each and every
  * column where distance = |i-j|<friend_count;
  * And friends are helped only if they are broke. 
  ********************************************************************************/
@@ -408,14 +408,14 @@ void choose_layout(int delta)
 
 	/* Compute the total = sum of hints */
 	for (j = 0; j < total_states; j++) {
-		total += states[j].demand;
-		debug("State: %d ; Demand: %d", j, states[j].demand);
+		total += hint_get(j);
+		debug("State: %d ; Demand: %d", j, hint_get(j));
 	}
 
 	/* Compute CPU's demanded for each state */
 	for (j = 0; j < total_states; j++) {
 		cpus_demanded[j] = demand[j] =
-		    procs(states[j].demand, total, load);
+		    procs(hint_get(j), total, load);
 		total_demand += demand[j];
 	}
 	if (total_demand != load)
@@ -518,7 +518,6 @@ void choose_layout(int delta)
 			p->entry.u.mut.cpus_req[j] = cpus_demanded[j];
 			p->entry.u.mut.cpus_given[j] = 0;
 		}
-		new_states[j].demand = 0;
 	}
 
 	for (i = 0; i < total_online_cpus; i++) {
@@ -548,7 +547,9 @@ void choose_layout(int delta)
 
 	write_seqlock(&states_seq_lock);
 	for (j = 0; j < total_states; j++) {
-		states_copy(&(states[j]), &(new_states[j]));
+		states[j].cpumask = new_states[j].cpumask;
+		states[j].cpus = new_states[j].cpus;
+		hint_clear(j);
 	}
 	write_sequnlock(&states_seq_lock);
 

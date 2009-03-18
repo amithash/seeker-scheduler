@@ -116,7 +116,7 @@ static DECLARE_DELAYED_WORK(state_logger_work, state_logger);
  ********************************************************************************/
 void hint_inc(int state)
 {
-	states[state].demand++;
+	atomic_inc(&(states[state].demand));
 }
 
 /********************************************************************************
@@ -128,24 +128,77 @@ void hint_inc(int state)
  ********************************************************************************/
 void hint_dec(int state)
 {
-	states[state].demand--;
+	atomic_dec(&(states[state].demand));
 }
 
 /********************************************************************************
- * states_copy - copy states element by element 
- * @dest - The destination states struct
- * @src - Source struct
+ * hint_get - Get the current value of hint
+ * @state - the state who's hint is required.
+ *
+ * Get the current value of hint.
+ ********************************************************************************/
+int hint_get(int state)
+{
+	return atomic_read(&(states[state].demand));
+}
+
+/********************************************************************************
+ * hint_clear - Set the value of hint to 0.
+ * @state - The state whose hint has to be cleared.
+ *
+ * Set the current value of hint to 0 for state `state`.
+ ********************************************************************************/
+void hint_clear(int state)
+{
+	atomic_set(&(states[state].demand),0);
+}
+
+/********************************************************************************
+ * usage_inc - increment usage
+ * @state - state who's usage has to be incremented 
  * @Side Effects - None
  *
- * Copy from src to dest element by element. 
+ * Increment the usage for state "state" 
  ********************************************************************************/
-void states_copy(struct state_desc *dest, struct state_desc *src)
+void usage_inc(int state)
 {
-	dest->state = src->state;
-	dest->cpumask = src->cpumask;
-	dest->cpus = src->cpus;
-	dest->demand = src->demand;
+	atomic_inc(&(states[state].usage));
 }
+
+/********************************************************************************
+ * usage_dec - decrement usage
+ * @state - state who's usage has to be decremented
+ * @Side Effects - None
+ *
+ * Decrements the usage for state "state"
+ ********************************************************************************/
+void usage_dec(int state)
+{
+	atomic_dec(&(states[state].usage));
+}
+
+/********************************************************************************
+ * usage_get - Get the current value of usage
+ * @state - the state who's usage is required.
+ *
+ * Get the current value of usage.
+ ********************************************************************************/
+int usage_get(int state)
+{
+	return atomic_read(&(states[state].usage));
+}
+
+/********************************************************************************
+ * usage_clear - Set the value of usage to 0.
+ * @state - The state whose usage has to be cleared.
+ *
+ * Set the current value of usage to 0 for state `state`.
+ ********************************************************************************/
+void usage_clear(int state)
+{
+	atomic_set(&(states[state].usage),0);
+}
+
 
 /********************************************************************************
  * log_cpu_state - log the state of cpu. 
@@ -281,8 +334,8 @@ int init_cpu_states(unsigned int how)
 	for (i = 0; i < total_states; i++) {
 		states[i].state = i;
 		states[i].cpus = 0;
-		states[i].demand = 0;
-		states[i].usage = 0;
+		hint_clear(i);
+		usage_clear(i);
 		cpus_clear(states[i].cpumask);
 	}
 
