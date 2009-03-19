@@ -177,6 +177,8 @@ void assigncpu_logger(struct work_struct *w)
 void init_assigncpu_logger(void)
 {
 	assigncpu_logger_started = 1;
+	spin_lock_init(&assigncpu_logger_lock);
+	init_timer_deferrable(&assigncpu_logger_work.timer);
 	schedule_delayed_work(&assigncpu_logger_work, ASSIGNCPU_LOGGER_INTERVAL);	
 	return;
 }
@@ -233,7 +235,6 @@ int lowest_loaded_state(void)
 	int this_load;
 	int i;
 	for(i=0;i<total_states;i++){
-		assigncpu_debug("usage[%d]=%d, cpus[%d] = %d",i,usage_get(i),i,states[i].cpus);
 		if(states[i].cpus == 0)
 			continue;
 		this_load = usage_get(i) - states[i].cpus;
