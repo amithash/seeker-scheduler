@@ -344,6 +344,8 @@ void change_cpus(struct work_struct *w)
 	struct delayed_work *wrk = container_of(w,struct delayed_work,work);
 	struct mask_work *mw = container_of(wrk,struct mask_work,work);
 	struct task_struct *ts = mw->task;
+	if(mw->free == 1)
+		return;
 	if(cpus_equal(mw->mask,ts->cpus_allowed)){
 		debug("No change required");
 		goto change_cpus_out;
