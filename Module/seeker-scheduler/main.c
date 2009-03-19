@@ -348,11 +348,13 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	int cpu = smp_processor_id();
 	ts[cpu] = to;
 
+	if(TS_MEMBER(to, seeker_scheduled) == SEEKER_MAGIC_NUMBER &&
+		is_blacklist_task(to) == 0)
+		usage_inc(TS_MEMBER(to, cpustate));
+
 	if (TS_MEMBER(from, seeker_scheduled) != SEEKER_MAGIC_NUMBER) {
 		goto get_out;
 	}
-	if(!is_blacklist_task(to))
-		usage_inc(TS_MEMBER(to, cpustate));
 
 	if(is_blacklist_task(from))
 		goto get_out;
