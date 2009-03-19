@@ -164,6 +164,13 @@ struct mask_work mig_pool[MIG_POOL_SIZE];
  * 				Functions					*
  ********************************************************************************/
 #ifdef DEBUG
+/********************************************************************************
+ * assigncpu_logger - The assigncpu logging function.
+ * @w - The work calling this routine, not used.
+ * 
+ * Prints out the contents of the assigncpu debug buffer and sets 
+ * its length to 0. This is done safely with a spin lock held. 
+ ********************************************************************************/
 void assigncpu_logger(struct work_struct *w)
 {
 	spin_lock(&assigncpu_logger_lock);
@@ -174,6 +181,12 @@ void assigncpu_logger(struct work_struct *w)
 		schedule_delayed_work(&assigncpu_logger_work, ASSIGNCPU_LOGGER_INTERVAL);	
 }
 
+/********************************************************************************
+ * init_assigncpu_logger - initialize the assigncpu logging subtask.
+ *
+ * Initialize the locks and worker thread used for the assigncpu
+ * logging subtask.
+ ********************************************************************************/
 void init_assigncpu_logger(void)
 {
 	assigncpu_logger_started = 1;
@@ -183,6 +196,12 @@ void init_assigncpu_logger(void)
 	return;
 }
 
+/********************************************************************************
+ * exit_assigncpu_logger - Cleanup the assigncpu logging subtask.
+ *
+ * Cancels all pending assigncpu logging tasks which are pending. 
+ * Then unlocks the spin lock if it is still held.
+ ********************************************************************************/
 void exit_assigncpu_logger(void)
 {
 	if(assigncpu_logger_started){
@@ -194,6 +213,9 @@ void exit_assigncpu_logger(void)
 }
 
 #else
+
+/* assigncpu logging interface are just stubs when debug is not enabled */
+
 void assigncpu_logger(struct work_struct *w)
 {
 	return;
@@ -452,7 +474,6 @@ void cancel_task_work(struct task_struct *ts)
  * Evaluates IPC and decides what state it needs and appropiately assigns
  * the cpus_allowed element. 
  ********************************************************************************/
-
 void put_mask_from_stats(struct task_struct *ts)
 {
 	int new_state = -1;
