@@ -174,7 +174,8 @@ void usage_inc(int state)
  ********************************************************************************/
 void usage_dec(int state)
 {
-	atomic_dec(&(states[state].usage));
+	if(usage_get(state) != 0)
+		atomic_dec(&(states[state].usage));
 }
 
 /********************************************************************************

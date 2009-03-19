@@ -593,8 +593,6 @@ void initial_mask(struct task_struct *ts)
 	} else {
 		TS_MEMBER(ts, cpustate) = state;
 	}
-	assigncpu_debug("I:%s:%d:%d",ts->comm,TS_MEMBER(ts, cpustate),usage_get(TS_MEMBER(ts,cpustate)));
-
 	if(disable_scheduling == 0)
 		put_work(ts,mask);
 
