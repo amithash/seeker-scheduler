@@ -465,6 +465,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	int old_state;
 	u64 tasks_interval = 0;
 	cpumask_t mask = CPU_MASK_NONE;
+	int i;
 
 	/* Do not try to estimate anything
 	 * till INST_THRESHOLD insts are 
@@ -478,7 +479,11 @@ void put_mask_from_stats(struct task_struct *ts)
 	tasks_interval = TS_MEMBER(ts, interval);
 	old_state = TS_MEMBER(ts,cpustate);
 
-	assigncpu_debug("P:%s:%d:%d",ts->comm,old_state,usage_get(old_state));
+	for(i=0;i<total_states;i++){
+		if(states[i].cpus > 0){
+			assigncpu_debug("%d:%d",i,usage_get(i));
+		}
+	}
 
 	do {
 		seq = read_seqbegin(&states_seq_lock);
@@ -565,8 +570,6 @@ void put_mask_from_stats(struct task_struct *ts)
 	if(disable_scheduling == 0){
 		put_work(ts,mask);
 	}
-
-	assigncpu_debug("O:%s:%d:%d",ts->comm,new_state,usage_get(new_state));
 }
 
 /********************************************************************************
