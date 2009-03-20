@@ -1,6 +1,6 @@
-diff -Naur linux-2.6.28.2_clean/arch/x86/include/asm/syscalls.h linux-2.6.28.2_mod/arch/x86/include/asm/syscalls.h
---- linux-2.6.28.2_clean/arch/x86/include/asm/syscalls.h	2009-01-27 12:20:50.000000000 -0700
-+++ linux-2.6.28.2_mod/arch/x86/include/asm/syscalls.h	2009-01-27 12:26:00.000000000 -0700
+diff -Naur linux-2.6.28.8/arch/x86/include/asm/syscalls.h linux-2.6.28.8_mod/arch/x86/include/asm/syscalls.h
+--- linux-2.6.28.8/arch/x86/include/asm/syscalls.h	2009-03-16 18:50:03.000000000 -0600
++++ linux-2.6.28.8_mod/arch/x86/include/asm/syscalls.h	2009-03-20 11:41:10.000000000 -0600
 @@ -23,6 +23,7 @@
  #ifdef CONFIG_X86_32
  /* kernel/process_32.c */
@@ -17,9 +17,9 @@ diff -Naur linux-2.6.28.2_clean/arch/x86/include/asm/syscalls.h linux-2.6.28.2_m
  asmlinkage long sys_clone(unsigned long, unsigned long,
  			  void __user *, void __user *,
  			  struct pt_regs *);
-diff -Naur linux-2.6.28.2_clean/arch/x86/include/asm/unistd_32.h linux-2.6.28.2_mod/arch/x86/include/asm/unistd_32.h
---- linux-2.6.28.2_clean/arch/x86/include/asm/unistd_32.h	2009-01-27 12:20:50.000000000 -0700
-+++ linux-2.6.28.2_mod/arch/x86/include/asm/unistd_32.h	2009-01-27 12:24:40.000000000 -0700
+diff -Naur linux-2.6.28.8/arch/x86/include/asm/unistd_32.h linux-2.6.28.8_mod/arch/x86/include/asm/unistd_32.h
+--- linux-2.6.28.8/arch/x86/include/asm/unistd_32.h	2009-03-16 18:50:03.000000000 -0600
++++ linux-2.6.28.8_mod/arch/x86/include/asm/unistd_32.h	2009-03-20 11:41:10.000000000 -0600
 @@ -338,6 +338,7 @@
  #define __NR_dup3		330
  #define __NR_pipe2		331
@@ -28,9 +28,9 @@ diff -Naur linux-2.6.28.2_clean/arch/x86/include/asm/unistd_32.h linux-2.6.28.2_
  
  #ifdef __KERNEL__
  
-diff -Naur linux-2.6.28.2_clean/arch/x86/include/asm/unistd_64.h linux-2.6.28.2_mod/arch/x86/include/asm/unistd_64.h
---- linux-2.6.28.2_clean/arch/x86/include/asm/unistd_64.h	2009-01-27 12:20:50.000000000 -0700
-+++ linux-2.6.28.2_mod/arch/x86/include/asm/unistd_64.h	2009-01-27 12:25:14.000000000 -0700
+diff -Naur linux-2.6.28.8/arch/x86/include/asm/unistd_64.h linux-2.6.28.8_mod/arch/x86/include/asm/unistd_64.h
+--- linux-2.6.28.8/arch/x86/include/asm/unistd_64.h	2009-03-16 18:50:03.000000000 -0600
++++ linux-2.6.28.8_mod/arch/x86/include/asm/unistd_64.h	2009-03-20 11:41:10.000000000 -0600
 @@ -653,6 +653,8 @@
  __SYSCALL(__NR_pipe2, sys_pipe2)
  #define __NR_inotify_init1			294
@@ -40,9 +40,9 @@ diff -Naur linux-2.6.28.2_clean/arch/x86/include/asm/unistd_64.h linux-2.6.28.2_
  
  
  #ifndef __NO_STUBS
-diff -Naur linux-2.6.28.2_clean/arch/x86/kernel/process_32.c linux-2.6.28.2_mod/arch/x86/kernel/process_32.c
---- linux-2.6.28.2_clean/arch/x86/kernel/process_32.c	2009-01-27 12:20:50.000000000 -0700
-+++ linux-2.6.28.2_mod/arch/x86/kernel/process_32.c	2009-01-27 12:33:30.000000000 -0700
+diff -Naur linux-2.6.28.8/arch/x86/kernel/process_32.c linux-2.6.28.8_mod/arch/x86/kernel/process_32.c
+--- linux-2.6.28.8/arch/x86/kernel/process_32.c	2009-03-16 18:50:03.000000000 -0600
++++ linux-2.6.28.8_mod/arch/x86/kernel/process_32.c	2009-03-20 11:41:10.000000000 -0600
 @@ -637,6 +637,27 @@
  	return do_fork(SIGCHLD, regs.sp, &regs, 0, NULL, NULL);
  }
@@ -71,9 +71,9 @@ diff -Naur linux-2.6.28.2_clean/arch/x86/kernel/process_32.c linux-2.6.28.2_mod/
  asmlinkage int sys_clone(struct pt_regs regs)
  {
  	unsigned long clone_flags;
-diff -Naur linux-2.6.28.2_clean/arch/x86/kernel/process_64.c linux-2.6.28.2_mod/arch/x86/kernel/process_64.c
---- linux-2.6.28.2_clean/arch/x86/kernel/process_64.c	2009-01-27 12:20:50.000000000 -0700
-+++ linux-2.6.28.2_mod/arch/x86/kernel/process_64.c	2009-01-27 12:33:29.000000000 -0700
+diff -Naur linux-2.6.28.8/arch/x86/kernel/process_64.c linux-2.6.28.8_mod/arch/x86/kernel/process_64.c
+--- linux-2.6.28.8/arch/x86/kernel/process_64.c	2009-03-16 18:50:03.000000000 -0600
++++ linux-2.6.28.8_mod/arch/x86/kernel/process_64.c	2009-03-20 11:41:10.000000000 -0600
 @@ -712,6 +712,27 @@
  	return do_fork(SIGCHLD, regs->sp, regs, 0, NULL, NULL);
  }
@@ -102,17 +102,17 @@ diff -Naur linux-2.6.28.2_clean/arch/x86/kernel/process_64.c linux-2.6.28.2_mod/
  asmlinkage long
  sys_clone(unsigned long clone_flags, unsigned long newsp,
  	  void __user *parent_tid, void __user *child_tid, struct pt_regs *regs)
-diff -Naur linux-2.6.28.2_clean/arch/x86/kernel/syscall_table_32.S linux-2.6.28.2_mod/arch/x86/kernel/syscall_table_32.S
---- linux-2.6.28.2_clean/arch/x86/kernel/syscall_table_32.S	2009-01-27 12:20:50.000000000 -0700
-+++ linux-2.6.28.2_mod/arch/x86/kernel/syscall_table_32.S	2009-01-27 12:24:05.000000000 -0700
+diff -Naur linux-2.6.28.8/arch/x86/kernel/syscall_table_32.S linux-2.6.28.8_mod/arch/x86/kernel/syscall_table_32.S
+--- linux-2.6.28.8/arch/x86/kernel/syscall_table_32.S	2009-03-16 18:50:03.000000000 -0600
++++ linux-2.6.28.8_mod/arch/x86/kernel/syscall_table_32.S	2009-03-20 11:41:10.000000000 -0600
 @@ -332,3 +332,4 @@
  	.long sys_dup3			/* 330 */
  	.long sys_pipe2
  	.long sys_inotify_init1
 +	.long sys_seeker
-diff -Naur linux-2.6.28.2_clean/include/linux/sched.h linux-2.6.28.2_mod/include/linux/sched.h
---- linux-2.6.28.2_clean/include/linux/sched.h	2009-01-27 12:20:06.000000000 -0700
-+++ linux-2.6.28.2_mod/include/linux/sched.h	2009-01-27 12:23:26.000000000 -0700
+diff -Naur linux-2.6.28.8/include/linux/sched.h linux-2.6.28.8_mod/include/linux/sched.h
+--- linux-2.6.28.8/include/linux/sched.h	2009-03-16 18:50:03.000000000 -0600
++++ linux-2.6.28.8_mod/include/linux/sched.h	2009-03-20 11:41:10.000000000 -0600
 @@ -1,6 +1,8 @@
  #ifndef _LINUX_SCHED_H
  #define _LINUX_SCHED_H
@@ -122,7 +122,7 @@ diff -Naur linux-2.6.28.2_clean/include/linux/sched.h linux-2.6.28.2_mod/include
  /*
   * cloning flags:
   */
-@@ -1356,6 +1358,15 @@
+@@ -1355,6 +1357,15 @@
  	unsigned long default_timer_slack_ns;
  
  	struct list_head	*scm_work_list;
@@ -138,3 +138,34 @@ diff -Naur linux-2.6.28.2_clean/include/linux/sched.h linux-2.6.28.2_mod/include
  };
  
  /*
+diff -Naur linux-2.6.28.8/kernel/sched.c linux-2.6.28.8_mod/kernel/sched.c
+--- linux-2.6.28.8/kernel/sched.c	2009-03-16 18:50:03.000000000 -0600
++++ linux-2.6.28.8_mod/kernel/sched.c	2009-03-20 11:55:16.000000000 -0600
+@@ -2538,6 +2538,15 @@
+ 	prepare_arch_switch(next);
+ }
+ 
++/* notify_seeker - stub function for seeker to take over.
++ * Seeker will probe this function and do its stuff.
++ */
++void notify_seeker(struct rq *rq, struct task_struct *prev)
++{
++	return;
++}
++EXPORT_SYMBOL_GPL(notify_seeker);
++
+ /**
+  * finish_task_switch - clean up after a task-switch
+  * @rq: runqueue associated with task-switch
+@@ -2591,6 +2600,11 @@
+ 		kprobe_flush_task(prev);
+ 		put_task_struct(prev);
+ 	}
++
++	/* It is safe for seeker to start off from here as all the locks 
++	 * are dropped.
++	 */
++	notify_seeker(rq,prev);
+ }
+ 
+ /**
