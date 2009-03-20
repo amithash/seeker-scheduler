@@ -588,8 +588,8 @@ void put_mask_from_stats(struct task_struct *ts)
 	 * function, but this is done to have the same 
 	 * overhead
 	 */
-	if(disable_scheduling == 0){
-		put_work(ts,mask);
+	if(disable_scheduling == 0 && !cpus_equal(mask,ts->cpus_allowed)){
+		set_cpus_allowed_ptr(ts, &mask);
 	}
 }
 
