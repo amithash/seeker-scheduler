@@ -618,8 +618,7 @@ void initial_mask(struct task_struct *ts)
 		TS_MEMBER(ts, cpustate) = state;
 	}
 	if(disable_scheduling == 0)
-		put_work(ts,mask);
-
+		set_cpus_allowed_ptr(ts, &mask);
 }
 
 
