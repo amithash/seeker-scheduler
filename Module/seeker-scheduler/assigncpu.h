@@ -27,9 +27,6 @@
 
 void put_mask_from_stats(struct task_struct *ts);
 void initial_mask(struct task_struct *ts);
-void cancel_task_work(struct task_struct *ts);
-void init_mig_pool(void);
-void exit_mig_pool(void);
 void init_assigncpu_logger(void);
 void exit_assigncpu_logger(void);
 
