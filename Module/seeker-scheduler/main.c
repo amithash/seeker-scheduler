@@ -246,6 +246,8 @@ void inst_release_thread(struct task_struct *t)
 
 	put_debug(p);
 
+	/* Make sure there is no pending work on this task */
+	cancel_task_work(t);
 out:
 	jprobe_return();
 
@@ -418,6 +420,8 @@ static int scheduler_init(void)
 
 	info("Total online mask = %x\n",CPUMASK_TO_UINT(total_online_mask));
 
+	init_mig_pool();
+
 	init_idle_logger();
 
 	if (init_tsc_intf()) {
@@ -551,6 +555,7 @@ static void scheduler_exit(void)
 	debug_exit();
 	debug("Exiting the counters");
 	exit_counters();
+	exit_mig_pool();
 	exit_assigncpu_logger();
 }
 
