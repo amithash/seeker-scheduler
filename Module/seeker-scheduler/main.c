@@ -448,8 +448,7 @@ static int scheduler_init(void)
 	if(unlikely((probe_ret = register_jprobe(&jp_notify_seeker)))){
 		error("Could not find notify_seeker, returned=%d",
 			probe_ret);
-		return -ENODEV;	
-	}
+		return -ENODEV;
 	if (unlikely((probe_ret = register_jprobe(&jp_scheduler_tick)))) {
 		error
 		    ("Could not find scheduler_tick to probe, returned %d",
