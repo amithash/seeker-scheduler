@@ -55,7 +55,6 @@
  ********************************************************************************/
 
 void inst___switch_to(struct task_struct *from, struct task_struct *to);
-void inst_notify_seeker(struct rq *rq, struct task_struct *from);
 void inst_sched_fork(struct task_struct *new, int clone_flags);
 int inst_schedule(struct kprobe *p, struct pt_regs *regs);
 void inst_release_thread(struct task_struct *t);
@@ -109,11 +108,6 @@ struct kprobe kp_schedule = {
 struct jprobe jp_release_thread = {
 	.entry = (kprobe_opcode_t *) inst_release_thread,
 	.kp.symbol_name = "release_thread",
-};
-
-struct jprobe jp_notify_seeker = {
-	.entry = (kprobe_opcode_t *) inst_notify_seeker,
-	.kp.symbol_name = "notify_seeker",
 };
 
 /* Contains the value of num_online_cpus(), updated by init */
@@ -339,14 +333,6 @@ void inst_sched_fork(struct task_struct *new, int clone_flags)
 	jprobe_return();
 }
 
-void inst_notify_seeker(struct rq *rq, struct task_struct *from)
-{
-	if(TS_MEMBER(from, seeker_scheduled) == SEEKER_MAGIC_NUMBER &&
-		is_blacklist_task(from) == 0)
-		put_mask_from_stats(from);
-	jprobe_return();
-}
-
 /*******************************************************************************
  * inst___switch_to - Probe for __switch_to
  * @from - Previous task
@@ -381,6 +367,8 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	TS_MEMBER(from, ref_cy) += get_tsc_cycles();
 	clear_counters(cpu);
 
+	if(is_blacklist_task(from) == 0)
+		put_mask_from_stats(from);
 get_out:
 	jprobe_return();
 }
@@ -449,10 +437,6 @@ static int scheduler_init(void)
 	 * if they fail, we still need to de-register anything done
 	 * in the past and by taken cared by ordered goto's
 	 */
-	if(unlikely((probe_ret = register_jprobe(&jp_notify_seeker)))){
-		error("Could not find notify_seeker, returned=%d",
-			probe_ret);
-		return -ENODEV;
 	if (unlikely((probe_ret = register_jprobe(&jp_scheduler_tick)))) {
 		error
 		    ("Could not find scheduler_tick to probe, returned %d",
@@ -516,7 +500,6 @@ no___switch_to:
 no_sched_fork:
 	unregister_jprobe(&jp_scheduler_tick);
 no_scheduler_tick:
-	unregister_jprobe(&jp_notify_seeker);
 	return -ENOSYS;
 
 #else
@@ -550,7 +533,6 @@ static void scheduler_exit(void)
 	unregister_kprobe(&kp_schedule);
 	unregister_jprobe(&jp___switch_to);
 	unregister_jprobe(&jp_release_thread);
-	unregister_jprobe(&jp_notify_seeker);
 	debug("Debug exiting");
 	debug_exit();
 	debug("Exiting the counters");
