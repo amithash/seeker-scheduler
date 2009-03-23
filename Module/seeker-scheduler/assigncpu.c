@@ -481,7 +481,10 @@ void put_mask_from_stats(struct task_struct *ts)
 	int old_state;
 	u64 tasks_interval = 0;
 	cpumask_t mask = CPU_MASK_NONE;
+
+	#ifdef DEBUG
 	int i;
+	#endif
 
 	/* Do not try to estimate anything
 	 * till INST_THRESHOLD insts are 
@@ -537,11 +540,11 @@ void put_mask_from_stats(struct task_struct *ts)
 		}
 		if (new_state >= 0 && new_state < total_states)
 			mask = states[new_state].cpumask;
-#ifdef DEBUG
+		#ifdef DEBUG
 		else{
 			assigncpu_debug("Negative state for %s",ts->comm);
 		}
-#endif
+		#endif
 
 	} while (read_seqretry(&states_seq_lock, seq));
 
@@ -549,9 +552,7 @@ void put_mask_from_stats(struct task_struct *ts)
 
 	/* What the duche? as stewie says it */
 	if (cpus_empty(mask)) {
-#ifdef DEBUG
 		assigncpu_debug("Empty mask for %s",ts->comm);
-#endif
 		return;
 	}
 
