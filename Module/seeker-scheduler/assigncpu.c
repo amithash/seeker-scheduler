@@ -47,6 +47,7 @@
 /********************************************************************************
  * 			Function Declarations 					*
  ********************************************************************************/
+
 void assigncpu_logger(struct work_struct *w);
 
 /********************************************************************************
@@ -98,19 +99,6 @@ extern seqlock_t states_seq_lock;
 /* main.c: mask of all allowed/online cpus */
 extern cpumask_t total_online_mask;
 
-#ifdef DEBUG
-/* main.c: Debugging count of the number of times schedules was called */
-extern unsigned int total_schedules;
-
-/* main.c: counts the error condition negative new states */
-extern unsigned int negative_newstates;
-
-/* main.c: counts the error condition empty masks */
-extern unsigned int mask_empty_cond;
-
-static DECLARE_DELAYED_WORK(assigncpu_logger_work, assigncpu_logger);
-#endif
-
 
 /********************************************************************************
  * 				Local Macros					*
@@ -149,8 +137,15 @@ static DECLARE_DELAYED_WORK(assigncpu_logger_work, assigncpu_logger);
 #ifdef DEBUG
 /* temp storage for assigncpu messages */
 char debug_string[ASSIGNCPU_DEBUG_LEN] = "";
+
+/* Spin lock to change debug_string safely */
 DEFINE_SPINLOCK(assigncpu_logger_lock);
+
+/* Flag indicating that logger has started */
 int assigncpu_logger_started = 0;
+
+/* Work which safely prints the work */
+static DECLARE_DELAYED_WORK(assigncpu_logger_work, assigncpu_logger);
 #endif
 
 /* migration pool spin lock */
@@ -500,11 +495,13 @@ void put_mask_from_stats(struct task_struct *ts)
 	tasks_interval = TS_MEMBER(ts, interval);
 	old_state = TS_MEMBER(ts,cpustate);
 
+	#ifdef DEBUG
 	for(i=0;i<total_states;i++){
 		if(states[i].cpus > 0){
 			assigncpu_debug("%d:%d",i,usage_get(i));
 		}
 	}
+	#endif
 
 	do {
 		seq = read_seqbegin(&states_seq_lock);
@@ -541,8 +538,9 @@ void put_mask_from_stats(struct task_struct *ts)
 		if (new_state >= 0 && new_state < total_states)
 			mask = states[new_state].cpumask;
 #ifdef DEBUG
-		else
-			negative_newstates++;
+		else{
+			assigncpu_debug("Negative state for %s",ts->comm);
+		}
 #endif
 
 	} while (read_seqretry(&states_seq_lock, seq));
@@ -552,7 +550,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	/* What the duche? as stewie says it */
 	if (cpus_empty(mask)) {
 #ifdef DEBUG
-		mask_empty_cond++;
+		assigncpu_debug("Empty mask for %s",ts->comm);
 #endif
 		return;
 	}
@@ -580,9 +578,6 @@ void put_mask_from_stats(struct task_struct *ts)
 	TS_MEMBER(ts, re_cy) = 0;
 	TS_MEMBER(ts, cpustate) = new_state;
 
-#ifdef DEBUG
-	total_schedules++;
-#endif
 	/* Assign only if we have not disabled scheduling 
 	 * NOTE: Of course, we do not need to execute this
 	 * function, but this is done to have the same 

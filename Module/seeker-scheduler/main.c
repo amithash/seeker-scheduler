@@ -116,20 +116,6 @@ int total_online_cpus = 0;
 /* Mask of all allowed cpus */
 cpumask_t total_online_mask = CPU_MASK_NONE;
 
-#ifdef DEBUG
-/* counts the total number of times schedule was called */
-unsigned int total_schedules = 0;
-
-/* Counts the total number of times a negative newstates was encountered */
-unsigned int negative_newstates = 0;
-
-/* Counts the total number of times mask was empty. */
-unsigned int mask_empty_cond = 0;
-
-/* Counts the total number of times events/x was tried to be scheduled */
-unsigned int num_events = 0;
-#endif
-
 /********************************************************************************
  * 			External Variables 					*
  ********************************************************************************/
@@ -185,17 +171,6 @@ int allowed_cpus = 0;
  *******************************************************************************/
 static void state_change(struct work_struct *w)
 {
-	debug("total schedules in this interval: %d", total_schedules);
-	debug("total negative states warning: %d", negative_newstates);
-	debug("Times mask was empty: %d", mask_empty_cond);
-	debug("Total Events skipped %d", num_events);
-#ifdef DEBUG
-	mask_empty_cond = 0;
-	total_schedules = 0;
-	negative_newstates = 0;
-	num_events = 0;
-#endif
-
 	debug("State change now @ %ld", jiffies);
 	choose_layout(delta);
 	if (timer_started) {
