@@ -144,7 +144,7 @@ if($what eq "mut" or $what eq "all"){
 			my $giv_str = $3;
 			my $req = join(' ',split(/,/,$req_str));
 			my $giv = join(' ',split(/,/,$giv_str));
-			print OUTG "$interval $req\n";
+			print OUTR "$interval $req\n";
 			print OUTG "$interval $giv\n";
 		}
 	}
