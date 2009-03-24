@@ -99,6 +99,8 @@ for (( i=0;i<$CPUS_LEN;i++ )); do
 				$BENCH_ROOT/run.sh >> $OUT 2>> $ERR
 				sleep 10
 				$SEEKER_HOME/Scripts/send.pl -t >> $OUT 2>> $ERR
+				sleep 60
+				rmmod seeker_scheduler
 	
 				$SEEKER_HOME/AnalysisScripts/ex_time.pl ./LOG ${TIME_NAME} >> $OUT 2>> $ERR
 	
@@ -111,9 +113,7 @@ for (( i=0;i<$CPUS_LEN;i++ )); do
 				mailme "Cpus=${CPUS[$i]}, Interval=${INTERVAL[$l]}, Delta=${DELTA[$j]} bench group=${BLS_NAME[$k]}, just got over"
 				rm $OUT
 				rm $ERR
-				sleep 60
 			done
-			rmmod seeker_scheduler
 		done
 	done
 done

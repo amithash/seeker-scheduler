@@ -91,15 +91,17 @@ for (( i=0;i<$CPUS_LEN;i++ )); do
 	
 				${SEEKER_HOME}/AnalysisScripts/generate_runscript.pl --benchlist=${BENCHLIST} -a 
 				chmod +x ./run.sh
-
+				sleep 5
 				$SEEKER_HOME/Scripts/debugd $GROUP/log_ >> $OUT 2>> $ERR
 				sleep 10
 				rm ./LOG
 
 				$BENCH_ROOT/run.sh >> $OUT 2>> $ERR
-				sleep 10
+				sleep 20
 				$SEEKER_HOME/Scripts/send.pl -t >> $OUT 2>> $ERR
-	
+				sleep 60
+				rmmod seeker_scheduler
+
 				$SEEKER_HOME/AnalysisScripts/ex_time.pl ./LOG ${TIME_NAME} >> $OUT 2>> $ERR
 	
 				$SEEKER_HOME/Scripts/decodelog < $GROUP/log_0 > $RAW_NAME
@@ -111,9 +113,7 @@ for (( i=0;i<$CPUS_LEN;i++ )); do
 				mailme "Cpus=${CPUS[$i]}, Interval=${INTERVAL[$l]}, Delta=${DELTA[$j]} bench group=${BLS_NAME[$k]}, just got over"
 				rm $OUT
 				rm $ERR
-				sleep 60
 			done
-			rmmod seeker_scheduler
 		done
 	done
 done
