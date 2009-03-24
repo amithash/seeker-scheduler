@@ -108,7 +108,7 @@ for (( i=0;i<$CPUS_LEN;i++ )); do
 	
 				rm $GROUP/log_0 >> $OUT 2>> $ERR
 
-				mailme "Cpus=${CPUS[$i]}, Layout=${LAYOUT_NAME[$j]}, bench group=${BLS_NAME[$k]}, just got over"
+				mailme "Cpus=${CPUS[$i]}, Interval=${INTERVAL[$l]}, Delta=${DELTA[$j]} bench group=${BLS_NAME[$k]}, just got over"
 				rm $OUT
 				rm $ERR
 				sleep 60
