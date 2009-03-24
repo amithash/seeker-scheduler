@@ -74,8 +74,6 @@ for (( i=0;i<$CPUS_LEN;i++ )); do
 
 			echo "Interval=${INTERVAL[$l]}, Delta=${DELTA[$j]}"
 
-			insmod $SEEKER_HOME/Build/seeker_scheduler.ko allowed_cpus=${CPUS[$i]} change_interval=${INTERVAL[$l]} delta=${DELTA[$j]} >> $OUT 2>> $ERR
-
 			for (( k=0;k<$BLS_LEN;k++ )); do
 
 				TIME_NAME=$GROUP/time_${INTERVAL[$l]}_${DELTA[$j]}_${BLS_NAME[$k]}.txt
@@ -88,6 +86,8 @@ for (( i=0;i<$CPUS_LEN;i++ )); do
 					echo "Found Experiment files, continuing"
 					continue;
 				fi
+
+				insmod $SEEKER_HOME/Build/seeker_scheduler.ko allowed_cpus=${CPUS[$i]} change_interval=${INTERVAL[$l]} delta=${DELTA[$j]} >> $OUT 2>> $ERR
 	
 				${SEEKER_HOME}/AnalysisScripts/generate_runscript.pl --benchlist=${BENCHLIST} -a 
 				chmod +x ./run.sh
