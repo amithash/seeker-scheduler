@@ -104,7 +104,13 @@ close(INF);
 if($what eq "sch" or $what eq "all"){
 	foreach my $pid (keys %pids){
 		open IN, "grep -P \"^s,\\d+,$pid,\" $input_file_name |";
-		open OUT,"+>$output_dir/$pids{$pid}.$pid.sch";
+		my $file_name = "$output_dir/$pids{$pid}.sch";
+		my $i = 1;
+		while(-e $file_name){
+			$file_name = "$output_dir/$pids{$pid}_$i.sch";
+			$i++;
+		}
+		open OUT,"+>$file_name";
 		my $tot_inst = 0.0;
 		my $tot_refcy = 0.0;
 		while(my $l = <IN>){
