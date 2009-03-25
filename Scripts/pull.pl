@@ -156,7 +156,7 @@ if($what eq "mut" or $what eq "all"){
 if($what eq "st" or $what eq "all"){
 	my %cpu_time;
 	open IN, "grep -P \"^t,\" $input_file_name |";
-	open OUT,"+>$output_dir/CPU_ST";
+	my $cpu_fh = open_cpus(4,$output_dir);
 	while(my $line = <IN>){
 		chomp($line);
 		  #          
@@ -164,30 +164,58 @@ if($what eq "st" or $what eq "all"){
 			my $cpu = $1;
 			my $state = $2;
 			my $time = $3;
-			if(not defined($cpu_time{$cpu})){
-				$cpu_time{$cpu} = [];
-			}
-			if(not defined($cpu_time{$cpu}->[$state])){
-				$cpu_time{$cpu}->[$state] = $time;
-			} else {
-				$cpu_time{$cpu}->[$state] += $time;
-			}
+			print_to_cpu($cpu_fh,$cpu,"$state $time\n");
 		} else {
 			print "Something is wrong\n";
 		}
 	}
-	foreach my $cpu (sort keys %cpu_time){
-		print OUT "CPU$cpu ";
-		my $cpu_ref = $cpu_time{$cpu};
-		my @cpu_h = @$cpu_ref;
-		foreach my $state (@cpu_h){
-			if(defined($state)){
-				print OUT " $state";
-			} else {
-				print OUT " 0";
-			}
+	close(IN);
+	close_cpus($cpu_fh);
+}
+
+sub open_cpus{
+	my $nr_cpus = shift;
+	my $path = shift;
+	if(not defined($path)){
+		$path = ".";
+	}
+	my @cpu_fh;
+	if(not defined($nr_cpus)){
+		return;
+	}
+	for(my $i = 0; $i < $nr_cpus; $i++){
+		local *FILE;
+		open FILE, "+>$path/CPUST_$i" or die "Could not create $path/CPUST_$i\n";
+		$cpu_fh[$i] = *FILE;
+	}
+	return \@cpu_fh;
+}
+
+sub print_to_cpu{
+	my $ref_cpufh = shift;
+	my $cpu = shift;
+	my $string = shift;
+	my @cpufh = @$ref_cpufh;
+	my $fh = $cpufh[$cpu];
+
+	if(not defined($fh)){
+		print "Error, $cpu invalid, opening:\n";
+		local *FILE;
+		open FILE, "+>CPUST_$cpu" or die "Could not open CPUST_$cpu\n";
+		$ref_cpufh->[$cpu] = *FILE;
+		$fh = $ref_cpufh->[$cpu];
+	}
+	print $fh "$string";
+}
+
+sub close_cpus{
+	my $ref_cpufh = shift;
+	my @cpufh = @$ref_cpufh;
+
+	foreach my $fh (@cpufh){
+		if(defined($fh)){
+			close($fh);
 		}
-		print OUT "\n";
 	}
 }
 
