@@ -323,11 +323,11 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 	ret_val = cpufreq_driver_target(policy, policy->cur, CPUFREQ_RELATION_H);
 	if(ret_val == -EAGAIN)
 		ret_val = cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
-	if(ret_val)
+	if(ret_val){
 		error("Target did not work for cpu %d transition to %d, with a return error code: %d",cpu,policy->cur,ret_val);
-	else 
-		info("Setting frequency of cpu %d to %d",cpu,policy->cur);
-
+		return ret_val;
+	}
+	debug("Setting frequency of %d to %d",cpu,policy->cur);
 	inform_freq_change(cpu,freq_ind);
 
 	return ret_val;
@@ -363,12 +363,11 @@ int __set_freq(unsigned int cpu, unsigned int freq_ind)
 	ret_val = __cpufreq_driver_target(policy, policy->cur, CPUFREQ_RELATION_H);
 	if(ret_val == -EAGAIN)
 		ret_val = __cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
-#ifdef DEBUG
-	if(ret_val)
+	if(ret_val){
 		debug("Target did not work for cpu %d transition to %d",cpu,policy->cur);
-	else 
-		debug("Setting frequency of cpu %d to %d",cpu,policy->cur);
-#endif
+		return ret_val;
+	}
+	debug("Setting frequency of cpu %d to %d",cpu,policy->cur);
 
 	inform_freq_change(cpu,freq_ind);
 
