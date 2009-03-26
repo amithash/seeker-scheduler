@@ -34,6 +34,7 @@
 
 #include "seeker_cpufreq.h"
 
+
 /********************************************************************************
  * 				Global Prototyprs 				*
  ********************************************************************************/
@@ -109,6 +110,9 @@ static int allowed_states_length = 0;
 
 /* Macro to make the access of the per-cpu structure easy */
 #define FREQ_INFO(cpu) (&per_cpu(freq_info,(cpu)))
+
+#define DRIVER_TARGET_LOCKING 1
+#define DRIVER_TARGET_NONLOCKING 0
 
 /********************************************************************************
  * 				Functions					*
@@ -300,15 +304,40 @@ unsigned int get_freq(unsigned int cpu)
 EXPORT_SYMBOL_GPL(get_freq);
 
 /*******************************************************************************
- * set_freq - set the performance number for cpu.
- * @cpu - The cpu to set.
- * @freq_ind - the performance number we need to set `cpu` to.
+ * driver_target - Wrapper for cpufreq_driver_target.
+ * @policy - the policy struct of the cpu.
+ * @frequency - desired frequency
+ * @relation - If frequency is not avaliable, higher or lower?
+ * @locking - see discreption.
  *
- * changes the frequency of `cpu` to one indicated by the performance number
- * freq_ind. 
- * NOTE: Do not call this from interrupt context! This function _might_ sleep.
+ * if locking = DRIVER_TARGET_LOCKING ->
+ * cpufreq_driver_target(policy,frequency,relation) is called
+ * if locking = DRIVER_TARGET_NONLOCKING ->
+ * __cpufreq_driver_target(policy,frequency,relation) is called
+ *
+ * If in doubt use DRIVER_TARGET_LOCKING, and only switch to 
+ * DRIVER_TARGET_NONLOCKING if things hang.
  *******************************************************************************/
-int set_freq(unsigned int cpu, unsigned int freq_ind)
+static int driver_target(struct cpufreq_policy *policy, unsigned int frequency, 
+		  unsigned int relation, int locking)
+{
+	if(locking == DRIVER_TARGET_NONLOCKING)
+		return __cpufreq_driver_target(policy,frequency,relation);
+
+	return cpufreq_driver_target(policy,frequency,relation);
+}
+
+/*******************************************************************************
+ * internal_set_freq - called by set_freq and __set_freq.
+ * @cpu - cpu for which change is reqired.
+ * @freq_ind - Performance number required.
+ * @locking - see below.
+ *
+ * if locking is passed on to driver_target below.
+ * See above. This is done this way to remove code duplication between
+ * set_freq and __set_freq.
+ *******************************************************************************/
+static int internal_set_freq(unsigned int cpu, unsigned int freq_ind, int locking)
 {
 	int ret_val;
 	struct cpufreq_policy *policy = NULL;
@@ -320,17 +349,32 @@ int set_freq(unsigned int cpu, unsigned int freq_ind)
 		return -1;
 	}
 	policy->cur = FREQ_INFO(cpu)->table[freq_ind];
-	ret_val = cpufreq_driver_target(policy, policy->cur, CPUFREQ_RELATION_H);
+	ret_val = driver_target(policy, policy->cur, CPUFREQ_RELATION_H,locking);
 	if(ret_val == -EAGAIN)
-		ret_val = cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
+		ret_val = driver_target(policy,policy->cur,CPUFREQ_RELATION_H,locking);
 	if(ret_val){
-		error("Target did not work for cpu %d transition to %d, with a return error code: %d",cpu,policy->cur,ret_val);
+		error("Target did not work for cpu %d transition to %d, "
+		      "with a return error code: %d",cpu,policy->cur,ret_val);
 		return ret_val;
 	}
 	debug("Setting frequency of %d to %d",cpu,policy->cur);
 	inform_freq_change(cpu,freq_ind);
 
 	return ret_val;
+
+}
+/*******************************************************************************
+ * set_freq - set the performance number for cpu.
+ * @cpu - The cpu to set.
+ * @freq_ind - the performance number we need to set `cpu` to.
+ *
+ * changes the frequency of `cpu` to one indicated by the performance number
+ * freq_ind. 
+ * NOTE: Do not call this from interrupt context! This function _might_ sleep.
+ *******************************************************************************/
+int set_freq(unsigned int cpu, unsigned int freq_ind)
+{
+	return internal_set_freq(cpu,freq_ind,DRIVER_TARGET_LOCKING);
 }
 
 EXPORT_SYMBOL_GPL(set_freq);
@@ -347,31 +391,7 @@ EXPORT_SYMBOL_GPL(set_freq);
  *******************************************************************************/
 int __set_freq(unsigned int cpu, unsigned int freq_ind)
 {
-	int ret_val;
-	struct cpufreq_policy *policy = NULL;
-	if (unlikely(cpu >= NR_CPUS || freq_ind >= FREQ_INFO(cpu)->num_states))
-		return -1;
-	if (freq_ind == FREQ_INFO(cpu)->cur_freq)
-		return 0;
-
-	policy = FREQ_INFO(cpu)->policy;
-	if (!policy) {
-		error("Error, governor not initialized for cpu %d", cpu);
-		return -1;
-	}
-	policy->cur = FREQ_INFO(cpu)->table[freq_ind];
-	ret_val = __cpufreq_driver_target(policy, policy->cur, CPUFREQ_RELATION_H);
-	if(ret_val == -EAGAIN)
-		ret_val = __cpufreq_driver_target(policy,policy->cur,CPUFREQ_RELATION_H);
-	if(ret_val){
-		debug("Target did not work for cpu %d transition to %d",cpu,policy->cur);
-		return ret_val;
-	}
-	debug("Setting frequency of cpu %d to %d",cpu,policy->cur);
-
-	inform_freq_change(cpu,freq_ind);
-
-	return ret_val;
+	return internal_set_freq(cpu,freq_ind,DRIVER_TARGET_NONLOCKING);
 }
 EXPORT_SYMBOL_GPL(__set_freq);
 
