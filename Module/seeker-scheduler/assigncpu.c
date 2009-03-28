@@ -258,6 +258,9 @@ int lowest_loaded_state(void)
 		if(this_load < min_load){
 			min_load = this_load;
 			min_state = i;
+		} else if(this_load == min_load &&
+			states[min_state].cpus < states[i].cpus){
+				min_state = i;
 		}
 	}
 	if(min_state == total_states || states[min_state].cpus == 0)
@@ -550,11 +553,6 @@ void put_mask_from_stats(struct task_struct *ts)
 
 	hint_inc(state_req);
 
-	/* What the duche? as stewie says it */
-	if (cpus_empty(mask)) {
-		assigncpu_debug("Empty mask for %s",ts->comm);
-		return;
-	}
 
 	/* Push statastics to the debug buffer if enabled */
 	p = get_debug();
@@ -578,6 +576,12 @@ void put_mask_from_stats(struct task_struct *ts)
 	TS_MEMBER(ts, ref_cy) = 0;
 	TS_MEMBER(ts, re_cy) = 0;
 	TS_MEMBER(ts, cpustate) = new_state;
+
+	/* What the duche? as stewie says it */
+	if (cpus_empty(mask)) {
+		assigncpu_debug("Empty mask for %s",ts->comm);
+		return;
+	}
 
 	/* Assign only if we have not disabled scheduling 
 	 * NOTE: Of course, we do not need to execute this
