@@ -247,13 +247,22 @@ inline int state_free(int state)
  ********************************************************************************/
 int lowest_loaded_state(void)
 {
-	int min_load = usage_get(0) - states[0].cpus;
+	int min_load;
 	int min_state = 0;
+	int min_found = 0;
 	int this_load;
 	int i;
+
 	for(i=0;i<total_states;i++){
 		if(states[i].cpus == 0)
 			continue;
+
+		if(min_found == 0){
+			min_load = usage_get(i) - states[i].cpus;
+			min_state = i;
+			min_found = 1;
+			continue;
+		}
 		this_load = usage_get(i) - states[i].cpus;
 		if(this_load < min_load){
 			min_load = this_load;
@@ -263,7 +272,7 @@ int lowest_loaded_state(void)
 				min_state = i;
 		}
 	}
-	if(min_state == total_states || states[min_state].cpus == 0)
+	if(min_found == 0)
 		return -1;
 
 	return min_state;
