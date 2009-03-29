@@ -41,6 +41,12 @@
 #include "debug.h"
 #include "tsc_intf.h"
 
+#ifdef HIST_BASED_SCHEDULING 
+#if defined(SEEKER_PLUGIN_PATCH) && SEEKER_PLUGIN_PATCH < 2
+#warning "An older version of schedmod patch is used. use the ver2 variant."
+#endif
+#endif
+
 #define ASSIGNCPU_LOGGER_INTERVAL (HZ/10)
 #define ASSIGNCPU_DEBUG_LEN 1024
 
@@ -109,6 +115,12 @@ extern cpumask_t total_online_mask;
 
 /* macro to performa a saturating decrement with an inclusive limit */
 #define sat_dec(state,inc_limit) ((state) > inc_limit ? (state)-1 : inc_limit)
+
+/* macro to do a sat sum on integers (including negative nums)
+ * with exclusive high and inclusive low
+ */
+#define sat_sum(a,b,inc_low, ex_high) (((a) + (b)) >= (ex_high) ? (ex_high)-1 : (((a)+(b)) < (inc_low) ? (inc_low) : ((a)+(b))))
+
 
 /* IPC of 8 Corrospondents to IPC of 1.0. */
 #define IPC(inst,cy) div(((inst)<<3),(cy))
@@ -538,6 +550,7 @@ void put_mask_from_stats(struct task_struct *ts)
 			break;
 		default:
 			ipc = IPC(TS_MEMBER(ts, inst), TS_MEMBER(ts, re_cy));
+#ifndef HIST_BASED_SCHEDULING
 			/*up */
 			if (ipc >= IPC_HIGH) {
 				new_state = get_higher_state(state);
@@ -549,6 +562,32 @@ void put_mask_from_stats(struct task_struct *ts)
 				state_req = state;
 				new_state = get_closest_state(state);
 			}
+#else
+			if (ipc >= IPC_HIGH) {
+				new_state = get_higher_state(state);
+				if(TS_MEMBER(ts,hist_step) >= 0){
+					state_req = sat_sum(state, TS_MEMBER(ts, hist_step) ,0, total_states);
+					TS_MEMBER(ts,hist_step) = sat_inc(TS_MEMBER(ts,hist_step),total_states);
+				} else {
+					state_req = state;
+					TS_MEMBER(ts,hist_step) = 0;
+				}
+
+			} else if (ipc <= IPC_LOW) {
+				new_state = get_lower_state(state);
+				if(TS_MEMBER(ts, hist_step) <= 0){
+					state_req = sat_sum(state, TS_MEMBER(ts, hist_step), 0, total_states);
+					TS_MEMBER(ts,hist_step) = sat_dec(TS_MEMBER(ts,hist_step), 0);
+				} else {
+					state_req = state;
+					TS_MEMBER(ts, hist_step) = 0;
+				}
+			} else {
+				state_req = state;
+				new_state = get_closest_state(state);
+				TS_MEMBER(ts, hist_step) = 0;
+			}
+#endif
 		}
 		if (new_state >= 0 && new_state < total_states)
 			mask = states[new_state].cpumask;
@@ -619,7 +658,9 @@ void initial_mask(struct task_struct *ts)
 		if (state >= 0 && state < total_states)
 			mask = states[state].cpumask;
 	} while (read_seqretry(&states_seq_lock, seq));
-
+#ifdef HIST_BASED_SCHEDULING
+	TS_MEMBER(ts, hist_step) = 0;
+#endif
 	if(cpus_empty(mask)){
 		mask = total_online_mask;
 		TS_MEMBER(ts, cpustate) = cur_cpu_state[smp_processor_id()];
