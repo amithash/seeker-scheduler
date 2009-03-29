@@ -43,6 +43,7 @@ fpmu-objs += fpmu/main.o \
 	     fpmu/msr.o
 
 # Seeker scheduler
+ifndef HIST_BASED_SCHEDULING
 seeker_scheduler-objs += seeker-scheduler/main.o     \
 		       seeker-scheduler/assigncpu.o  \
 		       seeker-scheduler/mutate.o     \
@@ -51,6 +52,16 @@ seeker_scheduler-objs += seeker-scheduler/main.o     \
 		       seeker-scheduler/stats.o	     \
 		       seeker-scheduler/tsc_intf.o   \
 		       seeker-scheduler/debug.o
+else
+seeker_scheduler-objs += seeker-scheduler/main.o          \
+		       seeker-scheduler/assigncpu_hist.o  \
+		       seeker-scheduler/mutate.o          \
+		       seeker-scheduler/state.o           \
+		       seeker-scheduler/hwcounters.o      \
+		       seeker-scheduler/stats.o	          \
+		       seeker-scheduler/tsc_intf.o        \
+		       seeker-scheduler/debug.o
+endif
 
 KDIR    := /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)
