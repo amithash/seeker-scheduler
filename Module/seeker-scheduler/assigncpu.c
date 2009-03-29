@@ -247,7 +247,7 @@ inline int state_free(int state)
  ********************************************************************************/
 int lowest_loaded_state(void)
 {
-	int min_load;
+	int min_load = 100000;
 	int min_state = 0;
 	int min_found = 0;
 	int this_load;
