@@ -23,6 +23,9 @@ endif
 ifdef ARCA
 EXTRA_ARGS+=ARCA=$(ARCA)
 endif
+ifdef HIST_BASED_SCHEDULING
+EXTRA_ARGS+=HIST_BASED_SCHEDULING=1
+endif
 
 all:
 	+make -C Module $(EXTRA_ARGS)
