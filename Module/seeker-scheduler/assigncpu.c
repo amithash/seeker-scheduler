@@ -577,7 +577,7 @@ void put_mask_from_stats(struct task_struct *ts)
 				new_state = get_lower_state(state);
 				if(TS_MEMBER(ts, hist_step) <= 0){
 					state_req = sat_sum(state, TS_MEMBER(ts, hist_step), 0, total_states);
-					TS_MEMBER(ts,hist_step) = sat_dec(TS_MEMBER(ts,hist_step), 0);
+					TS_MEMBER(ts,hist_step) = sat_dec(TS_MEMBER(ts,hist_step), (-1*(int)total_states));
 				} else {
 					state_req = state;
 					TS_MEMBER(ts, hist_step) = 0;
