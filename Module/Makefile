@@ -43,13 +43,14 @@ fpmu-objs += fpmu/main.o \
 	     fpmu/msr.o
 
 # Seeker scheduler
-seeker_scheduler-objs += seeker-scheduler/main.o     \
-		       seeker-scheduler/assigncpu.o  \
-		       seeker-scheduler/mutate.o     \
-		       seeker-scheduler/state.o      \
-		       seeker-scheduler/hwcounters.o \
-		       seeker-scheduler/stats.o	     \
-		       seeker-scheduler/tsc_intf.o   \
+seeker_scheduler-objs += seeker-scheduler/main.o         \
+		       seeker-scheduler/assigncpu.o      \
+		       seeker-scheduler/mutate.o         \
+		       seeker-scheduler/state.o          \
+		       seeker-scheduler/hwcounters.o     \
+		       seeker-scheduler/stats.o	         \
+		       seeker-scheduler/tsc_intf.o       \
+		       seeker-scheduler/other_mutators.o \
 		       seeker-scheduler/debug.o
 
 KDIR    := /lib/modules/$(shell uname -r)/build

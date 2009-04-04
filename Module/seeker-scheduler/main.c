@@ -46,6 +46,7 @@
 #include "debug.h"
 #include "hwcounters.h"
 #include "tsc_intf.h"
+#include "other_mutators.h"
 
 /* seeker's magic short */
 #define SEEKER_MAGIC_NUMBER 0xdea
@@ -157,6 +158,8 @@ int static_layout_length = 0;
 /* allowed cpus to limit total cpus used. */
 int allowed_cpus = 0;
 
+int mutation_method = 0;
+
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
@@ -172,7 +175,17 @@ int allowed_cpus = 0;
 static void state_change(struct work_struct *w)
 {
 	debug("State change now @ %ld", jiffies);
-	choose_layout(delta);
+	switch(mutation_method){
+		case 1: 
+			ondemand();
+			break;
+		case 2: 
+			conservative();
+			break;
+		case 0:
+		default:
+			choose_layout(delta);
+	}
 	if (timer_started) {
 		schedule_delayed_work(&state_work, interval_jiffies);
 	}
@@ -363,6 +376,9 @@ static int scheduler_init(void)
 	if (static_layout_length != 0) {
 		init = STATIC_LAYOUT;
 	}
+	if(mutation_method != 0){
+		disable_scheduling = 1;
+	}
 	if (disable_scheduling != 0) {
 		disable_scheduling = 1;
 	}
@@ -526,6 +542,10 @@ module_exit(scheduler_exit);
 module_param(change_interval, int, 0444);
 MODULE_PARM_DESC(change_interval,
 		 "Interval in ms to change the global state (Default: 1000)");
+
+module_param(mutation_method, int, 0444);
+MODULE_PARM_DESC(mutation_method, 
+		"Type of mutation: Delta (default) - 0, ondemand - 1, conservative - 2");
 
 module_param(init, int, 0444);
 MODULE_PARM_DESC(init,
