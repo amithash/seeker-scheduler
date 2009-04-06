@@ -146,7 +146,7 @@ extern cpumask_t total_online_mask;
 /********************************************************************************
  * 				global_variables				*
  ********************************************************************************/
-#ifdef DEBUG
+#if defined(DEBUG) && DEBUG == 2
 /* temp storage for assigncpu messages */
 char debug_string[ASSIGNCPU_DEBUG_LEN] = "";
 
@@ -170,7 +170,7 @@ struct mask_work mig_pool[MIG_POOL_SIZE];
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
-#ifdef DEBUG
+#if defined(DEBUG) && DEBUG == 2
 /********************************************************************************
  * assigncpu_logger - The assigncpu logging function.
  * @w - The work calling this routine, not used.
@@ -522,7 +522,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	tasks_interval = TS_MEMBER(ts, interval);
 	old_state = TS_MEMBER(ts,cpustate);
 
-	#ifdef DEBUG
+	#if defined(DEBUG) && DEBUG == 2
 	for(i=0;i<total_states;i++){
 		if(states[i].cpus > 0){
 			assigncpu_debug("%d:%d",i,usage_get(i));
@@ -563,6 +563,7 @@ void put_mask_from_stats(struct task_struct *ts)
 				new_state = get_closest_state(state);
 			}
 #else
+#warning "Using hist based scheduling"
 			if (ipc >= IPC_HIGH) {
 				new_state = get_higher_state(state);
 				if(TS_MEMBER(ts,hist_step) >= 0){
@@ -591,7 +592,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		}
 		if (new_state >= 0 && new_state < total_states)
 			mask = states[new_state].cpumask;
-		#ifdef DEBUG
+		#if defined(DEBUG) && DEBUG == 2
 		else{
 			assigncpu_debug("Negative state for %s",ts->comm);
 		}

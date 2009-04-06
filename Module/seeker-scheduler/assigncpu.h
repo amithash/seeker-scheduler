@@ -62,7 +62,7 @@ void exit_assigncpu_logger(void);
  *   3. Keep messages short and sweet not an autobiography. 
  */
 
-#ifdef DEBUG
+#if defined(DEBUG) && DEBUG == 2
 #define assigncpu_debug(str,a...) do{ 								\
 					int __len = strlen(debug_string) + 1;			\
 					char __tmp_str[100];		 			\
