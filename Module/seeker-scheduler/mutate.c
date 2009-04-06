@@ -109,6 +109,27 @@ inline int procs(int hints, int total, int total_load);
  * 				Functions					*
  ********************************************************************************/
 
+int transition_direction(void)
+{
+	int req_level = 0;
+	int pre_level = 0;
+	int i;
+
+	for(i=0;i<total_states;i++){
+		req_level += demand[i] * (i+1);
+	}
+	for(i=0;i<total_online_cpus;i++){
+		if(info[i].sleep_time > 0)
+			continue;
+		pre_level += cur_cpu_state[i] + 1;
+	}
+	if(req_level > pre_level)
+		return 1;
+	if(req_level < pre_level)
+		return -1;
+	return 0;
+}
+
 /********************************************************************************
  * procs - compute total processors required given hints and total
  * @hints - the demand 
@@ -184,22 +205,36 @@ void init_mutator(void)
  * distance is the distance from column (cur_cpu_state) and 0 if that distance 
  * is greater than delta.
  ********************************************************************************/
-void update_state_matrix(int delta)
+void update_state_matrix(int delta, int direction)
 {
-	int i, j, k;
+	int i = 0;
+	int j = 0;
+	int k = 0;
+
 	for (i = 0; i < total_online_cpus; i++) {
-		for (j = new_cpu_state[i], k = 0; j < total_states; j++, k++) {
-			if (k > delta)
+		state_matrix[i][new_cpu_state[i]] = total_states * 2;
+		for (j = new_cpu_state[i] + 1, k = 1; j < total_states; j++, k++) {
+			if (k > delta){
 				state_matrix[i][j] = 0;
-			else
-				state_matrix[i][j] = (total_states - k);
+			} else {
+				if(direction > 0){
+					state_matrix[i][j] = ((total_states*2) - k);
+				} else {
+					state_matrix[i][j] = (total_states - k);
+				}
+			}
 		}
 
 		for (j = new_cpu_state[i] - 1, k = 1; j >= 0; j--, k++) {
-			if (k > delta)
+			if (k > delta){
 				state_matrix[i][j] = 0;
-			else
-				state_matrix[i][j] = (total_states - k);
+			} else {
+				if(direction < 0){
+					state_matrix[i][j] = ((total_states*2) - k);
+				} else {
+					state_matrix[i][j] = total_states - k;
+				}
+			}
 		}
 	}
 }
@@ -214,14 +249,11 @@ void update_state_matrix(int delta)
  * column where distance = |i-j|<friend_count;
  * And friends are helped only if they are broke. 
  ********************************************************************************/
-void update_demand_field(int friend_count)
+void update_demand_field(void)
 {
-	int i,j;
-	for(i=total_states-1; i >= 0; i++ ){
-		demand_field[i] = demand[i] * DEMAND_SCALE;
-		for(j=i+1;j<total_states;j++){
-			demand_field[j] += demand_field[i];
-		}
+	int i;
+	for(i = 0; i < total_states; i++) {
+		demand_field[i] = demand[i];
 	}
 }
 #if 0
@@ -392,9 +424,9 @@ void choose_layout(int delta)
 	int total_demand = 0;
 	int cpu_selected[NR_CPUS];
 	int total_iter = 0;
-	int friends = (total_states | 1) == 0 ?  (total_states >> 1) - 1 : (total_states >> 1);
 	int total_provided_cpus = 0;
 	int total_selected_cpus = 0;
+	int direction;
 
 	interval_count++;
 	if (delta < 1)
@@ -442,6 +474,7 @@ void choose_layout(int delta)
 	if (total_demand != load)
 		total_demand = load;
 
+	direction = transition_direction();
 
 	/* First lets find "total_demand" processors and wake them up */
 	for(i=0; i<total_demand; i++){
@@ -476,10 +509,10 @@ void choose_layout(int delta)
 		debug("Iteration %d", total_iter);
 
 		/* Compute the state matrix */
-		update_state_matrix(delta);
+		update_state_matrix(delta,direction);
 
 		/* Compute the demand field */
-		update_demand_field(friends);
+		update_demand_field();
 
 		winner_best_proc = mutator_kernel(&winner);
 
