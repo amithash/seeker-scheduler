@@ -19,10 +19,12 @@ my $seq;
 my $finalize;
 my $bench_list;
 my $output;
+my $req_mask;
 
 GetOptions( 'b|bench=s{,}' => \@bench ,
 	    'benchlist=s' => \$bench_list,
-	    'a|any'     => \$any,
+	    'm|mask=i'     => \$req_mask,
+	    'a|any'        => \$any,
 	    'l|log=s'	=> \$log,
 	    'prefix=s'    => \$pre_ex,
 	    'postfix=s'	=> \$post_ex,
@@ -36,6 +38,17 @@ $log = "LOG" unless(defined($log));
 $pre_ex = " " unless(defined($pre_ex));
 $post_ex = " " unless(defined($post_ex));
 $finalize = " " unless(defined($finalize));
+
+#TEST
+my $mask = (1 << $nr_cpus) - 1;
+
+if(defined($req_mask)){
+	if($req_mask < $mask){
+		$mask = $req_mask;
+	}
+	$any = 1;
+}
+
 if(defined($seq)){
 	$seq = 0 unless ($seq < $nr_cpus and $seq >= 0);
 	$seq = 1 << $seq;
@@ -76,7 +89,6 @@ foreach my $r (@run){
 		next;
 	}
 	if($any == 1){
-		my $mask = (1 << $nr_cpus) - 1;
 		$run_cmd = $run_cmd . " core $mask \"$r\"";
 	} else {
 		my $mask = (1 << $cpu);
