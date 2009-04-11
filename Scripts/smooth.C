@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  **************************************************************************/
 /* Auto Regressive Moving Average Process */
-#include "Array.h"
+#include "Array.H"
 
 template <class T>
 Array<T> mva(Array<Array<T> > * data, int ind, int window);

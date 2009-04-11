@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License      *
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  **************************************************************************/
-#include "Array.h"
+#include "Array.H"
 #include <stdlib.h>
 #include <string.h>
 #include "iconfig.h"
