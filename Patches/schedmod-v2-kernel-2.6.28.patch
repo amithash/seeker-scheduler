@@ -1,6 +1,6 @@
-diff -Naur linux-2.6.28.8/arch/x86/include/asm/syscalls.h linux-2.6.28.8_mod/arch/x86/include/asm/syscalls.h
---- linux-2.6.28.8/arch/x86/include/asm/syscalls.h	2009-03-16 18:50:03.000000000 -0600
-+++ linux-2.6.28.8_mod/arch/x86/include/asm/syscalls.h	2009-03-29 16:24:59.722226330 -0600
+diff -Naur linux-2.6.28.9/arch/x86/include/asm/syscalls.h linux-2.6.28.9_mod/arch/x86/include/asm/syscalls.h
+--- linux-2.6.28.9/arch/x86/include/asm/syscalls.h	2009-03-23 15:55:52.000000000 -0600
++++ linux-2.6.28.9_mod/arch/x86/include/asm/syscalls.h	2009-04-20 16:42:38.831461377 -0600
 @@ -23,6 +23,7 @@
  #ifdef CONFIG_X86_32
  /* kernel/process_32.c */
@@ -17,9 +17,9 @@ diff -Naur linux-2.6.28.8/arch/x86/include/asm/syscalls.h linux-2.6.28.8_mod/arc
  asmlinkage long sys_clone(unsigned long, unsigned long,
  			  void __user *, void __user *,
  			  struct pt_regs *);
-diff -Naur linux-2.6.28.8/arch/x86/include/asm/unistd_32.h linux-2.6.28.8_mod/arch/x86/include/asm/unistd_32.h
---- linux-2.6.28.8/arch/x86/include/asm/unistd_32.h	2009-03-16 18:50:03.000000000 -0600
-+++ linux-2.6.28.8_mod/arch/x86/include/asm/unistd_32.h	2009-03-29 16:24:59.737844242 -0600
+diff -Naur linux-2.6.28.9/arch/x86/include/asm/unistd_32.h linux-2.6.28.9_mod/arch/x86/include/asm/unistd_32.h
+--- linux-2.6.28.9/arch/x86/include/asm/unistd_32.h	2009-03-23 15:55:52.000000000 -0600
++++ linux-2.6.28.9_mod/arch/x86/include/asm/unistd_32.h	2009-04-20 16:42:38.831461377 -0600
 @@ -338,6 +338,7 @@
  #define __NR_dup3		330
  #define __NR_pipe2		331
@@ -28,9 +28,9 @@ diff -Naur linux-2.6.28.8/arch/x86/include/asm/unistd_32.h linux-2.6.28.8_mod/ar
  
  #ifdef __KERNEL__
  
-diff -Naur linux-2.6.28.8/arch/x86/include/asm/unistd_64.h linux-2.6.28.8_mod/arch/x86/include/asm/unistd_64.h
---- linux-2.6.28.8/arch/x86/include/asm/unistd_64.h	2009-03-16 18:50:03.000000000 -0600
-+++ linux-2.6.28.8_mod/arch/x86/include/asm/unistd_64.h	2009-03-29 16:24:59.774962380 -0600
+diff -Naur linux-2.6.28.9/arch/x86/include/asm/unistd_64.h linux-2.6.28.9_mod/arch/x86/include/asm/unistd_64.h
+--- linux-2.6.28.9/arch/x86/include/asm/unistd_64.h	2009-03-23 15:55:52.000000000 -0600
++++ linux-2.6.28.9_mod/arch/x86/include/asm/unistd_64.h	2009-04-20 16:42:38.835462005 -0600
 @@ -653,6 +653,8 @@
  __SYSCALL(__NR_pipe2, sys_pipe2)
  #define __NR_inotify_init1			294
@@ -40,9 +40,9 @@ diff -Naur linux-2.6.28.8/arch/x86/include/asm/unistd_64.h linux-2.6.28.8_mod/ar
  
  
  #ifndef __NO_STUBS
-diff -Naur linux-2.6.28.8/arch/x86/kernel/process_32.c linux-2.6.28.8_mod/arch/x86/kernel/process_32.c
---- linux-2.6.28.8/arch/x86/kernel/process_32.c	2009-03-16 18:50:03.000000000 -0600
-+++ linux-2.6.28.8_mod/arch/x86/kernel/process_32.c	2009-03-29 16:24:59.777866940 -0600
+diff -Naur linux-2.6.28.9/arch/x86/kernel/process_32.c linux-2.6.28.9_mod/arch/x86/kernel/process_32.c
+--- linux-2.6.28.9/arch/x86/kernel/process_32.c	2009-03-23 15:55:52.000000000 -0600
++++ linux-2.6.28.9_mod/arch/x86/kernel/process_32.c	2009-04-20 16:42:38.835462005 -0600
 @@ -637,6 +637,27 @@
  	return do_fork(SIGCHLD, regs.sp, &regs, 0, NULL, NULL);
  }
@@ -71,9 +71,9 @@ diff -Naur linux-2.6.28.8/arch/x86/kernel/process_32.c linux-2.6.28.8_mod/arch/x
  asmlinkage int sys_clone(struct pt_regs regs)
  {
  	unsigned long clone_flags;
-diff -Naur linux-2.6.28.8/arch/x86/kernel/process_64.c linux-2.6.28.8_mod/arch/x86/kernel/process_64.c
---- linux-2.6.28.8/arch/x86/kernel/process_64.c	2009-03-16 18:50:03.000000000 -0600
-+++ linux-2.6.28.8_mod/arch/x86/kernel/process_64.c	2009-03-29 16:24:59.777866940 -0600
+diff -Naur linux-2.6.28.9/arch/x86/kernel/process_64.c linux-2.6.28.9_mod/arch/x86/kernel/process_64.c
+--- linux-2.6.28.9/arch/x86/kernel/process_64.c	2009-03-23 15:55:52.000000000 -0600
++++ linux-2.6.28.9_mod/arch/x86/kernel/process_64.c	2009-04-20 16:42:38.839478681 -0600
 @@ -712,6 +712,27 @@
  	return do_fork(SIGCHLD, regs->sp, regs, 0, NULL, NULL);
  }
@@ -102,17 +102,17 @@ diff -Naur linux-2.6.28.8/arch/x86/kernel/process_64.c linux-2.6.28.8_mod/arch/x
  asmlinkage long
  sys_clone(unsigned long clone_flags, unsigned long newsp,
  	  void __user *parent_tid, void __user *child_tid, struct pt_regs *regs)
-diff -Naur linux-2.6.28.8/arch/x86/kernel/syscall_table_32.S linux-2.6.28.8_mod/arch/x86/kernel/syscall_table_32.S
---- linux-2.6.28.8/arch/x86/kernel/syscall_table_32.S	2009-03-16 18:50:03.000000000 -0600
-+++ linux-2.6.28.8_mod/arch/x86/kernel/syscall_table_32.S	2009-03-29 16:24:59.781866891 -0600
+diff -Naur linux-2.6.28.9/arch/x86/kernel/syscall_table_32.S linux-2.6.28.9_mod/arch/x86/kernel/syscall_table_32.S
+--- linux-2.6.28.9/arch/x86/kernel/syscall_table_32.S	2009-03-23 15:55:52.000000000 -0600
++++ linux-2.6.28.9_mod/arch/x86/kernel/syscall_table_32.S	2009-04-20 16:42:38.839478681 -0600
 @@ -332,3 +332,4 @@
  	.long sys_dup3			/* 330 */
  	.long sys_pipe2
  	.long sys_inotify_init1
 +	.long sys_seeker
-diff -Naur linux-2.6.28.8/include/linux/sched.h linux-2.6.28.8_mod/include/linux/sched.h
---- linux-2.6.28.8/include/linux/sched.h	2009-03-16 18:50:03.000000000 -0600
-+++ linux-2.6.28.8_mod/include/linux/sched.h	2009-03-29 16:25:31.903216431 -0600
+diff -Naur linux-2.6.28.9/include/linux/sched.h linux-2.6.28.9_mod/include/linux/sched.h
+--- linux-2.6.28.9/include/linux/sched.h	2009-03-23 15:55:52.000000000 -0600
++++ linux-2.6.28.9_mod/include/linux/sched.h	2009-04-20 16:45:28.232816073 -0600
 @@ -1,6 +1,8 @@
  #ifndef _LINUX_SCHED_H
  #define _LINUX_SCHED_H
@@ -139,3 +139,29 @@ diff -Naur linux-2.6.28.8/include/linux/sched.h linux-2.6.28.8_mod/include/linux
  };
  
  /*
+@@ -2242,6 +2254,8 @@
+ #endif
+ #endif
+ 
++unsigned long get_cpu_nr_running(int cpu);
++
+ #ifdef CONFIG_TASK_XACCT
+ static inline void add_rchar(struct task_struct *tsk, ssize_t amt)
+ {
+diff -Naur linux-2.6.28.9/kernel/sched.c linux-2.6.28.9_mod/kernel/sched.c
+--- linux-2.6.28.9/kernel/sched.c	2009-03-23 15:55:52.000000000 -0600
++++ linux-2.6.28.9_mod/kernel/sched.c	2009-04-20 16:45:29.529970490 -0600
+@@ -1450,6 +1450,13 @@
+ static unsigned long target_load(int cpu, int type);
+ static int task_hot(struct task_struct *p, u64 now, struct sched_domain *sd);
+ 
++unsigned long get_cpu_nr_running(int cpu)
++{
++	struct rq *rq = cpu_rq(cpu);
++	unsigned long nr_running = ACCESS_ONCE(rq->nr_running);
++	return nr_running;
++}
++
+ static unsigned long cpu_avg_load_per_task(int cpu)
+ {
+ 	struct rq *rq = cpu_rq(cpu);
