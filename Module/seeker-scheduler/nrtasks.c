@@ -56,5 +56,15 @@ int get_state_tasks(int state)
 	return tasks > states[state].cpus ? states[state].cpus : tasks;
 }
 
-
+int get_state_tasks_exself(int state)
+{
+	int i; 
+	int tasks = 0;
+	cpumask_t mask = states[state].cpumask;
+	for_each_cpu_mask(i,mask){
+		tasks += get_cpu_nr_running(i);
+	}
+	tasks--;
+	return tasks > states[state].cpus ? states[state].cpus : tasks;
 }
+
