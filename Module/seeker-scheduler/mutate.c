@@ -321,7 +321,10 @@ void update_demand_field(void)
 	int friend;
 	for(i = 0; i < total_states; i++) {
 		demand_field[i] = demand[i];
+		proxy_source[i] = i;
+
 	}
+#if 0
 	for(i = 0; i < total_states; i++) {
 		if(demand_field[i] != 0 && state_weight[i] == 0){
 			left = get_left_distance(i);
@@ -339,6 +342,7 @@ void update_demand_field(void)
 			proxy_source[i] = i;
 		}
 	}
+#endif
 }
 
 void update_winning_procs(void)
@@ -479,15 +483,19 @@ void choose_layout(int delta)
 		demand[j] = procs(hint_get(j), total, load);
 		total_demand += demand[j];
 	}
-	if (total_demand > load)
+	/*
+	if (total_demand != load)
 		total_demand = load;
+	*/
+
+	total_demand = load;
 
 	wake_up_procs(total_demand);
 
 	direction = transition_direction();
 
 	/* Now for each delta to spend, hold an auction */
-	for(total_iter = 0; total_iter < total_online_cpus; total_iter++){
+	for(total_iter = 0; total_iter < load; total_iter++){
 
 		if(total < MIN_REQUESTS || load <= 0 || delta <= 0 || total_demand <= 0){
 			break;
