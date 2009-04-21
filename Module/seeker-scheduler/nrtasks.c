@@ -60,7 +60,7 @@ int get_state_tasks(int state)
 		tasks += get_cpu_nr_running(i);
 #endif
 	}
-	return tasks > states[state].cpus ? states[state].cpus : tasks;
+	return tasks;
 }
 
 int get_state_tasks_exself(int state)
@@ -73,7 +73,8 @@ int get_state_tasks_exself(int state)
 		tasks += get_cpu_nr_running(i);
 #endif
 	}
-	tasks--;
-	return tasks > states[state].cpus ? states[state].cpus : tasks;
+	if(tasks)
+		tasks--;
+	return tasks;
 }
 
