@@ -324,7 +324,6 @@ void update_demand_field(void)
 		proxy_source[i] = i;
 
 	}
-#if 0
 	for(i = 0; i < total_states; i++) {
 		if(demand_field[i] != 0 && state_weight[i] == 0){
 			left = get_left_distance(i);
@@ -342,7 +341,6 @@ void update_demand_field(void)
 			proxy_source[i] = i;
 		}
 	}
-#endif
 }
 
 void update_winning_procs(void)
@@ -556,7 +554,6 @@ void choose_layout(int delta)
 		if(info[i].sleep_time == 0){
 			total_selected_cpus++;
 			selected_cpus[i] = 0;
-			new_cpu_state[i] = 0;
 		}
 	}
 
