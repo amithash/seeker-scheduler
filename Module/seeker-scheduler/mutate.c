@@ -318,7 +318,7 @@ void update_demand_field(int dir)
 	int i;
 	int left;
 	int right;
-	int friend;
+	int friend = -1;
 	for(i = 0; i < total_states; i++) {
 		demand_field[i] = demand[i];
 		proxy_source[i] = i;
@@ -337,7 +337,7 @@ void update_demand_field(int dir)
 			} else if(dir == 0 && left == -1){
 				friend = right;
 			} else if(dir == 0 && right == -1){
-				friend == left;
+				friend = left;
 			} else if(dir == 0){
 				friend = closest(i,left,right);
 			} else if(dir == -1 && right != -1){
@@ -522,7 +522,7 @@ void choose_layout(int delta)
 		update_winning_procs();
 
 		/* Compute the demand field */
-		update_demand_field();
+		update_demand_field(direction);
 
 		winner = get_winning_state();
 
