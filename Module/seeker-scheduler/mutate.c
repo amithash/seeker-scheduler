@@ -34,6 +34,7 @@
 #include "state.h"
 #include "stats.h"
 #include "debug.h"
+#include "nrtasks.h"
 
 #define MIN_REQUESTS 4
 
@@ -457,8 +458,10 @@ void choose_layout(int delta)
 	for (i = 0; i < total_online_cpus; i++) {
 		selected_cpus[i] = 1;
 		new_cpu_state[i] = cur_cpu_state[i];
-		load = ADD_LOAD(load, get_cpu_load(i));
+		/* load = ADD_LOAD(load, get_cpu_load(i)); */
 	}
+
+	load = get_tasks_load();
 
 	/* Get load in terms of number of processors */
 	load = required_load(load);

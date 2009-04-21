@@ -150,8 +150,8 @@ diff -Naur linux-2.6.28.9/include/linux/sched.h linux-2.6.28.9_mod/include/linux
  {
 diff -Naur linux-2.6.28.9/kernel/sched.c linux-2.6.28.9_mod/kernel/sched.c
 --- linux-2.6.28.9/kernel/sched.c	2009-03-23 15:55:52.000000000 -0600
-+++ linux-2.6.28.9_mod/kernel/sched.c	2009-04-20 16:45:29.529970490 -0600
-@@ -1450,6 +1450,13 @@
++++ linux-2.6.28.9_mod/kernel/sched.c	2009-04-20 17:38:39.484048059 -0600
+@@ -1450,6 +1450,14 @@
  static unsigned long target_load(int cpu, int type);
  static int task_hot(struct task_struct *p, u64 now, struct sched_domain *sd);
  
@@ -161,6 +161,7 @@ diff -Naur linux-2.6.28.9/kernel/sched.c linux-2.6.28.9_mod/kernel/sched.c
 +	unsigned long nr_running = ACCESS_ONCE(rq->nr_running);
 +	return nr_running;
 +}
++EXPORT_SYMBOL_GPL(get_cpu_nr_running);
 +
  static unsigned long cpu_avg_load_per_task(int cpu)
  {
