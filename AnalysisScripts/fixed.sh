@@ -10,7 +10,7 @@ BLS=( HighIPC0 Low-HighIPC0 LowIPC1 PhaseHigh-PhaseLow PhaseLow-High PhaseLow-Lo
 BLS_NAME=( High Low-High Low PHigh-PLow PLow-High PLow-Low )
 BLS_LEN=${#BLS[@]}
 
-CPUS=( 4 8 );
+CPUS=( 4 );
 CPUS_LEN=${#CPUS[@]}
 
 LAYOUT4=( '0,0,0,0' '4,4,4,4' '0,0,4,4' '0,4,4,4' '0,0,0,4' )
