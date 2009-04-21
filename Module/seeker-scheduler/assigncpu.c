@@ -40,6 +40,7 @@
 #include "seeker_cpufreq.h"
 #include "debug.h"
 #include "tsc_intf.h"
+#include "nrtasks.h"
 
 #ifdef HIST_BASED_SCHEDULING 
 #if defined(SEEKER_PLUGIN_PATCH) && SEEKER_PLUGIN_PATCH < 2
@@ -244,10 +245,14 @@ void exit_assigncpu_logger(void)
  *
  * Returns 1 if state is free to execute on. 
  ********************************************************************************/
-inline int state_free(int state)
+inline int state_free(int old, int state)
 {
-	if(states[state].cpus > 0 && usage_get(state) < states[state].cpus)
+	if(old == state && states[state].cpus > 0 && 
+		get_state_tasks_exself(state) < states[state].cpus)
 		return 1;
+	if(states[state].cpus > 0 && get_state_tasks(state) < states[state].cpus)
+		return 1;
+
 	return 0;
 }
 
@@ -269,20 +274,17 @@ int lowest_loaded_state(void)
 		if(states[i].cpus == 0)
 			continue;
 
+		this_load = get_state_tasks(i) / states[i].cpus;
 		if(min_found == 0){
-			min_load = usage_get(i) - states[i].cpus;
+			min_load = this_load;
 			min_state = i;
 			min_found = 1;
 			continue;
 		}
-		this_load = usage_get(i) - states[i].cpus;
 		if(this_load < min_load){
 			min_load = this_load;
 			min_state = i;
-		} else if(this_load == min_load &&
-			states[min_state].cpus < states[i].cpus){
-				min_state = i;
-		}
+		} 
 	}
 	if(min_found == 0)
 		return -1;
@@ -306,13 +308,13 @@ inline int get_lower_state(int state)
 	int i;
 	new_state = sat_dec(state, 0);
 	for (i = new_state; i >= 0; i--) {
-		if (state_free(i))
+		if (state_free(state,i))
 			return i;
 	}
-	if (state_free(state))
+	if (state_free(state,state))
 		return state;
 	for (i = state + 1; i < total_states; i++) {
-		if (state_free(i))
+		if (state_free(state,i))
 			return i;
 	}
 	return lowest_loaded_state();
@@ -333,13 +335,13 @@ inline int get_higher_state(int state)
 	int i;
 	new_state = sat_inc(state, total_states);
 	for (i = new_state; i < total_states; i++) {
-		if (state_free(i))
+		if (state_free(state,i))
 			return i;
 	}
-	if (state_free(state))
+	if (state_free(state,state))
 		return state;
 	for (i = state - 1; i >= 0; i--) {
-		if (state_free(i))
+		if (state_free(state,i))
 			return i;
 	}
 	return lowest_loaded_state();
@@ -357,7 +359,7 @@ inline int get_closest_state(int state)
 {
 	int state1, state2;
 	int ret_state;
-	if (state_free(state))
+	if (state_free(state,state))
 		return state;
 	state1 = get_lower_state(state);
 	state2 = get_higher_state(state);
@@ -525,7 +527,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	#if defined(DEBUG) && DEBUG == 2
 	for(i=0;i<total_states;i++){
 		if(states[i].cpus > 0){
-			assigncpu_debug("%d:%d",i,usage_get(i));
+			assigncpu_debug("%d:%d",i,get_state_tasks(i));
 		}
 	}
 	#endif
