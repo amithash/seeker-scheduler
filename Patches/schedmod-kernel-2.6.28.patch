@@ -161,7 +161,7 @@ diff -Naur linux-2.6.28.9/kernel/sched.c linux-2.6.28.9_mod/kernel/sched.c
 +	unsigned long nr_running = ACCESS_ONCE(rq->nr_running);
 +	return nr_running;
 +}
-+EXPORT_SYMBOL_GPL(get_cpu_nr_running);
++EXPORT_SYMBOL(get_cpu_nr_running);
 +
  static unsigned long cpu_avg_load_per_task(int cpu)
  {
