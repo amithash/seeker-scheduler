@@ -40,22 +40,23 @@ extern struct state_desc states[MAX_STATES];
 
 int get_tasks_load(void)
 {
-	int total = 0;
+	unsigned long total = 0;
 	int i;
 	for(i = 0; i < total_online_cpus; i++) {
 #ifdef SEEKER_PLUGIN_PATCH
 		total += get_cpu_nr_running(i);
 #endif
 	}
+	info("total = %ld",total);
 	return total > total_online_cpus ? total_online_cpus : total;
 }
 
 int get_state_tasks(int state)
 {
-	int i; 
-	int tasks = 0;
+	unsigned int i; 
+	unsigned long tasks = 0;
 	cpumask_t mask = states[state].cpumask;
-	for_each_cpu_mask(i,mask){
+	for_each_cpu_mask_nr(i,mask){
 #ifdef SEEKER_PLUGIN_PATCH
 		tasks += get_cpu_nr_running(i);
 #endif
@@ -65,10 +66,10 @@ int get_state_tasks(int state)
 
 int get_state_tasks_exself(int state)
 {
-	int i; 
-	int tasks = 0;
+	unsigned int i; 
+	unsigned long tasks = 0;
 	cpumask_t mask = states[state].cpumask;
-	for_each_cpu_mask(i,mask){
+	for_each_cpu_mask_nr(i,mask){
 #ifdef SEEKER_PLUGIN_PATCH
 		tasks += get_cpu_nr_running(i);
 #endif
