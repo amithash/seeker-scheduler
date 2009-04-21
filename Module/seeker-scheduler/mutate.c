@@ -464,7 +464,9 @@ void choose_layout(int delta)
 	load = get_tasks_load();
 
 	/* Get load in terms of number of processors */
+	/* 
 	load = required_load(load);
+	*/
 	debug("load of system = %d", load);
 
 	/* Compute the total = sum of hints */
