@@ -313,7 +313,7 @@ int closest(int pos, int left, int right)
 	return (pos - left) > (right - pos) ? right : left;
 }
 
-void update_demand_field(void)
+void update_demand_field(int dir)
 {
 	int i;
 	int left;
@@ -322,13 +322,29 @@ void update_demand_field(void)
 	for(i = 0; i < total_states; i++) {
 		demand_field[i] = demand[i];
 		proxy_source[i] = i;
-
 	}
+
 	for(i = 0; i < total_states; i++) {
 		if(demand_field[i] != 0 && state_weight[i] == 0){
 			left = get_left_distance(i);
 			right = get_right_distance(i);
-			friend = closest(i, left, right);
+			if(left == -1 && right == -1){
+				continue;
+			} if(dir == 1 && left != -1){
+				friend = left;
+			} else if(dir == 1){
+				friend = right;
+			} else if(dir == 0 && left == -1){
+				friend = right;
+			} else if(dir == 0 && right == -1){
+				friend == left;
+			} else if(dir == 0){
+				friend = closest(i,left,right);
+			} else if(dir == -1 && right != -1){
+				friend = right;
+			} else if(dir == -1){
+				friend = left;
+			}
 			if(friend == -1){
 				continue;
 			}
@@ -337,8 +353,6 @@ void update_demand_field(void)
 			demand_field[i] = 0;
 			proxy_source[friend] = i;
 
-		} else {
-			proxy_source[i] = i;
 		}
 	}
 }
