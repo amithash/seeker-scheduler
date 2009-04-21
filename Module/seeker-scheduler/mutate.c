@@ -99,11 +99,11 @@ static int selected_cpus[NR_CPUS];
 
 static int proxy_source[MAX_STATES];
 
-#if 0
+//#if 0
 static int load_average = 0;
 static int last_load = 1;
 static int step = 0;
-#endif
+//#endif
 
 #define EVALUATE_LOAD 10
 #define DEMAND_SCALE MAX_STATES
@@ -186,7 +186,7 @@ inline unsigned int required_load(unsigned int total_load)
 		else if ((total_load & 7) == 0)
 			ret++;
 	}
-#if 0
+//#if 0
 	/* Use averages over EVALUATE_LOAD intervals to avoid thrashing */
 	if(step < EVALUATE_LOAD){
 		step++;
@@ -198,7 +198,7 @@ inline unsigned int required_load(unsigned int total_load)
 		step = 0;
 		load_average = 0;
 	}
-#endif
+//#endif
 	return ret;
 }
 
