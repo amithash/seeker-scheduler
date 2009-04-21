@@ -274,7 +274,7 @@ int lowest_loaded_state(void)
 		if(states[i].cpus == 0)
 			continue;
 
-		this_load = get_state_tasks(i) / states[i].cpus;
+		this_load = get_state_tasks(i) - states[i].cpus;
 		if(min_found == 0){
 			min_load = this_load;
 			min_state = i;
