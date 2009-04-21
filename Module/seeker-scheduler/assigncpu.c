@@ -136,10 +136,10 @@ extern cpumask_t total_online_mask;
 #define IPC_1_000 8
 
 /* The HIGH IPC Threshold */
-#define IPC_HIGH IPC_0_875
+#define IPC_HIGH IPC_0_750
 
 /* The LOW IPC Threshold */
-#define IPC_LOW  IPC_0_625
+#define IPC_LOW  IPC_0_500
 
 /* migration pool size */
 #define MIG_POOL_SIZE (NR_CPUS * 8)
