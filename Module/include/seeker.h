@@ -29,6 +29,12 @@
 #include <fpmu_public.h>
 #include <seeker_cpufreq.h>
 
+#ifdef DEBUG
+	/* Uncomment the next line to enable scheduler logging */
+	// #define SCHED_DEBUG 1
+#endif
+
+
 #define NUM_EXTRA_COUNTERS THERM_SUPPORTED
 
 #define MAX_COUNTERS_PER_CPU NUM_COUNTERS + NUM_FIXED_COUNTERS + NUM_EXTRA_COUNTERS
