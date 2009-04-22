@@ -47,6 +47,7 @@
 #include "hwcounters.h"
 #include "tsc_intf.h"
 #include "other_mutators.h"
+#include "sched_debug.h"
 
 /* seeker's magic short */
 #define SEEKER_MAGIC_NUMBER 0xdea

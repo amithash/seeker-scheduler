@@ -51,6 +51,7 @@ seeker_scheduler-objs += seeker-scheduler/main.o         \
 		       seeker-scheduler/stats.o	         \
 		       seeker-scheduler/tsc_intf.o       \
 		       seeker-scheduler/other_mutators.o \
+		       seeker-scheduler/sched_debug.o    \
 		       seeker-scheduler/nrtasks.o        \
 		       seeker-scheduler/debug.o
 

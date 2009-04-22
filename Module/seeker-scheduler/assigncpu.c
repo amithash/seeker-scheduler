@@ -36,6 +36,7 @@
 #include <seeker.h>
 
 #include "assigncpu.h"
+#include "sched_debug.h"
 #include "state.h"
 #include "seeker_cpufreq.h"
 #include "debug.h"
@@ -47,15 +48,6 @@
 #warning "An older version of schedmod patch is used. use the ver2 variant."
 #endif
 #endif
-
-#define ASSIGNCPU_LOGGER_INTERVAL (HZ/10)
-#define ASSIGNCPU_DEBUG_LEN 1024
-
-/********************************************************************************
- * 			Function Declarations 					*
- ********************************************************************************/
-
-void assigncpu_logger(struct work_struct *w);
 
 /********************************************************************************
  * 			Local Prototype 					*
@@ -147,19 +139,6 @@ extern cpumask_t total_online_mask;
 /********************************************************************************
  * 				global_variables				*
  ********************************************************************************/
-#if defined(DEBUG) && DEBUG == 2
-/* temp storage for assigncpu messages */
-char debug_string[ASSIGNCPU_DEBUG_LEN] = "";
-
-/* Spin lock to change debug_string safely */
-DEFINE_SPINLOCK(assigncpu_logger_lock);
-
-/* Flag indicating that logger has started */
-int assigncpu_logger_started = 0;
-
-/* Work which safely prints the work */
-static DECLARE_DELAYED_WORK(assigncpu_logger_work, assigncpu_logger);
-#endif
 
 /* migration pool spin lock */
 static DEFINE_SPINLOCK(mig_pool_lock);
@@ -171,72 +150,6 @@ struct mask_work mig_pool[MIG_POOL_SIZE];
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
-#if defined(DEBUG) && DEBUG == 2
-/********************************************************************************
- * assigncpu_logger - The assigncpu logging function.
- * @w - The work calling this routine, not used.
- * 
- * Prints out the contents of the assigncpu debug buffer and sets 
- * its length to 0. This is done safely with a spin lock held. 
- ********************************************************************************/
-void assigncpu_logger(struct work_struct *w)
-{
-	spin_lock(&assigncpu_logger_lock);
-	printk("%s",debug_string);
-	debug_string[0] = '\0';
-	spin_unlock(&assigncpu_logger_lock);
-	if(assigncpu_logger_started)
-		schedule_delayed_work(&assigncpu_logger_work, ASSIGNCPU_LOGGER_INTERVAL);	
-}
-
-/********************************************************************************
- * init_assigncpu_logger - initialize the assigncpu logging subtask.
- *
- * Initialize the locks and worker thread used for the assigncpu
- * logging subtask.
- ********************************************************************************/
-void init_assigncpu_logger(void)
-{
-	assigncpu_logger_started = 1;
-	spin_lock_init(&assigncpu_logger_lock);
-	init_timer_deferrable(&assigncpu_logger_work.timer);
-	schedule_delayed_work(&assigncpu_logger_work, ASSIGNCPU_LOGGER_INTERVAL);	
-	return;
-}
-
-/********************************************************************************
- * exit_assigncpu_logger - Cleanup the assigncpu logging subtask.
- *
- * Cancels all pending assigncpu logging tasks which are pending. 
- * Then unlocks the spin lock if it is still held.
- ********************************************************************************/
-void exit_assigncpu_logger(void)
-{
-	if(assigncpu_logger_started){
-		assigncpu_logger_started = 0;
-		cancel_delayed_work(&assigncpu_logger_work);
-	}
-	if(spin_is_locked(&assigncpu_logger_lock))
-		spin_unlock(&assigncpu_logger_lock);
-}
-
-#else
-
-/* assigncpu logging interface are just stubs when debug is not enabled */
-
-void assigncpu_logger(struct work_struct *w)
-{
-	return;
-}
-void init_assigncpu_logger(void)
-{
-	return;
-}
-void exit_assigncpu_logger(void)
-{
-	return;
-}
-#endif
 
 /********************************************************************************
  * state_free - Is state free?
