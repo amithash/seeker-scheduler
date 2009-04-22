@@ -75,8 +75,10 @@ static int new_cpu_state[NR_CPUS];
 /* State matrix used to evaluate new_cpu_state */
 static int state_matrix[NR_CPUS][MAX_STATES];
 
+/* state weight: summed along columns of state matrix */
 static int state_weight[MAX_STATES];
 
+/* The procs which wins if the indexed state wins */
 static int winning_procs[MAX_STATES];
 
 /* Computed demand for each state */
@@ -96,18 +98,13 @@ struct proc_info {
 /* Proc info for each cpu */
 static struct proc_info info[NR_CPUS];
 
+/* Vector: 0 - if a proc is selected, 1 otherwise */
 static int selected_cpus[NR_CPUS];
 
+/* proxy demand source. if a demand is partly from another
+ * state, then this contains the index to that, else to itself
+ */
 static int proxy_source[MAX_STATES];
-
-//#if 0
-static int load_average = 0;
-static int last_load = 1;
-static int step = 0;
-//#endif
-
-#define EVALUATE_LOAD 10
-#define DEMAND_SCALE MAX_STATES
 
 /********************************************************************************
  * 			Function Declarations 					*
@@ -119,6 +116,13 @@ inline int procs(int hints, int total, int total_load);
  * 				Functions					*
  ********************************************************************************/
 
+/********************************************************************************
+ * transition_direction - Compute direction or transtion
+ * @return - 1 for high, -1 for low, 0 for balance.
+ *
+ * Assumes that cur_cpu_state is valid and the demand vector is computed. 
+ * returns the transition direction. 
+ ********************************************************************************/
 int transition_direction(void)
 {
 	int req_level = 0;
@@ -160,47 +164,6 @@ inline int procs(int hints, int total, int total_load)
 
 	ans = div((hints * total_load), total);
 	return ans < 0 ? 0 : ans;
-}
-
-/********************************************************************************
- * required_load - adjusts load
- * @total_load - load in load units.
- * @return - adjusted load in num processors
- * @Side Effects - None
- *
- * Takes load (in load units) and adjusts it by: rounds it up as long as the 
- * rounded number does not cross total_online_cpus. if load is an exact integer,
- * then it is incremented (To accomadate higher load demands) and returns 1 if
- * the load is 0. So, at least 1 cpu is avaliable for new tasks. 
- ********************************************************************************/
-inline unsigned int required_load(unsigned int total_load)
-{
-	unsigned int ret = LOAD_TO_UINT(total_load);
-	if (ret < total_online_cpus) {
-		/* Round to nearest integer */
-		if ((total_load & 7) > 3)
-			ret++;
-		/* if it is on the dot, then more
-		 * cpus are required. So, dub the load
-		 * up by one This also takes care of 
-		 * 0 load. */
-		else if ((total_load & 7) == 0)
-			ret++;
-	}
-//#if 0
-	/* Use averages over EVALUATE_LOAD intervals to avoid thrashing */
-	if(step < EVALUATE_LOAD){
-		step++;
-		load_average += ret;
-		ret = last_load;
-	} else {
-		ret = div(load_average,EVALUATE_LOAD);
-		last_load = ret;
-		step = 0;
-		load_average = 0;
-	}
-//#endif
-	return ret;
 }
 
 /********************************************************************************
@@ -261,6 +224,13 @@ void update_state_matrix(int delta, int direction)
 	}
 }
 
+/********************************************************************************
+ * update_state_weight - updates the state_weight vector
+ *
+ * sums along every column of state_matrix and stores the result in
+ * state_weight. Of course assumes that the state_matrix is updated
+ * before this is called.
+ ********************************************************************************/
 void update_state_weight(void)
 {
 	int i,j;
@@ -272,6 +242,16 @@ void update_state_weight(void)
 	}
 }
 
+/********************************************************************************
+ * get_left_distance - get closest state on the left with some state weight
+ * @pos - the current state with NO state weight.
+ *
+ * Get the state on the left (lower) to this state whose state weight is 
+ * not zero. -1 if none is found. 
+ * Note:
+ * a. state_weight is already updated.
+ * b. This SHOULD only be used if the weight of pos is 0.
+ ********************************************************************************/
 int get_left_distance(int pos)
 {
 	int i;
@@ -285,6 +265,16 @@ int get_left_distance(int pos)
 	return ret;
 }
 
+/********************************************************************************
+ * get_left_distance - get closest state on the right with some state weight
+ * @pos - the current state with NO state weight.
+ *
+ * Get the state on the right (higher) to this state whose state weight is 
+ * not zero. -1 if none is found. 
+ * Note:
+ * a. state_weight is already updated.
+ * b. This SHOULD only be used if the weight of pos is 0.
+ ********************************************************************************/
 int get_right_distance(int pos)
 {
 	int i;
@@ -299,6 +289,17 @@ int get_right_distance(int pos)
 	return ret;
 }
 
+/********************************************************************************
+ * closest - returns the closest among left and right.
+ * @pos - the current state
+ * @left - the state on the left 
+ * @right - the state on the right
+ * @return the state which is closest. -1 if both are negative.
+ *
+ * Take the left and right vectors and return the closest among them.
+ * left and right are return values of get_left_distance and get_right_distance
+ * respectively.
+ ********************************************************************************/
 int closest(int pos, int left, int right)
 {
 	if(left == -1 && right == -1){
@@ -313,6 +314,19 @@ int closest(int pos, int left, int right)
 	return (pos - left) > (right - pos) ? right : left;
 }
 
+/********************************************************************************
+ * update_demand_field - update the demand field vector. 
+ * @dir - the direction of transition.
+ * 
+ * initializes the demand field to equal demand, and proxy_source to itself. 
+ * Then it checks if any of the states with demand have 0 weight. If true, 
+ * based on the demand, finds the state to which it needs to offer its demand
+ * and updates proxy_source. 
+ *
+ * If dir = 1, then the one on the left is preferably chosen
+ * dir = -1 the one on the right is chosen
+ * dir = 0 the closest is chosen. 
+ ********************************************************************************/
 void update_demand_field(int dir)
 {
 	int i;
@@ -357,6 +371,13 @@ void update_demand_field(int dir)
 	}
 }
 
+/********************************************************************************
+ * update_winning_procs - update the winning procs vector
+ *
+ * assumes selected_cpus and state_matrix are updated. for each column,
+ * it selects the cell with the max value and whose position in selected_cpus
+ * is not 0. and then updates winning_procs. 
+ ********************************************************************************/
 void update_winning_procs(void)
 {
 	int i,j;
@@ -378,6 +399,12 @@ void update_winning_procs(void)
 	}
 }
 
+/********************************************************************************
+ * get_winning_state - return state to transition to.
+ *
+ * return the state with the max state_weight * demand_field, 
+ * if contended, then the one with the higher winning_proc is chosen.
+ ********************************************************************************/
 int get_winning_state(void)
 {
 	int j;
@@ -405,6 +432,14 @@ int get_winning_state(void)
 	return max;
 }
 
+/********************************************************************************
+ * wake_up_procs - wake up total_demand processors, if asleep.
+ * @total_demand - total processors required.
+ *
+ * first count the number of awake processors, if greater than or equal to
+ * the required (total_demand) then return.
+ * Else, iteratively wake up the proc with min sleep_time 
+ ********************************************************************************/
 void wake_up_procs(int total_demand)
 {
 	int awake_total = 0;
@@ -468,21 +503,13 @@ void choose_layout(int delta)
 
 	interval_count++;
 
-	/* Compute the system load, and initialize 
-	 * new_cpu_state to the current as no change has been made
-	 */
+	/* Initialize selected cpus and new_cpu_state */
 	for (i = 0; i < total_online_cpus; i++) {
 		selected_cpus[i] = 1;
 		new_cpu_state[i] = cur_cpu_state[i];
-		/* load = ADD_LOAD(load, get_cpu_load(i)); */
 	}
 
 	load = get_tasks_load();
-
-	/* Get load in terms of number of processors */
-	/* 
-	load = required_load(load);
-	*/
 	debug("load of system = %d", load);
 
 	/* Compute the total = sum of hints */
@@ -495,10 +522,6 @@ void choose_layout(int delta)
 		demand[j] = procs(hint_get(j), total, load);
 		total_demand += demand[j];
 	}
-	/*
-	if (total_demand != load)
-		total_demand = load;
-	*/
 
 	total_demand = load;
 
