@@ -421,7 +421,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	u64 tasks_interval = 0;
 	cpumask_t mask = CPU_MASK_NONE;
 
-	#ifdef DEBUG
+	#ifdef SCHED_DEBUG
 	int i;
 	#endif
 
@@ -437,7 +437,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	tasks_interval = TS_MEMBER(ts, interval);
 	old_state = TS_MEMBER(ts,cpustate);
 
-	#if defined(DEBUG) && DEBUG == 2
+	#ifdef SCHED_DEBUG
 	for(i=0;i<total_states;i++){
 		if(states[i].cpus > 0){
 			assigncpu_debug("%d:%d",i,get_state_tasks(i));
