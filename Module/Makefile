@@ -66,6 +66,10 @@ MOD_FLAGS += -DHIST_BASED_SCHEDULING
 MOD_DEBUG_FLAGS += -DHIST_BASED_SCHEDULING
 endif
 
+ifdef SCHED_DEBUG
+MOD_DEBUG_FLAGS += -DSCHED_DEBUG
+endif
+
 default:
 	$(MAKE) -C $(KDIR) M=$(PWD) CFLAGS_MODULE="$(MOD_FLAGS)" modules
 	$(shell if ! test -d ../Build; then mkdir ../Build; fi )
