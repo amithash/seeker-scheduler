@@ -34,8 +34,10 @@ void exit_assigncpu_logger(void);
 /* Length of buffer. Increase this if you increase the above */
 #define ASSIGNCPU_DEBUG_LEN 1024
 
+#ifdef SCHED_DEBUG
 extern char debug_string[ASSIGNCPU_DEBUG_LEN];
 extern spinlock_t assigncpu_logger_lock;
+#endif
 
 /* You cannot call printk in any of the scheduler related functions. 
  * So this is a little hack to that. Call assigncpu_debug instead
@@ -45,7 +47,7 @@ extern spinlock_t assigncpu_logger_lock;
  *   3. Keep messages short and sweet not an autobiography. 
  */
 
-#if defined(DEBUG) && DEBUG == 2
+#if defined(SCHED_DEBUG) 
 #define assigncpu_debug(str,a...) do{ 								\
 					int __len = strlen(debug_string) + 1;			\
 					char __tmp_str[100];		 			\

@@ -47,7 +47,7 @@ void assigncpu_logger(struct work_struct *w);
 /********************************************************************************
  * 				global_variables				*
  ********************************************************************************/
-#if defined(DEBUG) && DEBUG == 2
+#ifdef SCHED_DEBUG
 /* temp storage for assigncpu messages */
 char debug_string[ASSIGNCPU_DEBUG_LEN] = "";
 
@@ -64,7 +64,7 @@ static DECLARE_DELAYED_WORK(assigncpu_logger_work, assigncpu_logger);
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
-#if defined(DEBUG) && DEBUG == 2
+#ifdef SCHED_DEBUG
 /********************************************************************************
  * assigncpu_logger - The assigncpu logging function.
  * @w - The work calling this routine, not used.
