@@ -51,6 +51,7 @@ seeker_scheduler-objs += seeker-scheduler/main.o         \
 		       seeker-scheduler/stats.o	         \
 		       seeker-scheduler/tsc_intf.o       \
 		       seeker-scheduler/other_mutators.o \
+		       seeker-scheduler/sched_debug.o    \
 		       seeker-scheduler/nrtasks.o        \
 		       seeker-scheduler/debug.o
 
@@ -63,6 +64,10 @@ MOD_DEBUG_FLAGS := -DMODULE -m$(BITS) -DARCH_$(ARCA) $(INCLUDE_DIRS) -Wall -O0 -
 ifdef HIST_BASED_SCHEDULING
 MOD_FLAGS += -DHIST_BASED_SCHEDULING
 MOD_DEBUG_FLAGS += -DHIST_BASED_SCHEDULING
+endif
+
+ifdef SCHED_DEBUG
+MOD_DEBUG_FLAGS += -DSCHED_DEBUG
 endif
 
 default:
