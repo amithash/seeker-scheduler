@@ -64,6 +64,7 @@ extern seqlock_t states_seq_lock;
  * 			Global Datastructures 					*
  ********************************************************************************/
 
+#if MUTATOR_TYPE == APPROXIMATE_DIRECTION_BASED_MUTATOR
 static struct state_desc new_states[MAX_STATES];
 
 /* demand field for each state */
@@ -109,7 +110,6 @@ static int proxy_source[MAX_STATES];
 /********************************************************************************
  * 			Function Declarations 					*
  ********************************************************************************/
-
 inline int procs(int hints, int total, int total_load);
 
 /********************************************************************************
@@ -662,4 +662,4 @@ void choose_layout(int delta)
 exit_debug:
 	put_debug(p);
 }
-
+#endif
