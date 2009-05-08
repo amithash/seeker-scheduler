@@ -16,35 +16,33 @@
 #define NR_STATES 5
 #define MAX_DELTA (NR_CPUS * (NR_STATES - 1))
 
-/* the dynamic programming results */
-static int f[NR_CPUS+1][MAX_DELTA+1];
 
-/* the solution index. */
-static int sol[NR_CPUS+1][MAX_DELTA+1];
-
-/* the selection. */
-static int select[NR_CPUS][NR_STATES];
-
-static int old_layout[NR_CPUS] = {0,1,2,3};
-static int new_layout[NR_CPUS];
-
-static int wt[NR_CPUS][NR_STATES];
-
-static int val[NR_STATES] = {
+static int cur_cpu_state[NR_CPUS] = {0,1,2,3};
+static int new_cpu_state[NR_CPUS];
+static int demand[NR_STATES] = {
 	1,2,4,1,1
 };
 
 #define ABS(n) ((n) > 0 ? (n) : (-1 * (n)))
 
-void make_weights(int n,int m){
-	int i,j;
-	for(i = 0; i < n; i++){
-		for(j = 0; j < m; j++){
-			wt[i][j] = ABS(j - old_layout[i]);
-		}
-	}
-}
-
+/* Implementation of the dynamic programming solution
+ * for the multiple knap sack problem whose algorithm
+ * is provided in:
+ *
+ * Multiple Choice Knapsack Functions
+ * James C. Bean
+ * Department of Industrial and Operations Engineering
+ * The University of Michigan
+ * Ann, Arbor, MI 48109-2117
+ * January 4 1988
+ *
+ * Number of classes = n
+ * Differences:
+ * 1. All classes have equal number of elements = m;
+ * 2. The value of element x_ij (jth element in class i)
+ * has a value val_j => the value of all elements 
+ * x_ij ( 1 <= i <= n ) are equal. 
+ */
 mck(int n, int m, int w)
 {
 	int i;
@@ -53,21 +51,24 @@ mck(int n, int m, int w)
 	int k;
 	int max;
 	int ind;
-	int val1, val2;
-	for(j = 0; j <=w; j++){
-		f[0][j] = 0;
-	}
-	for(i = 0; i <= n; i++){
-		f[i][0] = 0;
-	}
-	for(i=0;i<=n;i++){
-		for(j = 0; j <= w; j++){
-			sol[i][j] = 0;
-		}
-	}
+	int demand1, demand2;
+	struct struct_f {
+		int f;
+		int sol;
+	};
+	static struct struct_f dyna[NR_CPUS+1][MAX_DELTA+1];
+	static int wt[NR_CPUS][NR_STATES];
+
 	for(i = 0; i < n; i++){
 		for(j = 0; j < m; j++){
-			select[i][j] = 0;
+			wt[i][j] = ABS(j - cur_cpu_state[i]);
+		}
+	}
+
+	for(i=0;i<=n;i++){
+		for(j = 0; j <= w; j++){
+			dyna[i][j].f = 0;
+			dyna[i][j].sol = -1;
 		}
 	}
 
@@ -76,19 +77,19 @@ mck(int n, int m, int w)
 		max = -1;
 		ind = -1;
 		for(j=0;j<m;j++){
-			if(wt[0][j] <= b && max < val[j]){
-				max = val[j];
+			if(wt[0][j] <= b && max < demand[j]){
+				max = demand[j];
 				ind = j;
 			}
-			if(f[1][b-1] > max){
-				f[1][b] = f[1][b-1];
-			} else {
-				f[1][b] = max;
-			}
-			if(max > 0){
-				sol[1][b] = ind+1;
-			}
-		}	
+		}
+		if(dyna[1][b-1].f > max){
+			dyna[1][b].f = dyna[1][b-1].f;
+		} else {
+			dyna[1][b].f = max;
+		}
+		if(max > 0){
+			dyna[1][b].sol = ind;
+		}
 	}
 
 	/* do for all! */
@@ -97,18 +98,18 @@ mck(int n, int m, int w)
 			max = -1;
 			ind = -1;
 			for(j = 0; j < m; j++){
-				val1 = (b - wt[k-1][j]) > 0 ? f[k-1][b-wt[k-1][j]] : 0;
-				val2 = val1 + val[j];
-				if(wt[k-1][j] <= b && val1 > 0 && max < val2){
-					max = val2;
+				demand1 = (b - wt[k-1][j]) > 0 ? dyna[k-1][b-wt[k-1][j]].f : 0;
+				demand2 = demand1 + demand[j];
+				if(wt[k-1][j] <= b && demand1 > 0 && max < demand2){
+					max = demand2;
 					ind = j;
 				}
 			}
-			if(f[k][b-1] > max){
-				f[k][b] = f[k][b-1];
+			if(dyna[k][b-1].f > max){
+				dyna[k][b].f = dyna[k][b-1].f;
 			} else {
-				f[k][b] = max;
-				sol[k][b] = ind+1;
+				dyna[k][b].f = max;
+				dyna[k][b].sol = ind;
 			}
 		}
 	}
@@ -117,9 +118,9 @@ mck(int n, int m, int w)
 	b = w;
 	for(k = n; k > 0; k--){
 		while(b > 0){
-			if(sol[k][b] > 0){
-				new_layout[k-1] = sol[k][b] - 1;
-				b = b - wt[k-1][sol[k][b]-1];
+			if(dyna[k][b].sol >= 0){
+				new_cpu_state[k-1] = dyna[k][b].sol;
+				b = b - wt[k-1][dyna[k][b].sol];
 				break;
 			}
 			b--;
@@ -132,21 +133,21 @@ int main(void)
 	int i,j;
 	int n = 4;
 	int m = 5;
-	int delta = 3;
+	int delta = 2;
 	int w = delta;
-	make_weights(n,m);
 	mck(n,m,w);
 	printf("Old Layout: ");
 	for(i=0;i<n;i++){
-		printf("%d ",old_layout[i]);
+		printf("%d ",cur_cpu_state[i]);
 	}
 	printf("\n State Demand: ");
 	for(j = 0; j < m; j++){
-		printf("%d ",val[j] - 1);
+		printf("%d ",demand[j] - 1);
 	}
 	printf("\nNew Layout: ");
 	for(i=0;i<n;i++){
-		printf("%d ",new_layout[i]);
+		cur_cpu_state[i] = new_cpu_state[i];
+		printf("%d ",new_cpu_state[i]);
 	}
 	printf("\n");
 	return 0;
