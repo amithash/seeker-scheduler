@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-/* This is the implementiation of the algorithm using dynamic programming
+/* This is the user space implementiation of the algorithm using dynamic programming
  * to solve the multiple-choice knapsack problem in relation to the 
  * mutation usecase scenario. */
 

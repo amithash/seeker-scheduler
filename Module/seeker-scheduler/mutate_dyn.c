@@ -86,6 +86,24 @@ void init_mutator(void)
 	return;
 }
 
+/* Implementation of the dynamic programming solution
+ * for the multiple knap sack problem whose algorithm
+ * is provided in:
+ *
+ * Multiple Choice Knapsack Functions
+ * James C. Bean
+ * Department of Industrial and Operations Engineering
+ * The University of Michigan
+ * Ann, Arbor, MI 48109-2117
+ * January 4 1988
+ *
+ * Number of classes = n
+ * Differences:
+ * 1. All classes have equal number of elements = m;
+ * 2. The value of element x_ij (jth element in class i)
+ * has a value val_j => the value of all elements 
+ * x_ij ( 1 <= i <= n ) are equal. 
+ */
 void mck(int n, int m, int w)
 {
 	int i;
