@@ -41,7 +41,7 @@
 /* Comment to use the dynamic programming based mutator.
  * uncomment to use the approximate direction based mutator.
  */
-#define MUTATOR_TYPE APPROXIMATE_DIRECTION_BASED_MUTATOR
+//#define MUTATOR_TYPE APPROXIMATE_DIRECTION_BASED_MUTATOR
 #endif
 
 #ifndef MUTATOR_TYPE
