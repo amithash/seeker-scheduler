@@ -78,13 +78,98 @@ static int demand[MAX_STATES];
 /* Mutator interval */
 u64 interval_count;
 
+/* sleep_time - intervals the cpu has been sleeping 
+ * awake - 1 if cpu is awake, 0 otherwise 
+ */
+struct proc_info {
+	unsigned int sleep_time;
+	unsigned int awake_time;
+	unsigned int awake;
+};
+
+/* Proc info for each cpu */
+static struct proc_info info[NR_CPUS];
+
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
+
+/********************************************************************************
+ * procs - compute total processors required given hints and total
+ * @hints - the demand 
+ * @total - sum of all demands for all states.
+ * @total_load - integer load of system (number of cpus 
+ * @Side Effects - None
+ * @return - Total processors required for the state with hint = hints
+ *
+ * Take hints and compute procs = (hints / total) * total_load
+ ********************************************************************************/
+inline int procs(int hints, int total, int total_load)
+{
+	int ans;
+	if (hints == 0)
+		return 0;
+	if (hints == total)
+		return total_load;
+
+	ans = div((hints * total_load), total);
+	return ans < 0 ? 0 : ans;
+}
+
 void init_mutator(void)
 {
-	return;
+	int i;
+	for (i = 0; i < NR_CPUS; i++) {
+		info[i].sleep_time = 0;
+		info[i].awake_time = 1;
+		info[i].awake = 1;
+	}
 }
+/********************************************************************************
+ * wake_up_procs - wake up total_demand processors, if asleep.
+ * @total_demand - total processors required.
+ *
+ * first count the number of awake processors, if greater than or equal to
+ * the required (total_demand) then return.
+ * Else, iteratively wake up the proc with min sleep_time 
+ ********************************************************************************/
+void wake_up_procs(int total_demand)
+{
+	int awake_total = 0;
+	unsigned int min_sleep_time;
+	unsigned int wake_up_proc;
+	int i,j;
+	/* First count awake processors */
+	for (i = 0; i < total_online_cpus; i++){
+		awake_total += info[i].awake;
+	}
+	if(awake_total >= total_demand){
+		return;
+	}
+	for(i=0; i<total_demand; i++){
+		awake_total = 0;
+		min_sleep_time = UINT_MAX;
+		wake_up_proc = UINT_MAX;
+		for(j=0; j < total_online_cpus && awake_total < total_demand; j++){
+			if(info[j].sleep_time == 0){
+				awake_total++;
+				continue;
+			}
+			if(info[j].sleep_time < min_sleep_time){
+				wake_up_proc = j;
+				min_sleep_time = info[j].sleep_time;
+			}
+		}
+		if(wake_up_proc < total_online_cpus){
+			awake_total++;
+			info[wake_up_proc].sleep_time = 0;
+			info[wake_up_proc].awake = 1;
+		}
+		if(awake_total >= total_demand)
+			break;
+	}
+}
+
 
 /* Implementation of the dynamic programming solution
  * for the multiple knap sack problem whose algorithm
@@ -134,7 +219,7 @@ void mck(int n, int m, int w)
 	}
 
 	/* init first proc */
-	for(b = 1; b <= w; b++){
+	for(b = 0; b <= w; b++){
 		max = -1;
 		ind = -1;
 		for(j=0;j<m;j++){
@@ -143,7 +228,7 @@ void mck(int n, int m, int w)
 				ind = j;
 			}
 		}
-		if(dyna[1][b-1].f > max){
+		if(b > 0 && dyna[1][b-1].f > max){
 			dyna[1][b].f = dyna[1][b-1].f;
 		} else {
 			dyna[1][b].f = max;
@@ -155,20 +240,20 @@ void mck(int n, int m, int w)
 
 	/* do for all! */
 	for(k = 2; k <= n; k++){
-		for(b = 1; b <= w; b++){
+		for(b = 0; b <= w; b++){
 			max = -1;
 			ind = -1;
 			for(j = 0; j < m; j++){
-				demand1 = (b - wt[k-1][j]) > 0 ? dyna[k-1][b-wt[k-1][j]].f : 0;
+				demand1 = (b - wt[k-1][j]) >= 0 ? dyna[k-1][b-wt[k-1][j]].f : 0;
 				demand2 = demand1 + demand[j];
 				if(wt[k-1][j] <= b && demand1 > 0 && max < demand2){
 					max = demand2;
 					ind = j;
 				}
 			}
-			if(dyna[k][b-1].f > max){
+			if(b > 0 && dyna[k][b-1].f > max){
 				dyna[k][b].f = dyna[k][b-1].f;
-			} else {
+			} else if(max > 0){
 				dyna[k][b].f = max;
 				dyna[k][b].sol = ind;
 			}
@@ -178,7 +263,7 @@ void mck(int n, int m, int w)
 	/* backtrack */
 	b = w;
 	for(k = n; k > 0; k--){
-		while(b > 0){
+		while(b >= 0){
 			if(dyna[k][b].sol >= 0){
 				new_cpu_state[k-1] = dyna[k][b].sol;
 				b = b - wt[k-1][dyna[k][b].sol];
@@ -204,13 +289,32 @@ void choose_layout(int delta)
 {
 	struct debug_block *p = NULL;
 	unsigned int i, j;
+	int total_cpus_req = 0;
+	int cpus_req[MAX_STATES];
+	int total = 0;
+	int cpu_to_sleep[NR_CPUS];
+	int cpus_given = 0;
 
 	interval_count++;
+
+	total_cpus_req = get_tasks_load();
 
 	/* Compute the total = sum of hints */
 	for (j = 0; j < total_states; j++) {
 		demand[j] = hint_get(j) + 1;
+		total += (demand[j] - 1);
 	}
+
+	for (j = 0; j < total_states; j++) {
+		cpus_req[j] = procs(demand[j]-1,total,total_cpus_req);
+	}
+
+	if(total_cpus_req == 0){
+		total_cpus_req = 1;
+		cpus_req[0] = 1;
+	}
+
+	wake_up_procs(total);
 
 	mck(total_online_cpus, total_states, delta);
  
@@ -220,8 +324,21 @@ void choose_layout(int delta)
 	}
 
 	for (i = 0; i < total_online_cpus; i++) {
+		if(new_states[new_cpu_state[i]].cpus > cpus_req[new_cpu_state[i]]){
+			new_cpu_state[i] = 0;
+			cpu_to_sleep[i] = 1;
+			continue;
+		}
+		cpu_to_sleep[i] = 0;
 		new_states[new_cpu_state[i]].cpus++;
 		cpu_set(i, new_states[new_cpu_state[i]].cpumask);
+		cpus_given++;
+	}
+	if(cpus_given == 0){
+		cpu_to_sleep[0] = 0;
+		new_states[0].cpus = 1;
+		cpu_set(0, new_states[0].cpumask);
+		new_cpu_state[0] = 0;
 	}
 
 	write_seqlock(&states_seq_lock);
@@ -235,6 +352,15 @@ void choose_layout(int delta)
 	for (i = 0; i < total_online_cpus; i++) {
 		if (new_cpu_state[i] != cur_cpu_state[i]) {
 			set_freq(i, new_cpu_state[i]);
+		}
+		if(cpu_to_sleep[i]){
+			info[i].awake = 0;
+			info[i].awake_time = 0;
+			info[i].sleep_time++;
+		} else {
+			info[i].awake = 1;
+			info[i].sleep_time = 0;
+			info[i].awake_time++;
 		}
 	}
 
