@@ -17,10 +17,10 @@
 #define MAX_DELTA (NR_CPUS * (NR_STATES - 1))
 
 
-static int cur_cpu_state[NR_CPUS] = {0,1,2,3};
+static int cur_cpu_state[NR_CPUS] = {1,1,0,0};
 static int new_cpu_state[NR_CPUS];
 static int demand[NR_STATES] = {
-	1,2,4,1,1
+	1,1,5,1,1
 };
 
 #define ABS(n) ((n) > 0 ? (n) : (-1 * (n)))
@@ -73,7 +73,7 @@ mck(int n, int m, int w)
 	}
 
 	/* init first proc */
-	for(b = 1; b <= w; b++){
+	for(b = 0; b <= w; b++){
 		max = -1;
 		ind = -1;
 		for(j=0;j<m;j++){
@@ -82,7 +82,7 @@ mck(int n, int m, int w)
 				ind = j;
 			}
 		}
-		if(dyna[1][b-1].f > max){
+		if(b > 0 && dyna[1][b-1].f > max){
 			dyna[1][b].f = dyna[1][b-1].f;
 		} else {
 			dyna[1][b].f = max;
@@ -94,11 +94,11 @@ mck(int n, int m, int w)
 
 	/* do for all! */
 	for(k = 2; k <= n; k++){
-		for(b = 1; b <= w; b++){
+		for(b = 0; b <= w; b++){
 			max = -1;
 			ind = -1;
 			for(j = 0; j < m; j++){
-				demand1 = (b - wt[k-1][j]) > 0 ? dyna[k-1][b-wt[k-1][j]].f : 0;
+				demand1 = (b - wt[k-1][j]) >= 0 ? dyna[k-1][b-wt[k-1][j]].f : 0;
 				demand2 = demand1 + demand[j];
 				if(wt[k-1][j] <= b && demand1 > 0 && max < demand2){
 					max = demand2;
@@ -107,7 +107,7 @@ mck(int n, int m, int w)
 			}
 			if(dyna[k][b-1].f > max){
 				dyna[k][b].f = dyna[k][b-1].f;
-			} else {
+			} else if(max > 0){
 				dyna[k][b].f = max;
 				dyna[k][b].sol = ind;
 			}
@@ -117,7 +117,7 @@ mck(int n, int m, int w)
 	/* backtrack */
 	b = w;
 	for(k = n; k > 0; k--){
-		while(b > 0){
+		while(b >= 0){
 			if(dyna[k][b].sol >= 0){
 				new_cpu_state[k-1] = dyna[k][b].sol;
 				b = b - wt[k-1][dyna[k][b].sol];
@@ -125,6 +125,13 @@ mck(int n, int m, int w)
 			}
 			b--;
 		}
+	}
+
+	for(k=0;k<=n;k++){
+		for(b=0;b<=w;b++){
+			printf("%d:%d\t",dyna[k][b].f, dyna[k][b].sol);
+		}
+		printf("\n");
 	}
 }
 
