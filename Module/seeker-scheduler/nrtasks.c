@@ -47,7 +47,6 @@ int get_tasks_load(void)
 		total += get_cpu_nr_running(i);
 #endif
 	}
-	info("total = %ld",total);
 	return total > total_online_cpus ? total_online_cpus : total;
 }
 
