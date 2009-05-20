@@ -32,5 +32,6 @@
 int get_tasks_load(void);
 int get_state_tasks(int state);
 int get_state_tasks_exself(int state);
+int get_cpu_tasks(int cpu);
 
 #endif

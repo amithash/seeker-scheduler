@@ -78,3 +78,12 @@ int get_state_tasks_exself(int state)
 	return tasks;
 }
 
+int get_cpu_tasks(int cpu)
+{
+#ifdef SEEKER_PLUGIN_PATCH
+	return get_cpu_nr_running(cpu);
+#else 
+	return 0;
+#endif
+}
+
