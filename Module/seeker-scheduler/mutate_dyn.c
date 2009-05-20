@@ -69,6 +69,10 @@ extern seqlock_t states_seq_lock;
 #warning "You are using the experimental dynamic programming based mutator"
 static struct state_desc new_states[MAX_STATES];
 
+static int cpu_awake_proxy[NR_CPUS];
+
+static int put_to_sleep[NR_CPUS];
+
 /* Selected states for cpus */
 static int new_cpu_state[NR_CPUS];
 
@@ -133,7 +137,7 @@ void init_mutator(void)
  * the required (total_demand) then return.
  * Else, iteratively wake up the proc with min sleep_time 
  ********************************************************************************/
-void wake_up_procs(int total_demand)
+int wake_up_procs(int total_demand)
 {
 	int awake_total = 0;
 	unsigned int min_sleep_time;
@@ -143,33 +147,63 @@ void wake_up_procs(int total_demand)
 	for (i = 0; i < total_online_cpus; i++){
 		awake_total += info[i].awake;
 	}
-	if(awake_total >= total_demand){
-		return;
-	}
-	for(i=0; i<total_demand; i++){
-		awake_total = 0;
-		min_sleep_time = UINT_MAX;
-		wake_up_proc = UINT_MAX;
-		for(j=0; j < total_online_cpus && awake_total < total_demand; j++){
-			if(info[j].sleep_time == 0){
-				awake_total++;
-				continue;
-			}
-			if(info[j].sleep_time < min_sleep_time){
-				wake_up_proc = j;
-				min_sleep_time = info[j].sleep_time;
-			}
-		}
-		if(wake_up_proc < total_online_cpus){
-			awake_total++;
-			info[wake_up_proc].sleep_time = 0;
-			info[wake_up_proc].awake = 1;
-		}
-		if(awake_total >= total_demand)
-			break;
-	}
-}
 
+	/* Some one has to get up. */
+	if(awake_total < total_demand){
+		/* Find the cpu with the lowest sleep time and wake that up */
+		for(i=0; i<total_demand; i++){
+			awake_total = 0;
+			min_sleep_time = UINT_MAX;
+			wake_up_proc = UINT_MAX;
+			for(j=0; j < total_online_cpus && awake_total < total_demand; j++){
+				if(info[j].sleep_time == 0){
+					awake_total++;
+					continue;
+				}
+				if(info[j].sleep_time < min_sleep_time){
+					wake_up_proc = j;
+					min_sleep_time = info[j].sleep_time;
+				}
+			}
+			if(wake_up_proc < total_online_cpus){
+				awake_total++;
+				info[wake_up_proc].sleep_time = 0;
+				info[wake_up_proc].awake = 1;
+			}
+			/* Continue till the required processors are awake */
+			if(awake_total >= total_demand)
+				break;
+		}
+	}
+	/* Some processor has to sleep */
+	if(awake_total > total_demand){
+		for(i=0; i<total_online_cpus; i++){
+			/* Choose an awake processor with no tasks on it */
+			if(info[i].awake == 1 && get_cpu_tasks(i) == 0){
+				put_to_sleep[i] = 1;
+				info[i].awake = 0;
+				info[i].sleep_time = 1;
+				info[i].awake_time = 0;
+				awake_total--;
+			} else {
+				put_to_sleep[i] = 0;
+			}
+			/* Stop when all required procs are asleep */
+			if(awake_total <= total_demand){
+				break;
+			}
+		}
+	}
+	/* Now create a proxy of awake processors 
+	 * creating an illusion that 0-x are awake */
+	for(i=0,j=0;i<total_online_cpus;i++){
+		if(info[i].awake == 1){
+			cpu_awake_proxy[j] = i;
+			j++;
+		}
+	}
+	return awake_total;
+}
 
 /* Implementation of the dynamic programming solution
  * for the multiple knap sack problem whose algorithm
@@ -207,7 +241,7 @@ void mck(int n, int m, int w)
 
 	for(i = 0; i < n; i++){
 		for(j = 0; j < m; j++){
-			wt[i][j] = ABS(j - cur_cpu_state[i]);
+			wt[i][j] = ABS(j - cur_cpu_state[cpu_awake_proxy[i]]);
 		}
 	}
 
@@ -265,7 +299,7 @@ void mck(int n, int m, int w)
 	for(k = n; k > 0; k--){
 		while(b >= 0){
 			if(dyna[k][b].sol >= 0){
-				new_cpu_state[k-1] = dyna[k][b].sol;
+				new_cpu_state[cpu_awake_proxy[k-1]] = dyna[k][b].sol;
 				b = b - wt[k-1][dyna[k][b].sol];
 				break;
 			}
@@ -290,57 +324,43 @@ void choose_layout(int delta)
 	struct debug_block *p = NULL;
 	unsigned int i, j;
 	int total_cpus_req = 0;
-	int cpus_req[MAX_STATES];
 	int total = 0;
-	int cpu_to_sleep[NR_CPUS];
-	int cpus_given = 0;
 
 	interval_count++;
 
-	total_cpus_req = get_tasks_load();
-
-	/* Compute the total = sum of hints */
-	for (j = 0; j < total_states; j++) {
-		demand[j] = hint_get(j) + 1;
-		total += (demand[j] - 1);
-	}
-
-	for (j = 0; j < total_states; j++) {
-		cpus_req[j] = procs(demand[j]-1,total,total_cpus_req);
-	}
-
-	if(total_cpus_req == 0){
-		total_cpus_req = 1;
-		cpus_req[0] = 1;
-	}
-
-	wake_up_procs(total);
-
-	mck(total_online_cpus, total_states, delta);
- 
+	/* Init structure */
 	for (j = 0; j < total_states; j++) {
 		new_states[j].cpus = 0;
 		cpus_clear(new_states[j].cpumask);
 	}
 
-	for (i = 0; i < total_online_cpus; i++) {
-		if(new_states[new_cpu_state[i]].cpus > cpus_req[new_cpu_state[i]]){
-			new_cpu_state[i] = 0;
-			cpu_to_sleep[i] = 1;
-			continue;
-		}
-		cpu_to_sleep[i] = 0;
-		new_states[new_cpu_state[i]].cpus++;
-		cpu_set(i, new_states[new_cpu_state[i]].cpumask);
-		cpus_given++;
-	}
-	if(cpus_given == 0){
-		cpu_to_sleep[0] = 0;
-		new_states[0].cpus = 1;
-		cpu_set(0, new_states[0].cpumask);
-		new_cpu_state[0] = 0;
+	total_cpus_req = get_tasks_load();
+
+	/* demand is hint + 1 as the algo cannot stand 0 demand! */
+	for (j = 0; j < total_states; j++) {
+		demand[j] = hint_get(j) + 1;
 	}
 
+	/* Suicide if req procs is 0 */
+	if(total_cpus_req == 0){
+		total_cpus_req = 1;
+	}
+
+	/* Wake up/put to sleep req procs */
+	total = wake_up_procs(total_cpus_req);
+
+	/* Perform the dynamic programming algo to solve this as a MCKP */
+	mck(total, total_states, delta);
+
+	/* Set up the states */
+	for(i = 0; i < total_online_cpus; i++){
+		if(info[i].awake == 0)
+		      continue;
+		new_states[new_cpu_state[i]].cpus++;
+		cpu_set(i, new_states[new_cpu_state[i]].cpumask);
+	}
+
+	/* Commit states */
 	write_seqlock(&states_seq_lock);
 	for (j = 0; j < total_states; j++) {
 		states[j].cpumask = new_states[j].cpumask;
@@ -350,17 +370,15 @@ void choose_layout(int delta)
 	write_sequnlock(&states_seq_lock);
 
 	for (i = 0; i < total_online_cpus; i++) {
+		if(put_to_sleep[i] == 1){
+			set_freq(i, 0);
+		}
+		if(info[i].awake == 0){
+			info[i].sleep_time++;
+			continue;
+		}
 		if (new_cpu_state[i] != cur_cpu_state[i]) {
 			set_freq(i, new_cpu_state[i]);
-		}
-		if(cpu_to_sleep[i]){
-			info[i].awake = 0;
-			info[i].awake_time = 0;
-			info[i].sleep_time++;
-		} else {
-			info[i].awake = 1;
-			info[i].sleep_time = 0;
-			info[i].awake_time++;
 		}
 	}
 
