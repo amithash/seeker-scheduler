@@ -20,6 +20,7 @@ my $finalize;
 my $bench_list;
 my $output;
 my $req_mask;
+my $helpf;
 
 GetOptions( 'b|bench=s{,}' => \@bench ,
 	    'benchlist=s' => \$bench_list,
@@ -30,7 +31,12 @@ GetOptions( 'b|bench=s{,}' => \@bench ,
 	    'postfix=s'	=> \$post_ex,
 	    'finalize=s' => \$finalize,
 	    'seq=i'	=> \$seq,
+	    'help'	=> \$helpf,
 	    'o|output=s' => \$output);
+
+if(defined($helpf)){
+	help();
+}
 
 $output = "run.sh" unless(defined($output));
 $any = 0 unless(defined($any));
@@ -107,4 +113,31 @@ print R "$c\n\n";
 
 close(R);
 system("chmod +x $output");
+
+sub help
+{
+	print "
+	USAGE:
+	$0 [OPTIONS]
+	OPTIONS:
+	-b|--bench=b1,b2,b3,... :  list of benchmarks.
+	--benchlist=bl          :  use benchlist bl
+				   bl is of the format:
+				   b1
+				   b2
+				   b3
+				   ...
+	-m|--mask=i             :  The cpu mask on which to execute.
+	-a|--any		:  run on any cpu.
+	-l|--log=lg		:  log to fileL lg
+	--prefix=px		:  prefix px to command.
+	--postfix=px		:  append px to command.
+	--finalize=s		:  do 's' when done.
+	--seq=i			:  run benchmarks sequentially on cpu i.
+	--output=s		:  the path to the resulting run script.
+				   it is run.sh in the current dir by default.
+	
+	\n";
+	exit;
+}
 
