@@ -341,6 +341,12 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 		is_blacklist_task(to) == 0)
 		usage_inc(TS_MEMBER(to, cpustate));
 
+	read_counters(cpu);
+	TS_MEMBER(from, inst) += pmu_val[cpu][0];
+	TS_MEMBER(from, re_cy) += pmu_val[cpu][1];
+	TS_MEMBER(from, ref_cy) += get_tsc_cycles();
+	clear_counters(cpu);
+
 	if (TS_MEMBER(from, seeker_scheduled) != SEEKER_MAGIC_NUMBER) {
 		goto get_out;
 	}
@@ -349,12 +355,6 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 		goto get_out;
 
 	usage_dec(TS_MEMBER(from, cpustate));
-
-	read_counters(cpu);
-	TS_MEMBER(from, inst) += pmu_val[cpu][0];
-	TS_MEMBER(from, re_cy) += pmu_val[cpu][1];
-	TS_MEMBER(from, ref_cy) += get_tsc_cycles();
-	clear_counters(cpu);
 
 	if(is_blacklist_task(from) == 0)
 		put_mask_from_stats(from);
