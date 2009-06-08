@@ -33,11 +33,13 @@ my $do_all = 0;
 my %pid_hash;
 my $what;
 my $benchlist;
+my $total_online_cpus = 4;
 
 GetOptions ('input:s' => \$input_file_name,
 	    'output:s' => \$output_dir,
 	    'b|bench:s'  => \$bench,
 	    'what:s'  => \$what,
+	    'cpus:i'  => \$total_online_cpus,
 	    'benchlist:s'  => \$benchlist);
 $what = "all" unless(defined($what));
 
@@ -59,6 +61,8 @@ unless(-d $output_dir){
 	system("mkdir -p $output_dir");
 }
 print "Logs are in $output_dir\n";
+
+
 
 my %process;
 if(defined($benchlist)){
@@ -162,7 +166,7 @@ if($what eq "mut" or $what eq "all"){
 if($what eq "st" or $what eq "all"){
 	my %cpu_time;
 	open IN, "grep -P \"^t,\" $input_file_name |";
-	my $cpu_fh = open_cpus(4,$output_dir);
+	my $cpu_fh = open_cpus($total_online_cpus,$output_dir);
 	while(my $line = <IN>){
 		chomp($line);
 		  #          
