@@ -27,15 +27,18 @@ typedef struct{
 // ---------------------- START OF CONFIGURATION AREA ---------------------------
 
 // This will be your output header
-char header[200] = "INSTR,RE_IPC,RF_IPC,TEMPR";
+char header[200] = "INSTR,RE_IPC,RF_IPC,STATE";
 
 // Never used this is for the users reference in filling out the next DS
-#define INPUT_FORMAT "TS_CY,INSTR,RE_CY,RF_CY,TEMP"
+#define INPUT_FORMAT "TOT_INST,TOT_RFCY,INT,INST,RFCY,CPU,IPC,STATE,REQ,GIV"
 
 // The total number of columns in the output string... (Minus the primary leading column)
 #define TOTAL_COLUMNS 3
 
-#define PRIMARY 1
+#define PRIMARY 3
+
+#define INSEP " "
+#define OUTSEP " "
 
 // These are the operations to be performed on the data to get an interpolatable
 // data. Each entry is IN_COLUMN_NUMBER_FOR_DATA1, OPERATION, IN_COLUMN_NUMBER_FOR_DATA2
@@ -44,9 +47,9 @@ char header[200] = "INSTR,RE_IPC,RF_IPC,TEMPR";
 // And when you do not require an operation, then use ' ' as an operation and fill 0 to the
 // next, example: {7,' ',0}
 operation_t operations[TOTAL_COLUMNS] = {
-	{1,'/',2},
-	{1,'/',3},
-	{4,' ',0}
+	{6,' ',0},
+	{3,'/',4},
+	{7,' ',0}
 };
 
 // ---------------------- END OF CONFIGURATION AREA -------------------------
