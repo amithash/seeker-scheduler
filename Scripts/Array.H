@@ -61,7 +61,9 @@ class Array{
 		void print(void);
 		void print(int col);
 		void fprint(ofstream &outf);
+		void fprint(ofstream &outf, const char *);
 		void fprint(ofstream &outf, int col);
+		void fprint(ofstream &outf, int col, const char *);
 		void zeroes(void);
 		void empty(void);
 		
@@ -271,6 +273,19 @@ void Array<T>::fprint(ofstream &outf){
 		}
 	}
 }
+
+template <class T>
+void Array<T>::fprint(ofstream &outf, const char *sep){
+	for(int i=0;i<n;i++){
+		outf << Data[i];
+		if(i < n-1){
+			outf << sep;
+		}
+		else{
+			outf << endl;
+		}
+	}
+}
 template <class T>
 void Array<T>::fprint(ofstream &outf, int col){
 	for(int i=0;i<n;i++){
@@ -280,6 +295,19 @@ void Array<T>::fprint(ofstream &outf, int col){
 		}
 		else{
 			outf << ",";
+		}
+	}	
+}
+
+template <class T>
+void Array<T>::fprint(ofstream &outf, int col, const char *sep){
+	for(int i=0;i<n;i++){
+		outf << Data[i];
+		if(i % col == col-1){
+			outf << endl;
+		}
+		else{
+			outf << sep;
 		}
 	}	
 }
