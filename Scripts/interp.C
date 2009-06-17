@@ -21,6 +21,8 @@
 #include <string.h>
 #include "iconfig.h"
 
+//#define DEBUG 1
+
 int main(int argc, char *argv[]){
 
 	if(argc != 4){
@@ -95,11 +97,18 @@ int main(int argc, char *argv[]){
 	
 	// allocate space for splines
 	int spline_length = X.length() - 1;
-	SPLINE * splines = new SPLINE[spline_length];
+	SPLINE * splines = new SPLINE[spline_length+1];
+	splines[0].construct(0,X[0],0,Y[0]);
+#ifdef DEBUG
+	splines[0].print();
+#endif
 	for(int i=1;i<X.length();i++){
-		splines[i-1].construct(X[i-1], X[i], Y[i-1], Y[i]);
+		splines[i].construct(X[i-1], X[i], Y[i-1], Y[i]);
+#ifdef DEBUG
+		splines[i].print();
+#endif
 	}
-	
+
 	cout << "STAGE 3: Prediction and data output " << endl;
 	// Start prediction
 	int last_index = 0;
