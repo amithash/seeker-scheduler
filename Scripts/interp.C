@@ -109,7 +109,7 @@ int main(int argc, char *argv[]){
 		while(!splines[last_index].within(i)){
 			last_index++;
 		}
-		out.append(interval);
+		out.append(i / 1000000);
 		out.append(splines[last_index].predict(i));
 		out.fprint(outfile,OUTSEP);
 		out.empty();
