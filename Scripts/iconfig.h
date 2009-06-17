@@ -109,6 +109,12 @@ class SPLINE{
 			slope.resize(size);
 			Yint.resize(size);
 		}
+		void print(void){
+			cout << "(" << low << "," << high << "]: m= ";
+			cout << slope;
+			cout << Yint;
+			cout << endl;
+		}
 		// Sets the spline function.
 		void construct(double from, double to, Array<double> Y_from, Array<double> Y_to){
 			slope = (Y_to - Y_from) / (to - from);
@@ -116,8 +122,18 @@ class SPLINE{
 			low = from;
 			high = to;
 		}
+		void construct(double from, double to, double Y_from, Array<double> Y_to){
+			slope = (Y_to - Y_from) / (to - from);
+			Yint = ((slope * from) - Y_from) * -1;
+			low = from;
+			high = to;
+		}
 		// This returns true if a given X lies within this spline, or if this
 		// spline is defined in a region which includes X.
+		
+		double lowest(void){
+			return low;
+		}
 		bool within(double X){
 			if(X > low && X <= high){
 				return true;
