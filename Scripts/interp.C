@@ -112,9 +112,13 @@ int main(int argc, char *argv[]){
 	cout << "STAGE 3: Prediction and data output " << endl;
 	// Start prediction
 	int last_index = 0;
+	double end = X[-1];
+	X.empty();
+	Y.empty();
+
 	Array<double> out;
 	outfile << header << endl;
-	for(double i=interval; i< X[-1]; i += interval){
+	for(double i=interval; i< end; i += interval){
 		while(!splines[last_index].within(i)){
 			last_index++;
 		}
