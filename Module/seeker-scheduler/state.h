@@ -31,6 +31,7 @@
 #define ALL_LOW 3
 #define STATIC_LAYOUT 4
 #define NO_CHANGE 5
+#define BASE_LAYOUT 6
 
 /* contains various parameters associated
  * to a CPU state. 

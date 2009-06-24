@@ -161,6 +161,9 @@ int allowed_cpus = 0;
 
 int mutation_method = 0;
 
+/* The home state for the scheduler and the mutator */
+int base_state = 0;
+
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
@@ -377,6 +380,12 @@ static int scheduler_init(void)
 	if (static_layout_length != 0) {
 		init = STATIC_LAYOUT;
 	}
+	if (base_state != 0){
+		init = BASE_LAYOUT;
+		if(base_state < 0){
+			base_state = 0;
+		}
+	}
 	if(mutation_method != 0){
 		disable_scheduling = 1;
 	}
@@ -547,6 +556,10 @@ MODULE_PARM_DESC(change_interval,
 module_param(mutation_method, int, 0444);
 MODULE_PARM_DESC(mutation_method, 
 		"Type of mutation: Delta (default) - 0, ondemand - 1, conservative - 2");
+
+module_param(base_state, int, 0444);
+MODULE_PARM_DESC(base_state,
+		"The base state the scheduler/mutator shall take");
 
 module_param(init, int, 0444);
 MODULE_PARM_DESC(init,

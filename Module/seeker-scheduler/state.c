@@ -60,6 +60,9 @@ extern int static_layout[NR_CPUS];
 /* main.c: Contains the number of cpu's static layout */
 extern int static_layout_length;
 
+/* main.c: contains the home state for mutator */
+extern int base_state;
+
 /********************************************************************************
  * 			Global Datastructures 					*
  ********************************************************************************/
@@ -395,6 +398,17 @@ int init_cpu_states(unsigned int how)
 			cur_cpu_state[i] = 0;
 		}
 		break;
+	case BASE_LAYOUT:
+		if(base_state >= total_states){
+			base_state = total_states - 1;
+		}
+		info("Base state of %d is chosen",base_state);
+		for(i = 0; i < total_online_cpus; i++){
+			set_freq(i, base_state);
+			cpu_set(i, states[base_state].cpumask);
+			states[base_state].cpus++;
+			cur_cpu_state[i] = base_state;
+		}
 	case NO_CHANGE:
 	default:
 		info("No change is done. The current freq is read");

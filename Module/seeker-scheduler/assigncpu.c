@@ -98,6 +98,9 @@ extern seqlock_t states_seq_lock;
 /* main.c: mask of all allowed/online cpus */
 extern cpumask_t total_online_mask;
 
+/* main.c: base_state provided by the user */
+extern int base_state;
+
 
 /********************************************************************************
  * 				Local Macros					*
@@ -565,12 +568,12 @@ void put_mask_from_stats(struct task_struct *ts)
  ********************************************************************************/
 void initial_mask(struct task_struct *ts)
 {
-	int state = 0;
+	int state = base_state;
 	cpumask_t mask = CPU_MASK_NONE;
 	unsigned seq;
 	do {
 		seq = read_seqbegin(&states_seq_lock);
-		state = get_closest_state(0);
+		state = get_closest_state(base_state);
 		if (state >= 0 && state < total_states)
 			mask = states[state].cpumask;
 	} while (read_seqretry(&states_seq_lock, seq));
