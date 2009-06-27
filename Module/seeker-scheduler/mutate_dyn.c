@@ -207,17 +207,13 @@ int wake_up_procs(int total_demand)
 
 void delta_based_demand_transform(int cpus, int delta)
 {
-	int new_demand[NR_STATES];
 	int can_win[NR_STATES] = {0};
 	int i,j;
-	int count;
 	int left, right;
-	int total = 0;
 	int friend;
 
 	/* Evaluate states which can never win under delta */
 	for(j = 0; j < total_states; j++){
-		count = 0;
 		can_win[j] = 0;
 		for(i=0;i<cpus;i++){
 			if(ABS((cur_cpu_state[cpu_awake_proxy[i]] - j)) <= delta){
@@ -225,7 +221,6 @@ void delta_based_demand_transform(int cpus, int delta)
 				break;
 			}
 		}
-		total += demand[j];
 	}
 
 	/* Transfer demand of states which cannot win to nearby states */
@@ -253,17 +248,13 @@ void delta_based_demand_transform(int cpus, int delta)
 			friend = right;
 		} else if(right == -1) {
 			friend = left;
+		} else if(ABS(left - j) == ABS(right - j)){
+			friend = demand[left] > demand[right] ? left : right;
 		} else {
 			friend = ABS(left - j) < ABS(right - j) ? left : right;	
 		}
-		
-		
-		
-		
+		demand[friend] += demand[j];
 	}
-	
-
-
 }
 
 /* Implementation of the dynamic programming solution
@@ -409,6 +400,8 @@ void choose_layout(int delta)
 
 	/* Wake up/put to sleep req procs */
 	total = wake_up_procs(total_cpus_req);
+
+	delta_based_demand_transform(total, delta);
 
 	/* Perform the dynamic programming algo to solve this as a MCKP */
 	mck(total, total_states, delta);
