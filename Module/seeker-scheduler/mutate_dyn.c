@@ -205,6 +205,67 @@ int wake_up_procs(int total_demand)
 	return awake_total;
 }
 
+void delta_based_demand_transform(int cpus, int delta)
+{
+	int new_demand[NR_STATES];
+	int can_win[NR_STATES] = {0};
+	int i,j;
+	int count;
+	int left, right;
+	int total = 0;
+	int friend;
+
+	/* Evaluate states which can never win under delta */
+	for(j = 0; j < total_states; j++){
+		count = 0;
+		can_win[j] = 0;
+		for(i=0;i<cpus;i++){
+			if(ABS((cur_cpu_state[cpu_awake_proxy[i]] - j)) <= delta){
+				can_win[j] = 1;
+				break;
+			}
+		}
+		total += demand[j];
+	}
+
+	/* Transfer demand of states which cannot win to nearby states */
+	for(j = 0; j < total_states; j++){
+		if(can_win[j] == 1)
+			continue;
+
+		if(demand[j] == 0)
+			continue;
+
+		left = right = -1;
+		for(i = j; i < total_states; i++){
+			if(can_win[i] == 1){
+				right = i;
+				break;
+			}
+		}
+		for(i = j; i >= 0; i--){
+			if(can_win[i] == 1){
+				left = i;
+				break;
+			}
+		}
+		if(left == -1) {
+			friend = right;
+		} else if(right == -1) {
+			friend = left;
+		} else {
+			friend = ABS(left - j) < ABS(right - j) ? left : right;	
+		}
+		
+		
+		
+		
+	}
+	
+
+
+}
+
 /* Implementation of the dynamic programming solution
  * for the multiple knap sack problem whose algorithm
  * is provided in:
