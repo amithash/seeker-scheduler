@@ -28,29 +28,7 @@
 #include <pmu_public.h>
 #include <fpmu_public.h>
 #include <seeker_cpufreq.h>
-
-#ifdef DEBUG
-	/* Uncomment the next line to enable scheduler logging */
-	// #define SCHED_DEBUG 1
-#endif
-
-#define APPROXIMATE_DIRECTION_BASED_MUTATOR 100
-#define DYNAMIC_PROGRAMMING_BASED_MUTATOR 200
-
-#ifndef MUTATOR_TYPE
-/* Comment to use the dynamic programming based mutator.
- * uncomment to use the approximate direction based mutator.
- */
-//#define MUTATOR_TYPE APPROXIMATE_DIRECTION_BASED_MUTATOR
-#endif
-
-#ifndef MUTATOR_TYPE
-#define MUTATOR_TYPE DYNAMIC_PROGRAMMING_BASED_MUTATOR
-#endif
-
-#ifndef MUTATOR_TYPE 
-#define MUTATOR_TYPE APPROXIMATE_DIRECTION_BASED_MUTATOR
-#endif
+#include <features.h>
 
 #define MAX_COUNTERS_PER_CPU NUM_COUNTERS + NUM_FIXED_COUNTERS + NUM_EXTRA_COUNTERS
 
