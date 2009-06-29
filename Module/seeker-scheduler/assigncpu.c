@@ -44,7 +44,7 @@
 #include "nrtasks.h"
 #include "migrate.h"
 
-#ifdef HIST_BASED_SCHEDULING 
+#ifdef ADAPTIVE_LADDER_SCHEDULING
 #if defined(SEEKER_PLUGIN_PATCH) && SEEKER_PLUGIN_PATCH < 2
 #warning "An older version of schedmod patch is used. use the ver2 variant."
 #endif
@@ -330,7 +330,7 @@ void put_mask_from_stats(struct task_struct *ts)
 			break;
 		default:
 			ipc = IPC(TS_MEMBER(ts, inst), TS_MEMBER(ts, re_cy));
-#ifndef HIST_BASED_SCHEDULING
+#if SCHEDULER_TYPE == LADDER_SCHEDULING
 			/*up */
 			if (ipc >= IPC_HIGH) {
 				new_state = get_higher_state(state);
@@ -342,8 +342,8 @@ void put_mask_from_stats(struct task_struct *ts)
 				state_req = state;
 				new_state = get_closest_state(state);
 			}
-#else
-#warning "Using hist based scheduling"
+#elif SCHEDULER_TYPE == ADAPTIVE_LADDER_SCHEDULING
+#warning "Using adaptive ladder scheduling"
 			if (ipc >= IPC_HIGH) {
 				new_state = get_higher_state(state);
 				if(TS_MEMBER(ts,hist_step) >= 0){
@@ -368,6 +368,8 @@ void put_mask_from_stats(struct task_struct *ts)
 				new_state = get_closest_state(state);
 				TS_MEMBER(ts, hist_step) = 0;
 			}
+#elif SCHEDULER_TYPE == SELECT_SCHEDULING
+
 #endif
 		}
 		if (new_state >= 0 && new_state < total_states)
