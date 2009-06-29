@@ -46,8 +46,8 @@
  ********************************************************************************/
 
 /* Uncomment one to choose a mutator */
-#define MUTATOR_TYPE DYNAMIC_PROGRAMMING_BASED_MUTATOR
-//#define MUTATOR_TYPE APPROXIMATE_DIRECTION_BASED_MUTATOR
+// #define MUTATOR_TYPE DYNAMIC_PROGRAMMING_BASED_MUTATOR
+#define MUTATOR_TYPE APPROXIMATE_DIRECTION_BASED_MUTATOR
 
 /********************************************************************************
  * 			  SELECT SCHEDULER 					*
