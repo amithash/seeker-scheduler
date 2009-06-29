@@ -42,6 +42,7 @@
 #include "state.h"
 #include "stats.h"
 #include "assigncpu.h"
+#include "migrate.h"
 #include "mutate.h"
 #include "debug.h"
 #include "hwcounters.h"

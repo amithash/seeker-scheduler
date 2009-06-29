@@ -45,6 +45,7 @@ fpmu-objs += fpmu/main.o \
 # Seeker scheduler
 seeker_scheduler-objs += seeker-scheduler/main.o         \
 		       seeker-scheduler/assigncpu.o      \
+		       seeker-scheduler/migrate.o        \
 		       seeker-scheduler/mutate.o         \
 		       seeker-scheduler/mutate_dyn.o     \
 		       seeker-scheduler/state.o          \

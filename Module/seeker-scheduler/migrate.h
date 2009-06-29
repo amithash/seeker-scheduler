@@ -22,31 +22,13 @@
  * If not, see <http://www.gnu.org/licenses/>.       *
  *****************************************************/
 
-#ifndef __ASSIGNCPU_H_
-#define __ASSIGNCPU_H_
+#ifndef __MIGRATE_H_
+#define __MIGRATE_H_
 
-void put_mask_from_stats(struct task_struct *ts);
-void initial_mask(struct task_struct *ts);
-
-/* Keep the threshold at 1M Instructions
- * This removes artifcats from IPC and 
- * removes IPC Computation for small tasks
- */
-#define INST_THRESHOLD 10000000
-
-/* Works for a max of 32 processors */
-#define CPUMASK_TO_UINT(x) (*((unsigned int *)&(x)))
-
-/* Macro to access 'seeker' added members in
- * task_struct (TS). This is used, to avoid
- * the ugly #define SEEKER_PLUGIN_PATCH
- * everywhere, just so that I can test it on
- * an unpatched kernel for compilation errors! 
- */
-#ifdef SEEKER_PLUGIN_PATCH
-#define TS_MEMBER(ts,member)	ts->member
-#else
-#define TS_MEMBER(ts,member)	(ts)->flags
-#endif
+void cancel_task_work(struct task_struct *ts);
+void init_mig_pool(void);
+void exit_mig_pool(void);
+void put_work(struct task_struct *ts, cpumask_t mask);
 
 #endif
+
