@@ -26,7 +26,7 @@ static DEFINE_PER_CPU(short int, cur_state);
 static DECLARE_DELAYED_WORK(state_change_timer, state_change);
 
 /* contains total online cpus */
-static int total_cpus = NR_CPUS;
+static int num_cpus = NR_CPUS;
 
 /* The last cpu changed */
 static int last_cpu = 0;
@@ -64,7 +64,7 @@ static int interval = 1;
 void state_change(struct work_struct *w)
 {
 	info("CPU: %d CurState=%d", last_cpu, CUR_STATE(last_cpu));
-	last_cpu = (last_cpu + 1) % total_cpus;
+	last_cpu = (last_cpu + 1) % num_cpus;
 	CUR_STATE(last_cpu) = (CUR_STATE(last_cpu) + 1) % MAX_STATE(last_cpu);
 	set_freq(last_cpu, CUR_STATE(last_cpu));
 	schedule_delayed_work(&state_change_timer, jiffies + (interval * HZ));
@@ -81,9 +81,9 @@ void state_change(struct work_struct *w)
 static int init_test_scpufreq(void)
 {
 	int i;
-	total_cpus = num_online_cpus();
+	num_cpus = num_online_cpus();
 
-	for (i = 0; i < total_cpus; i++) {
+	for (i = 0; i < num_cpus; i++) {
 		MAX_STATE(i) = get_max_states(i);
 		CUR_STATE(i) = 0;
 		set_freq(i, 0);
