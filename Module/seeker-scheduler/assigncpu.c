@@ -125,6 +125,17 @@ extern int base_state;
 /* The LOW IPC Threshold */
 #define IPC_LOW  IPC_0_500
 
+#define MIN_IPC_4 (IPC_1_000 + IPC_0_125)
+#define MIN_IPC_3 (IPC_0_750)
+#define MIN_IPC_2 (IPC_0_500)
+#define MIN_IPC_1 (IPC_0_250)
+#define MIN_IPC_0 0
+
+#if SCHEDULER_TYPE == SELECT_SCHEDULING
+static int min_states[MAX_STATES] = {MIN_IPC_0, MIN_IPC_1, 
+				     MIN_IPC_2, MIN_IPC_3,
+				     MIN_IPC_4};
+#endif
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
@@ -286,10 +297,9 @@ void put_mask_from_stats(struct task_struct *ts)
 	u64 tasks_interval = 0;
 	cpumask_t mask = CPU_MASK_NONE;
 
-	#ifdef SCHED_DEBUG
+	#if defined(SCHED_DEBUG) || SCHEDULER_TYPE == SELECT_SCHEDULING
 	int i;
 	#endif
-
 	/* Do not try to estimate anything
 	 * till INST_THRESHOLD insts are 
 	 * executed. Hopefully avoids messing
@@ -369,7 +379,14 @@ void put_mask_from_stats(struct task_struct *ts)
 				TS_MEMBER(ts, hist_step) = 0;
 			}
 #elif SCHEDULER_TYPE == SELECT_SCHEDULING
-
+#warning "Using the select scheduler"
+			for(i = total_states - 1; i >= 0; i++){
+				if(ipc >= min_states[i]){
+					state_req = i;
+					break;
+				}
+			}
+			new_state = get_closest_state(state_req);
 #endif
 		}
 		if (new_state >= 0 && new_state < total_states)
