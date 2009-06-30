@@ -51,7 +51,16 @@ foreach my $ent (@entries){
 		my $name = $1;
 		print "working on $name\n";
 		system("cat $ent | gunzip > $tmp_dir/$name.sch");
-		system("$interp $tmp_dir/$name.sch $out_dir/$name.ich $interval");
+		my $ind = 0;
+		my $outf = "$out_dir/$name.ich";
+		if(-e $outf){
+			$outf = "$out_dir/$name.$ind.ich";
+			while(-e $outf){
+				$ind++;
+				$outf = "$out_dir/$name.$ind.ich";
+			}
+		}
+		system("$interp $tmp_dir/$name.sch $outf $interval");
 		system("rm $tmp_dir/$name.sch");
 	} else {
 		print "bad $ent\n";
