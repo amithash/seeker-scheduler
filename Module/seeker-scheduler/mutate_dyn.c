@@ -225,10 +225,7 @@ void delta_based_demand_transform(int cpus, int delta)
 
 	/* Transfer demand of states which cannot win to nearby states */
 	for(j = 0; j < total_states; j++){
-		if(can_win[j] == 1)
-			continue;
-
-		if(demand[j] == 0)
+		if(can_win[j] == 1 || demand[j] == 0)
 			continue;
 
 		left = right = -1;
