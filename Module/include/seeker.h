@@ -1,4 +1,3 @@
-
 /*****************************************************
  * Copyright 2008 Amithash Prasad                    *
  *                                                   *
@@ -28,9 +27,9 @@
 #include <pmu_public.h>
 #include <fpmu_public.h>
 #include <seeker_cpufreq.h>
-#include <features.h>
+#include <seeker_features.h>
 
-#define MAX_COUNTERS_PER_CPU NUM_COUNTERS + NUM_FIXED_COUNTERS + NUM_EXTRA_COUNTERS
+#define MAX_COUNTERS_PER_CPU (NUM_COUNTERS + NUM_FIXED_COUNTERS + NUM_EXTRA_COUNTERS)
 
 /* Seeker-scheduler sample data */
 
