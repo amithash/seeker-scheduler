@@ -21,8 +21,8 @@
  * General Public License along with this program.   *
  * If not, see <http://www.gnu.org/licenses/>.       *
  *****************************************************/
-#ifndef _FEATURES_H_
-#define _FEATURES_H_
+#ifndef _SEEKER_FEATURES_H_
+#define _SEEKER_FEATURES_H_
 
 
 #define APPROXIMATE_DIRECTION_BASED_MUTATOR 100
