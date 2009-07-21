@@ -2,18 +2,16 @@
 \chapter{Power-aware throughput management on multi-core systems}~\label{chap:delta}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-It is fairly obvious that a scheduler alone can never be optimal for a system
-with varying workloads. With the advent of virtual machine farms running on a single
-server poses the high probability of varied workloads running on a single physical system
-and the challenges and solutions are studied in \cite{VirtualPower}, but do nothing 
-in observing the actual workload running on each of the virtual machines. 
-
 Power management system have to look at two facets: Power and energy. Servers are
 usually limited at the amount of peak power and energy
 consumption in order to reduce maintenance cost. Energy and power considerations more often than not accounts 
 to the reduction in server space expansion in industries. To combat these constraints, power management systems
 use technologies such as dynamic voltage and frequency scaling (DVFS) to reduce peak power
 consumption and processor halting such as deep sleep states to conserve energy when idle.
+With the advent of virtual machine farms running on a single
+server poses the high probability of varied workloads running on a single physical system. 
+This element further enhances the requirement of dynamic non-trace driven power management
+systems.
 
 Lowering frequency has a pleasant benefit of reducing the power consumption and hence
 the energy and cooling costs. But as shown in Chapter~\ref{chap:pds}, Figures~\ref{fig:ipc_speedup} 
@@ -31,7 +29,7 @@ This brings us to utilizing DVFS mechanisms to conserve power during system \tex
 state. 
 
 \cite{AnIntraTask}, \cite{LiveRuntime} and \cite{Phaseaware} propose adapting the clock speed of the the processing element based
-on the current application's demands. But this assumes the fact that DVFS transitions
+on the current application's demand. But this assumes the fact that DVFS transitions
 are local to that processor core. Some multi-core processors have dependency between 
 processor cores (Transitioning one might potentially transition the other) or systems with 
 symmetric multi-threaded features where a single processor
@@ -51,7 +49,7 @@ system raises the performance state to the highest possible level at high loads,
 also reduces the performance state gradually at lower load, the \textit{conservative}
 system gradually changes the performance state in either direction. These two are 
 shown in Figures \ref{fig:math_ondemand} and \ref{fig:math_conservative}. As both 
-are similar in design, only the \textit{ondemand} system was used in the comparision.
+are similar in design, only the \textit{ondemand} system was used in the comparison.
 
 \begin{figure}[h!]
 \centering
@@ -104,48 +102,11 @@ the \textit{sysfs} interface) requests for a performance state change.
 \begin{figure}[h!]
   \begin{center}
     %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=2in]{figures/seeker_governor.jpg}%}
+    \includegraphics[height=2in]{Figures/seeker_governor.jpg}%}
     \caption{The Seeker governor}
     \label{fig:governor}
   \end{center}
 \end{figure}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{The delta constraint}~\label{sec:delta_constraint}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-It is well known that rapid DVFS transitions can affect the reliability of the system \cite{ImpactDVFS}.
-Thus the delta constrained mutation scheme was developed providing the ability
-to control the magnitude of mutation allowed every mutation interval. This 
-constraint also suppresses chaotic system behavior. 
-
-The formal definition is shown in Figure~\ref{fig:Delta_def} where $P_{i}$ is the state of processor \textit{i} 
-before a mutation, and $P_{i}'$ is the state of processor \textit{i} after the mutation.
-In essence, $\Delta$ is the maximum allowed Manhattan distance by which the processor layout can change. 
-
-\begin{figure}[h!]
-\centering
-\begin{equation*}
-    \Delta \geq \displaystyle\sum_{i=0}^{N-1} {| P_{i} - P_{i}' |}
-\end{equation*}
-\caption{Definition of delta with N processor cores}
-\label{fig:Delta_def}
-\end{figure}
-
-Based on this definition, the example mutation provided in Figure~\ref{fig:ex_mutation} has 
-a total delta (change) of three and will be allowed for a delta constraint greater than
-or equal to 3 ($\Delta \geq 3$).
-
-\begin{figure}[h!]
-  \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=2in]{figures/example_mutation_3.png}%}
-    \caption{Example mutation}
-    \label{fig:ex_mutation}
-  \end{center}
-\end{figure}
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Defining the processor layout}~\label{sec:layout}
@@ -157,10 +118,9 @@ $P_{C_{i}}$ is the performance state at which processor i is currently in. $L^m$
 is a vector of length \textit{N} where each element represents the performance state
 of the corresponding processor. 
 One view of the layout vector $L^s$ was described in Chapter~\ref{chap:pds} 
-which was more optimized to view the system of processors as an hierarchal organization
+which was more optimized to view the system of processors as a hierarchal organization
 based on their current performance state as the scheduler is designed to be oblivious to individual processors. 
-It is clear that both $L^s$ and $L^m$ are
-different views of the same information and 
+It is clear that both $L^s$ and $L^m$ are different views of the same information and 
 the mutator is solely responsible for keeping both consistent. For the rest of this chapter
 references to layout or $L$ are with respect to $L^m$. 
 
@@ -172,6 +132,65 @@ references to layout or $L$ are with respect to $L^m$.
 \caption{Processor layout with N processors}
 \label{fig:mutator_layout_view}
 \end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The delta constraint}~\label{sec:delta_constraint}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+It is well known that rapid DVFS transitions can affect the reliability of the system \cite{ImpactDVFS}.
+Based on system with a scheduling frequency of \textit{Q} Hz
+and \textit{N} processor cores, a per-task demand based DVFS system may potentially cause $Q \times N$ 
+DVFS transitions per second. Moore's law predicts the doubling of processor cores every 18 months, implying
+future architectures are imposed a linear growth of reliability issues and failure rates with per-task
+demand based DVFS systems as proposed in \cite{LiveRuntime} and \cite{Phaseaware}. 
+
+The delta constrained mutation scheme was developed providing the ability to control the rate of transitions
+to control the magnitude of mutation allowed every mutation interval thus overcoming the negative effects
+of rapid DVFS transitions. Figure~\ref{fig:schedule_mutate} shows the interaction times of these methods. 
+The PDS as described in Chapter~\ref{chap:pds} is performed at the resolution of a scheduler quanta, while
+the DVFS transitions are performed at a resolution of the mutation interval. In order to have an absolute
+upper bound on the DVFS transitions, a parameter called the delta constraint ($\Delta$) was introduced
+which limits the maximum number of mutations which can be performed at any particular instant (And hence
+limiting the maximum mutations per second to $\frac{\Delta}{\text{Mutation Interval}}$). 
+
+\begin{figure}[h!]
+  \begin{center}
+    %\resizebox{\columnwidth}{!}{
+    \includegraphics[height=2in]{Figures/Schedule_Mutate.jpg}%}
+    \caption{Time line comparison of DVFS transitions}
+    \label{fig:schedule_mutate}
+  \end{center}
+\end{figure}
+
+
+The formal definition is shown in Figure~\ref{fig:Delta_def} where $P_{i}$ is the state of processor \textit{i} 
+before a mutation, and $P_{i}'$ is the state of processor \textit{i} after the mutation.
+In essence, $\Delta$ is the maximum allowed Manhattan distance by which the processor layout can change. 
+Based on this definition, the example mutation provided in Figure~\ref{fig:ex_mutation} has 
+a total delta (change) of three and will be allowed for a delta constraint greater than
+or equal to 3 ($\Delta \geq 3$).
+
+\begin{figure}[h!]
+\centering
+\begin{equation*}
+    \Delta \geq \displaystyle\sum_{i=0}^{N-1} {| P_{i} - P_{i}' |}
+\end{equation*}
+\caption{Definition of delta with N processor cores}
+\label{fig:Delta_def}
+\end{figure}
+
+\begin{figure}[h!]
+  \begin{center}
+    %\resizebox{\columnwidth}{!}{
+    \includegraphics[height=2in]{Figures/example_mutation_3.png}%}
+    \caption{Example mutation}
+    \label{fig:ex_mutation}
+  \end{center}
+\end{figure}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Problem definition}~\label{sec:ago}
@@ -234,7 +253,7 @@ termination conditions are described in Section~\ref{sec:param_adjust}.
 \begin{figure}[h!]
   \begin{center}
     %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=4in]{figures/Mutation_algo.jpg}%}
+    \includegraphics[height=4in]{Figures/Mutation_algo.jpg}%}
     \caption{Mutation algorithm}
     \label{fig:mutation_algo}
   \end{center}
@@ -320,7 +339,7 @@ implies stability and and mutations must be avoided if possible.
 \end{figure}
 
 Before starting the iterations, the poison vector X is initialized to all ones where
-each element corresponds to a processor and a value of 0 implies that the processor
+each element corresponds to a processor with a value of 0 implying that the processor
 has been allocated a performance state and should not be re-transitioned. 
 The iteration delta constraint $\delta$ is initialized to $\Delta$ and shown 
 in Figure~\ref{fig:init_X}.
@@ -366,7 +385,7 @@ matrix can best be explained with an example which follows.
 
 For example, if the current layout of L = [0,1,2,3] with N, the total number of processors equal to 4 
 and M the total number of performance states equal to 5,
-the Manhattan matrix \textbf{S} for t = 1, 0 and -1 are shown in Figures \ref{fig:ex_dmuth}, 
+the Manhattan matrix \textbf{S} for t = 1, 0 and -1 are shown in Figures~\ref{fig:ex_dmuth}, 
 \ref{fig:ex_dmut0} and \ref{fig:ex_dmutl} respectively. 
 
 The Manhattan matrix has \textit{N} rows and \textit{M} columns. Each row in the Manhattan
@@ -386,7 +405,7 @@ which increase the current performance state.
 
 When the transition direction $t = -1$ (Figure~\ref{fig:ex_dmutl}), 
 a higher weight is given to the states lower than the current state and hence favoring 
-transitioning to a lower performance state. When $t = 0$ (Figure \ref{fig:ex_dmut0}), 
+transitioning to a lower performance state. When $t = 0$ (Figure~\ref{fig:ex_dmut0}), 
 a transition in either direction is less favorable and hence both sides of $L_{i}$ 
 are given equal weights tapered down from $M-1$.
 
@@ -445,13 +464,13 @@ performance state \textit{j}. The conception of this matrix was achieved by view
 a probability density function for each processor which was soon modified to its
 current definition due to the lack of floating point operations in kernel space 
 (Even though possible, the kernel address space does not save the floating point 
-context and makes it's use dangerous as the kernel is fully preemptable).
+context and makes it's use dangerous as the kernel is fully preempt-able).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{The Manhattan weight vector}~\label{sec:weight}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The Manhattan weight vector $W$ is constructed as shown in figure~\ref{fig:state_weight} by summing along each column 
+The Manhattan weight vector $W$ is constructed as shown in Figure~\ref{fig:state_weight} by summing along each column 
 of the Manhattan matrix (projecting the matrix along the columns) and hence
 providing an insight of the locality of each state. A higher value of $W_i$ 
 indicates a higher probability that there exists active processors in 
@@ -527,9 +546,8 @@ the source of the demand. Under normal circumstances, $Proxy_i = i$.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Once \textbf{W} and \textbf{F} are computed, performance state \textit{w} is selected
-as the winning state when the value of the product $W_w \times F_w$ is the maximum and 
-shown in figure~\ref{fig:winning_state}. 
-
+as the winning state when the value of the product $W_w \times F_w$ is the maximum 
+for all states \textit{i}. The procedure is mathematically depicted in Figure~\ref{fig:winning_state}.
 
 \begin{figure}[h!]
 \centering
@@ -546,10 +564,10 @@ shown in figure~\ref{fig:winning_state}.
 
 With the winning performance state selected, the processor to be transitioned
 is determined by the row \textit{c} in the Manhattan matrix whose value $S_{cw} \times X_c$ 
-is maximum and shown in figure~\ref{fig:winning_proc}. 
+is maximum and shown in Figure~\ref{fig:winning_proc}. 
 
 Once the selection is made, processor \textit{c} is transitioned to performance state
-\textit{w} by invoking the seeker cpufreq governor described in section~\ref{sec:cpufreq}.
+\textit{w} by invoking the seeker cpufreq governor described in Section~\ref{sec:cpufreq}.
 
 \begin{figure}[h!]
 \centering
@@ -564,10 +582,10 @@ Once the selection is made, processor \textit{c} is transitioned to performance 
 \subsection{Parameter change and termination conditions}~\label{sec:param_adjust}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Before moving over to the next iteration as shown in figure~\ref{fig:mutation_algo},
+Before moving over to the next iteration as shown in Figure~\ref{fig:mutation_algo},
 parameters: $\delta$, $L_c$ and $d_p$ are recomputed
 as shown in Figure~\ref{fig:adjust}. First as a transition is performed, the iteration delta
-must reduce by an equal order and is performed in the first step in figure~\ref{fig:adjust}.
+must reduce by an equal order and is performed in the first step in Figure~\ref{fig:adjust}.
 Next, as processor \textit{c} is no longer in performance state $L_c$, it is updated to
 it's new value \textit{w}. Next, as a processor is assigned to performance state \textit{w},
 the corresponding demand can be reduced. Finally, the poison vector's position for processor
