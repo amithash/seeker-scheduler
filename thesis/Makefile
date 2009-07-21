@@ -77,7 +77,7 @@ thesis.dvi:$(TEXFILES) $(EPSFILES) $(OTHERFILES) $(FIGFILES)
 clean:
 	rm -f $(PDFFILES) $(GENEPSFILES) $(PYXEPSFILES) figures/*.dvi figures/*.log \
 		thesis.dvi thesis.aux thesis.bbl thesis.blg thesis.log thesis.ps thesis.pdf \
-		thesis.toc thesis.loc thesis.lof
+		thesis.toc thesis.loc thesis.lof thesis.lot
 
 thesis.bib:
 	if [ ! -e thesis.bib ]; then ln -s ../../bib/thesis.bib; fi
