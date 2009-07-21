@@ -1,0 +1,14 @@
+Traditional operating system methodologies in controlling the voltage and 
+frequency configuration of the machine are mostly based on the load of the
+system. Most methodologies proposed by the research community are either
+based on ad-hoc means, thermal emergencies or constraining the power
+consumption of the system. None of the methods described consider the 
+workload demands which are usually known only to the scheduler. This
+thesis presents a methodology of scheduling tasks based on their current
+IPC (Instructions per Clock) level on asymmetric multi-processes running
+on varied clock speeds. The performance directed scheduler (PDS) maintains 
+the workload demand for various performance levels (voltage and frequency configurations).
+This is consumed by the mutation engine which is executed on a fixed interval.
+The level of mutation of the voltage and frequency configuration is constrained
+by a constant factor called the delta constraint. A methodology is proposed
+to perform such a demand based constrained mutation. 
