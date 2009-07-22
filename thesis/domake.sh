@@ -10,7 +10,5 @@
 #make thesis.dvi
 
 make clean 
-make 
-rm thesis.pdf
-make > /dev/null
+make thesis.pdf
 
