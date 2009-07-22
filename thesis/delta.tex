@@ -6,12 +6,16 @@ Power management system have to look at two facets: Power and energy. Servers ar
 usually limited at the amount of peak power and energy
 consumption in order to reduce maintenance cost. Energy and power considerations more often than not accounts 
 to the reduction in server space expansion in industries. To combat these constraints, power management systems
-use technologies such as dynamic voltage and frequency scaling (DVFS) to reduce peak power
-consumption and processor halting such as deep sleep states to conserve energy when idle.
-With the advent of virtual machine farms running on a single
-server poses the high probability of varied workloads running on a single physical system. 
-This element further enhances the requirement of dynamic non-trace driven power management
-systems.
+are becoming increasingly common in the server space which were previously restricted for mobile devices.
+Two common methodologies exist to reduce the power consumption of a compute element. The first among which
+is to turn off (and hence reduce the power consumption to the orders of milliwatts) processors during idle time. 
+The second is to lower the operating frequency and voltage of the processor at idle or active time to observe
+a proportionally lower power consumption.
+In order to fully utilize server nodes and minimize idle time, the current trend among industries is to 
+run multiple \textit{virtual machines} on a single server rack thus making varied workloads common place
+in an otherwise single purpose server usage. This element further enhances the requirement of 
+dynamic non-trace driven power management systems. \cite{VirtualPower} discusses a power optimizer specialized
+for a virtual machine farm, but fail to recognize the workload characteristics of these systems.
 
 Lowering frequency has a pleasant benefit of reducing the power consumption and hence
 the energy and cooling costs. But as shown in Chapter~\ref{chap:pds}, Figures~\ref{fig:ipc_speedup} 
@@ -29,27 +33,31 @@ This brings us to utilizing DVFS mechanisms to conserve power during system \tex
 state. 
 
 \cite{AnIntraTask}, \cite{LiveRuntime} and \cite{Phaseaware} propose adapting the clock speed of the the processing element based
-on the current application's demand. But this assumes the fact that DVFS transitions
+on the current application's demand. All these methodologies assumes the fact that DVFS transitions
 are local to that processor core. Some multi-core processors have dependency between 
 processor cores (Transitioning one might potentially transition the other) or systems with 
 symmetric multi-threaded features where a single processor
 core is visible to the operating system as multiple virtual processors. Thus, applications
 executing on such processing elements are tied to each other and any DVFS
 transition based on one application might potentially affect another negatively. 
+Chapter~\ref{chap:pds} showed that such transitions could be remedied with a simple processor migration
+requiring power optimizers to react to the needs of a scheduler.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Common power management systems}~\label{sec:common_pow}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The most popular among power management techniques are load directed systems
-which transition a processor to a higher or lower performance state is based on it's current load. Two
+which transition a processor to a higher or lower performance state based on it's current load. Two
 of these techniques: \textit{ondemand}\cite{OnDemand} and \textit{conservative} 
-were simulated within the existing infrastructure. While the \textit{ondemand}
-system raises the performance state to the highest possible level at high loads, but
-also reduces the performance state gradually at lower load, the \textit{conservative}
+were simulated within the existing infrastructure. The \textit{ondemand}
+system raises the performance state to the highest possible level at high loads, and
+reduces the performance state gradually to the lowest state during lower load.
+The \textit{conservative}
 system gradually changes the performance state in either direction. These two are 
 shown in Figures \ref{fig:math_ondemand} and \ref{fig:math_conservative}. As both 
-are similar in design, only the \textit{ondemand} system was used in the comparison.
+are similar in design, only the \textit{ondemand} system was heavily analyzed 
+along with the proposed power management systems.
 
 \begin{figure}[h!]
 \centering
@@ -91,7 +99,7 @@ fashion on the required transition. As most of the experimentation mentioned in
 this text relates to the AMD Barcelona, the \textit{powernow-k8} \textit{cpufreq-driver}
 was used to initiate the transition. 
 
-A \textit{cpufreq} governor \textit{seeker} modeled after the \textit{ondemand} governor
+A \textit{cpufreq} governor \textit{seeker}
 was developed having kernel exported interfaces for the mutator to request transitions. 
 A simple registration method was introduced to allow the mutator to be informed 
 every time a transition is complete as shown in Figure~\ref{fig:governor}. 
@@ -147,8 +155,9 @@ future architectures are imposed a linear growth of reliability issues and failu
 demand based DVFS systems as proposed in \cite{LiveRuntime} and \cite{Phaseaware}. 
 
 The delta constrained mutation scheme was developed providing the ability to control the rate of transitions
-to control the magnitude of mutation allowed every mutation interval thus overcoming the negative effects
-of rapid DVFS transitions. Figure~\ref{fig:schedule_mutate} shows the interaction times of these methods. 
+by one, limiting DVFS transitions to be performed globally and at fixed interval lengths termed the mutation
+interval. Second, by limiting the magnitude of mutation thus eliminating rapid transitions.
+Figure~\ref{fig:schedule_mutate} shows the interaction times of these methods. 
 The PDS as described in Chapter~\ref{chap:pds} is performed at the resolution of a scheduler quanta, while
 the DVFS transitions are performed at a resolution of the mutation interval. In order to have an absolute
 upper bound on the DVFS transitions, a parameter called the delta constraint ($\Delta$) was introduced
@@ -159,7 +168,7 @@ limiting the maximum mutations per second to $\frac{\Delta}{\text{Mutation Inter
   \begin{center}
     %\resizebox{\columnwidth}{!}{
     \includegraphics[height=2in]{figures/Schedule_Mutate.jpg}%}
-    \caption{Time line comparison of DVFS transitions}
+    \caption{Hypothetical time line displaying the invocation frequencies of the scheduler and the mutator}
     \label{fig:schedule_mutate}
   \end{center}
 \end{figure}
@@ -167,7 +176,7 @@ limiting the maximum mutations per second to $\frac{\Delta}{\text{Mutation Inter
 
 The formal definition is shown in Figure~\ref{fig:Delta_def} where $P_{i}$ is the state of processor \textit{i} 
 before a mutation, and $P_{i}'$ is the state of processor \textit{i} after the mutation.
-In essence, $\Delta$ is the maximum allowed Manhattan distance by which the processor layout can change. 
+In essence, $\Delta$ is the maximum allowed Manhattan distance by which the processor layout can change in between mutation intervals. 
 Based on this definition, the example mutation provided in Figure~\ref{fig:ex_mutation} has 
 a total delta (change) of three and will be allowed for a delta constraint greater than
 or equal to 3 ($\Delta \geq 3$).
@@ -198,18 +207,18 @@ or equal to 3 ($\Delta \geq 3$).
 
 An overview of the system required is as follows:
 \begin{enumerate}
-\item The scheduler maintains the demand, a monotonically increasing count of the number
-of times each state was requested. 
+\item The scheduler estimates the required performance state for each task and maintains the demand, 
+a monotonically increasing count, representing the number of times each state was requested. 
 \item Each processor can take performance states from $0$ to $M-1$. 
 \item The total movements: the Manhattan distance from the current layout to the next layout 
-should always be less than or equal to the delta constraint. 
+should always be less than or equal to the delta constraint ($\Delta$). 
 \item The system should be partial to maintaining a processors current performance state if such a performance state is requested.
 \end{enumerate}
 
 This problem can be expressed as a Multiple choice knapsack problem as shown in Figure~\ref{fig:mckp}, where the capacity of the knapsack 
-is the delta constraint, each processor being a variable with multiple choices being the states 
+is equal to the delta constraint. Each processor being a variable and multiple choices being the states 
 a processor can take. The weight for each choice is the distance that state is from the current 
-performance state. It is well understood that such problems are considered NP-Hard.
+performance state of the processor. It is well understood that such problems are considered NP-Hard.
 
 \begin{figure}[h!]
 \centering
@@ -302,13 +311,14 @@ Figure~\ref{fig:processor_demand}.
 \end{figure}
 
 $Z_{P}$ and $Z_{R}$, the present and required performance numbers of the system 
-are computed as shown in Figure~\ref{fig:Z}. $Z_{P}$ is proportional to the current power drawn by
-the system and $Z_{R}$ is proportional to the power required by the performance directed
+are computed as shown in Figure~\ref{fig:Z}. $Z_{P}$ (based on the current layout) is proportional to the current power drawn by
+the system and $Z_{R}$ (based on the demanded layout) is proportional to the power required by the performance directed
 scheduler in order to optimally satisfy the demands of all running tasks. $Z_{P}$ and $Z_{R}$ 
-are further utilized to compute the transition direction, \textit{t} which describes the direction
-of transition desired by the system as shown in Figure~\ref{fig:transition_dir}. A transition direction
-$t = +1$ implies a higher performance requirement of the layout while a transition direction
-$t = -1$ implies a lower performance requirement of the layout. A transition direction equal to zero
+are further utilized to compute the transition direction, \textit{t}, describing the nature of 
+mutation required computed as shown in Figure~\ref{fig:transition_dir}. 
+A transition direction of $t = +1$ implies that the scheduler requires a higher performance from
+the multi-processor, while a transition direction of $t = -1$ implies the exact opposite an indication
+to conserve power by reducing of the multi-processor. A transition direction equal to zero
 implies stability and and mutations must be avoided if possible.
 
 \begin{figure}[h!]
@@ -338,11 +348,10 @@ implies stability and and mutations must be avoided if possible.
 \label{fig:transition_dir}
 \end{figure}
 
-Before starting the iterations, the poison vector X is initialized to all ones where
-each element corresponds to a processor with a value of 0 implying that the processor
-has been allocated a performance state and should not be re-transitioned. 
-The iteration delta constraint $\delta$ is initialized to $\Delta$ and shown 
-in Figure~\ref{fig:init_X}.
+Before starting the iterations, the poison vector \textbf{X} of length N is initialized to all ones, where
+each element corresponds to a processor. Each element of the poison vector is a binary element with a value of 0 
+implying that the processor has been allocated a performance state and must not be re-transitioned. 
+The iteration delta constraint $\delta$ is initialized to $\Delta$ and shown in Figure~\ref{fig:init_X}.
 
 \begin{figure}[h!]
 \centering
@@ -372,30 +381,32 @@ matrix can best be explained with an example which follows.
     \forall i,j: 0 \leq i < N, 0 \leq j < T; S_{ij} = \left\{
      \begin{array}{lcr}
        0 & : & j < (L_{i} - \delta) \\
-       \frac{T}{2} \times (t^{2} - t + 2) + j - L_{i} & : & (L_{i} - \delta) \leq j < L_{i} \\
-       2T & : & j = L_{i}\\
-       \frac{T}{2} \times (t^{2} + t + 2) - j + L_{i} & : & L_{i} < j \leq (L_{i} + \delta) \\
+       \frac{M}{2} \times (t^{2} - t + 2) + j - L_{i} & : & (L_{i} - \delta) \leq j < L_{i} \\
+       2M & : & j = L_{i}\\
+       \frac{M}{2} \times (t^{2} + t + 2) - j + L_{i} & : & L_{i} < j \leq (L_{i} + \delta) \\
        0 & : & j > (L_{i} + \delta)
      \end{array}
    \right.
 \end{equation*}
-\caption{Manhattan matrix}
+\caption{Manhattan matrix constructed based on the current layout \textbf{L}, 
+the transition direction \textit{t} and iteration delta $\delta$}
 \label{fig:delta_mat}
 \end{figure}
-
-For example, if the current layout of L = [0,1,2,3] with N, the total number of processors equal to 4 
-and M the total number of performance states equal to 5,
-the Manhattan matrix \textbf{S} for t = 1, 0 and -1 are shown in Figures~\ref{fig:ex_dmuth}, 
-\ref{fig:ex_dmut0} and \ref{fig:ex_dmutl} respectively. 
 
 The Manhattan matrix has \textit{N} rows and \textit{M} columns. Each row in the Manhattan
 matrix corresponds to an on-line processor core. Each column corresponds to a performance state
 in increasing order. Thus $S_{23}$ corresponds to performance state $P_3$, of processor $C_2$. 
+As an example, if the current layout \textbf{L} = [0,1,2,3] with N, the total number of processors equal to 4 
+and M the total number of performance states available equal to 5,
+the Manhattan matrix \textbf{S} for t = 1, 0 and -1 are shown in Figures~\ref{fig:ex_dmuth}, 
+\ref{fig:ex_dmut0} and \ref{fig:ex_dmutl} respectively. 
 
-Maximum weight of \textit{2M} is given
-to the performance state which processor \textit{i}, is currently in ($L_{i}$).
-A weight of 0 is given to states which are forbidden by the iteration delta constraint $\delta$. 
-Essentially a weight of 0 is given to states which have a distance from $L_{i}$ greater than $\delta$.
+In order to suggest maintaining a processors performance state until and unless otherwise required,
+the highest possible weight is given to the cell $S_{iL_i}$ (corresponding to each processor \textit{i}
+and its current performance state $L_i$) equal to $2M$. Disallowing transitions exceeding the delta 
+constraint $\delta$ is accomplished by setting cells along each row \textit{i} equal to zero if their distance 
+from the column $L_i$ is greater than $\delta$. That is cells $S_{ij}$ with $j < L_i - \delta$ or $j > L_i + \delta$
+are set to zero.
 
 Finally the states allowed by the delta constraint $\delta$, is given a weight lower than
 \textit{2M} based on the transition direction \textit{t}. It can be observed from Figure~\ref{fig:ex_dmuth} 
@@ -403,9 +414,9 @@ that states higher than the current state $L_{i}$ is tapered down from $2M-1$ wh
 lower than the current state $L_{i}$ is tapered down from $M-1$ giving a greater emphasis to transitions 
 which increase the current performance state.
 
-When the transition direction $t = -1$ (Figure~\ref{fig:ex_dmutl}), 
+For transition direction $t = -1$ (Figure~\ref{fig:ex_dmutl}), 
 a higher weight is given to the states lower than the current state and hence favoring 
-transitioning to a lower performance state. When $t = 0$ (Figure~\ref{fig:ex_dmut0}), 
+transitioning to lower performance states. For $t = 0$ (Figure~\ref{fig:ex_dmut0}), 
 a transition in either direction is less favorable and hence both sides of $L_{i}$ 
 are given equal weights tapered down from $M-1$.
 
@@ -461,7 +472,7 @@ are given equal weights tapered down from $M-1$.
 The Manhattan matrix can be viewed as a probability matrix where each each element
 $S_{ij}$ indicates the probability that processor \textit{i} can be transitioned to
 performance state \textit{j}. The conception of this matrix was achieved by viewing
-a probability density function for each processor which was soon modified to its
+a probability density function for each processor and was soon modified to its
 current definition due to the lack of floating point operations in kernel space 
 (Even though possible, the kernel address space does not save the floating point 
 context and makes it's use dangerous as the kernel is fully preempt-able).
@@ -471,9 +482,8 @@ context and makes it's use dangerous as the kernel is fully preempt-able).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The Manhattan weight vector $W$ is constructed as shown in Figure~\ref{fig:state_weight} by summing along each column 
-of the Manhattan matrix (projecting the matrix along the columns) and hence
-providing an insight of the locality of each state. A higher value of $W_i$ 
-indicates a higher probability that there exists active processors in 
+of the Manhattan matrix and hence providing an insight of the locality of each state. A higher value of $W_i$ 
+indicates a higher probability that there exists active processors in or around
 performance state \textit{i}. 
 
 \begin{figure}[h!]
@@ -489,9 +499,11 @@ performance state \textit{i}.
 \subsection{Cooperative demand distribution: The demand field}~\label{sec:field}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-With lower values of $\Delta$, there is a possibility that a state \textit{i}, with 
-high demand ($d_i$), might end up with $W_i = 0$ and hence never provided with a processor
-in that state. Thus a method was developed in transforming the demand vector \textbf{d}
+With lower values of $\Delta$, there is a possibility that a state \textit{i},
+could be requested with a high demand $d_i$ but due to the current layout and 
+delta constraint, have a Manhattan weight $W_i = 0$, implying that a processor 
+in performance state \textit{i} can never be provided.
+Thus a method was developed in transforming the demand vector \textbf{d}
 in such a way that such null performance states cooperatively give up their demand
 to the performance state closest to them which has a possibility of being selected. 
 This procedure is described in Algorithm~\ref{fig:field}.
@@ -535,9 +547,8 @@ circumstances when for a particular performance state \textit{i}, $W_i = 0$ and 
 then its demand is distributed to a friend \textit{f} which varies based on the transition
 direction t. If transition direction $t = 1$, then the demand is given to the state \textit{f} closest and lesser than
 \textit{i} with $W_f > 0$. If the transition direction $t = -1$ then a friend is searched in 
-the opposite direction. Finally when $t = 0$, then the closest state \textit{f} to \textit{i} with $W_f > 0$ is chosen as the 
-friend. 
-
+the opposite direction with $W_f > 0$. Finally when $t = 0$, the closest state \textit{f} to \textit{i} with $W_f > 0$ is chosen as the 
+friend. Once the friend state \textit{f} is computed, all the demand $d_i$ is transferred \textit{f}.
 In order to track contributions from others, a vector \textbf{Proxy} is maintained indicating 
 the source of the demand. Under normal circumstances, $Proxy_i = i$. 
 
@@ -547,7 +558,8 @@ the source of the demand. Under normal circumstances, $Proxy_i = i$.
 
 Once \textbf{W} and \textbf{F} are computed, performance state \textit{w} is selected
 as the winning state when the value of the product $W_w \times F_w$ is the maximum 
-for all states \textit{i}. The procedure is mathematically depicted in Figure~\ref{fig:winning_state}.
+for all states \textit{i} and hence reacting to demand and maintaining locality. 
+The procedure is mathematically depicted in Figure~\ref{fig:winning_state}.
 
 \begin{figure}[h!]
 \centering
@@ -574,7 +586,7 @@ Once the selection is made, processor \textit{c} is transitioned to performance 
 \begin{equation*}
     c = {x | \forall y, y \in \mathbb{N} \wedge 0 \leq y < N : S_{yw} \times X_y \leq S_{xw} \times X_x}
 \end{equation*}
-\caption{Greedy processor selection for N processors with each having performance M states}
+\caption{Greedy processor selection for N processors with each having M performance states}
 \label{fig:winning_proc}
 \end{figure}
 
@@ -585,16 +597,16 @@ Once the selection is made, processor \textit{c} is transitioned to performance 
 Before moving over to the next iteration as shown in Figure~\ref{fig:mutation_algo},
 parameters: $\delta$, $L_c$ and $d_p$ are recomputed
 as shown in Figure~\ref{fig:adjust}. First as a transition is performed, the iteration delta
-must reduce by an equal order and is performed in the first step in Figure~\ref{fig:adjust}.
+must reduce by an equal order and is performed in the first step of Figure~\ref{fig:adjust}.
 Next, as processor \textit{c} is no longer in performance state $L_c$, it is updated to
 it's new value \textit{w}. Next, as a processor is assigned to performance state \textit{w},
 the corresponding demand can be reduced. Finally, the poison vector's position for processor
-\textit{c} disabling processor \textit{c} for participating in a transition in a future 
+\textit{c} is set to zero and hence disabling processor \textit{c} for participating in a transition in a future 
 iteration.
 
 This procedure is repeated for \textit{Load} iterations or till the iteration delta coefficient 
 $\delta$ reaches 0. Providing the upper bound on the number of iterations as \textit{Load} 
-ensures early termination of the iteration when not necessary. 
+ensures early termination of the iterative algorithm when unnecessary.
 
 
 \begin{figure}[h!]
