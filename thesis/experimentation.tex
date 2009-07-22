@@ -72,21 +72,28 @@ provides a very high percentage of slowdown, but both rapidly falls to the plate
 a delta constraint of 3. 
 
 \begin{figure}[h!]
-  \begin{center}
+\centering
+%  \begin{center}
+  \subfigure[Ladder scheduler]{
     %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=3.5in]{figures/trends_slowdown_ladder.jpg}%}
-    \caption{Variation of slowdown with delta and interval with the ladder scheduler}
+    \includegraphics[height=2.5in]{figures/trends_slowdown_ladder.jpg}%}
+%\caption{Variation of slowdown with delta and interval with the ladder scheduler}
     \label{fig:slowdown_trends_ladder}
-  \end{center}
-\end{figure}
+  }
+%  \end{center}
+%\end{figure}
 
-\begin{figure}[h!]
-  \begin{center}
+%\begin{figure}[h!]
+%  \begin{center}
     %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=3.5in]{figures/trends_slowdown_select.jpg}%}
-    \caption{Variation of slowdown with delta and interval with the select scheduler}
+   \subfigure[Select scheduler]{
+    \includegraphics[height=2.5in]{figures/trends_slowdown_select.jpg}%}
+%    \caption{Variation of slowdown with delta and interval with the select scheduler}
     \label{fig:slowdown_trends_select}
-  \end{center}
+  }
+  \label{fig:slowdown_trends}
+%  \end{center}
+  \caption{Variation of slowdown with delta and interval for the ladder (Subfigure~\subref{fig:slowdown_trends_ladder}) and the select (Subfigure~\subref{fig:slowdown_trends_select}) scheduler}
 \end{figure}
 
 Figures \ref{fig:pwr_trends_ladder} and \ref{fig:pwr_trends_select} show the observations 
@@ -100,21 +107,28 @@ the mutation interval should be as low as possible, but it must be considered th
 low mutation interval may cause instabilities which are undesirable.
 
 \begin{figure}[h!]
-  \begin{center}
+\centering
+%  \begin{center}
     %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=3.5in]{figures/trends_avgpwr_ladder.jpg}%}
-    \caption{Variation of power savings with delta and interval with the ladder scheduler}
+  \subfigure[Ladder scheduler]{
+    \includegraphics[height=2.5in]{figures/trends_avgpwr_ladder.jpg}%}
+%    \caption{Variation of power savings with delta and interval with the ladder scheduler}
     \label{fig:pwr_trends_ladder}
-  \end{center}
-\end{figure}
+  }
+%  \end{center}
+%\end{figure}
 
-\begin{figure}[h!]
-  \begin{center}
+%\begin{figure}[h!]
+%  \begin{center}
+   \subfigure[Select scheduler]{
     %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=3.5in]{figures/trends_avgpwr_select.jpg}%}
-    \caption{Variation of power savings with delta and interval with the select scheduler}
+    \includegraphics[height=2.5in]{figures/trends_avgpwr_select.jpg}%}
+%    \caption{Variation of power savings with delta and interval with the select scheduler}
     \label{fig:pwr_trends_select}
-  \end{center}
+  }
+    \label{fig:pwr_trends}
+    \caption{Variation of average power savings with delta and interval for the ladder (Subfigure~\subref{fig:pwr_trends_ladder}) and the select (Subfigure~\subref{fig:pwr_trends_select}) scheduler}
+%  \end{center}
 \end{figure}
 
 Based on these observations, it can be concluded that a value of delta $\Delta = 4$ provides
@@ -141,22 +155,27 @@ except for the lower power savings with the \textit{Low} workload (27\%) for the
 slowdown.
 
 \begin{figure}[h!]
-  \begin{center}
+\centering
+%  \begin{center}
+  \subfigure[Ladder scheduler]{
     %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=3.5in]{figures/trends_workload_ladder.jpg}%}
-    \caption{Variation of slowdown and power savings for each workload with the ladder scheduler}
+    \includegraphics[height=2.5in]{figures/trends_workload_ladder.jpg}%}
+%    \caption{Variation of slowdown and power savings for each workload with the ladder scheduler}
     \label{fig:workload_trends_ladder}
-  \end{center}
-\end{figure}
-
-% NEEDS TO BE RE-GENERATED.
-\begin{figure}[h!]
-  \begin{center}
+%  \end{center}
+  }
+%\end{figure}
+%\begin{figure}[h!]
+%  \begin{center}
+   \subfigure[Select scheduler]{
     %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=3.5in]{figures/trends_workload_select.jpg}%}
-    \caption{Variation of slowdown and power savings for each workload with the select scheduler}
+    \includegraphics[height=2.5in]{figures/trends_workload_select.jpg}%}
+%    \caption{Variation of slowdown and power savings for each workload with the select scheduler}
     \label{fig:workload_trends_select}
-  \end{center}
+  }
+%  \end{center}
+\label{fig:workload_trends}
+\caption{Variation of slowdown and power savings for each workload for the ladder (Subfigure~\subref{fig:workload_trends_ladder}) and the select (Subfigure~\subref{fig:workload_trends_select}) scheduler}
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
