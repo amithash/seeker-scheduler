@@ -65,19 +65,19 @@ thesis.pdf: $(TEXFILES) $(EPSFILES) $(PDFFILES) $(OTHERFILES)
 	pdflatex thesis.tex
 	bibtex thesis || echo 'BiBTeX failed; continuing anyway'
 	pdflatex thesis.tex
-	pdflatex thesis.tex
+	pdflatex thesis.tex | grep -i "warning" > warning.log
 
 thesis.dvi:$(TEXFILES) $(EPSFILES) $(OTHERFILES) $(FIGFILES)
 	if [ ! -e thesis.bib ]; then ln -s ../../bib/thesis.bib; fi
 	latex thesis 
 	bibtex thesis || echo 'BiBTeX failed; continuing anyway'
 	latex thesis
-	latex thesis
+	latex thesis | grep -i "Warning" > warning.log
 
 clean:
 	rm -f $(PDFFILES) $(GENEPSFILES) $(PYXEPSFILES) figures/*.dvi figures/*.log \
 		thesis.dvi thesis.aux thesis.bbl thesis.blg thesis.log thesis.ps thesis.pdf \
-		thesis.toc thesis.loc thesis.lof thesis.lot
+		thesis.toc thesis.loc thesis.lof thesis.lot warning.log
 
 thesis.bib:
 	if [ ! -e thesis.bib ]; then ln -s ../../bib/thesis.bib; fi
