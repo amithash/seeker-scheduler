@@ -2,116 +2,101 @@
 \chapter{Mutation timeline}~\label{app:mutation_timeline}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{figure}
-  \begin{center}
-%    \resizebox{\columnwidth}{!}{
-    \includegraphics[scale=0.4]{figures/mutation_timeline_figures/mut_t0/High/125_4.jpeg}%}
-    \caption{Workload \textit{High} with ladder scheduling}
+% High
+\begin{figure}[ht]
+\centering
+  \subfigure[Ladder]{
+    \includegraphics[width=2.64in]{figures/mutation_timeline_figures/mut_t0/High/125_4.jpeg}
     \label{fig:wrk_high_ladder}
-  \end{center}
-\end{figure}
-
-\begin{figure}
-  \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[scale=0.4]{figures/mutation_timeline_figures/mut_t0/Low/125_4.jpeg}%}
-    \caption{Workload \textit{Low} with ladder scheduling}
-    \label{fig:wrk_low_ladder}
-  \end{center}
-\end{figure}
-
-\begin{figure}
-  \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[scale=0.4]{figures/mutation_timeline_figures/mut_t1/Low-High/125_4.jpeg}%}
-    \caption{Workload \textit{Low-High} with ladder scheduling}
-    \label{fig:wrk_lowhigh_ladder}
-  \end{center}
-\end{figure}
-
-\begin{figure}
-  \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[scale=0.4]{figures/mutation_timeline_figures/mut_t0/PHigh-PLow/125_4.jpeg}%}
-    \caption{Workload \textit{PHigh-PLow} with ladder scheduling}
-    \label{fig:wrk_phighplow_ladder}
-  \end{center}
-\end{figure}
-
-\begin{figure}
-  \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[scale=0.4]{figures/mutation_timeline_figures/mut_t1/PLow-Low/125_4.jpeg}%}
-    \caption{Workload \textit{PLow-Low} with ladder scheduling}
-    \label{fig:wrk_plowlow_ladder}
-  \end{center}
-\end{figure}
-
-\begin{figure}
-  \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[scale=0.4]{figures/mutation_timeline_figures/mut_t2/PLow-High/125_4.jpeg}%}
-    \caption{Workload \textit{PLow-High} with ladder scheduling}
-    \label{fig:wrk_plowhigh_ladder}
-  \end{center}
-\end{figure}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% SELECT
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{figure}
-  \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[scale=0.4]{figures/mutation_timeline_figures/mut_sel_t0/High/125_4.jpeg}%}
-    \caption{Workload \textit{High} with select scheduling}
+  }\qquad
+  \subfigure[Select]{
+    \includegraphics[width=2.64in]{figures/mutation_timeline_figures/mut_sel_t0/High/125_4.jpeg}
     \label{fig:wrk_high_select}
-  \end{center}
+  }\\
+  \label{fig:wrk_high}
+  \caption{Adaptation time-line for the \textit{High} workload with the ladder \subref{fig:wrk_high_ladder} and select \subref{fig:wrk_high_ladder} scheduling}
 \end{figure}
 
-\begin{figure}
-  \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[scale=0.4]{figures/mutation_timeline_figures/mut_sel_t0/Low/125_4.jpeg}%}
-    \caption{Workload \textit{Low} with select scheduling}
+
+% Low
+
+\begin{figure}[ht]
+\centering
+  \subfigure[Ladder]{
+    \includegraphics[width=2.64in]{figures/mutation_timeline_figures/mut_t0/Low/125_4.jpeg}
+    \label{fig:wrk_low_ladder}
+  }\qquad
+  \subfigure[Select]{
+    \includegraphics[width=2.64in]{figures/mutation_timeline_figures/mut_sel_t0/Low/125_4.jpeg}
     \label{fig:wrk_low_select}
-  \end{center}
+  }\\
+  \label{fig:wrk_low}
+  \caption{Adaptation time-line for the \textit{Low} workload with the ladder \subref{fig:wrk_low_ladder} and select \subref{fig:wrk_low_ladder} scheduling}
 \end{figure}
 
-\begin{figure}
-  \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[scale=0.4]{figures/mutation_timeline_figures/mut_sel_t1/Low-High/125_4.jpeg}%}
-    \caption{Workload \textit{Low-High} with select scheduling}
+
+% Lowhigh
+
+\begin{figure}[ht]
+\centering
+  \subfigure[Ladder]{
+    \includegraphics[width=2.64in]{figures/mutation_timeline_figures/mut_t1/Low-High/125_4.jpeg}
+    \label{fig:wrk_lowhigh_ladder}
+  }\qquad
+  \subfigure[Select]{
+    \includegraphics[width=2.64in]{figures/mutation_timeline_figures/mut_sel_t1/Low-High/125_4.jpeg}
     \label{fig:wrk_lowhigh_select}
-  \end{center}
+  }\\
+  \label{fig:wrk_lowhigh}
+  \caption{Adaptation time-line for the \textit{Low-High} workload with the ladder \subref{fig:wrk_lowhigh_ladder} and select \subref{fig:wrk_lowhigh_ladder} scheduling}
 \end{figure}
 
-\begin{figure}
-  \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[scale=0.4]{figures/mutation_timeline_figures/mut_sel_t0/PHigh-PLow/125_4.jpeg}%}
-    \caption{Workload \textit{PHigh-PLow} with select scheduling}
+% Phigh Plow
+
+\begin{figure}[ht]
+\centering
+  \subfigure[Ladder]{
+    \includegraphics[width=2.64in]{figures/mutation_timeline_figures/mut_t0/PHigh-PLow/125_4.jpeg}
+    \label{fig:wrk_phighplow_ladder}
+  }\qquad
+  \subfigure[Select]{
+    \includegraphics[width=2.64in]{figures/mutation_timeline_figures/mut_sel_t0/PHigh-PLow/125_4.jpeg}
     \label{fig:wrk_phighplow_select}
-  \end{center}
+  }\\
+  \label{fig:wrk_phighplow}
+  \caption{Adaptation time-line for the \textit{PHigh-PLow} workload with the ladder \subref{fig:wrk_phighplow_ladder} and select \subref{fig:wrk_phighplow_ladder} scheduling}
 \end{figure}
 
-\begin{figure}
-  \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[scale=0.4]{figures/mutation_timeline_figures/mut_sel_t1/PLow-Low/125_4.jpeg}%}
-    \caption{Workload \textit{PLow-Low} with select  scheduling}
+%PLow low
+
+\begin{figure}[ht]
+\centering
+  \subfigure[Ladder]{
+    \includegraphics[width=2.64in]{figures/mutation_timeline_figures/mut_t1/PLow-Low/125_4.jpeg}
+    \label{fig:wrk_plowlow_ladder}
+  }\qquad
+  \subfigure[Select]{
+    \includegraphics[width=2.64in]{figures/mutation_timeline_figures/mut_sel_t1/PLow-Low/125_4.jpeg}
     \label{fig:wrk_plowlow_select}
-  \end{center}
+  }\\
+  \label{fig:wrk_plowlow}
+  \caption{Adaptation time-line for the \textit{PLow-Low} workload with the ladder \subref{fig:wrk_plowlow_ladder} and select \subref{fig:wrk_plowlow_ladder} scheduling}
 \end{figure}
 
-\begin{figure}
-  \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[scale=0.4]{figures/mutation_timeline_figures/mut_sel_t1/PLow-High/125_4.jpeg}%}
-    \caption{Workload \textit{PLow-High} with select scheduling}
+% PLow high
+
+\begin{figure}[ht]
+\centering
+  \subfigure[Ladder]{
+    \includegraphics[width=2.64in]{figures/mutation_timeline_figures/mut_t2/PLow-High/125_4.jpeg}
+    \label{fig:wrk_plowhigh_ladder}
+  }\qquad
+  \subfigure[Select]{
+    \includegraphics[width=2.64in]{figures/mutation_timeline_figures/mut_sel_t1/PLow-High/125_4.jpeg}
     \label{fig:wrk_plowhigh_select}
-  \end{center}
+  }\\
+  \label{fig:wrk_plowhigh}
+  \caption{Adaptation time-line for the \textit{PLow-High} workload with the ladder \subref{fig:wrk_plowhigh_ladder} and select \subref{fig:wrk_plowhigh_ladder} scheduling}
 \end{figure}
+
 
