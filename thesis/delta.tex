@@ -2,9 +2,9 @@
 \chapter{Power-aware throughput management on multi-core systems}~\label{chap:delta}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Power management system have to look at two facets: Power and energy. Servers are
-usually limited at the amount of peak power and energy
-consumption in order to reduce maintenance cost. Energy and power considerations more often than not accounts 
+Power management systems have to look at two facets: Power and energy. Servers are
+usually limited to the amount of peak power and energy
+consumed in order to reduce maintenance cost. Power and energy considerations more often than not, accounts 
 to the reduction in server space expansion in industries. To combat these constraints, power management systems
 are becoming increasingly common in the server space which were previously restricted for mobile devices.
 Two common methodologies exist to reduce the power consumption of a compute element. The first among which
@@ -25,7 +25,7 @@ hence having no energy benefit (Figure~\ref{fig:ipc_epi}). The only advantage of
 the frequency is the reduction of energy supply into the system per unit time and hence
 possibly lower heat dissipation. 
 
-Some power management systems such as \cite{OnDemand} manipulate the DVFS configuration
+Some power management systems such as \cite{OnDemand} manipulate the DVFS (dynamic voltage and freqency) configuration
 of the system based on the load. The primary problem with such approaches are not in
 their implementation or design, but the fact that there are better power management
 systems where the entire processor is powered down during idle time whose power savings are considerably higher than DVFS. 
@@ -35,7 +35,7 @@ state.
 \cite{AnIntraTask}, \cite{LiveRuntime} and \cite{Phaseaware} propose adapting the clock speed of the the processing element based
 on the current application's demand. All these methodologies assumes the fact that DVFS transitions
 are local to that processor core. Some multi-core processors have dependency between 
-processor cores (Transitioning one might potentially transition the other) or systems with 
+processor cores (transitioning one might potentially transition the other) or systems with 
 symmetric multi-threaded features where a single processor
 core is visible to the operating system as multiple virtual processors. Thus, applications
 executing on such processing elements are tied to each other and any DVFS
@@ -316,8 +316,8 @@ the system and $Z_{R}$ (based on the demanded layout) is proportional to the pow
 scheduler in order to optimally satisfy the demands of all running tasks. $Z_{P}$ and $Z_{R}$ 
 are further utilized to compute the transition direction, \textit{t}, describing the nature of 
 mutation required computed as shown in Figure~\ref{fig:transition_dir}. 
-A transition direction of $t = +1$ implies that the scheduler requires a higher performance from
-the multi-processor, while a transition direction of $t = -1$ implies the exact opposite an indication
+A transition direction of $t = +1$ implies that the scheduler requires higher performance from
+the multi-processor, while a transition direction of $t = -1$ implies the exact opposite; an indication
 to conserve power by reducing of the multi-processor. A transition direction equal to zero
 implies stability and and mutations must be avoided if possible.
 
@@ -371,8 +371,8 @@ The iteration delta constraint $\delta$ is initialized to $\Delta$ and shown in 
 
 The Manhattan matrix ($N \times T$) is computed with the current values of \textbf{L}, \textbf{d}, and 
 $\delta$ as shown in Figure~\ref{fig:delta_mat}. Even though Figure~\ref{fig:delta_mat} seems over 
-obfuscated, its purpose and design is quiet simple. A matrix was necessary to provide a weight or value
-to each performance state a processor \textit{i} can transition to from its current state $L_i$. The
+obfuscated, its purpose and design is quite simple. A matrix was necessary to provide weight or value
+to each performance state \textit{j}, a processor \textit{i} can transition to from its current state $L_i$. The
 matrix can best be explained with an example which follows.
 
 \begin{figure}[h!]
@@ -397,7 +397,7 @@ The Manhattan matrix has \textit{N} rows and \textit{M} columns. Each row in the
 matrix corresponds to an on-line processor core. Each column corresponds to a performance state
 in increasing order. Thus $S_{23}$ corresponds to performance state $P_3$, of processor $C_2$. 
 As an example, if the current layout \textbf{L} = [0,1,2,3] with N, the total number of processors equal to 4 
-and M the total number of performance states available equal to 5,
+and M the total number of performance states available is equal to 5,
 the Manhattan matrix \textbf{S} for t = 1, 0 and -1 are shown in Figures~\ref{fig:ex_dmuth}, 
 \ref{fig:ex_dmut0} and \ref{fig:ex_dmutl} respectively. 
 
@@ -469,7 +469,7 @@ are given equal weights tapered down from $M-1$.
 \label{fig:ex_dmutl}
 \end{figure}
 
-The Manhattan matrix can be viewed as a probability matrix where each each element
+The Manhattan matrix can be viewed as a probability matrix where each element
 $S_{ij}$ indicates the probability that processor \textit{i} can be transitioned to
 performance state \textit{j}. The conception of this matrix was achieved by viewing
 a probability density function for each processor and was soon modified to its
@@ -598,9 +598,9 @@ Before moving over to the next iteration as shown in Figure~\ref{fig:mutation_al
 parameters: $\delta$, $L_c$ and $d_p$ are recomputed
 as shown in Figure~\ref{fig:adjust}. First as a transition is performed, the iteration delta
 must reduce by an equal order and is performed in the first step of Figure~\ref{fig:adjust}.
-Next, as processor \textit{c} is no longer in performance state $L_c$, it is updated to
+Second, as processor \textit{c} is no longer in performance state $L_c$, it is updated to
 it's new value \textit{w}. Next, as a processor is assigned to performance state \textit{w},
-the corresponding demand can be reduced. Finally, the poison vector's position for processor
+the corresponding demand can be reduced. Lastly, the poison vector's position for processor
 \textit{c} is set to zero and hence disabling processor \textit{c} for participating in a transition in a future 
 iteration.
 
