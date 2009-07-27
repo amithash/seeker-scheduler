@@ -477,8 +477,6 @@ to the performance state closest to them which has a possibility of being select
 This procedure is described in Algorithm~\ref{fig:field}.
 
 
-%\begin{figure}[h!]
-%\centering
 \begin{algorithm}[h!]
  \SetLine
  \KwIn{Demand vector \textbf{d}, Manhattan weight vector \textbf{W}}
@@ -507,8 +505,6 @@ This procedure is described in Algorithm~\ref{fig:field}.
 \caption{Demand field computation}
 \label{fig:field}
 \end{algorithm}
-%\end{figure}
-
 
 The demand field \textbf{F} is essentially a replicate of \textbf{d}, and differs under
 circumstances when for a particular performance state \textit{i}, $W_i = 0$ and $d_i > 0$,
@@ -541,53 +537,52 @@ performance states each processor is capable of.
 
 With the winning performance state selected, the processor to be transitioned
 is determined by the row \textit{c} in the Manhattan matrix whose value $S_{cw} \times X_c$ 
-is maximum and shown in Figure~\ref{fig:winning_proc}. 
+is maximum and shown below (Equation~\ref{eq:winning_proc}). 
+\begin{equation}
+    c = {x | \forall y, y \in \mathbb{N} \wedge 0 \leq y < N : S_{yw} \times X_y \leq S_{xw} \times X_x}
+\label{eq:winning_proc}
+\end{equation}
 
 Once the selection is made, processor \textit{c} is transitioned to performance state
 \textit{w} by invoking the seeker cpufreq governor described in Section~\ref{sec:cpufreq}.
 
-\begin{figure}[h!]
-\centering
-\begin{equation*}
-    c = {x | \forall y, y \in \mathbb{N} \wedge 0 \leq y < N : S_{yw} \times X_y \leq S_{xw} \times X_x}
-\end{equation*}
-\caption{Greedy processor selection for N processors with each having M performance states}
-\label{fig:winning_proc}
-\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Parameter change and termination conditions}~\label{sec:param_adjust}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Before moving over to the next iteration as shown in Figure~\ref{fig:mutation_algo},
-parameters: $\delta$, $L_c$ and $d_p$ are recomputed
-as shown in Figure~\ref{fig:adjust}. First as a transition is performed, the iteration delta
-must reduce by an equal order and is performed in the first step of Figure~\ref{fig:adjust}.
-Second, as processor \textit{c} is no longer in performance state $L_c$, it is updated to
-it's new value \textit{w}. Next, as a processor is assigned to performance state \textit{w},
-the corresponding demand can be reduced. Lastly, the poison vector's position for processor
-\textit{c} is set to zero and hence disabling processor \textit{c} for participating in a transition in a future 
-iteration.
-
-This procedure is repeated for \textit{Load} iterations or till the iteration delta coefficient 
-$\delta$ reaches 0. Providing the upper bound on the number of iterations as \textit{Load} 
-ensures early termination of the iterative algorithm when unnecessary.
-
-
-\begin{figure}[h!]
-\centering
-\begin{equation*}
+At the end of every iteration, the parameters $\delta$, $L_c$ and $d_p$ are updated
+to represent the transition. First as a transition was previously performed, the iteration delta constraint
+must reduce by an equal order as shown below (Equation~\eqref{eq:update_delta}).
+\begin{equation}
     \delta = \delta - |L_{c} - w| 
-\end{equation*}
-\begin{equation*}
+\label{eq:update_delta}
+\end{equation}
+Second, as processor \textit{c} is no longer in performance state $L_c$, it is updated to
+it's new value \textit{w} as shown below (Equation~\eqref{eq:update_L}) 
+\begin{equation}
     L_{c} = w 
-\end{equation*}
-\begin{equation*}
+\label{eq:update_L}
+\end{equation}
+Third, as a processor is assigned to performance state \textit{w},
+the corresponding demand can be reduced as shown below (Equation~\eqref{eq:update_d}).
+\begin{equation}
     d_{Proxy_w} = d_{Proxy_w} - 1 
-\end{equation*}
-\begin{equation*}
+\label{eq:update_d}
+\end{equation}
+Note that, due to the distortion introduced by the cooperative demand distribution, $d_{Proxy_w}$ is updated
+instead of $d_w$. 
+Lastly, the poison vector's position for processor
+\textit{c} is set to zero and hence disabling processor \textit{c} in participating in a future transition as shown
+below (Equation~\eqref{eq:update_X}).
+\begin{equation}
     X_c = 0
-\end{equation*}
-\caption{Iteration parameter change necessary after transitioning processor \textit{c} to performance state \textit{w}}
-\label{fig:adjust}
-\end{figure}
+\label{eq:update_X}
+\end{equation}
+
+This concludes a single iteration of the greedy direction based algorithm and is repeated for \textit{Load} iterations
+as long as the iteration delta constraint $\delta > 0$. The upper bound on the number of iterations is obviously \textit{Load} 
+and ensures early termination of the iterative algorithm when unnecessary.
+
+
+
