@@ -1,46 +1,0 @@
-9
-
-dir
-9606
-svn+ssh://prasadae@suburban.colorado.edu/car/repository/trunk/papers/ms_thesis-amithash_prasad/figures/mutation_timeline_figures/mut_sel_t1
-svn+ssh://prasadae@suburban.colorado.edu/car/repository
-
-
-
-2009-07-15T20:42:11.044424Z
-9538
-prasadae
-
-
-svn:special svn:externals svn:needs-lock
-
-
-
-
-
-
-
-
-
-
-
-9ed37d2e-67f3-0310-981c-f7b2b128464a
-
-High
-dir
-
-PLow-Low
-dir
-
-Low
-dir
-
-Low-High
-dir
-
-PHigh-PLow
-dir
-
-PLow-High
-dir
-
