@@ -1,0 +1,37 @@
+1. go to log main dir. 
+example
+cd $THESIS/data/delta5_4_t7
+
+2. Run analyzeDVFS.pl.
+
+$THESIS/scripts/analyzeDVFS.pl --list --bench > $THESIS/data/summary/delta5_bench_t1
+
+delta5_bench_t1 contains the bench results. 
+
+3. Run j_i.pl on this file
+cd $THESIS/data/summary
+$THESIS/scripts/j_i.pl -i ./delta5_bench_t1 > ./jpbi_delta5_t1
+
+NOTE - skip steps 3 and 4 if fixed results are already avaliable. 
+
+3. Run analyzeDVFS on fixed results.
+cd $THESIS/data/fixed_4_t5
+$THESIS/scripts/analyzeDVFS.pl --list --bench > $THESIS/data/summary/fixed_bench_t1
+cd $THESIS/data/fixed_4_t6
+$THESIS/scripts/analyzeDVFS.pl --list --bench > $THESIS/data/summary/fixed_bench_t2
+cd $THESIS/data/fixed_4_t7
+$THESIS/scripts/analyzeDVFS.pl --list --bench > $THESIS/data/summary/fixed_bench_t3
+
+4. Run j_i.pl on these files.
+cd $THESIS/data/summary
+$THESIS/scripts/j_i.pl -i ./fixed_bench_t1 > ./jpbi_fixed_t1
+$THESIS/scripts/j_i.pl -i ./fixed_bench_t3 > ./jpbi_fixed_t2
+$THESIS/scripts/j_i.pl -i ./fixed_bench_t3 > ./jpbi_fixed_t3
+
+5. Repeat steps 1,2,3 for other trials. (Analize requires at least 3 trials.)
+
+6. Run analize.r
+cd $THESIS/data/summary
+Rscript $THESIS/scripts/analize.r
+
+

@@ -1,0 +1,36 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Summary and Conclusion}~\label{chap:conclusion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%X1 Conclusion
+
+This thesis presented an approach of scheduling tasks on an asymmetric chip-multiprocessor
+with respect to performance requirements and performing a constrained system wide
+dynamic voltage and frequency transitions in reaction to the demands of the
+performance characteristic of the executing workloads. A novel methodology was
+presented in controlling the magnitude of these transitions to improve stability
+and longevity of the multi-processor system. The methodology was shown to possess 
+characteristics to minimize slowdown of workloads while improving the power savings achieved. 
+
+Workloads were shown to possess characteristics to possibly make it immune to clock 
+speed improvements thus enhancing the motivation of a performance determined power
+management system to conserve power during system active state. Experiments with various 
+static layouts were executed to characterize and showcase 
+the performance directed scheduler. It was demonstrated that a statically assigned
+performance state layout of a system can prove to drastically deteriorate performance 
+of the system in an environment with non-deterministic workload sets. 
+Two scheduling systems, the ladder and select, were developed to schedule tasks based on
+their performance characteristic.
+
+A system was developed to allow a performance directed scheduler to direct an asynchronously
+run power optimizer to manage the performance states of each processor in an otherwise 
+homogeneous multi-processor environment. The problem was shown to be NP-Hard and an 
+efficient algorithm was developed in solving the Multiple-choice knapsack problem 
+as a direction based iterative greedy algorithm.
+
+Experiments were conducted to measure slowdown and power savings along the system's entire
+parameter space to determine the most favorable constraint on the magnitude of the 
+allowed DVFS transitions. This was utilized to compare the power management system
+with a popular load based power optimizer, the \textit{ondemand} governor.
+The combination of the performance directed scheduler and the delta constrained mutator
+was shown to achieve higher power efficiency and better power savings with a marginal 
+slowdown.
