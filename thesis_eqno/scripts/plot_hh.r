@@ -1,0 +1,1 @@
+ mp <- barplot2(t(as.matrix(hh)), beside = TRUE, col = c("lightgreen", "green", "blue", "red1", "red4"), ylab="Speedup from 1100MHz", legend = colnames(as.matrix(hh)), ylim = c(0, 2.9), main = "", sub = "Workload", col.sub = "gray10", cex.names = 1.5, plot.ci = TRUE, ci.l = t(as.matrix(l)), ci.u = t(as.matrix(h)), plot.grid = TRUE)
