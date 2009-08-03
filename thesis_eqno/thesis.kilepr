@@ -3,7 +3,7 @@ img_extIsRegExp=false
 img_extensions=.eps .jpg .jpeg .png .pdf .ps .fig .gif
 kileprversion=2
 kileversion=2.1
-lastDocument=experimentation.tex
+lastDocument=delta.tex
 masterDocument=
 name=thesis
 pkg_extIsRegExp=false
@@ -53,21 +53,21 @@ order=5
 
 [item:appC.tex]
 archive=true
-column=0
+column=31
 encoding=UTF-8
 highlight=LaTeX
-line=18
+line=90
 open=true
 order=6
 
 [item:appS.tex]
 archive=true
 column=0
-encoding=
-highlight=
+encoding=UTF-8
+highlight=LaTeX
 line=0
-open=false
-order=-1
+open=true
+order=12
 
 [item:conclusion.tex]
 archive=true
@@ -81,27 +81,27 @@ order=8
 [item:dedication.tex]
 archive=true
 column=0
-encoding=
-highlight=
+encoding=UTF-8
+highlight=LaTeX
 line=0
-open=false
-order=-1
+open=true
+order=14
 
 [item:delta.tex]
 archive=true
-column=0
+column=46
 encoding=UTF-8
 highlight=LaTeX
-line=611
+line=13
 open=true
 order=2
 
 [item:experimentation.tex]
 archive=true
-column=131
+column=29
 encoding=UTF-8
 highlight=LaTeX
-line=91
+line=84
 open=true
 order=3
 
@@ -116,37 +116,37 @@ order=7
 
 [item:intro.tex]
 archive=true
-column=1000
-encoding=
-highlight=
-line=0
-open=false
-order=-1
+column=9
+encoding=UTF-8
+highlight=LaTeX
+line=77
+open=true
+order=10
 
 [item:pds.tex]
 archive=true
-column=7077985
-encoding=
-highlight=
-line=0
-open=false
-order=-1
+column=0
+encoding=UTF-8
+highlight=LaTeX
+line=356
+open=true
+order=11
 
 [item:related.tex]
 archive=true
-column=138481008
-encoding=
-highlight=
+column=57
+encoding=UTF-8
+highlight=LaTeX
 line=0
-open=false
-order=-1
+open=true
+order=13
 
 [item:thesis.bib]
 archive=true
-column=24
+column=22
 encoding=UTF-8
 highlight=BibTeX
-line=0
+line=9
 open=true
 order=1
 
@@ -161,9 +161,9 @@ order=-1
 
 [item:thesis.tex]
 archive=true
-column=138482456
-encoding=
-highlight=
-line=0
-open=false
-order=-1
+column=40
+encoding=UTF-8
+highlight=LaTeX
+line=112
+open=true
+order=9
