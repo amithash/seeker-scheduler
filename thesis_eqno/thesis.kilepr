@@ -3,7 +3,7 @@ img_extIsRegExp=false
 img_extensions=.eps .jpg .jpeg .png .pdf .ps .fig .gif
 kileprversion=2
 kileversion=2.1
-lastDocument=experimentation.tex
+lastDocument=delta.tex
 masterDocument=
 name=thesis
 pkg_extIsRegExp=false
@@ -92,7 +92,7 @@ archive=true
 column=0
 encoding=UTF-8
 highlight=LaTeX
-line=611
+line=68
 open=true
 order=2
 

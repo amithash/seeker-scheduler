@@ -48,40 +48,34 @@ requiring power optimizers to react to the needs of a scheduler.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The most popular among power management techniques are load directed systems
-which transition a processor to a higher or lower performance state based on it's current load. Two
+which transition a processor to higher or lower performance states based on current load. Two
 of these techniques: \textit{ondemand}\cite{OnDemand} and \textit{conservative} 
 were simulated within the existing infrastructure. The \textit{ondemand}
 system raises the performance state to the highest possible level at high loads, and
-reduces the performance state gradually to the lowest state during lower load.
-The \textit{conservative}
-system gradually changes the performance state in either direction. These two are 
-shown in Figures \ref{fig:math_ondemand} and \ref{fig:math_conservative}. As both 
-are similar in design, only the \textit{ondemand} system was heavily analyzed 
-along with the proposed power management systems.
-
-\begin{figure}[h!]
-\centering
-\begin{equation*}
+reduces the performance state gradually to the lowest state during lower load thus $P_i'$,
+\begin{equation}
     P_{i}' = \left\{ \begin{array}{lr} 
-                   P_{M-1} & : Load \geq 0.8 \\
-		   P_{i}-1 & : Load < 0.8
+                   P_{M-1} & : Load_i \geq 0.8 \\
+		   P_{i}-1 & : Load_i < 0.8
                   \end{array} \right.
-\end{equation*}
-\caption{The ondemand power management system with M performance states}
 \label{fig:math_ondemand}
-\end{figure}
-
-\begin{figure}[h!]
-\centering
-\begin{equation*}
+\end{equation}
+The performance state of processor \textit{i} after the transition based on the current 
+performance state $P_i$ and load of processor \textit{i}, $load_i$. The characterstics of
+this system of rapidly responding to load increase while consarvatively lowering the performance
+state at the end of the active state.
+The \textit{conservative}
+system, on the other hand, gradually changes the performance state in either direction, where $P_i'$,
+\begin{equation}
     P_{i}' = \left\{ \begin{array}{lr} 
-                   P_{i}+1 & : Load \geq 0.8 \\
-		   P_{i}-1 & : Load < 0.8
+                   P_{i}+1 & : Load_i \geq 0.8 \\
+		   P_{i}-1 & : Load_i < 0.8
                   \end{array} \right.
-\end{equation*}
-\caption{The conservative power management system with M performance states}
 \label{fig:math_conservative}
-\end{figure}
+\end{equation}
+the performance state of processor \textit{i}, after a transition is decided based on the load of each 
+processor $Load_i$ with a typical characterstic to gradually meet the system needs and preferred for
+servers with typically short running workloads.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Overview of the Linux cpufreq architecture}~\label{sec:cpufreq}
