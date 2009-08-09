@@ -3,7 +3,7 @@ img_extIsRegExp=false
 img_extensions=.eps .jpg .jpeg .png .pdf .ps .fig .gif
 kileprversion=2
 kileversion=2.1
-lastDocument=delta.tex
+lastDocument=appC.tex
 masterDocument=
 name=thesis
 pkg_extIsRegExp=false
@@ -53,10 +53,10 @@ order=5
 
 [item:appC.tex]
 archive=true
-column=31
+column=40
 encoding=UTF-8
 highlight=LaTeX
-line=90
+line=1
 open=true
 order=6
 
@@ -89,19 +89,19 @@ order=14
 
 [item:delta.tex]
 archive=true
-column=46
+column=75
 encoding=UTF-8
 highlight=LaTeX
-line=13
+line=283
 open=true
 order=2
 
 [item:experimentation.tex]
 archive=true
-column=29
+column=70
 encoding=UTF-8
 highlight=LaTeX
-line=84
+line=308
 open=true
 order=3
 
@@ -128,7 +128,7 @@ archive=true
 column=0
 encoding=UTF-8
 highlight=LaTeX
-line=356
+line=345
 open=true
 order=11
 

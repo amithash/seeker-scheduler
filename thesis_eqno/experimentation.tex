@@ -14,8 +14,8 @@ to kernel modules and hence indirect and suboptimal procedures were chosen to ge
 functionality. In spite of these disadvantages, having the project as a kernel module accelerated 
 the development process. 
 
-For a system with \textit{M} total performance states and \textit{N} total processors, $\Delta$ can 
-at most take a value of $N \times (M-1)$. Experiments were carried on a quad-core AMD Opteron (Barcelona),
+For a system with \textit{m} total performance states and \textit{n} total processors, $\Delta$ can 
+at most take a value of $n \times (m-1)$. Experiments were carried on a quad-core AMD Opteron (Barcelona),
 and a patched version of the Linux 2.6.28 kernel. The logging interface as shown in Figure~\ref{fig:entire_seeker},
 collects task specific and system wide statistics which enable in studying the behavior of both the performance
 directed scheduler and the delta constrained mutator. The statistics collected by the logging system aided in 
@@ -166,11 +166,11 @@ suffered by the select scheduling system when compared to the ladder system.
 \begin{figure}[h!]
 \centering
   \subfigure[Ladder scheduler]{
-    \includegraphics[height=2.5in]{figures/trends_workload_ladder.jpg}%}
+    \includegraphics[height=2.5in]{figures/trends_workload_ladder.jpg}
     \label{fig:workload_trends_ladder}
   }
    \subfigure[Select scheduler]{
-    \includegraphics[height=2.5in]{figures/trends_workload_select.jpg}%}
+    \includegraphics[height=2.5in]{figures/trends_workload_select.jpg}
     \label{fig:workload_trends_select}
   }
 \label{fig:workload_trends}

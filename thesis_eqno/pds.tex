@@ -45,8 +45,7 @@ level at which tasks are executing and described in further sections.
 
 \begin{figure}[h!]
   \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=3.5in]{figures/Speedup_Classify.png}%}
+    \includegraphics[height=3.5in]{figures/Speedup_Classify.png}
     \caption{IPC classification and speedup trends for the SPEC 2006 benchmarks}
     \label{fig:spec_classify}
   \end{center}
@@ -54,8 +53,7 @@ level at which tasks are executing and described in further sections.
 
 \begin{figure}[h!]
   \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=3.5in]{figures/group_speedup.jpg}%}
+    \includegraphics[height=3.5in]{figures/group_speedup.jpg}
     \caption{Speedup achieved by characterized workloads}
     \label{fig:group_speedup}
   \end{center}
@@ -77,8 +75,7 @@ other hand, at $IPC < 0.75$ going from 2000MHz to 2200MHz exhibit absolutely no 
 No incremental throughput with increased clock speeds is observed for workloads with an IPC below 0.5.
 \begin{figure}[h!]
   \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=3in]{figures/ipc_speedup.jpg}%}
+    \includegraphics[height=3in]{figures/ipc_speedup.jpg}
     \caption{Speedup dependence with IPC}
     \label{fig:ipc_speedup}
   \end{center}
@@ -93,8 +90,7 @@ But as IPC reduces below 0.5, it is evident that reducing clock speed improves t
 
 \begin{figure}[h!]
   \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=3in]{figures/ipc_epi.jpg}%}
+    \includegraphics[height=3in]{figures/ipc_epi.jpg}
     \caption{Energy consumption per instruction variance with IPC}
     \label{fig:ipc_epi}
   \end{center}
@@ -117,7 +113,7 @@ In order to enable scheduling on asymmetric multiprocessors, the first implement
 step was to organize the processor set as groups with equal performance states. 
 The term performance state or P-State will be used to differentiate varied voltage and
 frequency configurations which a processor is allowed to have, and is indicated by
-$P_{0}$ through $P_{M-1}$ where, $P_0$ is the configuration with the lowest clock speed
+$P_{0}$ through $P_{m-1}$ where, $P_0$ is the configuration with the lowest clock speed
 and voltage (In effect a lower power consumption). Each set maintains the usage in terms
 of actively running tasks in the particular group to enable load balancing between 
 groups of varied performance states. This view of the processor set is shown in
@@ -127,7 +123,7 @@ where, $C_{P_{i}}$ is the set of processors which are at a performance state of 
 \begin{equation}
    L^{s} = \left[
      \begin{array}{lccr}
-       C_{P_{0}} & C_{P_{1}} & ... & C_{P_{M-1}}
+       C_{P_{0}} & C_{P_{1}} & ... & C_{P_{m-1}}
      \end{array} \right]
      \label{eq:layout_scheduler}
 \end{equation}
@@ -135,8 +131,7 @@ where, $C_{P_{i}}$ is the set of processors which are at a performance state of 
 
 \begin{figure}[h!]
   \begin{center}
-%    \resizebox{\columnwidth}{!}{
-    \includegraphics[height=1in]{figures/Processor_Organization.jpg}%}
+    \includegraphics[height=1in]{figures/Processor_Organization.jpg}
     \caption{Multi-processor organization}
     \label{fig:processor_groups}
   \end{center}
@@ -163,8 +158,7 @@ responsibility to read the IPC level before switching out tasks form the running
 
 \begin{figure}[h!]
   \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=2in]{figures/HW_Counter.jpg}%}
+    \includegraphics[height=2in]{figures/HW_Counter.jpg}
     \caption{Hardware performance monitoring counters}
     \label{fig:hw_counters}
   \end{center}
@@ -205,8 +199,7 @@ increments the cell corresponding to $P'$ in the demand vector \textbf{D} ($D_{P
 
 \begin{figure}[h!]
   \begin{center}
-%    \resizebox{\columnwidth}{!}{
-    \includegraphics[height=3in]{figures/Mod_Linux_Sched.jpg}%}
+    \includegraphics[height=3in]{figures/Mod_Linux_Sched.jpg}
     \caption{Scheduling state diagram}
     \label{fig:pds_method}
   \end{center}
@@ -237,8 +230,7 @@ selected based on the graph shown in Figure~\ref{fig:ipc_speedup}.
 
 \begin{figure}[h!]
   \begin{center}
-%    \resizebox{\columnwidth}{!}{
-    \includegraphics[height=2in]{figures/Ladder_Evaluation.jpg}%}
+    \includegraphics[height=2in]{figures/Ladder_Evaluation.jpg}
     \caption{Ladder performance state estimation algorithm}
     \label{fig:ladder_method}
   \end{center}
@@ -257,8 +249,7 @@ achieved but comes at the cost of complexity requiring rigorous experimental eva
 
 \begin{figure}[h!]
   \begin{center}
-%    \resizebox{\columnwidth}{!}{
-    \includegraphics[height=3in]{figures/Select_Evaluation.jpg}%}
+    \includegraphics[height=3in]{figures/Select_Evaluation.jpg}
     \caption{Select performance state estimation algorithm}
     \label{fig:select_method}
   \end{center}
@@ -326,8 +317,7 @@ n & 4 & 4 & 4 & 4 \\
 
 \begin{figure}[h!]
   \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=4in]{figures/fixed_results.jpg}%}
+    \includegraphics[height=4in]{figures/fixed_results.jpg}
     \caption{Slowdown vs power consumption for fixed layouts}
     \label{fig:fixed_res}
   \end{center}
@@ -348,8 +338,7 @@ become noticeable and add to the slow down of the task.
 
 \begin{figure}[h!]
   \begin{center}
-    %\resizebox{\columnwidth}{!}{
-    \includegraphics[height=3in]{figures/astar_fight.png}%}
+    \includegraphics[height=3in]{figures/astar_fight.png}
     \caption{Astar running on a $[0,4,4,4]$ layout}
     \label{fig:fight_to_death}
   \end{center}
