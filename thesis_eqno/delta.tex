@@ -190,7 +190,7 @@ from performance state $P_{i}$ to $P_{i}'$ can be defined as
     \Delta \geq \displaystyle\sum_{i=0}^{n-1} {| P_{i} - P_{i}' |}
 \label{eq:Delta_def}
 \end{equation}
-and can also be defined as the Manhattan distance between the layout vector $L$ before the mutation and 
+and can also be defined as the maximum Manhattan distance allowed between the layout vector $L$ before the mutation and 
 the layout vector $L'$ after the mutation. Thus the example mutation as shown in Figure~\ref{fig:ex_mutation}
 is allowed only for a system with a delta constraint $\Delta \geq 3$. 
 
@@ -245,7 +245,7 @@ This motivated the development of an iterative direction based greedy algorithm 
 \section{The delta constrained mutation algorithm}~\label{sec:delta_algo}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Figure~\ref{fig:mutation_algo} describes the steps involved in the iterative greedy algorithm. 
+Figure~\ref{fig:mutation_algo} describes the steps involved in the proposed iterative greedy algorithm. 
 Each sub step is described in further sections. The initialization procedure is described in Section~\ref{sec:mut_init}.
 Based on the iteration delta constraint $\delta$, a matrix, Manhattan
 matrix (\textbf{S}) is constructed and described in Section~\ref{sec:delta_matrix}.
@@ -284,7 +284,7 @@ in terms of number of processors required is computed where \textit{T} is the to
 of tasks in the ready state in a multi-processor system with \textit{n} on-line processors.
 Using an estimated load based on idle times
 of processors was found to be unfruitful as it can be non-representative of the actual 
-computing capacity demanded by the number of active tasks. This can be emphasized 
+computing capacity demanded by the number of active tasks. This can be aggrivated
 in situations where multiple tasks could be queued on a single processor.
 
 The Performance Directed Scheduler as described in Chapter~\ref{chap:pds} maintains
@@ -299,7 +299,7 @@ on the projected load of the system and the demand vector \textbf{D},
 where $D_i$ is the total number of times performance state $P_i$ was requested by the performance directed scheduler in 
 the previous mutation interval while the total load of the system was estimated to be \textit{load}. The vector \textbf{d}
 is also refereed to as the processor demand as each element $d_i$ is the total number of processors demanded by the 
-performance directed scheduler in state $P_i$. 
+performance directed scheduler in state $P_i$ in order to optimally schedule the current workload. 
 
 $Z_P$ the present or current power number of the multi-processor system,
 \begin{equation}
@@ -315,7 +315,7 @@ is an integer value proportional to the total power drawn by the multi-processor
 is computed based on the processor demand \textbf{d} as shown below in Equation~\eqref{eq:Z_R} where,
 each processor is capable of \textit{m} performance states and $d_i$ being the total number of processors demanded
 by performance state $P_i$. Thus $Z_R$ is proportional to the power drawn by the multi-processor system when the processors
-are transitioned in such a way as to satisfy the performance directed scheduler to optimally assign current tasks. 
+are transitioned in such a way as to satisfy the performance directed scheduler to optimally schedule it's current workload. 
 
 Based on $Z_{P}$ and $Z_{R}$, the transition direction, \textit{t}, a tri-state value describing the nature of 
 mutation required
@@ -330,31 +330,43 @@ mutation required
 \label{eq:transition_dir}
 \end{equation}
 is computed. A transition direction of $t = +1$ implies that the scheduler requires higher performance from
-the multi-processor, while a transition direction of $t = -1$ implies the exact opposite; an indication
+the multi-processor system, while a transition direction of $t = -1$ implies the exact opposite; an indication
 to conserve power by reducing the performance states of the multi-processor. A transition direction equal to zero
 implies stability and and mutations must be avoided if possible. 
 
-Before starting the iterations, the poison vector \textbf{X} of length \textit{n} is initialized to all ones, where
-each element corresponds to a processor. Each element of the poison vector is a binary element with a value of 0 
-implying that the processor has been allocated a performance state and must not be re-transitioned, The initialization
-of the poison vector is described below in Equation~\eqref{eq:poison_init} for a multi-processor system with \textit{n} processors.
+Before starting the iterations, the poison vector \textbf{X} of length \textit{n} 
 \begin{equation}
-    \forall i \in \textbb{N}, i < n; X_{i} = 1 
+    \forall i \in \mathbb{N}, i < n; X_{i} = 1 
 \label{eq:poison_init}
 \end{equation}
-The iteration delta constraint $\delta$ is initialized to $\Delta$  ($\delta = \Delta$). 
+is initialized to all ones, where
+each element is a binary representation of a unique processor's current assignment states. A value 
+$X_i = 0$ indicates that processor \textit{i} has been allocated a performance state and must not be re-transitioned. 
+Finally, the iteration delta constraint $\delta$ is initialized to $\Delta$  ($\delta = \Delta$). 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{The Manhattan matrix}~\label{sec:delta_matrix}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The Manhattan matrix \textbf{S} of dimension $n \times m$, can be viewed as a probability matrix where each element
+The Manhattan matrix \textbf{S} with \textit{n} rows (one for each processor) and \textit{m} columns
+(one for each performance state), can be viewed as a probability matrix where each element
 $S_{ij}$ indicates the probability that processor \textit{i} can be transitioned to
 performance state \textit{j} for a system with \textit{n} processors each 
-capable of \textit{m} transition states. The conception of this matrix was achieved by viewing
+capable of \textit{m} transition states and depicted in Figure~\ref{fig:state_transition}.
+Thus $S_{23}$ describes the weight of processor $C_2$ transitioning to the performance state $P_3$. 
+The conception of this matrix was achieved by viewing
 a probability density function for each processor and was soon modified due to the lack of floating point operations in kernel space 
 (Even though possible, the kernel address space does not save the floating point 
 context and makes it's use dangerous as the kernel is fully preempt-able).
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[height=1in]{figures/StateTransition.jpg}
+    \caption{State transition diagram for processor \textit{i} currently in performance state $L_i$}
+    \label{fig:state_transition}
+  \end{center}
+\end{figure}
+
 
 The Manhattan matrix ($n \times m$) is computed as
 \begin{equation}
@@ -373,21 +385,16 @@ where, $L_i$ is the current performance state of processor \textit{i} in a multi
 with a total of \textit{n} processors each processor capable of \textit{m} performance states 
 and the transition direction \textit{t} estimated to be either $-1$, $0$ or $+1$. 
 
-Each row in the Manhattan matrix corresponds to an on-line processor core while each column corresponds to a performance state
-in increasing order. Thus $S_{23}$ describes the weight of processor $C_2$ transitioning to the performance state $P_3$. 
 For example, consider a hypothetical multiprocessor with a total of 4 processors ($n = 4$) each capable of
 5 performance states ($m = 5$) with the current layout \textbf{L} = [0,1,2,3], implying that processors $C_0$, $C_1$, $C_2$ and $C_3$
-are in performance states $P_0$, $P_1$, $P_2$ and $P_4$ respectively. This can be understood by Figure~\ref{fig:state_transition},
-which shows the element $S_{ij}$ of the Manhattan matrix as the weight of the transition for processor \textit{i}
-from performance state $L_i$ to state \textit{j}. 
+are in performance states $P_0$, $P_1$, $P_2$ and $P_4$ respectively. Based on this, the Manhattan matrix \textbb{S}
+is computed and described for all three varitions of the transition direction (\textit{t} = +1,0,-1) for an example iteration 
+delta constraint of 2 ($\delta = 2$) in the next three subsections. 
 
-\begin{figure}[h!]
-  \begin{center}
-    \includegraphics[height=1in]{figures/StateTransition.jpg}
-    \caption{State transition diagram for processor \textit{i} currently in performance state $L_i$}
-    \label{fig:state_transition}
-  \end{center}
-\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Example Manhattan matrix for $t = +1$}~\label{sec:delta_matrix_h}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Based on the processor demand, if the transition direction $t = 1$, implying higher required performance
 out of the multi-processor system, and the iteration delta constraint $\delta = 2$, then the Manhattan matrix \textbf{S} 
@@ -418,6 +425,11 @@ Thus $S_{21}$ and $S_{20}$ are given values 4 and 3 respectively.
 \end{itemize}
 This construction for a transition direction $t = 1$ favors transitions towards higher performance states.
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Example Manhattan matrix for $t = 0$}~\label{sec:delta_matrix_m}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 For the same example of $N = 4$, $M = 5$, $\delta = 2$ and finally $L = [0,1,2,3]$, 
 the Manhattan matrix \textbf{S}
 \begin{equation}
@@ -446,6 +458,11 @@ to $S_{ij}$ such that they are in decreasing order starting from $m-1$ (4).
 Thus $S_{21}$ and $S_{20}$ are given values 4 and 3 respectively.
 \end{itemize}
 This construction for a transition direction $t = 0$ favors transitions in either direction equally. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Example Manhattan matrix for $t = -1$}~\label{sec:delta_matrix_m}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Finally, the Manhattan matrix \textbf{S}
 \begin{equation}
