@@ -35,7 +35,7 @@ while($line = <IN>){
 		print OUT "# $line\n";
 	}
 	else{
-		$line =~ s/,/\t/;
+		$line =~ s/,/ /g;
 		print OUT "$line\n";
 	}
 }
