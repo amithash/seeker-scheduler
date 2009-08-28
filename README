@@ -1,8 +1,7 @@
 ========================================================================================
                                           SEEKER
-				Performance based scheduler
-		 		Copyright 2008 Amithash Prasad
-				 This file is part of seeker
+                        				Performance based scheduler
+                      		 		Copyright 2008 Amithash Prasad
 	                                                                        
 	 Seeker is free software: you can redistribute it and/or modify         
 	 it under the terms of the GNU General Public License as published by   
@@ -20,267 +19,548 @@
 	 All documentation is licensed under the creative common license, *except*
 	 C2D_EVENTS.pdf which is the copyright of Intel Corporation, and K8_EVENTS.pdf
 	 which is the copyright of Advanced Micro Devices ( added here for 
-	 convienence ) and ms_thesis-prasad/* for which I hold a restrictive non-copy
+	 convenience ) and thesis/* and thesis_eqno/* for which I hold a restrictive non-copy
 	 non-distribute rights. But this restriction will be removed as soon as I 
 	 publish upon which the document will become public domain and all have 
 	 the same rights as other academic publications. This is currently not in
-	 git HEAD, as I am using a seperate repositary for it. 
-
-	Note most of the material here come under unpublished work currently under
-	heavy modifications and going towards my Master's thesis. So, be considerate
-	and let me graduate. You can use the code as per GPL for your unrelated work.
-	Heck, the GPL says that you can use it for related work too. But I am requesting
-	some human compassion till I graduate (May 2009). But this is not a legal binding.
+	 git HEAD, as I am using a separate repository for it. 
 
 ========================================================================================
 
+WARNINGS
+--------
+
+This work may destroy your computer and perform unquestionable acts upon your pets.
+
+This is not a production tool, but a research project. There were bad design choices
+to enhance development speed -- A tendency which is usually avoided in production grade
+software and rampant in research projects (This is because in research, the code is
+irrelevant and the _idea_ is everything). 
+
+This project comprises of various kernel modules and may have bugs. I am not Linus,
+I an average Joe the developer. A direct consequence of bugs in kernel modules, is that
+you will probably have to learn to do _everything_ from the command prompt. 
+
+If all this does not scare you (Or your adviser is not giving up), welcome my friend.
+Welcome to hell. 
+
+========================================================================================
 
 PRE-SETUP / PRE-REQS:
 --------------------
 
-The kernel module seeker-sampler requres the linux kernel to be built with the 
-options "KPROBES" and "KALLSYM" enabled. These are not usually enabled in most 
-distributions. And hence you will have to re-compile the kernel. And I highly 
-recommend you to use a vanilla kernel from kernel.org. (I have tested this on 
-2.6.18.5 and 2.6.24.5). Here are the step by step procedures in case you are 
-new to this:
+I have done everything on the Linux 2.6.28 kernel. I must warn you that there are changes
+to the Linux kernel (from 2.6.29 onwards?) which make some of the modules,  err, not compile.
+If you want to get it to work -- seeker-cpufreq -- is th culprit. 
 
-1. Download the kernel from kernel.org. 
-2. unzip, untar.
-3. move the linux-2.6.x.x dir to /usr/src
-	In order to use the PMU Interrupt facilities, you need to patch your kernel.
-	For more detailed information, refer Patches/README
-	3a. Note: The patch works only with 2.6.24 or higher kernels. Not that it
-	    is different, just that from 2.6.24 on wards, they kicked the i386 branch
-	    and started calling it x86.
-	3b. cd to the kernel directory.
-	3c. patch -p1 < /path/to/seeker/Patches/seeker-kernel-2.6.28.patch
-	3d. patch -p1 < /path/to/seeker/Patches/schedmod-kernel-2.6.28.patch
-4. Copy /boot/config-2.6.y.y to /usr/src/linux-2.6.x.x/.config where, 
-   2.6.y.y is the current booted, working kernel.
-5. cd /usr/src/linux-2.6.x.x
-6. make menuconfig
-7. Select Load alternate config file and select .config
-8. In Instrumentation section, make sure kprobes is selected.
-9. In Kernel Hacking section, make sure "Include debugging symbols" is selected.
-10. Exit saving the .config file.
-11. make (This takes a while, so go get a coffee)
+If you want to work on kernel 2.6.24 and earlier, well go to hell! They have seperate i386 and
+x86_64 branches in arch/ for those cave man kernels and my patches will just FUBAR the kernel
+source. 
+
+In order for the modules to work, I had to patch the kernel (Trust me I tried to avoid
+this as much as possible. So these are the steps) 
+
+
+OBVIOUS and other non obvious DEPENDENCIES 
+------------------------------------------
+
+software:
+
+1. gcc, g++, perl, make, bash shell (Yes some shell scripts explicitly require bash)
+2. Vanilla kernel source (from kernel.org) with my patches installed (Refer next section)
+3. If you want to use my R-scripts, R
+4. If you want to use my matlab scripts, Octave 
+
+hardware:
+
+1. Intel or AMD architecture WITH performance counter support. Please refer to your
+   manual to verify this.
+   1a. If you have a core architecture, verify my fpmu and pmu module to check if it is all
+   right. I developed it for the core2duo series. Untested on Nehelam (Core i7).
+   1b. If you have a AMD architecture, verify my pmu module. 
+   NOTE: Things to verify:
+     Core - 2 programmable counters (pmu), 3 fixed counters (fpmu)
+     AMD  - 4 programmable counters no fixed counters. 
+     Register (Model specific registers) address values 
+
+2. Support for DVFS 
+  2a. If AMD - Check powernow-k8 works (loads)
+  2b. If Intel, check acpi-cpufreq works (loads)
+3. Check if DVFS _really_ works! 
+   Note: Intel fuc*ed me on this. The acpi-cpufreq loaded, but DVFS really did not work! 
+   Guess it was a BIOS thing. But it took me a while to figure this out. 
+   In this dir, I have added a Synthetic benchmark - 
+   cd /path/to/this/dir
+   cd SyntheticBenchmarks
+   make
+   ./synth_bench cpu
+   Check the execution time, if it is way too small (Ran very fast)
+   Increase the trials. 
+  ./synth_bench cpu 200
+
+  Now run synth_bench on all "displayed" CPU frequencies. There must be obvious 
+  changes like you doubled the clock speed? Your execution time must be cut to half. 
+  If not the DVFS mechanism does not work and is just for show, it really really
+  does not work. Get another machine! :-)
+  PS: Make sure to change the frequency of ALL cores for each experiment. 
+
+INSTALLING THE PATCHES TO A VANILLA KERNEL
+------------------------------------------
+
+1.  Download the kernel from kernel.org.
+2.  unzip, untar.
+3.  move the linux-2.6.x.x dir to /usr/src
+4.  cd to the kernel dir (cd /usr/src/linux-2.6.x.x)
+5.  Apply the patches:
+   5a. patch -p1 < /path/to/this/dir/Patches/seeker-kernel-2.6.28.patch
+   5b. patch -p1 < /path/to/this/dir/Patches/schedmod-kernel-2.6.28.patch
+ 
+6.  Copy /boot/config-2.6.y.y to /usr/src/linux-2.6.x.x/.config where, 
+    2.6.y.y is the current booted, working kernel.
+7.  cd /usr/src/linux-2.6.x.x
+8.  make menuconfig
+9.  Select Load alternate config file and select .config
+
+CONFIGURE THE KERNEL
+--------------------
+
+10. Make sure you change the following options:
+  10a. General Setup -> Local Version   and add any text to it example: "-seeker" sans quotes
+       NOTE: This will help you in knowing what is the patched kernel. 
+  10b. Make sure General Setup -> Kprobes is selected. 
+  10c. Make sure Enable loadable module support is checked. 
+  10d. Processor Type and features->  (Make sure are checked - or given value is selected)
+       Sub Architecture -> PC Compatible
+       Symmetric Multi-Processing support
+       Processor Family -> <Whatever your processor is>
+            AMD Opteron: Processor Family -> Opteron/Athlon64Hammer/K8
+            Intel Core:  Processor Family -> Core 2/Newer Xeon
+       Maximum Number of CPUS -> <Set exactly the number of cores/threads you have>
+                                 The default can make the memory consumption of 
+                                 seeker quite high.
+       Feel free to change things here. But know what you are changing.
+  10e. Power Management and ACPI Options ->
+         Power Management support
+         CPU Frequency Scaling ->
+             Just check almost everything. 
+             I had a problem with the cpufreq drivers built into the kernel. So I kept them as modules
+             and made sure they are loaded. 
+             MAKE SURE THE CPUFREQ DRIVER FOR YOUR ARCH IS At least a module!
+  10f. That's it. If you want you can remove unnecessary, but be very careful. 
+       I prefer to get a working boot-able kernel before tweaking it. 
+
+BUILD THE KERNEL
+----------------
+
+11. make (This takes a while, so go get a coffee) 
+    Recommendation: For every core X on the system you can use up to 10X threads! 
+    (Yes I have tried.)
+    make -j10X
 12. make modules_install install
-13. mkinitrd -o /boot/initrd-2.6.x.x.img 2.6.x.x
+13. mkinitrd -o /boot/initrd-2.6.x.x.img 2.6.x.x 
+    NOTE: Only for Ubuntu. SuSE seems to do this step in make install. 
 14. Open /boot/grub/grub.conf and copy the section of your working kernel to a 
     new place and change the title and others to reflect your new compiled kernel.
+    NOTE: Again only for Ubuntu. SuSE does this in make install. 
+
+REBOOT INTO THE KERNEL
+----------------------
+
 15. Reboot to the new kernel. 
-16. Kernel Panic?? Oops... google! 
+16. Kernel Panic?? Oops... This is why they ask you NOT to over write your existing
+    kernel, boot into the working kernel and google! Once everything works fine,
+    you can make this kernel the default (Especially if this is a "research test
+    machine"!)
 
+SHELL ENVIRONMENT 
+-----------------
 
-17. Once everything is up and running and if you want to use the auto.pl or send.pl 
-    scripts, Set the enviornment variable SEEKER_HOME to the path of your seeker 
-    directory. For bash, edit the .bashrc in your home dir and put this line at the end:
-    export SEEKER_HOME=/path/to/seeker;
+Yes I am a moron. My build system is FUBAR'ed. My scripts are FUBAR'ed. 
+I need a environment variable. Add this to your .bashrc:
+
+export SEEKER_HOME=/path/to/where/seeker/source/code/is
+
+and restart the shell. If you have other shell (Most notably the C-Shell) google
+on how to set their environment variables.
+
 18. Make sure you have perl, gcc (Of course!) and  g++ installed. To use the plotting
     scripts, you will need gnuplot 4.2 installed. and for the matlab scripts, do install
     octave.
 
 ========================================================================================
 
+For the rest of this document, I will take a man-page approach. Explaining each and every 
+module/daemon/script. 
 
+========================================================================================
+PATCHES
+-------
+seeker-kernel-2.6.28.patch
+  Tested on the 2.6.28 kernel (Must be obvious from the naming)
+  Patches to get pmu interrupt feature like interrupt handling
+  Seeker scheduler does not use this feature, but it is a very
+  good addition in case you want to extend it. 
+
+  If you _really_ want to use another kernel, you have no option
+  but to study the patch. get the 2.6.28 kernel and apply it
+  and get an idea what it does. And what it modifies. 
+  You can drop me an email: amithash@gmail.com if you need more
+  help. But note that I might have forgotten most of the things
+  by then. 
+
+schedmod-kernel-2.6.28.patch  
+  Tested on the 2.6.28 kernel (Must be obvious from the naming)
+  This is a very simple patch which
+  1. adds a system call called sys_seeker. 
+
+========================================================================================
 KERNEL MODULES:
 --------------
 
-Core MicroArchitecture: c2d*
-AMD Opteron Microarchitecture k8*
+After a make.
 
-c2d/
-c2dpmu   - Performance counter driver
-c2dfpmu  - Fixed Performance Counter driver
-c2dtherm - Core temperature digital sensor driver
-c2dtsc   - Time stamp counter
+All modules are in Module/
 
-k8/
-k8pmu    - Performance counter driver
-k8fpmu   - Fixed Performance Counter stub driver
-k8therm  - Core temperature digital sensor stub driver
-k8tsc    - Time stamp counter
+pmu/
+    The performance monitoring counter driver for AMD and Intel (2 counters which
+    can be configured)
+    insmod $SEEKER_HOME/Build/pmu.ko
 
-seeker-sampler - the sampling kernel module : depends on c2dpmu, c2dfpmu and c2dtherm
+fpmu/ 
+    The performance monitoring counter driver for Intel (Fixed counters)
+    insmod $SEEKER_HOME/Build/fpmu.ko
 
-There are four modules in the Module/ directory.  You must be root
-to install or remove modules, so you probably want to run all your
-experiments as root :).
+seeker-cpufreq/
+    The cpufreq governor which exposes the set_freq interface to seeker-scheduler
+    insmod $SEEKER_HOME/Build/seeker_cpufreq.ko
+    After this run `$SEEKER_HOME/seeker_cpufreq.pl start` to select it.
 
-All examples are for the core microarchitecture. Just replace c2d with k8 for the
-AMD architectures.
+    OPTIONS: 
+      allowed_states=<list of comma seperated states>
+      example, if the system has 5 states:
+      0 - 1100MHz
+      1 - 1400MHz
+      2 - 1700MHz
+      3 - 2000MHz
+      4 - 2200MHz
+      Then, if you do
+      insmod $SEEKER_HOME/Build/seeker_cpufreq.ko allowed_states=0,1,4
+      from there on, it internally will transition only to these states
+      and any logging will report the following:
+      Total of 3 states:
+      0 - 1100MHz
+      1 - 1400MHz
+      2 - 2200MHz
 
-1. Type 'insmod Build/c2dpmu.ko'.  This installs only the driver
-to access the performance counters.
+seeker-scheduler/
+    The mother module. This depends on the above 3 modules.
+    insmod $SEEKER_HOME/Build/seeker_scheduler.ko
 
-2. Type 'insmod Build/c2dfpmu.ko'. This installs the driver to access
-the fixed performance counters.
+    OPTIONS:
+      change_interval - Here you can assing the mutation interval in milli-seconds.
+                        Default: 1000
 
-3. Type 'insmod Build/c2dtsc.ko'. This installs the driver to access
-the time stamp counters,
+      delta           - the mutation constraint. (delta constraint)
 
-4. Type 'insmod Build/c2dtherm.ko'. This installs the driver to access
-the on-die temperature sensors.
+      mutation_method - 0 - Delta (Default)
+                        1 - Ondemand
+                        2 - Conservative
 
-5. For the sampling driver, type
-'insmod Build/seeker-sampler.ko sample_freq=F [log_events=X,Y log_ev_masks=XM,YM os_flag=flag pmu_intr=P]'
+                        This is just so that I could simulate these governors
+                        in my infrastructure so I can gather the same logs. 
+      base_state     -  The state (0,1,2,...) which the scheduler will place
+                        tasks upon their start. 
 
-Where log_events are event numbers, log_ev_masks are event-specific
-masks, This is optional, if not provided, PMU is not monitored and only
-the Fixed PM Counters are monitored.
-	
-sample_freq is the number of times per second you would like samples 
-to be taken. If pmu_intr=x is provided and is less than 3, then it is
-"take a sample every time counter x reaches a value of x".
+      init           - Starting state for cpus:
+                       1 - All High
+                       2 - Half High, Half Low
+                       3 - All Low
 
-pmu_intr if provided, and greater than or equal to 0 then the corrosponding
-fixed counter is configured for interrupt for every sample_freq events.
-Else the timer is used as an interrupt source.
+      allowed_cpus   - The number of cpus allowed by seeker-scheduler.
+                       Cpus 0 - allowed_cpus - 1 will be enabled, and
+                       tasks from now on will NOT execute on other 
+                       cpus (Other than black listed tasks of course)
+     
+     disable_scheduling - 0 - Enable scheduling (Default)
+                          1 - Disable the scheduler. Tasks are free.
 
-os_flag indicates the value for the os_flag for the performance counters.
-os_flag=0 -> Performance counters are enabled in user mode only.
-os_flag=1 -> Performance counters are enabled in kernel and user mode.
+     static_layout   - Provide a comma separated list of the performance state
+                       of cpus starting from 0.
+                       so static_layout=0,0,0,0,4,4,4,4 
+                       will set cpu 0 to 3 to state 0 
+                       and cpu 4-7 to state 4
 
-A list of events are in the C2D_EVENTS.pdf file. Use a max of 2 at a time.
+    PS: Read thesis.pdf :-) 
+        mutation interval -> change_interval
+        delta             -> delta
 
-Almost all the parameters are optional except the sample_freq flag. Of course,
-If you did not want to sample, why use seeker? There are things which are
-much more convienent and will not involve you with kernel modules! 
+seeker scheduler exposes a dev interface
+/dev/seeker_debug which when opened, it will start collecting logs and dumping
+the binary logs through this interface. There are already daemons to get
+these logs and convert them. So do not worry (Next section)
 
-If you decide that you want to change the events being sampled, you
-must unload the seeker-sampler module: 'rmmod seeker-sampler'.  Also, if you're
-going to remove the module, kill the generic_log_dump (next section) process first
-and wait a couple of seconds or bad things could happen.
+Example:
+insmod $SEEKER_HOME/Build/seeker_scheduler.ko delta=4 change_interval=125 \
+                                              allowed_cpus=4 base_stat=3  \
+                                              init=2
 
-'load.sh log_events=X,Y log_ev_masks=XM,YM sample_freq=F os_flag=flag'
-This will do all the above.
+init, static_layout and disable_scheduling are used for special uses. 
+And if used, it is no longer the system mentioned in thesis.pdf! :-)
 
+static_layout - disables the mutator
+disable_scheduling - disables the scheduler from affecting tasks.
+init = 1/2 - disables the mutator and scheduler and performs the load
+             based power optimization. But tasks are still profiled
+             (If /dev/seeker_debug is opened)
 
 ========================================================================================
+INTERFACE TO SEEKER SCHEDULER (Daemons and utils and scripts, Oh My!):
+----------------------------------------------------------------------
 
 DAEMONS:
 --------
 
-generic_log_dump - Reads from seeker-sampler and dumps into a binary file.
+debugd - Is the user space daemon which sucks the binary logs from 
+/dev/seeker_debug and dumps it into a binary file. 
 
-USAGE: generic_log_dump <interval> /dev/seeker_samples <binary file tempelate>
+  USAGE:
+  $SEEKER_HOME/Scripts/debugd <LOG FORMAT> <SAMPLE TIME>
+    LOG FORMAT:
+      This is the format to the output name. If it is:
+        ~/log_
+        then the first binary file written will be ~/log_0
+        The reason will become obvious when you read about send.pl.
+    SAMPLE TIME:
+        The time interval in seconds. debug will wake up every "SAMPLE TIME" seconds
+        and copies data from /dev/seeker_debug and dump it into the output file. 
 
-To get the raw sampling data from the kernel, you have to have a
-daemon running to suck from the kernel buffer.  This is invoked by typing:
-'Scripts/generic_log_dump T /dev/seeker_samples /path/to/binary/output/log &'
+  Make sure that <LOG_FORMAT><NUM> does not exist. debugd will chock and die
+  at start. Worse if it happens in the middle!
 
-This has the effect of dumping the buffer (/dev/seeker_samples) every 'T'
-second.  The data will be put in /path/to/binary/output/log0.
-Note the '0' at the end. This exists to support multiple runs using 'send'
-(Next section)
+  Sometimes it takes a few seconds after a process ends for that event
+  to make it into the log, so I generally wait about 10-20s after I
+  think a process/experiment is done to swap out logs.
 
-PS: make sure that your log* does not exist in the path you have chosen.
-in other words, if generic_log_dump finds the file it wants to create,
-It will choke and die.
+UTILS:
+------
 
-Sometimes it takes a few seconds after a process ends for that event
-to make it into the log, so I generally wait about 10-20s after I
-think a process/experiment is done to swap out logs.
+decodelog - Is the util to decode the binary log to get the ASCII (Human readable)
+            log
+  USAGE:
+    $SEEKER_HOME/Scripts/decodelog < IN_BIN_FILE > OUT_ASCII_FILE
+    Note: Those (< and >) are IO redirects. 
+
+    Decodes the binary log. 
+
+SCRIPTS:
+--------
+
+send.pl  - Instructs debugd daemon to stop writing to the current binary log and start
+           writing to the next binary log. Or to kill debugd
+
+  USAGE:
+    $SEEKER_HOME/Scripts/send.pl [-t]
+      -t - terminate debugd. 
+
+           so if debugd is given a format: ~/log_
+           and starts writing to ~/log_0,
+           executing send.pl 
+           makes it to close ~/log_0 and start to write to ~/log_1
+           Using the -t option will cause debugd to close the current binary log and 
+           the input /dev/seeker_debug and terminate.
+
+
+change_speed.pl - Script to manually change the speed with the seeker cpufreq governor.
+                  PS: You need the seeker_cpufreq.ko inserted and have enabled
+                  seeker_cpufreq governor by running
+
+  USAGE:
+    $SEEKER_HOME/Scripts/change_speed.pl -p=PATTERN
+    PATTERN - A comma separated ordered list of performance states for cpu 0 through
+              sizeof(PATTERN). 
+
+      Example:
+                  insmod $SEEKER_HOME/Build/seeker_cpufreq.ko
+                  $SEEKER_HOME/seeker_cpufreq.pl start
+                  $SEEKER_HOME/Scripts/change_speed.pl -p=0,0,0,1,1,1,2,2
+            
+              Sets performance state of cpu 0-2 to 0, 3-5 to 1 and 6-7 to 2
+              For a one time thing, seeker_cpufreq.ko has load time options,
+              this should be used for runtime change of clock speeds. 
+
+pattern_speed.pl - Script to change clock speed with a pattern. 
+              
+  USAGE:
+    $SEEKER_HOME/Scripts/pattern_speed.pl -p=PATTERN -i=INTERVAL [-c=CORE]
+      PATTERN - A comma separated list of performance states. 
+      INTERVAL - A comma separated list of intervals for the equivalent performance
+                 state in PATTERN in milli seconds. 
+      CORE     - If provided, the pattern is performed on core CORE, else it is
+                 performed on all cores.
+
+      example: 
+        insmod $SEEKER_HOME/Build/seeker_cpufreq.ko
+        $SEEKER_HOME/seeker_cpufreq.pl start
+        $SEEKER_HOME/Scripts/pattern_speed.pl -p=0,1,2,3,4 -i=100,200,300,400 
+        This will cause all cpus to be transitioned first to 0, then after 100ms,
+        will transition to 1 then wait for 200ms and so on. This process is 
+        repeated infinitely. 
+        $SEEKER_HOME/Scripts/pattern_speed.pl -p=0,1,2,3,4 -i=100,200,300,400 -c=4
+        this will do the same, but only to core 4.
+
+========================================================================================
+ASCII LOG FORMAT
+----------------
+
+There are 4 unique kinds of lines in the log files:
+SCH,PID,MUT,STATE
+
+SCH format
+----------
+s,<interval>,<pid>,<cpu>,<instructions>,<Real IPC>,<state requested>,<state given>,<current state>,<reference cycles>
+  interval         - The mutation interval number. 
+  pid              - The current task's pid
+  cpu              - The cpu on which the current task was executing on.
+  instructions     - The total amount of instructions the task executed from the last log.
+  Real IPC         - Instructions / Real Clocks (Real clocks vary with different clock speeds)
+  state requested  - The state which the PDS (Performance directed scheduler) requested.
+  state given      - The state which was given to PDS (Can be different because the requested state was overloaded)
+  current state    - The state in which the task executed with from last time.
+  reference cycles - The total number of reference cycles from last time (Reference cycles count at a constant 
+                     rate irrespective of clock speed).
+
+PID format
+----------
+p,<pid>,<name>
+  pid  - The pid of the task
+  name - The name of the task with pid = <pid>
+  Used to know what task a SCH line belongs to.
+
+MUT format
+----------
+m,<interval>,r,<req cpus for state 0>,<req cpus for state 1>...,g,<giv cpus for state 0>,<giv cpus for state 1>...
+  interval - The mutation interval number 
+  req cpus for state X - The requested number of cpus for performance state X
+  giv cpus for state X - The number of cpus given to performance state X by the mutator.
+
+STATE format
+------------
+t,<cpu>,<state>,<residency time>
+  cpu - The cpu 
+  state - The state with which cpu was executing
+  residency time - The time in millisecond's which cpu - cpu spent in performance state - state
+
+========================================================================================
+LOG MANAGEMENT UTILS
+--------------------
+
+csv2tsv.pl 
+----------
+  Convert comma separated file to tab separated file
+  Note: This is because some tools (Hear matlab?) make it such a bit*h to handle
+  comma separated files, that I had to add this. 
+
+  USAGE:
+    csv2tsv.pl input.csv output.tsv
+    NOTE: Lines which do not start with a number are automatically prefixed
+    with a comment character '#'.
+
+pull.pl
+-------
+  This should make your life easier with the output ASCII files from decodelog.
+
+USAGE: 
+  $SEEKER_HOME/Scripts/pull.pl --input  INPUT_ASCII_FILE \
+                               --output OUTPUT_DIR       \
+                               --bench  APP_NAME         \
+                               --what   WHAT_TO_PULL     \
+                               --cpus   TOTAL_CPUS       \
+                               --benchlist APP_LIST_FILE 
+
+  INPUT_ASCII_FILE - The file which is got by decodelog.
+  OUTPUT_DIR       - The dir to place all these logs. 
+  WHAT             - sch,mut,st or all 
+                     sch - pull only SCH lines
+                     mut - pull only MUT lines
+                     st  - pull only STATE lines
+                     all - pull all (sch,mut & st) lines. 
+  TOTAL_CPUS       - The total number of cpus you want ST information. 
+  OPTIONAL:
+    APP_NAME   - Pull only information pertaining to application with name APP_NAME
+    APP_LIST_FILE - If you need more than one app to pull, keep that in a list (One in each line)
+                    and use the --benchlist option.
+    If neither --bench or --benchlist option is specified, then all logged tasks are outputted.
+
+  OUTPUT DIR LAYOUT:
+  ------------------
+  *.sch - One comma separated file for each found task.
+  FORMAT: <total instructions> <total reference cycles> <interval> <instructions> <reference cylces> <cpu> <IPC> <state> <req state> <given state>
+      total instructions     - The cumulative instructions from the start of the task
+      total reference cycles - The cumulative instructions from the start of the tasks
+      NOTE: First two is to make your plotting needs easier. 
+
+      interval               - The current mutation interval.
+      instructions           - Total instructions executed in this sample. 
+      reference cycles       - The total reference cycles in this sample (Note reference cycles are not affected by clock speed changes)
+      cpu                    - The cpu on which the task executed.
+      IPC                    - The Real IPC with which this task executed with
+      state                  - The performance state with which this task executed with in this sample.
+      req state              - The state which the PDS requested.
+      giv state              - The state the PDS was given (Can be different due to the state being overloaded).
+
+  MUT_GIV
+  <interval> <cpus given to state 0> <cpus given to state 1> ...
+  (Same as MUT format
+   
+  MUT_REQ
+  <interval> <cpus requested for state 0> <cpus requested for state 1> ...
+  same as MUT format.
+
+  CPUST_X
+  CPU State residency information for CPU X
+  <state> <residency time in ms>
+   - Self explanatory. 
 
 ========================================================================================
 
-UTILITIES:
-----------
+DATA MANIPULATION UTILS
+-----------------------------
 
-send - Allows restart of the generic_log_dump daemon to shift log file dumps.
+interp
+------
+  USAGE: interp /path/to/input/csv/file /path/to/output/csv/file. INTERVAL(Millions of instructions)
 
-USAGE: send.pl [-t]
-
-[-t] if provided, terminates generic_log_dump. else sends an instruction to change logs
-
-This script allows you to change log files. Helpful if you are collecting data for
-a few applications and helps a lot in automating the process.
-
-Scripts/send 
-
-then generic_log_dump will start dumping into the file /path/to/binary/output/log1
-and so on and so forth. Make sure that you call send some 20 seconds
-after the experiment is done.
-
-NOTE: To use this script, you need to have set the enviornment variable SEEKER_HOME
-to point to the dir containing this script.
-
-------------------------------------------------------------------------------------------
-
-decodelog - Utility to decode the binary log.
-
-USAGE: decodelog < /path/to/binary/log > /path/to/ascii/log
-
-The log comes out in a binary format.  You want ascii, so you have to
-convert it using 'Scripts/decodelog < binlog > asciilog'.  The < and > back
-there are for redirection, don't forget them.
+A compile time configurable linear spline interpolation tool. I had to write this
+as R just too ages to process each data file. 
 
 
-Reading the ascii log:
-
-The log file contains a "p" line which gives the pid for each application logged.
-p,<pid>,<app name>,0
-
-Using the pid of the app, the lines for that app can be calculated.
-Searching for ",<pid>," you will get the sample "s" line:
-s,<cpu>,<pid>,<cycles>,<time stamp>,[<counter1>,<counter2>],<fcounter1>,<fcounter2>,<fcounter3>,<temp>
-[] - optional, depends on the number of counters you are monitoring.
-
-You can write your own scripts to parse this file, or use 'pull.pl' (Next Section)
-
-------------------------------------------------------------------------------------------
-
-pull - To get the single process sample data.
-
-USAGE: pull.pl [-o output dir -n process_name] -i inputfile_name
-
-Usually the output ascii file is quiet exhausting and might have a lot of processes and
-not really organized as it is a global sampler with per process detail. and hence, run
-'Scripts pull.pl -o /path/to/logs/dir -n process_name -i input_log_file_name'
-
-If there exists different pids for the same process name, different output files will
-be generated and hence -o requires the path to a directory. 
-
-If -o is not provided (Optional) then the output files will be generated in the current dir.
-If -n is not provided (Optional) then a file for each and every pid will be generated.
-
-Output file naming format: <process_name>.pid.log
-
-File format: CSV Format with a header.
-
-------------------------------------------------------------------------------------------
-
-interp - Performs linear spline interpolation on data. 
-
-USAGE: interp /path/to/input/csv/file /path/to/output/csv/file. INTERVAL(Millions of instructions)
-
-Configuration: Scripts/iconfig.h
-
-As Interpolation cannot be performed on all data without generating data which does not make
-sense, like interpolating Cycles.
-
-The configuration header iconfig.h is well documented, If you required other data do edit it.
-
-------------------------------------------------------------------------------------------
-
-smooth - Performs auto regressive moving average on interpolated csv data.
-
-USAGE: smooth /pathto/inerp/csv/data /path/to/op/smooth/csv/data WINDOW_LENGTH
-
+smooth
+------
+  USAGE: smooth /pathto/inerp/csv/data /path/to/op/smooth/csv/data WINDOW_LENGTH
+To smooth out data files using the moving window averaging algorithm.
 Actual window length = 2 * WINDOW_LENGTH + 1
 
-Main use of this util is to smooth out the data and hence remove non-understndable noise
-to display trends.
+maxmin
+------
+  USAGE: maxmin /path/to/op/csv/data /path/to/indata1 /indata2 [/indata3 ....]
+To find a timeline max and min for a bunch of timeline data. Useful when you are plotting
+the max and min time series plots for data from a bunch of experiments.
 
-------------------------------------------------------------------------------------------
+========================================================================================
+OTHER DATA COLLECTION TOOLS
+---------------------------
 
-maxmin - Computes per interval max and min for a set of performance data.
+powersample.pl
+--------------
 
-USAGE: maxmin /path/to/op/csv/data /path/to/indata1 /indata2 [/indata3 ....]
+USAGE: $SEEKER_HOME/Scripts/powersample.pl <OUTPUT FILE>
+    OUTPUT FILE - The output file to save the samples. 
 
-Computes the per interval maximum and minimum and the output is stored in
-data.max and data.min
+  NOTES:
+          1. This is a custom hacked tool. You will have to modify it for each machine.. (Sorry)
+          2. It probes ipmitool, so it must be installed.
+          3. Not only that the ipmitool must be working. Try `ipmitool sensors` to check if everything
+             is smooth.
 
 ========================================================================================
 MISC SCRIPTS:
