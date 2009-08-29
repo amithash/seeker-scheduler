@@ -524,27 +524,41 @@ USAGE:
 ========================================================================================
 
 DATA MANIPULATION UTILS
------------------------------
+-----------------------
 
 interp
 ------
+  A compile time configurable linear spline interpolation tool. I had to write this
+  as R just took ages to process each data file. 
+  
   USAGE: interp /path/to/input/csv/file /path/to/output/csv/file. INTERVAL(Millions of instructions)
 
-A compile time configurable linear spline interpolation tool. I had to write this
-as R just too ages to process each data file. 
+  The configuration is in iconfig.h
+  Yes. This is a C++ header. No, this is not a configuraiton file. The configuration
+  is _compiled_ in. This is to improve the speed of the operations. 
+
+  For configuration help refer to iconfig.h. It is well documented. 
 
 
 smooth
 ------
+  To smooth out data files using the moving window averaging algorithm.
+  Actual window length = 2 * WINDOW_LENGTH + 1
+    
   USAGE: smooth /pathto/inerp/csv/data /path/to/op/smooth/csv/data WINDOW_LENGTH
-To smooth out data files using the moving window averaging algorithm.
-Actual window length = 2 * WINDOW_LENGTH + 1
+
+  The file is assumed to be run through interp. That is each sample (Line) is assumed
+  to be equal in length. 
 
 maxmin
 ------
+  To find a timeline max and min for a bunch of timeline data. Useful when you are plotting
+  the max and min time series plots for data from a bunch of experiments.
+
   USAGE: maxmin /path/to/op/csv/data /path/to/indata1 /indata2 [/indata3 ....]
-To find a timeline max and min for a bunch of timeline data. Useful when you are plotting
-the max and min time series plots for data from a bunch of experiments.
+
+  The input files are assumed to to run through interp. That is each sample (Line) is assumed
+  to be of equal length.
 
 ========================================================================================
 OTHER DATA COLLECTION TOOLS
@@ -563,106 +577,136 @@ USAGE: $SEEKER_HOME/Scripts/powersample.pl <OUTPUT FILE>
              is smooth.
 
 ========================================================================================
-MISC SCRIPTS:
+LIBRARIES
+---------
+
+state_recommendations
+---------------------
+
+This is the libc equivalent to talk to the syscall interface of seeker scheduler. 
+make
+export LD_LIBRARY_PATH=`pwd`:$LD_LIBRARY_PATH
+then you can include the header "state_recommendations.h" in  your runtime, and you
+get the following functions:
+
+low_freq() - From now on, you will be executing with the lowest frequency.
+mid_freq() - From now on, you will be executing with the frequency inbetween low and high
+high_freq() - From now on you will be executing with the highest frequency. 
+continue_dynamically() - Stop the recommendations, and let seeker decide your frequency.
+ignore_task() - From now on, seeker should not do anything to this task. It is free to 
+                roam! :-)
+
+For an example use case, check out:
+$SEEKER_HOME/Scripts/test_recommendations.c
+and check out the Makefile in 
+$SEEKER_HOME/Scripts/Makefile:43
+
+
+seeker.pm
+---------
+A set of functions I found rewriting for each perl script I wrote. So it is here.
+I do not know if I use it anymore... but it is there.
+
+benchmarks.pm
+-------------
+A set of perl subroutines to help me with the IBS - Iyyer benchmark suite. 
+(This is the DRACO benchmark suite, so if you do not know what they are, it is probably
+useless to you)
+
+This is used to create the run scripts. 
+
+========================================================================================
+Synthetic Benchmarks
+--------------------
+
+cd $SEEKER_HOME/SyntheticBenchmarks
+make
+
+USAGE:
+  $SEEKER_HOME/SyntheticBenchmarks/synth_bench [cpu|mem] [trials]
+
+  cpu|mem - Exercise cpu or memory. 
+  trials  - The number of trials. If it runs too fast or too slow, this is the knob.
+            Default: 100
+
+========================================================================================
+RUNTIME UTILS
 -------------
 
-auto_pulldecode.pl - automates the decodes and pulls from binary files
-pre_organize.pl - organizes the output of the above script.
-auto_interp.pl - automates the interpolation of files
-auto_smooth.pl - automates the smoothing process
-auto_maxmin.pl - automates the process to find max and min
+launch
+------
 
-mother_auto.pl - The mother of all auto scripts. Run this, and go home and sleep!
+refer to 
+$SEEKER_HOME/utils/README
 
-All these scripts were written for myself or my research group and might be uselss for
-anyone else using these scripts. Refer the README in the MiscScripts dir.
+========================================================================================
+OTHER SCRIPTS
+-------------
 
-I assume that I am running spec 2006 benchmarks which are organized as the DRACO BENCHMARK
-SUITE.
+Everything in $SEEKER_HOME/AnalysisScripts
+
+These were _hack_ scripts written to get my analysis done. It may not be useful to
+anyone but me. I just need to version control them too. So, here they are. 
 
 ========================================================================================
 FULL SYSTEM USE CASE:
 ---------------------
 
-# 1. insert the c2dpmu driver
-insmod Build/c2dpmu.ko
+# Insert the PMU Drivers.
+insmod $SEEKER_HOME/Build/pmu.ko  # if AMD
+insmod $SEEKER_HOME/Build/fpmu.ko # if Intel
 
-# 2. insert the fixed counter driver
-insmod Build/c2dfpmu.ko
+# Insert the seeker cpufreq governor. Note: The cpufreq driver must be in!
+insmod $SEEKER_HOME/Build/seeker_cpufreq.ko
 
-# 3. insert the TSC driver
-insmod Build/c2dtsc.ko
+# Pick the seeker governor as the current governor.
+$SEEKER_HOME/seeker_cpufreq.pl start
 
-# 4. insert the temperature sensor driver
-insmod Build/c2dtherm.ko
+# load the seeker scheduler
+insmod $SEEKER_HOME/Build/seeker_cpufreq.ko  # And other options.
 
-# 5. for X:XM, Y:YM refer the core2duo system programmers reference manual.
-# F is the number of times the cpu is sampled per second.
+# Start the logging daemon.
+$SEEKER_HOME/Scripts/debugd ~/logs/log_
 
-insmod Build/seeker-sampler.ko log_events=X,Y log_ev_masks=XM,YM sample_freq=F os_flag=0
+# Do whatever experiments you want 
 
-# 6. Start the daemon to pull out the logs form the kernel
-Scripts/generic_log_dump INTERVAL /dev/seeker_samples /path/to/log/file &
+# Terminate the logging daemon
+$SEEKER_HOME/Scripts/send.pl -t
 
-# Record the pid of generic_log_dump
+# Remove the seeker scheduling module.
+rmmod seeker_scheduler
 
+# Remove seeker as the current cpufreq governor.
+# This is important to remove the module.
+$SEEKER_HOME/seeker_cpufreq.pl stop
 
-# 
-# 7. START THE APPLICATION TO BE MONITORED
-#
+# Remove the seeker cpufreq governor.
+rmmod seeker_cpufreq
 
-# << All applications monitored ends execution
+# Remove the PMU drivers.
+rmmod pmu   # if AMD
+rmmod fpmu  # if Intel
 
-# <OPTIONAL>
-# 8. change the log file name.
-Scripts/send.pl
+# Decode the logs.
+$SEEKER_HOME/Scripts/decodelog < ~/logs/log_0 > ~/logs/log_0.txt
 
-#
-# 9. START ANOTHER APPLICATION
-#
+# Pull from the logs
+$SEEKER_HOME/Scripts/pull.pl --input ~/logs/log_0.txt --output ~/APP_logs --bench APP --cpus 4
 
-# Repeat steps 7 and 8 as long as required.
-
-# << Test ENDS
-
-# 10. Kill daemons and remove kernel modules
-
-Scripts/send.pl -t
-rmmod seeker-sampler
-rmmod c2dtherm
-rmmod c2dtsc
-rmmod c2dfpmu
-rmmod c2dpmu
-
-11. Decode all log files (Repeat for every log file):
-
-Scripts/decodelog < /path/to/input/binary/log > /path/to/output/ascii/log
-
-12. get seperate files (Repeat for every log file)
-
-Scripts/pull.pl -o /path/to/log/dir -i /path/to/decodelog/output
-
+# Enjoy! 
 ========================================================================================
 
 REFERENCE:
 ----------
 
 1. p4sampler, Author: Tipp Moseley, Graduate Student, Department of Computer Science,
-University of Colorado, Boulder
-
-
-seeker-sampler_src.c, seeker-sampler.h -> Modeled after Tipp Moseley's p4sampler
-(But heavily modified to support multiple cores and multiple sources per sample)
-
-genericlog.h/c -> Taken unmodified from p4sampler
-
-generic_log_dump.c Modified version which supports 'send' taken from p4sampler
-
-decodelog.c Taken unmodified from p4sampler
+University of Colorado, Boulder pmu driver was a derivative work of this.
 
 2. INTEL IA32/64 system programmers reference manual.
 
 3. INTEL forums.
+
+4. AMD BIOS developers guide. 
 
 ========================================================================================
 
@@ -672,53 +716,6 @@ AUTHOR:
 Amithash Prasad, Graduate Student, Department of Electrical and Computer Engineering,
 University of Colorado, Boulder
 Email: amithash.prasad@colorado.edu
-
-========================================================================================
-
-CHANGELOG:
-----------
-
-Fully Functional at revision 30, 
-Currently fully documented, and added pull.pl @ revision 40.
-
-Revision 46: Completely documented, added auto-decode.pl and auto-pull.pl
-	     Fixed a few bugs with c2dpmu and seeker-sampler
-Revision 47  Now seeker-sampler.ko takes in an argument os_flag which lets the user
-	     decide whether they want to count in kernel space (os_flag=1) or not
-	     (os_flag=0)
-Revision 49  Removed auto-decode.pl and auto-pull.pl and now there is a single script
-	     which does both called auto.pl
-
-Revision 56  send.c was replaced with an advanced send.pl. Now the user does not
-	     have to remember the pid of generic_log_dump
-	     Renamed all modules to maintain consistency
-
-Revision 57  Untested Change to seeker sampler. Expect another revision mentioning
-	     that there are no regressions!
-Revision 61  A lot of bugs in send.pl were removed.
-	     Modifications made in 57 was tested. Is working and hence the comments were
-	     removed.
-Revision 63  Removed the tsc part form c2dpmu and made it another driver. On the road
-	     to consistancy. And finished the Interfaces document. Found a few stray
-	     unneeded / depreciated / random code on the way which was cleaned.
-	     Of course, additions involves the Makefile too.
-Revision 69  Reorganized everything in the modules directory. Now seeker can be made
-	     architecture independent.
-Revision 70  Finally, Merged the k8sampler into seeker! Now it is fully Architecture 
-	     expandable. Notes: I am yet to find documentation on the on die temp
-	     sensor for the amd opteron, and hence the driver is currently a stub.
-Revision 104 Added a lot of automation scripts. Added programs to interpolation, 
-	     Smoothing and data analysis. 
-Revision 138 Added support to sample exery x events from the perf counters. This is
-	     a big thing. Now there is a kernel patch and I have shifted to kernel
-	     version 2.6.24. Support to older kernels will come as soon as I know
-	     that things are working! Note the last change! 104 to 138 I have been
-	     working on this particular feature!
-Revision 146 Seeker is tested to work with the 2.6.24 kernel. Yippee. 
-Revision 8   No, this is not a mistake. I just started using google code to revision
-	     and host my code. And hence the restart in revisioning!
-	     (At least it makes me look like a real programmer to get to this level
-	     in 7 revisions! :-)
 
 ========================================================================================
 
