@@ -1,29 +1,29 @@
 ========================================================================================
-                                          SEEKER
-                        				Performance based scheduler
-                      		 		Copyright 2008 Amithash Prasad
+                                    SEEKER
+                            Performance based scheduler
+                      	   Copyright 2008 Amithash Prasad
 	                                                                        
-	 Seeker is free software: you can redistribute it and/or modify         
-	 it under the terms of the GNU General Public License as published by   
-	 the Free Software Foundation, either version 3 of the License, or      
-	 (at your option) any later version.                                    
-	                                                                        
-	 This program is distributed in the hope that it will be useful,        
-	 but WITHOUT ANY WARRANTY; without even the implied warranty of         
-	 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          
-	 GNU General Public License for more details.                           
-	                                                                        
-	 You should have received a copy of the GNU General Public License      
-	 along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+     Seeker is free software: you can redistribute it and/or modify         
+     it under the terms of the GNU General Public License as published by   
+     the Free Software Foundation, either version 3 of the License, or      
+     (at your option) any later version.                                    
+                                                                        
+     This program is distributed in the hope that it will be useful,        
+     but WITHOUT ANY WARRANTY; without even the implied warranty of         
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          
+     GNU General Public License for more details.                           
+                                                                        
+     You should have received a copy of the GNU General Public License      
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 
-	 All documentation is licensed under the creative common license, *except*
-	 C2D_EVENTS.pdf which is the copyright of Intel Corporation, and K8_EVENTS.pdf
-	 which is the copyright of Advanced Micro Devices ( added here for 
-	 convenience ) and thesis/* and thesis_eqno/* for which I hold a restrictive non-copy
-	 non-distribute rights. But this restriction will be removed as soon as I 
-	 publish upon which the document will become public domain and all have 
-	 the same rights as other academic publications. This is currently not in
-	 git HEAD, as I am using a separate repository for it. 
+   All documentation is licensed under the creative common license, *except*
+   C2D_EVENTS.pdf which is the copyright of Intel Corporation, and K8_EVENTS.pdf
+   which is the copyright of Advanced Micro Devices ( added here for 
+   convenience ) and thesis/* and thesis_eqno/* for which I hold a restrictive non-copy
+   non-distribute rights. But this restriction will be removed as soon as I 
+   publish upon which the document will become public domain and all have 
+   the same rights as other academic publications. This is currently not in
+   git HEAD, as I am using a separate repository for it. 
 
 ========================================================================================
 
@@ -38,7 +38,7 @@ software and rampant in research projects (This is because in research, the code
 irrelevant and the _idea_ is everything). 
 
 This project comprises of various kernel modules and may have bugs. I am not Linus,
-I an average Joe the developer. A direct consequence of bugs in kernel modules, is that
+I am an average Joe the developer. A direct consequence of bugs in kernel modules, is that
 you will probably have to learn to do _everything_ from the command prompt. 
 
 If all this does not scare you (Or your adviser is not giving up), welcome my friend.
@@ -51,9 +51,9 @@ PRE-SETUP / PRE-REQS:
 
 I have done everything on the Linux 2.6.28 kernel. I must warn you that there are changes
 to the Linux kernel (from 2.6.29 onwards?) which make some of the modules,  err, not compile.
-If you want to get it to work -- seeker-cpufreq -- is th culprit. 
+If you want to get it to work -- seeker-cpufreq -- is the culprit. 
 
-If you want to work on kernel 2.6.24 and earlier, well go to hell! They have seperate i386 and
+If you want to work on kernel 2.6.24 and earlier, well go to hell! They have separate i386 and
 x86_64 branches in arch/ for those cave man kernels and my patches will just FUBAR the kernel
 source. 
 
