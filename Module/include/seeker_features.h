@@ -67,9 +67,4 @@
 #error "Select at least one scheduler in include/features.h"
 #endif
 
-#if SCHEDULER_TYPE == SELECT_SCHEDULING && MUTATOR_TYPE != DYNAMIC_PROGRAMMING_BASED_MUTATOR
-#warning "The combination of select scheduling and approximate direction based mutator is not known to work"
-#endif
-
-
 #endif
