@@ -103,7 +103,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	u64 tasks_interval = 0;
 	cpumask_t mask = CPU_MASK_NONE;
 
-	#if defined(SCHED_DEBUG) || SCHEDULER_TYPE == SELECT_SCHEDULING
+	#if defined(SCHED_DEBUG)
 	int i;
 	#endif
 	/* Do not try to estimate anything
