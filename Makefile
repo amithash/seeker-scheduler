@@ -33,7 +33,6 @@ all:
 	+make -C Scripts $(EXTRA_ARGS)
 	+make -C SyntheticBenchmarks
 	+make -C utils
-	dot -Tpng design.dot -o design.png
 tags:
 	ctags -R -u
 	cp linux_2.6.28_tags.gz linux.gz
@@ -47,12 +46,10 @@ debug:
 	+make -C Scripts debug $(EXTRA_ARGS)
 	+make -C SyntheticBenchmarks debug
 	+make -C utils debug
-	dot -Tpng design.dot -o design.png
 clean:
 	+make -C Module clean
 	+make -C lib clean
 	+make -C Scripts clean
 	+make -C SyntheticBenchmarks clean
 	+make -C utils clean
-	-rm design.png
 
