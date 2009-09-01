@@ -21,10 +21,9 @@
  * General Public License along with this program.   *
  * If not, see <http://www.gnu.org/licenses/>.       *
  *****************************************************/
-
-#include <linux/init.h>
-#include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/init.h>
 
 #include <seeker.h>
 #include <pmu.h>

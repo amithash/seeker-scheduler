@@ -22,9 +22,6 @@
  * If not, see <http://www.gnu.org/licenses/>.       *
  *****************************************************/
 
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
 #include <linux/spinlock.h>
 #include <linux/cpumask.h>
 #include <linux/timer.h>

@@ -22,12 +22,6 @@
  * If not, see <http://www.gnu.org/licenses/>.       *
  *****************************************************/
 
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/module.h>
-#include <asm/irq.h>
-#include <linux/cpumask.h>
-#include <linux/sched.h>
 #include <linux/spinlock.h>
 #include <linux/string.h>
 #include <linux/workqueue.h>
