@@ -152,7 +152,7 @@ int evaluate_ipc(int ipc, int cur_state, int *step, int *state_req)
   #elif SCHEDULER_TYPE == ADAPTIVE_LADDER_SCHEDULING
   new_state = adaptive_ladder_evaluation(ipc,cur_state,step,state_req);
   #elif SCHEDULER_TYPE == SELECT_SCHEDULING
-  new_state = select_evaluation(ipc, cur_state, req_state);
+  new_state = select_evaluation(ipc, cur_state, state_req);
   #else
     #error "Unsupported Scheduling method."
   #endif
