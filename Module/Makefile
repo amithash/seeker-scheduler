@@ -55,7 +55,9 @@ seeker_scheduler-objs += seeker-scheduler/main.o         \
 		       seeker-scheduler/other_mutators.o \
 		       seeker-scheduler/sched_debug.o    \
 		       seeker-scheduler/nrtasks.o        \
-		       seeker-scheduler/debug.o
+		       seeker-scheduler/debug.o					 \
+					 seeker-scheduler/search_state.o   \
+					 seeker-scheduler/pds.o
 
 KDIR    := /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)

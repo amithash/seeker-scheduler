@@ -1,0 +1,150 @@
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <linux/module.h>
+#include <asm/irq.h>
+#include <linux/cpumask.h>
+#include <linux/sched.h>
+#include <linux/spinlock.h>
+#include <linux/string.h>
+#include <linux/workqueue.h>
+#include <linux/cpu.h>
+
+
+#include <seeker.h>
+
+#include "ipc.h"
+#include "search_state.h"
+
+/********************************************************************************
+ * 			External Variables 					*
+ ********************************************************************************/
+
+extern int total_states;
+
+
+/********************************************************************************
+ * 				Local Macros					*
+ ********************************************************************************/
+
+/* LADDER: The HIGH IPC Threshold */
+#define IPC_HIGH IPC_0_750
+
+/* LADDER: The LOW IPC Threshold */
+#define IPC_LOW  IPC_0_500
+
+/* SELECT: IPC Thresholds */
+#define MIN_IPC_4 (IPC_1_000 + IPC_0_125)
+#define MIN_IPC_3 (IPC_0_750)
+#define MIN_IPC_2 (IPC_0_500)
+#define MIN_IPC_1 (IPC_0_250)
+#define MIN_IPC_0 0
+
+/* macro to perform saturating increment with an exclusive limit */
+#define sat_inc(state,ex_limit) ((state) < ex_limit-1 ? (state)+1 : ex_limit-1)
+
+/* macro to performa a saturating decrement with an inclusive limit */
+#define sat_dec(state,inc_limit) ((state) > inc_limit ? (state)-1 : inc_limit)
+
+/* macro to do a sat sum on integers (including negative nums)
+ * with exclusive high and inclusive low
+ */
+#define sat_sum(a,b,inc_low, ex_high) (((a) + (b)) >= (ex_high) ? (ex_high)-1 : (((a)+(b)) < (inc_low) ? (inc_low) : ((a)+(b))))
+
+
+static int min_states[MAX_STATES] = {MIN_IPC_0, MIN_IPC_1, 
+				     MIN_IPC_2, MIN_IPC_3,
+				     MIN_IPC_4};
+
+
+int ladder_evaluation(int ipc, int cur_state, int *state_req)
+{
+  int new_state;
+  
+			/*up */
+	if (ipc >= IPC_HIGH) {
+		*state_req = sat_inc(cur_state, total_states);
+		new_state = search_state_up(cur_state,*state_req);
+	} else if (ipc <= IPC_LOW) {
+		*state_req = sat_dec(cur_state, 0);
+		new_state = search_state_down(cur_state, *state_req);
+	} else {
+		*state_req = cur_state;
+		new_state = search_state_closest(cur_state, *state_req);
+	}
+
+  return new_state;
+}
+
+int adaptive_ladder_evaluation(int ipc, int cur_state, int *step, int *state_req)
+{
+  int new_state;
+	if (ipc >= IPC_HIGH) {
+    if(*step > 0) {
+			*state_req = sat_sum(cur_state, *step ,0, total_states);
+			*step = sat_inc(*step,total_states);
+      new_state = search_state_up(cur_state, *state_req);
+		} else if(*step == 0){
+      *state_req = cur_state;
+      *step = 1;
+      new_state = search_state_closest(cur_state, *state_req);
+    } else {
+			*state_req = cur_state;
+			*step = 0;
+      new_state = search_state_closest(cur_state, *state_req);
+		}
+  } else if (ipc <= IPC_LOW) {
+		if(*step < 0){
+			*state_req = sat_sum(cur_state, *step, 0, total_states);
+			*step = sat_dec(*step, (-1*(int)total_states));
+      new_state = search_state_down(cur_state, *state_req);
+		} else if(*step == 0){
+      *state_req = cur_state;
+      *step = -1;
+      new_state = search_state_closest(cur_state, *state_req);
+    } else {
+			*state_req = cur_state;
+			*step = 0;
+      new_state = search_state_closest(cur_state, *state_req);
+		}
+	} else {
+		*state_req = cur_state;
+		new_state = search_state_closest(cur_state,*state_req);
+		*step = 0;
+	}
+
+  return new_state;
+}
+
+int select_evaluation(int ipc, int cur_state, int *state_req)
+{
+  int i;
+  int new_state;
+
+	for(i = total_states - 1; i >= 0; i++){
+		if(ipc >= min_states[i]){
+			*state_req = i;
+			break;
+		}
+	}
+	new_state = search_state_closest(cur_state, *state_req);
+
+  return new_state;
+}
+
+
+int evaluate_ipc(int ipc, int cur_state, int *step, int *state_req)
+{
+  int new_state;
+  #if SCHEDULER_TYPE == LADDER_SCHEDULING
+  new_state = ladder_evaluation(ipc,cur_state,state_req);
+  #elif SCHEDULER_TYPE == ADAPTIVE_LADDER_SCHEDULING
+  new_state = adaptive_ladder_evaluation(ipc,cur_state,step,state_req);
+  #elif SCHEDULER_TYPE == SELECT_SCHEDULING
+  new_state = select_evaluation(ipc, cur_state, req_state);
+  #else
+    #error "Unsupported Scheduling method."
+  #endif
+
+  return new_state;
+}
+
