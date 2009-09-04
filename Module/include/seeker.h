@@ -95,9 +95,9 @@ typedef struct {
 
 /* Print Debugging statements only if DEBUG is defined. */
 #ifdef DEBUG
-#	define debug(str,a...) printk(KERN_INFO "SEEKER DEBUG[%s : %s]: " str "\n",__FILE__,__FUNCTION__, ## a)
+#define debug(str,a...) printk(KERN_INFO "SEEKER DEBUG[%s : %s]: " str "\n",__FILE__,__FUNCTION__, ## a)
 #else
-#	define debug(str,a...) do{;}while(0);
+#define debug(str,a...) do{;}while(0);
 #endif
 
 #define ABS(i) ((i) >= 0 ? (i) : (-1)*((int)(i)))
