@@ -32,7 +32,7 @@
 
 #include <seeker.h>
 
-#include "fpmu_int.h"
+#include "pmu_int.h"
 
 /********************************************************************************
  * 			External Variables 					*

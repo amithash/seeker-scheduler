@@ -48,6 +48,14 @@
 #	define CTR1_OVERFLOW_MASK BITS_AT(1,1)
 #	define CTR0_OVERFLOW_CLEAR_MASK (~BITS_AT(1,0))
 #	define CTR1_OVERFLOW_CLEAR_MASK (~BITS_AT(1,1))
+#	define FIXSEL_RESERVED_BITS \
+	(~(BITS_AT(2,0) | BITS_AT(3,3) | BITS_AT(3,7) | BITS_AT(1,11)))
+#	define FIXED_CTR0_OVERFLOW_MASK BITS_AT(1,0)
+#	define FIXED_CTR1_OVERFLOW_MASK BITS_AT(1,1)
+#	define FIXED_CTR2_OVERFLOW_MASK BITS_AT(1,2)
+#	define FIXED_CTR0_OVERFLOW_CLEAR_MASK (~BITS_AT(1,0))
+#	define FIXED_CTR1_OVERFLOW_CLEAR_MASK (~BITS_AT(1,1))
+#	define FIXED_CTR2_OVERFLOW_CLEAR_MASK (~BITS_AT(1,2))
 #elif defined(ARCH_K8) || defined(ARCH_K10)
 #	define EVTSEL_RESERVED_BITS BITS_AT(1,21)
 #	define EVTSEL_RESERVED_BITS_HIGH (BITS_AT(4,4) | BITS_AT(22,10))
@@ -67,6 +75,13 @@
 #	define MSR_PERF_GLOBAL_STATUS 	0x0000038E
 #	define MSR_PERF_GLOBAL_CTRL	0x0000038F
 #	define MSR_PERF_GLOBAL_OVF_CTRL	0x00000390
+#	define MSR_PERF_FIXED_CTR0 		0x00000309
+#	define MSR_PERF_FIXED_CTR1 		0x0000030A
+#	define MSR_PERF_FIXED_CTR2 		0x0000030B
+#	define MSR_PERF_FIXED_CTR_CTRL 		0x0000038D
+#	define MSR_PERF_GLOBAL_STATUS 		0x0000038E
+#	define MSR_PERF_GLOBAL_CTRL		0x0000038F
+#	define MSR_PERF_GLOBAL_OVF_CTRL		0x00000390
 #elif defined(ARCH_K8) || defined(ARCH_K10)
 #	define EVTSEL0 			0xC0010000
 #	define EVTSEL1 			0xC0010001
@@ -108,12 +123,33 @@ typedef struct {
 	u32 addr;
 } evtsel_t;
 
+/* fixed counter select register elements */
+typedef struct {
+	u32 pmi0:1;
+	u32 os0:1;
+	u32 usr0:1;
+	u32 pmi1:1;
+	u32 os1:1;
+	u32 usr1:1;
+	u32 pmi2:1;
+	u32 os2:1;
+	u32 usr2:1;
+} fixctrl_t;
+
+
 /* Cleared value */
 typedef struct {
 	u32 low;
 	u32 high;
 	u64 all;
 } cleared_t;
+
+/* Cleared value */
+typedef struct {
+	u32 low;
+	u32 high;
+	u64 all;
+} fcleared_t;
 
 /* Counter discreption */
 typedef struct {
@@ -125,6 +161,14 @@ typedef struct {
 	u32 enabled;
 } counter_t;
 
+/* Counter discreption */
+typedef struct {
+	u32 low:32;
+	u32 high:32;
+	u32 addr;
+} fcounter_t;
+
+
 /********************************************************************************
  * 			PMU Internal API 					*
  ********************************************************************************/
@@ -133,6 +177,9 @@ typedef struct {
 inline u32 evtsel_read(u32 evtsel_num);
 inline void evtsel_clear(u32 evtsel_num);
 inline void evtsel_write(u32 evtsel_num);
+inline u32 control_read(void);
+inline void control_clear(void);
+inline void control_write(void);
 
 #endif
 

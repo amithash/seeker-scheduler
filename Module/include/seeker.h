@@ -25,7 +25,6 @@
 #define _SEEKER_H_
 
 #include <pmu_public.h>
-#include <fpmu_public.h>
 #include <seeker_cpufreq.h>
 #include <seeker_features.h>
 

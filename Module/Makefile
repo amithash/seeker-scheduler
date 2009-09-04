@@ -24,7 +24,6 @@ include $(SEEKER_HOME)/Makefile.defaults
 # All the kernel modules 
 obj-m += seeker_scheduler.o           	\
 	 pmu.o  	       		\
-	 fpmu.o 	       		\
 	 seeker_cpufreq.o  		\
 	 test_scpufreq.o
 
@@ -33,14 +32,11 @@ test_scpufreq-objs += seeker-cpufreq/test.o
 seeker_cpufreq-objs += seeker-cpufreq/main.o
 
 # Performance Monitoring counters.
-pmu-objs += pmu/main.o \
-	    pmu/intr.o \
-	    pmu/msr.o
-
-# Fixed Performance Monitoring counters.
-fpmu-objs += fpmu/main.o \
-	     fpmu/intr.o \
-	     fpmu/msr.o
+pmu-objs += pmu/main.o      \
+	    pmu/intr_pmu.o  \
+	    pmu/intr_fpmu.o \
+	    pmu/msr_pmu.o   \
+	    pmu/msr_fpmu.o
 
 # Seeker scheduler
 seeker_scheduler-objs += seeker-scheduler/main.o         \
@@ -55,9 +51,9 @@ seeker_scheduler-objs += seeker-scheduler/main.o         \
 		       seeker-scheduler/other_mutators.o \
 		       seeker-scheduler/sched_debug.o    \
 		       seeker-scheduler/nrtasks.o        \
-		       seeker-scheduler/debug.o					 \
-					 seeker-scheduler/search_state.o   \
-					 seeker-scheduler/pds.o
+		       seeker-scheduler/debug.o		 \
+		       seeker-scheduler/search_state.o   \
+		       seeker-scheduler/pds.o
 
 KDIR    := /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)

@@ -27,7 +27,6 @@
 
 #include <seeker.h>
 #include <pmu.h>
-#include <fpmu.h>
 
 #include "hwcounters.h"
 

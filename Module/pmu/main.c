@@ -119,6 +119,42 @@ cleared_t cleared[NR_CPUS][NUM_COUNTERS] = {
 	 }
 };
 
+/* the control register discreption for each cpu */
+fixctrl_t fcontrol[NR_CPUS] = {
+	{0, 0, 0, 0, 0, 0, 0, 0, 0}
+};
+
+/* The counter values for each cpu and counter */
+fcounter_t fcounters[NR_CPUS][NUM_FIXED_COUNTERS] = {
+	{
+#if NUM_FIXED_COUNTERS > 0
+	 {0, 0, MSR_PERF_FIXED_CTR0}	/* 0 */
+#endif
+#if NUM_FIXED_COUNTERS > 1
+	 , {0, 0, MSR_PERF_FIXED_CTR1}	/* 1 */
+#endif
+#if NUM_FIXED_COUNTERS > 2
+	 , {0, 0, MSR_PERF_FIXED_CTR2}	/* 2 */
+#endif
+	 }
+};
+
+/* The `cleared` state for each fixed counter */
+fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS] = {
+	{
+#if NUM_FIXED_COUNTERS > 0
+	 {0, 0, 0}
+#endif
+#if NUM_FIXED_COUNTERS > 1
+	 , {0, 0, 0}
+#endif
+#if NUM_FIXED_COUNTERS > 2
+	 , {0, 0, 0}
+#endif
+	 }
+};
+
+
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
@@ -155,6 +191,38 @@ void pmu_init_msrs(void *info)
 EXPORT_SYMBOL_GPL(pmu_init_msrs);
 
 /*******************************************************************************
+ * fpmu_init_msrs - initialize msrs on _this_ cpu.
+ * @info - Not used.
+ *
+ * Initialize (clear and set to default values) the Fixed PMU MSR's.
+ * Typical use is to call this using smp_call_function_single or on_each_cpu.
+ *******************************************************************************/
+void fpmu_init_msrs(void *info)
+{
+#if NUM_FIXED_COUNTERS > 0
+	int i;
+	int cpu_id = get_cpu();
+	if (likely(cpu_id < NR_CPUS)) {
+		for (i = 0; i < NUM_FIXED_COUNTERS; i++) {
+			if (cpu_id != 0) {
+				fcounters[cpu_id][i] = fcounters[0][i];
+				fcleared[cpu_id][i] = fcleared[0][i];
+			}
+			fcounter_clear(i);
+		}
+		if (cpu_id != 0) {
+			fcontrol[cpu_id] = fcontrol[0];
+		}
+		control_clear();
+		fcounters_disable();
+	}
+	put_cpu();
+#endif
+}
+EXPORT_SYMBOL_GPL(fpmu_init_msrs);
+
+
+/*******************************************************************************
  * pmu_init - The init function for pmu.
  * @Side Effects - Calls pmu_init_msrs on each cpu and hence initializing 
  * 		   them on _all_ cpus.
@@ -167,6 +235,13 @@ static int __init pmu_init(void)
 		error("Could not enable all counters. Panicing and exiting");
 		return -ENODEV;
 	}
+
+#if NUM_FIXED_COUNTERS > 0
+	if (ON_EACH_CPU(&fpmu_init_msrs, NULL, 1, 1) < 0) {
+		error("Could not enable anything, panicing and exiting");
+		return -ENODEV;
+	}
+#endif
 	return 0;
 }
 

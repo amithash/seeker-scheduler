@@ -36,7 +36,6 @@
 #include <seeker.h>
 
 #include <pmu.h>
-#include <fpmu.h>
 
 #include "seeker_cpufreq.h"
 #include "state.h"
