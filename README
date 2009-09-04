@@ -222,8 +222,10 @@ After a make.
 All modules are in Module/
 
 pmu/
-    The performance monitoring counter driver for AMD and Intel (2 counters which
-    can be configured)
+    The performance monitoring counter driver for AMD and Intel 
+    Also supports (Provides interfaces) to talk to the fixed
+    performance monitoring counters present in modern Intel Architectures.
+
     insmod $SEEKER_HOME/Build/pmu.ko
 
 fpmu/ 
