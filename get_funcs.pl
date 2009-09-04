@@ -20,6 +20,7 @@ open OUT,"+>figure.dot" or die "Could not create figure.dot!\n";
 
 # Print DOT header.
 print OUT "digraph G {\n";
+print OUT "\trankdir=LR\n";
 
 # Print Function structure.
 foreach my $file (keys %files_all){
@@ -27,43 +28,35 @@ foreach my $file (keys %files_all){
     next;
   }
   print OUT "/* $file */\n";
-  print OUT "subgraph cluster_$files_all{$file} {\n";
-  print OUT "label=\"$file\"\n";
-  print OUT "shape=\"rectangle\"\n";
+  print OUT "\tsubgraph cluster_$files_all{$file} {\n";
+  print OUT "\t\tlabel=\"$file\"\n";
+  print OUT "\t\tshape=\"rectangle\"\n";
   if(defined($file_macros{$file})){
-#    print OUT "subgraph cluster_$files_all{$file}_macro {\n";
-#    print OUT "label=\"MACRO\"\n";
-#    print OUT "shape=\"rectangle\"\n";
     my $ref = $file_macros{$file};
     foreach my $func (@$ref){
-      print OUT "macro_$files_all{$file}_$func [label=\"$func\",color=\"lightgrey\",style=\"filled\"]\n";
+      print OUT "\t\tmacro_$files_all{$file}_$func [label=\"$func\",color=\"lightgrey\",style=\"filled\"]\n";
     }
-#    print OUT "}\n";
   }
   if(defined($file_funcs{$file})){
-#    print OUT "subgraph cluster_$files_all{$file}_funcs {\n";
-#    print OUT "label=\"FUNCTIONS\"\n";
-#    print OUT "shape=\"rectangle\"\n";
     my $ref = $file_funcs{$file};
     foreach my $func (@$ref){
-      print OUT "func_$files_all{$file}_$func [label=\"$func\"]\n";
+      print OUT "\t\tfunc_$files_all{$file}_$func [label=\"$func\"]\n";
     }
-#    print OUT "}\n";
   }
-  print OUT "}\n\n";
+  print OUT "\t}\n\n";
 }
 
 # Parse calls.
 my $proc_call_string = parse_calls(@ARGV);
 my @ext_funcs = keys %external_funcs;
 if(scalar @ext_funcs > 0){
-  print OUT "subgraph cluster_EXT_funcs {\n";
-  print OUT "label=\"ExternalDependancies\"\n";
-  print OUT "shape=\"rectangle\"\n";
+  print OUT "\tsubgraph cluster_EXT_funcs {\n";
+  print OUT "\t\tlabel=\"ExternalDependancies\"\n";
+  print OUT "\t\tshape=\"rectangle\"\n";
   foreach my $ext (@ext_funcs){
-    print OUT "EXT_$ext [label=\"$ext\"]\n";
+    print OUT "\t\tEXT_$ext [label=\"$ext\"]\n";
   }
-  print OUT "}\n";
+  print OUT "\t}\n";
 }
 print OUT "\n\n";
 print OUT "$proc_call_string\n";
@@ -82,23 +75,6 @@ print OUT "}\n";
 # Make the ExternalDependancies structure "editable" so people can re-group them...
 close(OUT);
 
-# XXX Once this is implemented, remove further code! 
-
-
-print "++++++++++++++++++++++++++++++++FUNCS+++++++++++++++++++++++++++++++\n";
-foreach my $f (keys %file_funcs){
-  my $ref  = $file_funcs{$f};
-  foreach my $func (@$ref){
-    print "$f : $func\n";
-  }
-}
-print "++++++++++++++++++++++++++++++++MACROS+++++++++++++++++++++++++++++++\n";
-foreach my $f (keys %file_macros){
-  my $ref  = $file_macros{$f};
-  foreach my $func (@$ref){
-    print "$f : $func\n";
-  }
-}
 sub parse_def
 {
   my @args = @_;
@@ -218,7 +194,7 @@ sub parse_def_file
 sub parse_calls_file
 {
   my $f = shift;
-  my $func_regexp = "[A-Za-z_0-9]+";
+  my $func_regexp = "[A-Za-z_0-9][A-Za-z_0-9]+";
   my $call_string = shift;
   open IN, "$f" or die "Could not open $f\n";
   my $current_func = "";
@@ -263,6 +239,7 @@ sub parse_calls_file
       if($line =~ /($func_regexp)\s*\((.+)$/){
         my $call = $1;
         my $rest = $2;
+	print "$line:\t $call\n";
         if(is_not_keyword($call)){
           if($is_macro == 0 or ($is_macro == 1 and $call ne $current_func)){
             my $caller;
@@ -285,13 +262,13 @@ sub parse_calls_file
                 }
                 if(not defined($call_made{"$caller -> $callee"})){
                   $call_made{"$caller -> $callee"} = 1;
-                  $call_string .= "$caller -> $callee\n";
+                  $call_string .= "\t$caller -> $callee\n";
                 }
               }
             } else {
               $callee = "EXT_$call";
               if(not defined($call_made{"$caller -> $callee"})){
-                $call_string .= "$caller -> $callee\n";
+                $call_string .= "\t$caller -> $callee\n";
                 $external_funcs{$call} = 1;
                 $call_made{"$caller -> $callee"} = 1;
               }
