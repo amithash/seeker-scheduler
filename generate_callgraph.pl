@@ -68,10 +68,6 @@ print OUT "}\n";
 
 close(OUT);
 
-foreach my $a (${$func_files{"TS_MEMBER"}}){
-    print "$a\n";
-}
-
 sub parse_def
 {
     my @args = @_;
@@ -195,6 +191,11 @@ sub parse_calls_file
     my $call_string = shift;
     open IN, "$f" or die "Could not open $f\n";
     my $current_func = "";
+
+    if(not defined($files_all{$f})){
+    	print STDERR "WARNING: Ignoring Unknown C File: $f\n";
+	return;
+    }
 
     my $processing_func = 0;
     my $processing_macro = 0;
