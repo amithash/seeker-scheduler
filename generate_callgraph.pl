@@ -1,5 +1,20 @@
 #!/usr/bin/perl
 
+###########################################################################
+#    This program is free software: you can redistribute it and/or modify #
+#    it under the terms of the GNU General Public License as published by #
+#    the Free Software Foundation, either version 3 of the License, or    #
+#    (at your option) any later version.                                  #
+#                                                                         #
+#    This program is distributed in the hope that it will be useful,      #
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of       #
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        #
+#    GNU General Public License for more details.                         #
+#                                                                         #
+#    You should have received a copy of the GNU General Public License    #
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.#
+###########################################################################
+
 use strict;
 use warnings;
 use Getopt::Long;
@@ -613,5 +628,37 @@ sub draw_arcs
 sub usage 
 {
 	print "USAGE: $0 OPTIONS <file list>\n";
+  print "
+    OPTIONS:
+      --cluster (default) - Cluster function definitions based on files in graphs,
+      --nocluster - Do not cluster function definitions. Allows dot to organize on its own.
+
+      --rankdir=RANK - this is the graph direction
+                       SUPPORTED: LR, UP, BU - Refer to graphviz documentation
+
+      --macrocol=COL - color of the nodes representing macro definitions. (default=grey)
+      --funccol=COL  - color of the nodes representing function definitions. (default=white)
+      --extcol=COL   - color of the nodes representing external function definition dependancies (default=green)
+
+      --name=PATH    - Path and name of the output project. There will be 3 files generated.
+                       PATH.calls - Contains ascii representation of the calls made by each definition.
+                       PATH.dot   - The DOT graph file. 
+                       PATH.\$type- The graph plotted using --app with type being from --type (See below)
+      --type=TYPE    - The type of the output generated file using dot. (default: svg)
+                       Supported values: ps,svg,svgz,fig,mif,hpgl,pcl,png,gif,dia,imap,cmapx
+
+      --app=APP      - The graphviz application to use (default: dot)
+                       Supported values: dot, neato, twopi, circo, fdp
+
+      --help         - Shows this text
+
+      <file list>
+      path to a directory or list of dirs/c-files. Note that only *.c or *.h files will be processed. 
+      There is NO support for C++. 
+
+      (C) Amithash Prasad 2009
+      See terms of GPL v3 refer to:
+      http://www.gnu.org/licenses/gpl-3.0-standalone.html
+  ";
 
 }
