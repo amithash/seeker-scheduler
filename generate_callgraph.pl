@@ -100,6 +100,12 @@ if(not defined($formats{$type})){
 	print "\n";
 }
 
+if($#ARGV < 0){
+  print "\nERROR: No arguments.\n\n";
+  usage();
+  exit;
+}
+
 
 ################################################################
 # GLOBAL VARS (ALL SUBS)
@@ -640,7 +646,7 @@ sub usage
       --funccol=COL  - color of the nodes representing function definitions. (default=white)
       --extcol=COL   - color of the nodes representing external function definition dependancies (default=green)
 
-      --name=PATH    - Path and name of the output project. There will be 3 files generated.
+      --name=PATH    - Path and name of the output project. There will be 3 files generated. (default: figure)
                        PATH.calls - Contains ascii representation of the calls made by each definition.
                        PATH.dot   - The DOT graph file. 
                        PATH.\$type- The graph plotted using --app with type being from --type (See below)
