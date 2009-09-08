@@ -2,314 +2,403 @@
 
 use strict;
 use warnings;
+use Getopt::Long;
 
-my %file_macros;
-my %macro_files;
-my %file_funcs;
-my %func_files;
-my %files_all;
+
+################################################################
+# Parameters
+################################################################
+
+my $cluster = 1;
+my $rankdir = "LR";
+my $file_shape = "rectangle";
+my $macro_col = "black";
+my $macro_fill_col = "lightgrey";
+my $macro_style = "filled";
+my $func_col = "black";
+my $func_fill_col = "white";
+my $func_style = "filled";
+my $ext_col = "black";
+my $ext_fill_col = "green";
+my $ext_style = "filled";
+my $name = "figure";
+my $type = "svg";
+my $dot_app = "dot";
+my $help = 0;
+
+GetOptions(
+	"cluster!" => \$cluster,
+	"rankdir=s" => \$rankdir,
+	"macrocol=s" => \$macro_fill_col,
+	"funccol=s" => \$func_fill_col,
+	"extcol=s" => \$ext_fill_col,
+	"name=s"    => \$name,
+	"type=s"    => \$type,
+	"app=s"   => \$dot_app,
+	"help" => \$help
+);
+
+my $figure_name = "$name.dot";
+my $out_name = "$name.$type";
+my $calls_name = "$name.calls";
+
+my %apps = (
+	"dot" => 1,
+	"neato" => 1,
+	"twopi" => 1,
+	"circo" => 1,
+	"fdp" => 1
+);
+
+my %formats = (
+	"ps" => 1,
+	"svg" => 1,
+	"svgz" => 1,
+	"fig" => 1,
+	"mif" => 1,
+	"hpgl" => 1, 
+	"pcl" => 1,
+	"png" => 1, 
+	"gif" => 1,
+	"dia" => 1, 
+	"imap" => 1,
+	"cmapx" => 1  
+);
+
+if($help == 1){
+	usage();
+	exit;
+}
+
+if(not defined($apps{$dot_app})){
+	print "Unsupported App: $dot_app. Avaliable app: ";
+	foreach my $app (sort keys %apps){
+		print "$app ";
+	}
+	print "\n";
+}
+if(not defined($formats{$type})){
+	print "Unsupported format: $type. Avaliable formats: ";
+	foreach my $format (sort keys %formats){
+		print "$format ";
+	}
+	print "\n";
+}
+
+
+################################################################
+# GLOBAL VARS (ALL SUBS)
+################################################################
+
+# Used by remove_comment();
+my $comment_block_start = 0; 
+
+# $file_to_func{file} = {func1 => [calls1], func2 => [calls2]};
+my %file_to_func;
+
+# $func_to_file{func} = {file1 => 1, file2 => 1};
+my %func_to_file;
+
+# $file_to_macro{file} = {macro1 => [calls1], macro2 => [calls2]};
+my %file_to_macro;
+
+# $macro_to_file{func} = {macro1 => 1, macro2 => 1};
+my %macro_to_file;
+
+# Mapping from file to count; Updated by get_all_files.
 my $file_count = 0;
-my %func_uses;
-my %macro_uses;
-my %external_funcs;
+my %processed_files;
+
+# a func or macro if internal will be defined.
+my %internal;
+my %external;
+
 my %call_made;
 
-parse_def(@ARGV);
+################################################################
 
-open OUT,"+>figure.dot" or die "Could not create figure.dot!\n";
+main(@ARGV);
 
-# Print DOT header.
-print OUT "digraph G {\n";
-print OUT "\trankdir=LR\n";
-
-# Print Function structure.
-foreach my $file (keys %files_all){
-    if((not defined($file_funcs{$file})) and (not defined($file_macros{$file}))){
-        next;
-    }
-    print OUT "/* $file */\n";
-    print OUT "\tsubgraph cluster_$files_all{$file} {\n";
-    print OUT "\t\tlabel=\"$file\"\n";
-    print OUT "\t\tshape=\"rectangle\"\n";
-    if(defined($file_macros{$file})){
-        my $ref = $file_macros{$file};
-        foreach my $func (@$ref){
-            print OUT "\t\tmacro_$files_all{$file}_$func [label=\"$func\",color=\"lightgrey\",style=\"filled\"]\n";
-        }
-    }
-    if(defined($file_funcs{$file})){
-        my $ref = $file_funcs{$file};
-        foreach my $func (@$ref){
-            print OUT "\t\tfunc_$files_all{$file}_$func [label=\"$func\"]\n";
-        }
-    }
-    print OUT "\t}\n\n";
-}
-
-# Parse calls.
-my $proc_call_string = parse_calls(@ARGV);
-my @ext_funcs = keys %external_funcs;
-if(scalar @ext_funcs > 0){
-    print OUT "\tsubgraph cluster_EXT_funcs {\n";
-    print OUT "\t\tlabel=\"ExternalDependancies\"\n";
-    print OUT "\t\tshape=\"rectangle\"\n";
-    foreach my $ext (@ext_funcs){
-        print OUT "\t\tEXT_$ext [label=\"$ext\"]\n";
-    }
-    print OUT "\t}\n";
-}
-print OUT "\n\n";
-print OUT "$proc_call_string\n";
-
-# Print calls.
-
-# Print Footer.
-print OUT "}\n";
-
-close(OUT);
-
-sub parse_def
+sub main
 {
-    my @args = @_;
-    foreach my $f (@args){
-        if(-e $f){
-            parse_def_file($f);
-        }
-        if(-d $f){
-            parse_def_dir($f);
-        }
-    }
+	my @args = @_;
+	print STDERR "Parsing files\n";
+	my @files = get_all_files(@args);
+	foreach my $file (@files){
+		parse_file($file);
+	}
+
+	print "-------- parse complete ------------\n";
+
+	open CALLS, "+>$calls_name" or die "could not create $calls_name\n";
+
+	# Print them to stdout.
+	foreach my $file (sort keys %processed_files){
+		print CALLS "$file\n";
+		if(defined($file_to_macro{$file})){
+			print CALLS "\tMACROS:\n";
+			my %macros = %{$file_to_macro{$file}};
+			foreach my $macro (sort keys %macros){
+				print CALLS "\t\t$macro\n";
+				my %calls = %{$macros{$macro}};
+				foreach my $call (sort keys %calls){
+					print CALLS "\t\t\t$call\n";
+					if(not defined($internal{$call})){
+						$external{$call} = 1;
+					}
+				}
+				
+			}
+		}
+		if(defined($file_to_func{$file})){
+			print CALLS "\tFUNCS:\n";
+			my %funcs = %{$file_to_func{$file}};
+			foreach my $func (sort keys %funcs){
+				print CALLS "\t\t$func\n";
+				my %calls = %{$funcs{$func}};
+				foreach my $call (sort keys %calls){
+					print CALLS "\t\t\t$call\n";
+					if(not defined($internal{$call})){
+						$external{$call} = 1;
+					}
+				}
+				
+			}
+		
+		}
+	}
+	print "-------- printing to calls file complete ------------\n";
+	print_to_dot();
+	print "-------- printing to dot file complete ------------\n";
+	print "-------- Executing $dot_app ------------\n";
+
+	system("$dot_app -T$type $figure_name -o $out_name");
 }
 
-sub parse_def_dir
+# take an array of files and dirs, return a list of c files
+sub get_all_files
 {
-    my $d = shift;
-    my @cont = <$d/*>;
-    foreach my $f (@cont){
-        if(-e $f){
-            parse_def_file($f);
-        }
-        if(-d $f){
-            parse_def_dir($f);
-        }
-    }
+	my @fs = @_;
+	my @ret_files = ();
+
+	foreach my $f (@fs){
+		if(-d $f){
+			my @tmp1 = <$f/*>;
+			my @tmp = get_all_files(@tmp1);
+			foreach my $t (@tmp){
+				push @ret_files, $t;
+			}
+		} elsif(-e $f){
+			$processed_files{$f} = $file_count;
+			$file_count++;
+
+			if($f =~ /\.c$/){
+				push @ret_files, $f;
+			} elsif($f =~ /\.h$/){
+				push @ret_files, $f;
+			}
+		} 
+	}
+	return @ret_files;
 }
 
-sub parse_calls
+sub parse_file
 {
-    my @args = @_;
-    my $call_string = "";
-    foreach my $f (@args){
-        if(-e $f){
-            $call_string = parse_calls_file($f,$call_string);
-        }
-        if(-d $f){
-            $call_string = parse_calls_dir($f, $call_string);
-        }
-    }
-    return $call_string;
+	my $file = shift;
+
+	print STDERR "Parsing file: $file\n";
+
+	open IN, "$file" or die "Could not open $ARGV[0]!\n";
+
+	my $processing_macro = 0;
+	my $processing_macro_name = "";
+
+	my $processing_func = 0;
+	my $processing_func_name = "";
+	my $indent_count = 0;
+
+	while(my $line = <IN>){
+		chomp($line);
+
+		my $l = remove_comment($line);
+		if($l eq ""){
+			next;
+		}
+		my ($macro_name,$m_remaining) = is_macro($l);
+		if($macro_name ne ""){
+			# Process macro
+			my @list = get_calls($m_remaining);
+			add_to_macro($macro_name,$file,\@list);
+			if($l =~ /\\$/){
+				# Setup to continue processing at next line.
+				$processing_macro = 1;
+				$processing_macro_name = $macro_name;
+			}
+			next;
+		}
+
+		if($processing_macro == 1){
+			my @list = get_calls($l);
+			add_to_macro($processing_macro_name,$file,\@list);
+			if($l !~ /\\\s*$/){
+				$processing_macro = 0;
+				$processing_macro_name = "";
+			}
+			next;
+		}
+
+		my $func_name = is_func($l);
+		if($func_name ne ""){
+			$processing_func_name = $func_name;
+			$processing_func = 0;
+			$indent_count = 0;
+			add_to_func($processing_func_name, $file, []);
+		}
+
+		# Function call has not started yet. Wait for
+		# opening brace.
+		if($processing_func_name ne "" and $processing_func == 0){
+			my $open = count_char("{",$l);
+			my $close = count_char("}",$l);
+
+			# Positive if more open braces.
+			my $overflow = $open - $close;
+
+			if($overflow > 0){
+				$processing_func = 1;
+				$indent_count += $overflow;
+			}
+			next;
+		}
+
+		if($processing_func == 1){
+			my @list = get_calls($l);
+
+			add_to_func($processing_func_name, $file, \@list);
+
+			my $open = count_char("{",$l);
+			my $close = count_char("}",$l);
+			my $overflow = $open - $close;
+			$indent_count += $overflow;
+			if($indent_count <= 0){
+				$indent_count = 0;
+				$processing_func = 0;
+				$processing_func_name = "";
+			}
+		}
+	}
 }
 
-sub parse_calls_dir
+sub add_to_func
 {
-    my $d = shift;
-    my $call_string = shift;
-    my @cont = <$d/*>;
-    foreach my $f (@cont){
-        if(-e $f){
-            $call_string = parse_calls_file($f,$call_string);
-        }
-        if(-d $f){
-            $call_string = parse_calls_dir($f,$call_string);
-        }
-    }
-    return $call_string;
+	my $name = shift;
+	my $file = shift;
+	my $list_ref = shift;
+	if(not defined($file_to_func{$file})){
+		$file_to_func{$file} = {};
+	}
+	if(not defined($file_to_func{$file}->{$name})){
+		$file_to_func{$file}->{$name} = {};
+	}
+	foreach my $call (@$list_ref){
+		$file_to_func{$file}->{$name}->{$call} = 1;
+	}
+	if(not defined($func_to_file{$name})){
+		$func_to_file{$name} = {};
+	}
+	if(not defined($func_to_file{$name}->{$file})){
+		$func_to_file{$name}->{$file} = 1;
+	}
+	$internal{$name} = 1;
 }
-
-sub parse_def_file
+sub add_to_macro
 {
-    my $inf = shift;
-
-    if(-d $inf){
-        return;
-    }
-    if($inf !~ /\.c$/ and $inf !~ /\.h$/){
-        return;
-    }
-    $files_all{$inf} = $file_count;
-    $file_count++;
-    open IN, "$inf" or die "Could not open $inf\n";
-    while(my $line = <IN>){
-        chomp($line);
-        my $func_name = is_func_def($line);
-        if($inf =~ /\.c$/){
-            if($func_name ne "NULL"){
-                if(defined($file_funcs{$inf})){
-                    push @{$file_funcs{$inf}}, $func_name;
-                } else {
-                    $file_funcs{$inf} = [$func_name];
-                }
-                if(defined($func_files{$func_name})){
-                    if(exists_in_array($inf,$func_files{$func_name})){
-                        print STDERR "WARNING: Re-def of function $func_name in the same file $inf assumed to be featurization\n";
-                    } else {
-                        push @{$func_files{$func_name}}, $inf;
-                    }
-                } else {
-                    $func_files{$func_name} = [$inf];
-                }
-                next;
-            }
-        }
-        $func_name = is_macro($line);
-        if($func_name ne "NULL"){
-                if(defined($file_macros{$inf})){
-                    push @{$file_macros{$inf}}, $func_name;
-                } else {
-                    $file_macros{$inf} = [$func_name];
-                }
-                if(defined($macro_files{$func_name})){
-                    if(exists_in_array($inf,$macro_files{$func_name})){
-                        print STDERR "WARNING: Re-def of macro $func_name in the same file $inf assumed to be featurization\n";
-                    } else {
-                        push @{$macro_files{$func_name}}, $inf;
-                    }
-                } else {
-                    $macro_files{$func_name} = [$inf];
-                }
-
-            next;
-        }
-    }
-    close(IN);
+	my $name = shift;
+	my $file = shift;
+	my $list_ref = shift;
+	if(not defined($file_to_macro{$file})){
+		$file_to_macro{$file} = {};
+	}
+	if(not defined($file_to_macro{$file}->{$name})){
+		$file_to_macro{$file}->{$name} = {};
+	}
+	foreach my $call (@$list_ref){
+		$file_to_macro{$file}->{$name}->{$call} = 1;
+	}
+	if(not defined($macro_to_file{$name})){
+		$macro_to_file{$name} = {};
+	}
+	if(not defined($macro_to_file{$name}->{$file})){
+		$macro_to_file{$name}->{$file} = 1;
+	}
+	$internal{$name} = 1;
 }
 
-sub parse_calls_file
+sub count_char
 {
-    my $f = shift;
-    my $func_regexp = "[A-Za-z_0-9][A-Za-z_0-9]+";
-    my $call_string = shift;
-    open IN, "$f" or die "Could not open $f\n";
-    my $current_func = "";
-
-    if(not defined($files_all{$f})){
-    	print STDERR "WARNING: Ignoring Unknown C File: $f\n";
-	return;
+    my $char = shift;
+    my $line = shift;
+    my $count = 0;
+    my @arr = split(//,$line);
+    foreach my $ch (@arr){
+        if($ch eq $char){
+            $count++;
+        }
     }
+    return $count;
+}
 
-    my $processing_func = 0;
-    my $processing_macro = 0;
-    my $indent_count = 0;
-    my $waiting_func_start = 0;
-    while(my $line = <IN>){
-        chomp($line);
-        my $opening_brace = count_char("{", $line);
-        my $closing_brace = count_char("}", $line);
-        my $indent_overflow = $opening_brace - $closing_brace;
-        if(($indent_count + $indent_overflow) >= 0){
-            $indent_count += $indent_overflow;
-        }
+sub get_calls
+{
+	my $line = shift;
+	my $func_regexp = "[A-Za-z_0-9][A-Za-z_0-9]+";
 
-        my $func_name;
-        if($f =~ /\.c$/){
-            $func_name = is_func_def($line);
-            if($func_name ne "NULL"){
-                $current_func = $func_name;
-                $processing_func = 1;
-    if($indent_overflow == 0){
-        $waiting_func_start = 1;
+	my @call_list = ();
+
+	while($line ne ""){
+		if($line =~ /($func_regexp)\s*\((.+)$/){
+			my $call = $1;
+			my $rest = $2;
+			
+			if(is_keyword($call) == 0){
+				push @call_list,$call;
+			}
+			$line = $rest;
+		} else {
+			$line = "";
+		}
+	}
+	return @call_list;
+}
+
+sub is_keyword
+{
+    my $func = shift;
+    my %keywords = (
+        "for" => 1,
+        "if" => 1,
+        "while" => 1,
+        "sizeof" => 1,
+        "switch" => 1
+    );
+    if(defined($keywords{$func})){
+        return 1;
     }
-                next;
-            }
-        }
-        $func_name = is_macro($line);
-        my $is_macro = 0;
-        if($func_name ne "NULL"){
-            $is_macro = 1;
-            $current_func = $func_name;
-            $processing_macro = 1;
-            $processing_func = 0;
-        }
+    return 0;
+}
 
-        my $bac_line = $line;
-
-        if($current_func eq ""){
-            next;
-        }
-        if($waiting_func_start == 1 and $indent_overflow != 0){
-            $waiting_func_start = 0;
-        }
-
-        if($waiting_func_start == 0 and $indent_count == 0){
-            $processing_func = 0;
-        }
-        if($processing_macro == 0 and $processing_func == 0){
-            next;
-        }
-        
-        # Parse the line
-        while($line ne ""){
-            if($line =~ /($func_regexp)\s*\((.+)$/){
-                my $call = $1;
-                my $rest = $2;
-                if(is_not_keyword($call)){
-                    if($is_macro == 0 or ($is_macro == 1 and $call ne $current_func)){
-                        my $caller;
-                        if($processing_func == 1){
-                            $caller = "func_$files_all{$f}_$current_func";
-                        } else {
-                            $caller = "macro_$files_all{$f}_$current_func";
-                        }
-                        my $callee;
-                        if(defined($func_files{$call})){
-                            my $ref = $func_files{$call};
-                            foreach my $fc (@$ref){
-                                if(defined($func_files{$call})){
-                                    $callee = "func_$files_all{$fc}_$call";
-                                } elsif(defined($macro_files{$call})){
-                                    $callee = "macro_$files_all{$fc}_$call";
-                                } else{
-                                    print STDERR "ERROR: Unknown call $call\n";
-                                    next;
-                                }
-                                if(not defined($call_made{"$caller -> $callee"})){
-                                    $call_made{"$caller -> $callee"} = 1;
-                                    $call_string .= "\t$caller -> $callee\n";
-                                }
-                            }
-                        } else {
-                            $callee = "EXT_$call";
-                            if(not defined($call_made{"$caller -> $callee"})){
-                                $call_string .= "\t$caller -> $callee\n";
-                                $external_funcs{$call} = 1;
-                                $call_made{"$caller -> $callee"} = 1;
-                            }
-                        }
-                    }
-
-                }
-                $line = $rest;
-            } else {
-                $line = "";
-            }
-        }
-
-        if($processing_macro == 1){
-            if($bac_line =~ /\\\s*$/){
-                $processing_macro = 1;
-            } else {
-                $processing_macro = 0;
-            }
-        }
-
+sub is_macro
+{
+    my $l = shift;
+    my $macro;
+    if($l =~/^\s*#define\s+([\d\S]+)\((.+)/){
+        return ($1,$2);
     }
-    close(IN);
-
-    return $call_string;
+    return ("","");
 }
 
 
-sub is_func_def
+sub is_func
 {
     my $l = shift;
 
@@ -344,7 +433,7 @@ sub is_func_def
     );
     my $func;
     if($l =~ /;\s*$/){
-        return "NULL";
+        return "";
     }
 
     foreach my $key (@ret_types){
@@ -365,64 +454,164 @@ sub is_func_def
             }
         }
     }
-    return "NULL";
+    return "";
 }
 
-sub is_macro
+
+sub remove_comment
 {
-    my $l = shift;
-    my $macro;
-    if($l =~/^\s*#define\s+([\d\S]+)\(/){
-        return $1;
-    }
-    return "NULL";
+	my $l = shift;
+	my $line = $l;
+
+	if($comment_block_start == 1){
+		if($line =~ /\*\/\s*$/){
+			$comment_block_start = 0;
+			return "";
+		} elsif($line =~ /\*\/(.+)$/){
+			$comment_block_start = 0;
+			$l = $1;
+		} else {
+			return "";
+		}
+	} else {
+		if($line =~ /^\s*\/\*/){
+			$comment_block_start = 1;
+			if($line =~ /\*\/\s*$/){
+				$comment_block_start = 0;
+				return "";
+			} elsif($line =~/\*\/(.+)$/){
+				$l = $1;
+				$comment_block_start = 0;
+			} else {
+				return "";
+			}
+		} elsif($line =~ /^(.+)\/\*/){
+			$l = $1;
+			$comment_block_start = 1;
+			if($l =~ /\*\/(.+)$/){
+				$l .= $1;
+				$comment_block_start = 0;
+			}
+		}
+	}
+
+	if($l =~ /^(.*)\/\//){
+		$l = $1;
+	}
+	if($l =~/^\s*$/){
+		return "";
+	}
+	return $l;
 }
 
-sub is_func_use
+sub print_to_dot
 {
-    my $l = shift;
-    # XXX Parse line... return list of functions used here. 
-}
+	open OUT, "+>$figure_name" or die "Could not write to $figure_name!\n";
 
-sub exists_in_array
+
+	# HEADER
+	print OUT "digraph all {\n";
+	print OUT "\trankdir=$rankdir\n";
+	
+	# DRAW FILE FUNCTION/MACRO NODES
+	foreach my $file (sort keys %processed_files){
+		# THis file has nothing! Skip it!
+		if((not defined($file_to_func{$file})) and (not defined($file_to_macro{$file}))){
+			next;
+		}
+		if($cluster == 1){
+			print OUT "/* $file */\n";
+			print OUT "\tsubgraph cluster_$processed_files{$file} {\n";
+		        print OUT "\t\tlabel=\"$file\"\n";
+			print OUT "\t\tshape=\"$file_shape\"\n";
+		}
+		if(defined($file_to_macro{$file})){
+			foreach my $macro (sort keys %{$file_to_macro{$file}}){
+				print OUT "\t\tmacro_$processed_files{$file}_$macro [label=\"$macro\",color=\"$macro_col\",fillcolor=\"$macro_fill_col\",style=\"$macro_style\"]\n";
+			}
+		}
+		if(defined($file_to_func{$file})){
+			foreach my $func (sort keys %{$file_to_func{$file}}){
+				print OUT "\t\tfunc_$processed_files{$file}_$func [label=\"$func\",color=\"$func_col\",fillcolor=\"$func_fill_col\",style=\"$func_style\"]\n";
+			}
+		}
+		if($cluster == 1){
+			print OUT "\t}\n\n";
+		}
+	}
+	# DRAW EXTERNAL NODES
+	if(scalar (keys %external) > 0){
+		if($cluster == 1){
+			print OUT "\tsubgraph cluster_EXT {\n";
+			print OUT "\t\tlabel=\"ExternalDependancies\"\n";
+			print OUT "\t\tshape=\"$file_shape\"\n";
+		}
+		foreach my $func (sort keys %external){
+			print OUT "\t\tfunc_EXT_$func [label=\"$func\",color=\"$ext_col\",fillcolor=\"$ext_fill_col\",style=\"$ext_style\"]\n"
+		}
+		if($cluster == 1){
+			print OUT "\t}\n\n";
+		}
+	}
+
+	# DRAW ARCS
+	foreach my $func (sort keys %func_to_file){
+		foreach my $file (sort keys %{$func_to_file{$func}}){
+			draw_arcs(\%file_to_func,$file,$func,"func");
+		}
+	}
+	foreach my $macro (sort keys %macro_to_file){
+		foreach my $file (sort keys %{$macro_to_file{$macro}}){
+			draw_arcs(\%file_to_macro,$file,$macro,"macro");
+		}
+	}
+	
+	# DRAW FOOTER
+	print OUT "}\n";
+}
+sub draw_arcs
 {
-    my $element = shift;
-    my $arr_ref = shift;
-    foreach my $sub (@$arr_ref){
-        if($element eq $sub){
-            return 1;
-        }
-    }
-    return 0;
+	my $file_to_ref = shift;
+	my $file = shift;
+	my $func = shift;
+	my $caller_desc = shift;
+	my $caller = "${caller_desc}_$processed_files{$file}_$func";
+	foreach my $call (sort keys %{$file_to_ref->{$file}->{$func}}){
+		if(defined($internal{$call})){
+			if(defined($func_to_file{$call})){
+				foreach my $file (sort keys %{$func_to_file{$call}}){
+					my $callee = "func_$processed_files{$file}_$call";
+					my $line = "$caller -> $callee";
+					if(not defined($call_made{$line})){
+						$call_made{$line} = 1;
+						print OUT "\t$line\n";
+					}
+				}
+			} elsif(defined($macro_to_file{$call})) {
+				foreach my $file (sort keys %{$macro_to_file{$call}}){
+					my $callee = "macro_$processed_files{$file}_$call";
+					my $line = "$caller -> $callee";
+					if(not defined($call_made{$line})){
+						$call_made{$line} = 1;
+						print OUT "\t$line\n";
+					}
+				}
+			} else {
+				print STDERR "SOMETHING IS WRONG. Not external, but not defined either!\n";
+			}
+		} else {
+			my $callee = "func_EXT_$call";
+			my $line = "$caller -> $callee";
+			if(not defined($call_made{$line})){
+				print OUT "\t$line\n";
+				$call_made{$line} = 1;
+			}
+		}
+	}
 }
 
-sub is_not_keyword
+sub usage 
 {
-    my $func = shift;
-    my %keywords = (
-        "for" => 1,
-        "if" => 1,
-        "while" => 1,
-        "sizeof" => 1,
-        "switch" => 1
-    );
-    if(defined($keywords{$func})){
-        return 0;
-    }
-    return 1;
-}
+	print "USAGE: $0 OPTIONS <file list>\n";
 
-sub count_char
-{
-    my $char = shift;
-    my $line = shift;
-    my $count = 0;
-    my @arr = split(//,$line);
-    foreach my $ch (@arr){
-        if($ch eq $char){
-            $count++;
-        }
-    }
-    return $count;
 }
-
