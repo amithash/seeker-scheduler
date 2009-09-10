@@ -24,10 +24,6 @@
 #ifndef _SEEKER_FEATURES_H_
 #define _SEEKER_FEATURES_H_
 
-
-#define APPROXIMATE_DIRECTION_BASED_MUTATOR 100
-#define DYNAMIC_PROGRAMMING_BASED_MUTATOR 200
-
 #define LADDER_SCHEDULING 100
 #define ADAPTIVE_LADDER_SCHEDULING 200
 #define SELECT_SCHEDULING 300
@@ -42,14 +38,6 @@
 #endif
 
 /********************************************************************************
- * 			  SELECT MUTATOR 					*
- ********************************************************************************/
-
-/* Uncomment one to choose a mutator */
-// #define MUTATOR_TYPE DYNAMIC_PROGRAMMING_BASED_MUTATOR
-#define MUTATOR_TYPE APPROXIMATE_DIRECTION_BASED_MUTATOR
-
-/********************************************************************************
  * 			  SELECT SCHEDULER 					*
  ********************************************************************************/
 
@@ -58,10 +46,6 @@
 // #define SCHEDULER_TYPE ADAPTIVE_LADDER_SCHEDULING
 // #define SCHEDULER_TYPE SELECT_SCHEDULING
 
-
-#ifndef MUTATOR_TYPE
-#error "Select at least one mutator in include/features.h"
-#endif
 
 #ifndef SCHEDULER_TYPE
 #error "Select at least one scheduler in include/features.h"
