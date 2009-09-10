@@ -38,7 +38,7 @@
 
 static char buf[BUFFER_SIZE];
 static FILE *infile, *outfile;
-char infile_name[] = "/dev/seeker_debug";
+char infile_name[] = "/dev/seeker_log";
 
 char outfile_prefix[100], outfile_name[100];
 int count = 0;
