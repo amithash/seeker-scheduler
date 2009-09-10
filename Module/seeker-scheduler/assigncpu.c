@@ -32,7 +32,7 @@
 #include "sched_debug.h"
 #include "state.h"
 #include "seeker_cpufreq.h"
-#include "debug.h"
+#include "log.h"
 #include "tsc_intf.h"
 #include "nrtasks.h"
 #include "migrate.h"

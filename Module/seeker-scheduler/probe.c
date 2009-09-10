@@ -31,7 +31,7 @@
 #include <pmu.h>
 
 #include "assigncpu.h"
-#include "debug.h"
+#include "log.h"
 #include "hwcounters.h"
 #include "tsc_intf.h"
 #include "sched_debug.h"

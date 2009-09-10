@@ -39,24 +39,24 @@ pmu-objs += pmu/main.o      \
 	    pmu/msr_fpmu.o
 
 # Seeker scheduler
-seeker_scheduler-objs += seeker-scheduler/main.o         \
-					 seeker-scheduler/probe.o				   \
-		       seeker-scheduler/assigncpu.o      \
-		       seeker-scheduler/migrate.o        \
-		       seeker-scheduler/mutate_gd.o         \
-		       seeker-scheduler/mutate_dyn.o     \
-		       seeker-scheduler/mutate_od.o     \
-		       seeker-scheduler/mutate_cv.o     \
-		       seeker-scheduler/mutate_common.o     \
-		       seeker-scheduler/state.o          \
-		       seeker-scheduler/hwcounters.o     \
-		       seeker-scheduler/stats.o	         \
-		       seeker-scheduler/tsc_intf.o       \
-		       seeker-scheduler/sched_debug.o    \
-		       seeker-scheduler/nrtasks.o        \
-		       seeker-scheduler/debug.o		 \
-		       seeker-scheduler/search_state.o   \
-		       seeker-scheduler/pds.o
+seeker_scheduler-objs += 	seeker-scheduler/main.o			\
+			 	seeker-scheduler/probe.o		\
+				seeker-scheduler/assigncpu.o		\
+				seeker-scheduler/migrate.o		\
+				seeker-scheduler/mutate_gd.o		\
+				seeker-scheduler/mutate_dyn.o		\
+				seeker-scheduler/mutate_od.o		\
+				seeker-scheduler/mutate_cv.o		\
+				seeker-scheduler/mutate_common.o	\
+				seeker-scheduler/state.o		\
+				seeker-scheduler/hwcounters.o		\
+				seeker-scheduler/stats.o		\
+				seeker-scheduler/tsc_intf.o		\
+				seeker-scheduler/sched_debug.o		\
+				seeker-scheduler/nrtasks.o		\
+				seeker-scheduler/log.o			\
+				seeker-scheduler/search_state.o		\
+				seeker-scheduler/pds.o
 
 KDIR    := /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)

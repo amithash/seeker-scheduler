@@ -30,7 +30,6 @@
 
 #include <seeker.h>
 
-#include "seeker_cpufreq.h"
 #include "state.h"
 #include "stats.h"
 #include "migrate.h"
@@ -38,7 +37,7 @@
 #include "other_mutators.h"
 #include "probe.h"
 #include "assigncpu.h"
-#include "debug.h"
+#include "log.h"
 #include "hwcounters.h"
 #include "tsc_intf.h"
 #include "sched_debug.h"

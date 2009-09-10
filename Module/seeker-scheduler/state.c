@@ -32,7 +32,7 @@
 #include "state.h"
 #include "seeker_cpufreq.h"
 #include "mutate.h"
-#include "debug.h"
+#include "log.h"
 
 /* Define the logger interval */
 #define LOGGER_INTERVAL (HZ >> 8)

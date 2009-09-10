@@ -28,7 +28,7 @@
 
 #include <seeker.h>
 
-#include "debug.h"
+#include "log.h"
 #include "state.h"
 
 /********************************************************************************

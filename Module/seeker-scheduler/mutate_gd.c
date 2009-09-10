@@ -30,7 +30,7 @@
 
 #include "state.h"
 #include "stats.h"
-#include "debug.h"
+#include "log.h"
 #include "nrtasks.h"
 #include "mutate.h"
 
