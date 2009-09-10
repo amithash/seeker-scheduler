@@ -153,19 +153,19 @@ void inst_scheduler_tick(void)
  *******************************************************************************/
 void inst_release_thread(struct task_struct *t)
 {
-	struct debug_block *p = NULL;
+	struct log_block *p = NULL;
 	if (TS_MEMBER(t, seeker_scheduled) != SEEKER_MAGIC_NUMBER)
 		goto out;
 	if(is_blacklist_task(t))
 		goto out;
-	p = get_debug();
+	p = get_log();
 	if (p) {
-		p->entry.type = DEBUG_PID;
+		p->entry.type = LOG_PID;
 		p->entry.u.tpid.pid = (u32) (t->pid);
 		memcpy(&(p->entry.u.tpid.name[0]), t->comm, 16);
 	}
 
-	put_debug(p);
+	put_log(p);
 
 	/* Make sure there is no pending work on this task */
 	cancel_task_work(t);

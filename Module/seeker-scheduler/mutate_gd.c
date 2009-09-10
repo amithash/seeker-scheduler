@@ -465,7 +465,7 @@ void greedy_delta(int delta)
 {
 	int total = 0;
 	int load = 0;
-	struct debug_block *p = NULL;
+	struct log_block *p = NULL;
 	unsigned int i, j;
 	int winner = 0;
 	int winner_proc = 0;
@@ -619,11 +619,11 @@ void greedy_delta(int delta)
 	}
 
 	/* Update debug log. by now, cur_cpu_state will be updated. */
-	p = get_debug();
+	p = get_log();
 	if(!p) {
 		goto exit_debug;
 	}
-	p->entry.type = DEBUG_MUT;
+	p->entry.type = LOG_MUT;
 	p->entry.u.mut.interval = interval_count;
 	p->entry.u.mut.count = total_states;
 	for ( j = 0; j < total_states; j++ ) {
@@ -634,7 +634,7 @@ void greedy_delta(int delta)
 		p->entry.u.mut.cpus_given[cur_cpu_state[i]]++;
 	}
 exit_debug:
-	put_debug(p);
+	put_log(p);
 }
 
 

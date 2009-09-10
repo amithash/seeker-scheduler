@@ -326,7 +326,7 @@ static void mck(int n, int m, int w)
  ********************************************************************************/
 void mem_dynamic_prog(int delta)
 {
-	struct debug_block *p = NULL;
+	struct log_block *p = NULL;
 	unsigned int i, j;
 	int total_cpus_req = 0;
 	int total = 0;
@@ -390,11 +390,11 @@ void mem_dynamic_prog(int delta)
 	}
 
 	/* Update debug log. by now, cur_cpu_state will be updated. */
-	p = get_debug();
+	p = get_log();
 	if(!p) {
 		goto exit_debug;
 	}
-	p->entry.type = DEBUG_MUT;
+	p->entry.type = LOG_MUT;
 	p->entry.u.mut.interval = interval_count;
 	p->entry.u.mut.count = total_states;
 	for ( j = 0; j < total_states; j++ ) {
@@ -405,6 +405,6 @@ void mem_dynamic_prog(int delta)
 		p->entry.u.mut.cpus_given[cur_cpu_state[i]]++;
 	}
 exit_debug:
-	put_debug(p);
+	put_log(p);
 }
 

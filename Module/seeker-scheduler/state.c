@@ -215,20 +215,20 @@ void usage_clear(int state)
  ********************************************************************************/
 void log_cpu_state(int cpu)
 {
-	struct debug_block *p = NULL;
+	struct log_block *p = NULL;
 	if(jiffies == current_jiffies[cpu])
 		return;
 
-	p = get_debug();
+	p = get_log();
 	if(p){
-		p->entry.type = DEBUG_STATE;
+		p->entry.type = LOG_STATE;
 		p->entry.u.state.cpu = cpu;
 		p->entry.u.state.state = cur_cpu_state[cpu];
 		p->entry.u.state.residency_time = (jiffies - current_jiffies[cpu]) * 1000;
 		p->entry.u.state.residency_time = p->entry.u.state.residency_time / HZ;
 	}
 	current_jiffies[cpu] = jiffies;
-	put_debug(p);
+	put_log(p);
 }
 	
 /********************************************************************************

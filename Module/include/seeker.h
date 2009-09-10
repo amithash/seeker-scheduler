@@ -32,7 +32,7 @@
 
 /* Seeker-scheduler sample data */
 
-enum {DEBUG_SCH, DEBUG_MUT, DEBUG_PID, DEBUG_STATE};
+enum {LOG_SCH, LOG_MUT, LOG_PID, LOG_STATE};
 
 typedef struct {
 	unsigned long long interval;
@@ -44,36 +44,36 @@ typedef struct {
 	unsigned int state_given;
 	unsigned int ipc;
 	unsigned long long inst;
-} debug_scheduler_t;
+} log_scheduler_t;
 
 typedef struct {
 	int cpu;
 	int state;
 	unsigned long residency_time;
-} debug_state_t;
+} log_state_t;
 
 typedef struct {
 	unsigned long long interval;
 	unsigned int count;
 	unsigned int cpus_req[MAX_STATES];
 	unsigned int cpus_given[MAX_STATES];
-} debug_mutator_t;
+} log_mutator_t;
 
 typedef struct {
 
 	char name[16];
 	unsigned int pid;
-} debug_pid_t;
+} log_pid_t;
 
 typedef struct {
 	int type;
 	union{
-		debug_scheduler_t sch;
-		debug_mutator_t mut;
-		debug_pid_t tpid;
-		debug_state_t state;
+		log_scheduler_t sch;
+		log_mutator_t mut;
+		log_pid_t tpid;
+		log_state_t state;
 	}u;
-} debug_t;
+} log_t;
 
 
 #include <linux/version.h>

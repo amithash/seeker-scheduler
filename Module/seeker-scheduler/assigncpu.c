@@ -93,7 +93,7 @@ extern int base_state;
 void put_mask_from_stats(struct task_struct *ts)
 {
 	int new_state = -1;
-	struct debug_block *p = NULL;
+	struct log_block *p = NULL;
 	short ipc = 0;
 	int state = 0;
 	int this_cpu;
@@ -150,7 +150,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		}
 		if (new_state >= 0 && new_state < total_states)
 			mask = states[new_state].cpumask;
-		#if defined(DEBUG) && DEBUG == 2
+		#if defined(SCHED_DEBUG) && DEBUG == 2
 		else{
 			assigncpu_debug("Negative state for %s",ts->comm);
 		}
@@ -162,9 +162,9 @@ void put_mask_from_stats(struct task_struct *ts)
 
 
 	/* Push statastics to the debug buffer if enabled */
-	p = get_debug();
+	p = get_log();
 	if (p) {
-		p->entry.type = DEBUG_SCH;
+		p->entry.type = LOG_SCH;
 		p->entry.u.sch.interval = TS_MEMBER(ts, interval);
 		p->entry.u.sch.inst = TS_MEMBER(ts, inst);
 		p->entry.u.sch.ipc = ipc;
@@ -175,7 +175,7 @@ void put_mask_from_stats(struct task_struct *ts)
 		p->entry.u.sch.state = state;
 		p->entry.u.sch.cycles = TS_MEMBER(ts, ref_cy);
 	}
-	put_debug(p);
+	put_log(p);
 
 	/* Start over. Forget the IPC... */
 	TS_MEMBER(ts, interval) = interval_count;

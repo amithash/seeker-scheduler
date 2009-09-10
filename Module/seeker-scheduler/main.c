@@ -155,7 +155,7 @@ static int scheduler_init(void)
 
 	init_mutator();
 
-	if (debug_init() != 0)
+	if (log_init() != 0)
 		return -ENODEV;
 
 	if(insert_probes()){
@@ -187,7 +187,7 @@ static void scheduler_exit(void)
     error("ERROR: Probes not properly removed");
   }
 
-	debug_exit();
+	log_exit();
 	debug("Exiting the counters");
 	exit_counters();
 	exit_mig_pool();
