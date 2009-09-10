@@ -304,8 +304,8 @@ int debug_init(void)
 	first_read = 1;
 	return 0;
 err:
-	error
-	    ("Something went wrong in the debug init section. It will be unavaliable based on the implementation of the caller");
+	error("Something went wrong in the debug init section. "
+      "It will be unavaliable based on the implementation of the caller");
 	misc_deregister(&seeker_debug_mdev);
 	return -1;
 }

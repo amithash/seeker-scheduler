@@ -60,7 +60,12 @@ extern int total_states;
 /* macro to do a sat sum on integers (including negative nums)
  * with exclusive high and inclusive low
  */
-#define sat_sum(a,b,inc_low, ex_high) (((a) + (b)) >= (ex_high) ? (ex_high)-1 : (((a)+(b)) < (inc_low) ? (inc_low) : ((a)+(b))))
+#define sat_sum(a,b,inc_low, ex_high) (((a) + (b)) >= (ex_high) ? \
+                                      (ex_high)-1 :               \
+                                                                  \
+                                      (((a)+(b)) < (inc_low) ?    \
+                                       (inc_low) :                \
+                                       ((a)+(b))))
 
 
 static int min_states[MAX_STATES] = {MIN_IPC_0, MIN_IPC_1, 
