@@ -32,18 +32,18 @@ int main(int argc, char **argv, char **envp)
 	unsigned long long total_cycles[NR_CPUS] = { 0 };
 	int first_sample[NR_CPUS] = { 1 };
 	int debug = 0;
-	const int debug_bufsize = sizeof(debug_t);
+	const int debug_bufsize = sizeof(log_t);
 	char debug_buf[debug_bufsize];
 
 	while (fread(debug_buf, 1, debug_bufsize, stdin) == debug_bufsize) {
-		debug_t *entry = (debug_t *) (debug_buf);
+		log_t *entry = (log_t *) (debug_buf);
 		switch (entry->type) {
-			debug_scheduler_t *schDef;
-			debug_mutator_t *mutDef;
-			debug_pid_t *pidDef;
-			debug_state_t *stateDef;
-		case DEBUG_SCH:
-			schDef = (debug_scheduler_t *) (&entry->u);
+			log_scheduler_t *schDef;
+			log_mutator_t *mutDef;
+			log_pid_t *pidDef;
+			log_state_t *stateDef;
+		case LOG_SCH:
+			schDef = (log_scheduler_t *) (&entry->u);
 			printf("s");
 			printf(",%llu,%d,%d,%llu,%1.4f,%d,%d,%d,%llu\n",
 			       schDef->interval, schDef->pid, schDef->cpu,
@@ -51,14 +51,14 @@ int main(int argc, char **argv, char **envp)
 			       schDef->state_req, schDef->state_given,
 			       schDef->state, schDef->cycles);
 			break;
-		case DEBUG_PID:
-			pidDef = (debug_pid_t *) (&entry->u);
+		case LOG_PID:
+			pidDef = (log_pid_t *) (&entry->u);
 			printf("p");
 			pidDef->name[15] = '\0';
 			printf(",%d,%s\n", pidDef->pid, pidDef->name);
 			break;
-		case DEBUG_MUT:
-			mutDef = (debug_mutator_t *) (&entry->u);
+		case LOG_MUT:
+			mutDef = (log_mutator_t *) (&entry->u);
 			printf("m,%llu,r", mutDef->interval);
 			for (i = 0; i < mutDef->count; i++) {
 				printf(",%d", mutDef->cpus_req[i]);
@@ -69,8 +69,8 @@ int main(int argc, char **argv, char **envp)
 			}
 			printf("\n");
 			break;
-		case DEBUG_STATE:
-			stateDef = (debug_state_t *) &(entry->u);
+		case LOG_STATE:
+			stateDef = (log_state_t *) &(entry->u);
 			printf("t,%d,%d,%lu\n",stateDef->cpu,
 			      		     stateDef->state,
 					     stateDef->residency_time);

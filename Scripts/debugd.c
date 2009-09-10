@@ -34,7 +34,7 @@
 #include "../generic.h"
 
 #define P_ASSERT_EXIT(t,i) if(!(t)) {perror((i)); exit(EXIT_FAILURE);}
-#define BUFFER_SIZE (4096*sizeof(debug_t))
+#define BUFFER_SIZE (4096*sizeof(log_t))
 
 static char buf[BUFFER_SIZE];
 static FILE *infile, *outfile;
