@@ -228,10 +228,6 @@ pmu/
 
     insmod $SEEKER_HOME/Build/pmu.ko
 
-fpmu/ 
-    The performance monitoring counter driver for Intel (Fixed counters)
-    insmod $SEEKER_HOME/Build/fpmu.ko
-
 seeker-cpufreq/
     The cpufreq governor which exposes the set_freq interface to seeker-scheduler
     insmod $SEEKER_HOME/Build/seeker_cpufreq.ko
@@ -265,18 +261,15 @@ seeker-scheduler/
       delta           - the mutation constraint. (delta constraint)
 
       mutation_method - 0 - Delta (Default)
-                        1 - Ondemand
-                        2 - Conservative
+			1 - dynamic programing (Does not work)
+                        2 - Ondemand
+                        3 - Conservative
+                        4 - Static layout (No mutation)
 
                         This is just so that I could simulate these governors
                         in my infrastructure so I can gather the same logs. 
       base_state     -  The state (0,1,2,...) which the scheduler will place
                         tasks upon their start. 
-
-      init           - Starting state for cpus:
-                       1 - All High
-                       2 - Half High, Half Low
-                       3 - All Low
 
       allowed_cpus   - The number of cpus allowed by seeker-scheduler.
                        Cpus 0 - allowed_cpus - 1 will be enabled, and
@@ -286,7 +279,7 @@ seeker-scheduler/
      disable_scheduling - 0 - Enable scheduling (Default)
                           1 - Disable the scheduler. Tasks are free.
 
-     static_layout   - Provide a comma separated list of the performance state
+     init_layout   - Provide a comma separated list of the performance state
                        of cpus starting from 0.
                        so static_layout=0,0,0,0,4,4,4,4 
                        will set cpu 0 to 3 to state 0 
@@ -297,23 +290,20 @@ seeker-scheduler/
         delta             -> delta
 
 seeker scheduler exposes a dev interface
-/dev/seeker_debug which when opened, it will start collecting logs and dumping
+/dev/seeker_log which when opened, it will start collecting logs and dumping
 the binary logs through this interface. There are already daemons to get
 these logs and convert them. So do not worry (Next section)
 
 Example:
 insmod $SEEKER_HOME/Build/seeker_scheduler.ko delta=4 change_interval=125 \
-                                              allowed_cpus=4 base_stat=3  \
-                                              init=2
+                                              allowed_cpus=4 base_stat=3 
 
-init, static_layout and disable_scheduling are used for special uses. 
+init, mutation_method=4 and disable_scheduling are used for special uses. 
 And if used, it is no longer the system mentioned in thesis.pdf! :-)
+But these are used only to make comparisons.
 
 static_layout - disables the mutator
 disable_scheduling - disables the scheduler from affecting tasks.
-init = 1/2 - disables the mutator and scheduler and performs the load
-             based power optimization. But tasks are still profiled
-             (If /dev/seeker_debug is opened)
 
 ========================================================================================
 INTERFACE TO SEEKER SCHEDULER (Daemons and utils and scripts, Oh My!):
@@ -323,7 +313,7 @@ DAEMONS:
 --------
 
 debugd - Is the user space daemon which sucks the binary logs from 
-/dev/seeker_debug and dumps it into a binary file. 
+/dev/seeker_log and dumps it into a binary file. 
 
   USAGE:
   $SEEKER_HOME/Scripts/debugd <LOG FORMAT> <SAMPLE TIME>
@@ -334,7 +324,7 @@ debugd - Is the user space daemon which sucks the binary logs from
         The reason will become obvious when you read about send.pl.
     SAMPLE TIME:
         The time interval in seconds. debug will wake up every "SAMPLE TIME" seconds
-        and copies data from /dev/seeker_debug and dump it into the output file. 
+        and copies data from /dev/seeker_log and dump it into the output file. 
 
   Make sure that <LOG_FORMAT><NUM> does not exist. debugd will chock and die
   at start. Worse if it happens in the middle!
