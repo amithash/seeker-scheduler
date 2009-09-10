@@ -40,6 +40,10 @@
 #include "pds.h"
 #include "ipc.h"
 
+#define FIXED_STATE_LOW		0
+#define FIXED_STATE_MID		1
+#define FIXED_STATE_HIGH	2
+
 /********************************************************************************
  * 			External Variables 					*
  ********************************************************************************/
@@ -132,15 +136,15 @@ void put_mask_from_stats(struct task_struct *ts)
 		state = cur_cpu_state[this_cpu];
 
 		switch (TS_MEMBER(ts, fixed_state)) {
-		case 0:
+		case FIXED_STATE_LOW:
 			new_state = search_state_closest(state,low_state);
 			state_req = low_state;
 			break;
-		case 1:
+		case FIXED_STATE_MID:
 			new_state = search_state_closest(state,mid_state);
 			state_req = mid_state;
 			break;
-		case 2:
+		case FIXED_STATE_HIGH:
 			new_state = search_state_closest(state,high_state);
 			state_req = high_state;
 			break;
