@@ -58,7 +58,7 @@ void usage_dec(int state);
 int usage_get(int state);
 void usage_clear(int state);
 
-int init_cpu_states(unsigned int how);
+int init_cpu_states(void);
 void exit_cpu_states(void);
 void states_copy(struct state_desc *dest, struct state_desc *src);
 void start_state_logger(void);

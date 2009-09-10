@@ -37,6 +37,12 @@
 /* Define the logger interval */
 #define LOGGER_INTERVAL (HZ >> 8)
 
+#define BOUNDS(val,l,h)		((val) < (l) 	?	\
+				(l)		:	\
+				((val) >= (h)	?	\
+				 (h) - 1	:	\
+				 (val)		)	)
+
 /********************************************************************************
  * 			Function Declarations 					*
  ********************************************************************************/
@@ -52,10 +58,10 @@ static void state_logger(struct work_struct *w);
 extern int total_online_cpus;
 
 /* main.c: contains the static layout if requested */
-extern int static_layout[NR_CPUS];
+extern int init_layout[NR_CPUS];
 
 /* main.c: Contains the number of cpu's static layout */
-extern int static_layout_length;
+extern int init_layout_length;
 
 /* main.c: contains the home state for mutator */
 extern int base_state;
@@ -312,7 +318,7 @@ void stop_state_logger(void)
  *
  * Initializes all the required entities of the subsystem.
  ********************************************************************************/
-int init_cpu_states(unsigned int how)
+int init_cpu_states(void)
 {
 	int i;
 
@@ -332,6 +338,12 @@ int init_cpu_states(unsigned int how)
 	high_state = total_states - 1;
 	mid_state = (total_states >> 1);
 
+	
+	base_state = BOUNDS(base_state,0,total_states);
+
+	info("Using base state as: %d",base_state);
+
+
 	for (i = 0; i < total_states; i++) {
 		states[i].state = i;
 		states[i].cpus = 0;
@@ -340,89 +352,35 @@ int init_cpu_states(unsigned int how)
 		cpus_clear(states[i].cpumask);
 	}
 
-	switch (how) {
-	case ALL_HIGH:
-		info("All states starting of high");
-		states[total_states - 1].cpus = total_online_cpus;
-		for (i = 0; i < total_online_cpus; i++) {
-			cpu_set(i, states[total_states - 1].cpumask);
-			set_freq(i, max_state_possible[i]-1);
-			cur_cpu_state[i] = max_state_possible[i]-1;
-		}
-		break;
-	case ALL_LOW:
-		info("All states starting off low");
-		states[0].cpus = total_online_cpus;
-		for (i = 0; i < total_online_cpus; i++) {
-			cpu_set(i, states[0].cpumask);
-			set_freq(i,0);
-			cur_cpu_state[i] = 0;
-		}
-		break;
-	case BALANCE:
-		info("Half the cpus are starting of high, while the other half low");
-		states[total_states - 1].cpus = total_online_cpus >> 1;
-		states[0].cpus = total_online_cpus - (total_online_cpus >> 1);
-		for (i = 0; i < states[total_states - 1].cpus; i++) {
-			cpu_set(i, states[0].cpumask);
-			set_freq(i, 0);
-			cur_cpu_state[i] = 0;
-		}
-		for (; i < total_online_cpus; i++) {
-			cpu_set(i, states[total_states - 1].cpumask);
-			set_freq(i, max_state_possible[i]-1);
-			cur_cpu_state[i] = max_state_possible[i]-1;
-		}
-		break;
-	case STATIC_LAYOUT:
-		info("A statc layout was chosen");
-		for (i = 0; i < static_layout_length && i < total_online_cpus;
-		     i++) {
-			if (static_layout[i] < 0)
-				static_layout[i] = 0;
-			if (static_layout[i] >= total_states)
-				static_layout[i] = total_states - 1;
-			info("raw_static[%d]=%d",i,static_layout[i]);
-			set_freq(i, static_layout[i]);
-			cpu_set(i, states[static_layout[i]].cpumask);
-			states[static_layout[i]].cpus++;
-			cur_cpu_state[i] = static_layout[i];
-		}
-		for (i = static_layout_length; i < total_online_cpus; i++) {
-			set_freq(i, 0);
-			cpu_set(i, states[0].cpumask);
-			states[0].cpus++;
-			cur_cpu_state[i] = 0;
-		}
-		break;
-	case BASE_LAYOUT:
-		if(base_state >= total_states){
-			base_state = total_states - 1;
-		}
-		info("Base state of %d is chosen",base_state);
+	/* init cpu states */
+	if(init_layout_length == 0){
 		for(i = 0; i < total_online_cpus; i++){
-			set_freq(i, base_state);
-			cpu_set(i, states[base_state].cpumask);
-			states[base_state].cpus++;
-			cur_cpu_state[i] = base_state;
+			init_layout[i] = 0;
 		}
-	case NO_CHANGE:
-	default:
-		info("No change is done. The current freq is read");
-		for (i = 0; i < total_online_cpus; i++) {
-			unsigned int this_freq = get_freq(i);
-			if (this_freq >= total_states) {
-				set_freq(i, 0);
-				this_freq = 0;
-				warn("Freq state for cpu %d was not initialized and hence set to 0", i);
-			}
-			cur_cpu_state[i] = this_freq;
-			cpu_set(i, states[this_freq].cpumask);
-			states[this_freq].cpus++;
-		}
-		break;
+		init_layout_length = total_online_cpus;
 	}
 
+	if(init_layout_length > total_online_cpus){
+		init_layout_length = total_online_cpus;
+	}
+
+	for (i = 0; i < init_layout_length; i++) {
+		init_layout[i] = BOUNDS(init_layout[i],0,total_states);
+		info("init_layout[%d]=%d",i,init_layout[i]);
+
+		set_freq(i, init_layout[i]);
+		cpu_set(i, states[init_layout[i]].cpumask);
+		states[init_layout[i]].cpus++;
+		cur_cpu_state[i] = init_layout[i];
+	}
+
+	for (i = init_layout_length; i < total_online_cpus; i++) {
+		info("init_layout[%d]=%d",i,0);
+		set_freq(i, 0);
+		cpu_set(i, states[0].cpumask);
+		states[0].cpus++;
+		cur_cpu_state[i] = 0;
+	}
 
 	if(register_scpufreq_user(&seeker_scheduler_user)){
 		error("Registering with seeker_cpufreq failed.");

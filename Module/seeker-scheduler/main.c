@@ -66,14 +66,11 @@ int disable_scheduling = 0;
 /* DELTA of the mutator */
 int delta = 1;
 
-/* method of initializing the states */
-int init = ALL_LOW;
+/* init Layout of states */
+int init_layout[NR_CPUS];
 
-/* Static Layout of states */
-int static_layout[NR_CPUS];
-
-/* Count of elements in static_layout */
-int static_layout_length = 0;
+/* Count of elements in init_layout */
+int init_layout_length = 0;
 
 /* allowed cpus to limit total cpus used. */
 int allowed_cpus = 0;
@@ -110,21 +107,12 @@ static int scheduler_init(void)
 
 #endif
 
-
-	if (static_layout_length != 0) {
-		init = STATIC_LAYOUT;
-		mutation_method = STATIC_MUTATOR;
-	}
-
-	if (base_state != 0){
-		init = BASE_LAYOUT;
-		if(base_state < 0){
-			base_state = 0;
-		}
-	}
-	if(mutation_method != 0){
+	if(mutation_method == ONDEMAND_MUTATOR  || 
+	   mutation_method == CONSERVATIVE_MUTATOR ){
+		warn("scheduling is disabled for ondemand or conservative");
 		disable_scheduling = 1;
 	}
+
 	if (disable_scheduling != 0) {
 		disable_scheduling = 1;
 	}
@@ -164,7 +152,7 @@ static int scheduler_init(void)
 	/* Please keep this BEFORE the probe registeration and
 	 * the timer initialization. init_cpu_states makes this 
 	 * assumption by not taking any locks */
-	init_cpu_states(init);
+	init_cpu_states();
 
 	init_mutator();
 
@@ -229,9 +217,6 @@ module_param(base_state, int, 0444);
 MODULE_PARM_DESC(base_state,
 		"The base state the scheduler/mutator shall take");
 
-module_param(init, int, 0444);
-MODULE_PARM_DESC(init,
-		 "Starting state of cpus: 1 - All high, 2 - half high, half low, 3 - All low");
 module_param(allowed_cpus, int, 0444);
 MODULE_PARM_DESC(allowed_cpus, "Limit cpus to this number, default is all online cpus.");
 
@@ -239,8 +224,8 @@ module_param(disable_scheduling, int, 0444);
 MODULE_PARM_DESC(disable_scheduling,
 		 "Set to not allow scheduling. Does a dry run. Also enables static layout.");
 
-module_param_array(static_layout, int, &static_layout_length, 0444);
-MODULE_PARM_DESC(static_layout, "Use to set a static_layout to use");
+module_param_array(init_layout, int, &init_layout_length, 0444);
+MODULE_PARM_DESC(init_layout, "Use to set a static_layout to use");
 
 module_param(delta, int, 0444);
 MODULE_PARM_DESC(delta, "Type of state machine to use 1,2,.. default:1");
