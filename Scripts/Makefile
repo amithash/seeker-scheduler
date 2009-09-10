@@ -31,13 +31,13 @@ SEEKER_INCLUDE := -I$(shell pwd)/../Module/include
 STATE_LIB := $(shell pwd)/../lib
 
 
-all: decodelog debugd test_recommendations interp maxmin smooth
+all: decodelog seekerlogd test_recommendations interp maxmin smooth
 
-debug: decodelog debugd test_recommendations interp maxmin smooth
+debug: decodelog seekerlogd test_recommendations interp maxmin smooth
 
 decodelog: decodelog.c
 	$(CC) $(CFLAGS) $? $(LDFLAGS) $(SEEKER_INCLUDE) -DNR_CPUS=$(CPUS) -DARCH_$(ARCA) -o $@
-debugd: debugd.c
+seekerlogd: seekerlogd.c
 	$(CC) $(CFLAGS) $? $(LDFLAGS) $(SEEKER_INCLUDE) -DNR_CPUS=$(CPUS) -DARCH_$(ARCA) -o $@
 test_recommendations: test_recommendations.c
 	$(CC) $(CFLAGS) $? $(LDFLAGS) -lstate_recommendations -L$(STATE_LIB) -o $@
@@ -49,5 +49,5 @@ smooth: smooth.C
 	$(CXX) $(CFLAGS) $? $(LDFLAGS) -o $@
 
 clean:
-	rm -f decodelog interp maxmin smooth debugd test_recommendations
+	rm -f seekerlogd interp maxmin smooth decodelog test_recommendations
 

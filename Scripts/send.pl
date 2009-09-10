@@ -36,7 +36,7 @@ my $sigterm = $signo{TERM} + 0;
 
 my $terminate = 0;
 GetOptions('t|terminate'	=>	\$terminate);
-my $daemon_name = "debugd";
+my $daemon_name = "seekerlogd";
 
 
 open PS,"ps -e | grep \"$daemon_name\" |";
