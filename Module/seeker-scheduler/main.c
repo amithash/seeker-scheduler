@@ -26,12 +26,9 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/version.h>
-#include <linux/workqueue.h>
-#include <linux/interrupt.h>
 #include <linux/cpumask.h>
 
 #include <seeker.h>
-
 
 #include "seeker_cpufreq.h"
 #include "state.h"
@@ -47,37 +44,14 @@
 #include "sched_debug.h"
 
 /********************************************************************************
- * 			Function Declarations 					*
- ********************************************************************************/
-
-static void state_change(struct work_struct *w);
-
-/********************************************************************************
  * 			Global Datastructures 					*
  ********************************************************************************/
-
-/* The mutataor's work struct */
-static DECLARE_DELAYED_WORK(state_work, state_change);
-
-/* Mutator interval time in jiffies */
-static u64 interval_jiffies;
-
-/* Timer started flag */
-static int timer_started = 0;
 
 /* Contains the value of num_online_cpus(), updated by init */
 int total_online_cpus = 0;
 
 /* Mask of all allowed cpus */
 cpumask_t total_online_mask = CPU_MASK_NONE;
-
-/********************************************************************************
- * 			External Variables 					*
- ********************************************************************************/
-
-
-extern struct state_desc states[MAX_STATES];
-
 
 /********************************************************************************
  * 			Module Parameters 					*
@@ -104,7 +78,7 @@ int static_layout_length = 0;
 /* allowed cpus to limit total cpus used. */
 int allowed_cpus = 0;
 
-int mutation_method = 0;
+int mutation_method = GREEDY_DELTA_MUTATOR;
 
 /* The home state for the scheduler and the mutator */
 int base_state = 0;
@@ -112,33 +86,6 @@ int base_state = 0;
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
-
-/*******************************************************************************
- * state_change - work callback 
- * @w - the work struct calling this function.
- * @return - None
- * @Side Effect - Calls mutator which does its thing, and schedules itself. 
- *
- * The work routine responsible to call the mutator
- *******************************************************************************/
-static void state_change(struct work_struct *w)
-{
-	debug("State change now @ %ld", jiffies);
-	switch(mutation_method){
-		case 1: 
-			ondemand();
-			break;
-		case 2: 
-			conservative();
-			break;
-		case 0:
-		default:
-			choose_layout(delta);
-	}
-	if (timer_started) {
-		schedule_delayed_work(&state_work, interval_jiffies);
-	}
-}
 
 /*******************************************************************************
  * scheduler_init - Module init function
@@ -166,7 +113,9 @@ static int scheduler_init(void)
 
 	if (static_layout_length != 0) {
 		init = STATIC_LAYOUT;
+		mutation_method = STATIC_MUTATOR;
 	}
+
 	if (base_state != 0){
 		init = BASE_LAYOUT;
 		if(base_state < 0){
@@ -189,6 +138,7 @@ static int scheduler_init(void)
 			warn("allowed_cpus has to be within (0,%d]",total_online_cpus);
 		}
 	}
+
 	cpus_clear(total_online_mask);
 	for(i=0;i<total_online_cpus;i++){
 		cpu_set(i,total_online_mask);
@@ -215,31 +165,16 @@ static int scheduler_init(void)
 	 * the timer initialization. init_cpu_states makes this 
 	 * assumption by not taking any locks */
 	init_cpu_states(init);
-	if (!(init == STATIC_LAYOUT || disable_scheduling))
-		init_mutator();
+
+	init_mutator();
 
 	if (debug_init() != 0)
 		return -ENODEV;
 
-  if(insert_probes()){
-    return -ENOSYS;
-  }
-
-	if (init != STATIC_LAYOUT) {
-		interval_jiffies = (change_interval * HZ) / 1000;
-		if(interval_jiffies < 1){
-			warn("change_interval=%dms makes the interval lower"
-				"than the scheduling quanta. adjusting it to equal"
-				"to the quanta = %dms",change_interval,(1000/HZ));
-			interval_jiffies = 1;
-			change_interval = 1000 / HZ;
-		}
-
-		timer_started = 1;
-		init_timer_deferrable(&state_work.timer);
-		schedule_delayed_work(&state_work, interval_jiffies);
-		info("Started Timer");
+	if(insert_probes()){
+		return -ENOSYS;
 	}
+
 	init_assigncpu_logger();
 
 
@@ -256,10 +191,9 @@ static void scheduler_exit(void)
 {
 	debug("removing the state change timer");
 	exit_cpu_states();
-	if (timer_started) {
-		timer_started = 0;
-		cancel_delayed_work(&state_work);
-	}
+
+	exit_mutator();
+
 	stop_state_logger();
 
   if(remove_probes()){
@@ -286,7 +220,10 @@ MODULE_PARM_DESC(change_interval,
 
 module_param(mutation_method, int, 0444);
 MODULE_PARM_DESC(mutation_method, 
-		"Type of mutation: Delta (default) - 0, ondemand - 1, conservative - 2");
+		"Type of mutation: Greedy delta (default) - 0, "
+		"dynamic programming with memort - 1 "
+		"ondemand - 2, "
+		"conservative - 3");
 
 module_param(base_state, int, 0444);
 MODULE_PARM_DESC(base_state,

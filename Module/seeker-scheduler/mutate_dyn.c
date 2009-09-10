@@ -32,6 +32,7 @@
 #include "stats.h"
 #include "debug.h"
 #include "nrtasks.h"
+#include "mutate.h"
 
 #define NR_STATES MAX_STATES
 #define MAX_DELTA (NR_CPUS * (MAX_STATES - 1))
@@ -58,12 +59,15 @@ extern int cur_cpu_state[NR_CPUS];
 /* state.c: seq lock for states */
 extern seqlock_t states_seq_lock;
 
+extern struct proc_info info[NR_CPUS];
+
+/* Mutator interval */
+extern u64 interval_count;
+
 /********************************************************************************
  * 			Global Datastructures 					*
  ********************************************************************************/
 
-#if MUTATOR_TYPE == DYNAMIC_PROGRAMMING_BASED_MUTATOR
-#warning "You are using the experimental dynamic programming based mutator"
 static struct state_desc new_states[MAX_STATES];
 
 static int cpu_awake_proxy[NR_CPUS];
@@ -76,56 +80,11 @@ static int new_cpu_state[NR_CPUS];
 /* Computed demand for each state */
 static int demand[MAX_STATES];
 
-/* Mutator interval */
-u64 interval_count;
-
-/* sleep_time - intervals the cpu has been sleeping 
- * awake - 1 if cpu is awake, 0 otherwise 
- */
-struct proc_info {
-	unsigned int sleep_time;
-	unsigned int awake_time;
-	unsigned int awake;
-};
-
-/* Proc info for each cpu */
-static struct proc_info info[NR_CPUS];
 
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
 
-/********************************************************************************
- * procs - compute total processors required given hints and total
- * @hints - the demand 
- * @total - sum of all demands for all states.
- * @total_load - integer load of system (number of cpus 
- * @Side Effects - None
- * @return - Total processors required for the state with hint = hints
- *
- * Take hints and compute procs = (hints / total) * total_load
- ********************************************************************************/
-inline int procs(int hints, int total, int total_load)
-{
-	int ans;
-	if (hints == 0)
-		return 0;
-	if (hints == total)
-		return total_load;
-
-	ans = div((hints * total_load), total);
-	return ans < 0 ? 0 : ans;
-}
-
-void init_mutator(void)
-{
-	int i;
-	for (i = 0; i < NR_CPUS; i++) {
-		info[i].sleep_time = 0;
-		info[i].awake_time = 1;
-		info[i].awake = 1;
-	}
-}
 /********************************************************************************
  * wake_up_procs - wake up total_demand processors, if asleep.
  * @total_demand - total processors required.
@@ -134,7 +93,7 @@ void init_mutator(void)
  * the required (total_demand) then return.
  * Else, iteratively wake up the proc with min sleep_time 
  ********************************************************************************/
-int wake_up_procs(int total_demand)
+static int wake_up_procs(int total_demand)
 {
 	int awake_total = 0;
 	unsigned int min_sleep_time;
@@ -202,7 +161,7 @@ int wake_up_procs(int total_demand)
 	return awake_total;
 }
 
-void delta_based_demand_transform(int cpus, int delta)
+static void delta_based_demand_transform(int cpus, int delta)
 {
 	int can_win[NR_STATES] = {0};
 	int i,j;
@@ -269,7 +228,7 @@ void delta_based_demand_transform(int cpus, int delta)
  * has a value val_j => the value of all elements 
  * x_ij ( 1 <= i <= n ) are equal. 
  */
-void mck(int n, int m, int w)
+static void mck(int n, int m, int w)
 {
 	int i;
 	int j;
@@ -356,7 +315,7 @@ void mck(int n, int m, int w)
 
 
 /********************************************************************************
- * choose_layout - The mutator called every mutator interval.
+ * mem_dynamic_prog - The mutator called every mutator interval.
  * @delta - The delta of the system chosen at module insertion. 
  * @Side effects - Changes cur_cpu_state and states field during which the states
  * 		   will be incosistent. 
@@ -365,7 +324,7 @@ void mck(int n, int m, int w)
  * the hints to 0 so the next interval will be fresh. The function is rather 
  * big, so it is explained inline. 
  ********************************************************************************/
-void choose_layout(int delta)
+void mem_dynamic_prog(int delta)
 {
 	struct debug_block *p = NULL;
 	unsigned int i, j;
@@ -448,4 +407,4 @@ void choose_layout(int delta)
 exit_debug:
 	put_debug(p);
 }
-#endif
+

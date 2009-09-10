@@ -43,13 +43,15 @@ seeker_scheduler-objs += seeker-scheduler/main.o         \
 					 seeker-scheduler/probe.o				   \
 		       seeker-scheduler/assigncpu.o      \
 		       seeker-scheduler/migrate.o        \
-		       seeker-scheduler/mutate.o         \
+		       seeker-scheduler/mutate_gd.o         \
 		       seeker-scheduler/mutate_dyn.o     \
+		       seeker-scheduler/mutate_od.o     \
+		       seeker-scheduler/mutate_cv.o     \
+		       seeker-scheduler/mutate_common.o     \
 		       seeker-scheduler/state.o          \
 		       seeker-scheduler/hwcounters.o     \
 		       seeker-scheduler/stats.o	         \
 		       seeker-scheduler/tsc_intf.o       \
-		       seeker-scheduler/other_mutators.o \
 		       seeker-scheduler/sched_debug.o    \
 		       seeker-scheduler/nrtasks.o        \
 		       seeker-scheduler/debug.o		 \

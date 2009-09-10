@@ -32,6 +32,7 @@
 #include "stats.h"
 #include "debug.h"
 #include "nrtasks.h"
+#include "mutate.h"
 
 #define MIN_REQUESTS 4
 
@@ -61,7 +62,6 @@ extern seqlock_t states_seq_lock;
  * 			Global Datastructures 					*
  ********************************************************************************/
 
-#if MUTATOR_TYPE == APPROXIMATE_DIRECTION_BASED_MUTATOR
 static struct state_desc new_states[MAX_STATES];
 
 /* demand field for each state */
@@ -82,20 +82,6 @@ static int winning_procs[MAX_STATES];
 /* Computed demand for each state */
 static int demand[MAX_STATES];
 
-/* Mutator interval */
-u64 interval_count;
-
-/* sleep_time - intervals the cpu has been sleeping 
- * awake - 1 if cpu is awake, 0 otherwise 
- */
-struct proc_info {
-	unsigned int sleep_time;
-	unsigned int awake;
-};
-
-/* Proc info for each cpu */
-static struct proc_info info[NR_CPUS];
-
 /* Vector: 0 - if a proc is selected, 1 otherwise */
 static int selected_cpus[NR_CPUS];
 
@@ -105,9 +91,15 @@ static int selected_cpus[NR_CPUS];
 static int proxy_source[MAX_STATES];
 
 /********************************************************************************
- * 			Function Declarations 					*
+ * 			External Variables 					*
  ********************************************************************************/
-inline int procs(int hints, int total, int total_load);
+
+extern struct proc_info info[NR_CPUS];
+
+extern u64 interval_count;
+
+extern struct proc_info info[NR_CPUS];
+
 
 /********************************************************************************
  * 				Functions					*
@@ -120,7 +112,7 @@ inline int procs(int hints, int total, int total_load);
  * Assumes that cur_cpu_state is valid and the demand vector is computed. 
  * returns the transition direction. 
  ********************************************************************************/
-int transition_direction(void)
+static int transition_direction(void)
 {
 	int req_level = 0;
 	int pre_level = 0;
@@ -151,7 +143,7 @@ int transition_direction(void)
  *
  * Take hints and compute procs = (hints / total) * total_load
  ********************************************************************************/
-inline int procs(int hints, int total, int total_load)
+static int procs(int hints, int total, int total_load)
 {
 	int ans;
 	if (hints == 0)
@@ -164,21 +156,6 @@ inline int procs(int hints, int total, int total_load)
 }
 
 /********************************************************************************
- * init_mutator - initialize mutator local structures.
- * @Side Effects - For each cpu, sleep_time is set to 0 and is set to be awake. 
- *
- * Inits mutator structures. 
- ********************************************************************************/
-void init_mutator(void)
-{
-	int i;
-	for (i = 0; i < NR_CPUS; i++) {
-		info[i].sleep_time = 0;
-		info[i].awake = 1;
-	}
-}
-
-/********************************************************************************
  * update_state_matrix - updates state_matrix for the value of delta. 
  * @delta - the delta for which state_matrix must be updated.
  * @Side Effects - state_matrix is re-populated based on new_cpu_state and delta
@@ -188,7 +165,7 @@ void init_mutator(void)
  * distance is the distance from column (cur_cpu_state) and 0 if that distance 
  * is greater than delta.
  ********************************************************************************/
-void update_state_matrix(int delta, int direction)
+static void update_state_matrix(int delta, int direction)
 {
 	int i = 0;
 	int j = 0;
@@ -228,7 +205,7 @@ void update_state_matrix(int delta, int direction)
  * state_weight. Of course assumes that the state_matrix is updated
  * before this is called.
  ********************************************************************************/
-void update_state_weight(void)
+static void update_state_weight(void)
 {
 	int i,j;
 	for(j = 0; j < total_states; j++) {
@@ -249,7 +226,7 @@ void update_state_weight(void)
  * a. state_weight is already updated.
  * b. This SHOULD only be used if the weight of pos is 0.
  ********************************************************************************/
-int get_left_distance(int pos)
+static int get_left_distance(int pos)
 {
 	int i;
 	int ret = -1;
@@ -272,7 +249,7 @@ int get_left_distance(int pos)
  * a. state_weight is already updated.
  * b. This SHOULD only be used if the weight of pos is 0.
  ********************************************************************************/
-int get_right_distance(int pos)
+static int get_right_distance(int pos)
 {
 	int i;
 	int ret = -1;
@@ -297,7 +274,7 @@ int get_right_distance(int pos)
  * left and right are return values of get_left_distance and get_right_distance
  * respectively.
  ********************************************************************************/
-int closest(int pos, int left, int right)
+static int closest(int pos, int left, int right)
 {
 	if(left == -1 && right == -1){
 		return -1;
@@ -324,7 +301,7 @@ int closest(int pos, int left, int right)
  * dir = -1 the one on the right is chosen
  * dir = 0 the closest is chosen. 
  ********************************************************************************/
-void update_demand_field(int dir)
+static void update_demand_field(int dir)
 {
 	int i;
 	int left;
@@ -375,7 +352,7 @@ void update_demand_field(int dir)
  * it selects the cell with the max value and whose position in selected_cpus
  * is not 0. and then updates winning_procs. 
  ********************************************************************************/
-void update_winning_procs(void)
+static void update_winning_procs(void)
 {
 	int i,j;
 	int max_val;
@@ -402,7 +379,7 @@ void update_winning_procs(void)
  * return the state with the max state_weight * demand_field, 
  * if contended, then the one with the higher winning_proc is chosen.
  ********************************************************************************/
-int get_winning_state(void)
+static int get_winning_state(void)
 {
 	int j;
 	int max_weight = 0;
@@ -437,7 +414,7 @@ int get_winning_state(void)
  * the required (total_demand) then return.
  * Else, iteratively wake up the proc with min sleep_time 
  ********************************************************************************/
-void wake_up_procs(int total_demand)
+static void wake_up_procs(int total_demand)
 {
 	int awake_total = 0;
 	unsigned int min_sleep_time;
@@ -475,7 +452,7 @@ void wake_up_procs(int total_demand)
 }
 
 /********************************************************************************
- * choose_layout - The mutator called every mutator interval.
+ * greedy_delta  - The mutator called every mutator interval.
  * @delta - The delta of the system chosen at module insertion. 
  * @Side effects - Changes cur_cpu_state and states field during which the states
  * 		   will be incosistent. 
@@ -484,7 +461,7 @@ void wake_up_procs(int total_demand)
  * the hints to 0 so the next interval will be fresh. The function is rather 
  * big, so it is explained inline. 
  ********************************************************************************/
-void choose_layout(int delta)
+void greedy_delta(int delta)
 {
 	int total = 0;
 	int load = 0;
@@ -659,4 +636,5 @@ void choose_layout(int delta)
 exit_debug:
 	put_debug(p);
 }
-#endif
+
+

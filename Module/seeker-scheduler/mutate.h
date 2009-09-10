@@ -29,7 +29,24 @@
  * 				Mutator API 					*
  ********************************************************************************/
 
-void choose_layout(int dt);
+#define GREEDY_DELTA_MUTATOR 0
+#define MEM_DYNAMIC_PROG_MUTATOR 1
+#define ONDEMAND_MUTATOR 2
+#define CONSERVATIVE_MUTATOR 3
+#define STATIC_MUTATOR 4
+
 void init_mutator(void);
+void exit_mutator(void);
+
+
+/* sleep_time - intervals the cpu has been sleeping 
+ * awake - 1 if cpu is awake, 0 otherwise 
+ */
+struct proc_info {
+	unsigned int sleep_time;
+	unsigned int awake;
+	unsigned int awake_time;
+};
+
 
 #endif
