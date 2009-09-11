@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright 2008 Amithash Prasad                                         *
+ * Copyright 2009 Amithash Prasad                                         *
  *                                                                        *
  * This file is part of multi-launcher                                    *
  *                                                                        *
