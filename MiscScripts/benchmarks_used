@@ -1,0 +1,23 @@
+HIGH
+bzip2 (Ref 3)
+povray (Ref 0)
+hmmer (Ref 1)
+sjeng (Ref 0)
+h264ref (Ref 2)
+
+LOW
+mcf (Ref 0)
+milc (Ref 0)
+libquantum (Ref 0)
+lbm (Ref 0)
+omnetpp (Ref 0)
+
+PHASED HIGH
+gobmk (Ref 1)
+sphinx3 Ref 0)
+
+PHASED LOW
+astar (Ref 1)
+xalancbmk (Ref 0)
+
+
