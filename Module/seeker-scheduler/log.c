@@ -1,5 +1,6 @@
 /*****************************************************
  * Copyright 2009 Amithash Prasad                    *
+ * Copyright 2006 Tipp Mosely                        *
  *                                                   *
  * This file is part of Seeker                       *
  *                                                   *
