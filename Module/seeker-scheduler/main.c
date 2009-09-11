@@ -35,7 +35,6 @@
 #include "stats.h"
 #include "migrate.h"
 #include "mutate.h"
-#include "other_mutators.h"
 #include "probe.h"
 #include "assigncpu.h"
 #include "log.h"
@@ -211,7 +210,8 @@ MODULE_PARM_DESC(mutation_method,
 		"Type of mutation: Greedy delta (default) - 0, "
 		"dynamic programming with memort - 1 "
 		"ondemand - 2, "
-		"conservative - 3");
+		"conservative - 3"
+    "static (disable mutation) - 4");
 
 module_param(base_state, int, 0444);
 MODULE_PARM_DESC(base_state,

@@ -24,9 +24,6 @@
 #ifndef _PMU_H_
 #define _PMU_H_
 
-void pmu_init_msrs(void *info);
-void fpmu_init_msrs(void *info);
-
 void counter_clear(u32 counter);
 void fcounter_clear(u32 counter);
 

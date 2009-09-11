@@ -30,7 +30,7 @@
 
 #include "state.h"
 #include "stats.h"
-#include "other_mutators.h"
+#include "mutate.h"
 
 /********************************************************************************
  * 			External Variables 					*

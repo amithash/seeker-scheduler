@@ -1,2 +1,0 @@
-ln -s $BENCH_ROOT/src/spec-cpu2006/int/473.astar/builds/base/473.astar $BENCH_ROOT/473.astar
-ln -s -f -n --target-directory=$BENCH_ROOT $BENCH_ROOT/src/spec-cpu2006/int/473.astar/data/ref/input/BigLakes2048.bin $BENCH_ROOT/src/spec-cpu2006/int/473.astar/data/ref/input/BigLakes2048.cfg $BENCH_ROOT/src/spec-cpu2006/int/473.astar/data/ref/input/rivers.bin $BENCH_ROOT/src/spec-cpu2006/int/473.astar/data/ref/input/rivers.cfg

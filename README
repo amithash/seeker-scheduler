@@ -1,7 +1,7 @@
 ========================================================================================
                                     SEEKER
                             Performance based scheduler
-                      	   Copyright 2008 Amithash Prasad
+                      	   Copyright 2009 Amithash Prasad
 	                                                                        
      Seeker is free software: you can redistribute it and/or modify         
      it under the terms of the GNU General Public License as published by   
@@ -359,7 +359,7 @@ send.pl  - Instructs debugd daemon to stop writing to the current binary log and
            executing send.pl 
            makes it to close ~/log_0 and start to write to ~/log_1
            Using the -t option will cause debugd to close the current binary log and 
-           the input /dev/seeker_debug and terminate.
+           the input /dev/seeker_log and terminate.
 
 
 change_speed.pl - Script to manually change the speed with the seeker cpufreq governor.
