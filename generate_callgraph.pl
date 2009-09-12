@@ -39,6 +39,7 @@ my $ext_style = "filled";
 my $name = "figure";
 my $type = "svg";
 my $dot_app = "dot";
+my $ignore_ext = 0;
 my $help = 0;
 
 GetOptions(
@@ -50,6 +51,7 @@ GetOptions(
 	"name=s"    => \$name,
 	"type=s"    => \$type,
 	"app=s"   => \$dot_app,
+  "ignore_ext" => \$ignore_ext,
 	"help" => \$help
 );
 
@@ -163,10 +165,16 @@ sub main
 				print CALLS "\t\t$macro\n";
 				my %calls = %{$macros{$macro}};
 				foreach my $call (sort keys %calls){
-					print CALLS "\t\t\t$call\n";
 					if(not defined($internal{$call})){
 						$external{$call} = 1;
 					}
+          if($ignore_ext == 1){
+            if(defined($internal{$call})){
+					    print CALLS "\t\t\t$call\n";
+            }
+          } else {
+					  print CALLS "\t\t\t$call\n";
+          }
 				}
 				
 			}
@@ -178,10 +186,16 @@ sub main
 				print CALLS "\t\t$func\n";
 				my %calls = %{$funcs{$func}};
 				foreach my $call (sort keys %calls){
-					print CALLS "\t\t\t$call\n";
 					if(not defined($internal{$call})){
 						$external{$call} = 1;
 					}
+          if($ignore_ext == 1){
+            if(defined($internal{$call})){
+					    print CALLS "\t\t\t$call\n";
+            }
+          } else {
+					  print CALLS "\t\t\t$call\n";
+          }
 				}
 				
 			}
@@ -190,7 +204,6 @@ sub main
 	}
 	print "-------- printing to calls file complete ------------\n";
 	print_to_dot();
-	print "-------- printing to dot file complete ------------\n";
 	print "-------- Executing $dot_app ------------\n";
 
 	system("$dot_app -T$type $figure_name -o $out_name");
@@ -560,20 +573,22 @@ sub print_to_dot
 			print OUT "\t}\n\n";
 		}
 	}
-	# DRAW EXTERNAL NODES
-	if(scalar (keys %external) > 0){
-		if($cluster == 1){
-			print OUT "\tsubgraph cluster_EXT {\n";
-			print OUT "\t\tlabel=\"ExternalDependancies\"\n";
-			print OUT "\t\tshape=\"$file_shape\"\n";
-		}
-		foreach my $func (sort keys %external){
-			print OUT "\t\tfunc_EXT_$func [label=\"$func\",color=\"$ext_col\",fillcolor=\"$ext_fill_col\",style=\"$ext_style\"]\n"
-		}
-		if($cluster == 1){
-			print OUT "\t}\n\n";
-		}
-	}
+  if($ignore_ext != 1){
+  	# DRAW EXTERNAL NODES
+  	if(scalar (keys %external) > 0){
+  		if($cluster == 1){
+  			print OUT "\tsubgraph cluster_EXT {\n";
+  			print OUT "\t\tlabel=\"ExternalDependancies\"\n";
+  			print OUT "\t\tshape=\"$file_shape\"\n";
+  		}
+  		foreach my $func (sort keys %external){
+  			print OUT "\t\tfunc_EXT_$func [label=\"$func\",color=\"$ext_col\",fillcolor=\"$ext_fill_col\",style=\"$ext_style\"]\n"
+  		}
+  		if($cluster == 1){
+  			print OUT "\t}\n\n";
+  		}
+  	} 
+  }
 
 	# DRAW ARCS
 	foreach my $func (sort keys %func_to_file){
@@ -620,7 +635,7 @@ sub draw_arcs
 			} else {
 				print STDERR "SOMETHING IS WRONG. Not external, but not defined either!\n";
 			}
-		} else {
+		} elsif($ignore_ext == 0){
 			my $callee = "func_EXT_$call";
 			my $line = "$caller -> $callee";
 			if(not defined($call_made{$line})){
