@@ -40,6 +40,9 @@ my $name = "figure";
 my $type = "svg";
 my $dot_app = "dot";
 my $ignore_ext = 0;
+my $cluster_ext = 1;
+my $cluster_macro = 1;
+my $cluster_func = 1;
 my $help = 0;
 
 GetOptions(
@@ -52,6 +55,9 @@ GetOptions(
 	"type=s"    => \$type,
 	"app=s"   => \$dot_app,
   "ignore_ext" => \$ignore_ext,
+  "cluster_ext" => \$cluster_ext,
+  "cluster_macro" => \$cluster_macro,
+  "cluster_func" => \$cluster_func,
 	"help" => \$help
 );
 
@@ -106,6 +112,12 @@ if($#ARGV < 0){
   print "\nERROR: No arguments.\n\n";
   usage();
   exit;
+}
+
+if($cluster == 0){
+  $cluster_ext = 0;
+  $cluster_macro = 0;
+  $cluster_func = 0;
 }
 
 
@@ -558,7 +570,7 @@ sub print_to_dot
 			print OUT "\tsubgraph cluster_$processed_files{$file} {\n";
 		        print OUT "\t\tlabel=\"$file\"\n";
 			print OUT "\t\tshape=\"$file_shape\"\n";
-		}
+    }
 		if(defined($file_to_macro{$file})){
 			foreach my $macro (sort keys %{$file_to_macro{$file}}){
 				print OUT "\t\tmacro_$processed_files{$file}_$macro [label=\"$macro\",color=\"$macro_col\",fillcolor=\"$macro_fill_col\",style=\"$macro_style\"]\n";
@@ -576,7 +588,7 @@ sub print_to_dot
   if($ignore_ext != 1){
   	# DRAW EXTERNAL NODES
   	if(scalar (keys %external) > 0){
-  		if($cluster == 1){
+  		if($cluster_ext == 1){
   			print OUT "\tsubgraph cluster_EXT {\n";
   			print OUT "\t\tlabel=\"ExternalDependancies\"\n";
   			print OUT "\t\tshape=\"$file_shape\"\n";
@@ -584,7 +596,7 @@ sub print_to_dot
   		foreach my $func (sort keys %external){
   			print OUT "\t\tfunc_EXT_$func [label=\"$func\",color=\"$ext_col\",fillcolor=\"$ext_fill_col\",style=\"$ext_style\"]\n"
   		}
-  		if($cluster == 1){
+  		if($cluster_ext == 1){
   			print OUT "\t}\n\n";
   		}
   	} 
