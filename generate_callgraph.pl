@@ -63,7 +63,6 @@ GetOptions(
 
 my $figure_name = "$name.dot";
 my $out_name = "$name.$type";
-my $calls_name = "$name.calls";
 
 my %apps = (
 	"dot" => 1,
@@ -165,56 +164,6 @@ sub main
 
 	print "-------- parse complete ------------\n";
 
-	open CALLS, "+>$calls_name" or die "could not create $calls_name\n";
-
-	# Print them to stdout.
-	foreach my $file (sort keys %processed_files){
-		print CALLS "$file\n";
-		if(defined($file_to_macro{$file})){
-			print CALLS "\tMACROS:\n";
-			my %macros = %{$file_to_macro{$file}};
-			foreach my $macro (sort keys %macros){
-				print CALLS "\t\t$macro\n";
-				my %calls = %{$macros{$macro}};
-				foreach my $call (sort keys %calls){
-					if(not defined($internal{$call})){
-						$external{$call} = 1;
-					}
-          if($ignore_ext == 1){
-            if(defined($internal{$call})){
-					    print CALLS "\t\t\t$call\n";
-            }
-          } else {
-					  print CALLS "\t\t\t$call\n";
-          }
-				}
-				
-			}
-		}
-		if(defined($file_to_func{$file})){
-			print CALLS "\tFUNCS:\n";
-			my %funcs = %{$file_to_func{$file}};
-			foreach my $func (sort keys %funcs){
-				print CALLS "\t\t$func\n";
-				my %calls = %{$funcs{$func}};
-				foreach my $call (sort keys %calls){
-					if(not defined($internal{$call})){
-						$external{$call} = 1;
-					}
-          if($ignore_ext == 1){
-            if(defined($internal{$call})){
-					    print CALLS "\t\t\t$call\n";
-            }
-          } else {
-					  print CALLS "\t\t\t$call\n";
-          }
-				}
-				
-			}
-		
-		}
-	}
-	print "-------- printing to calls file complete ------------\n";
 	print_to_dot();
 	print "-------- Executing $dot_app ------------\n";
 
@@ -565,24 +514,44 @@ sub print_to_dot
 		if((not defined($file_to_func{$file})) and (not defined($file_to_macro{$file}))){
 			next;
 		}
-		if($cluster == 1){
+
+    my $draw_cluster = 0;
+
+    if($cluster_func == 1 and defined($file_to_func{$file})){
+      $draw_cluster = 1;
+    } elsif($cluster_macro and defined($file_to_macro{$file})){
+      $draw_cluster = 1;
+    }
+
+		if($draw_cluster == 1){
 			print OUT "/* $file */\n";
 			print OUT "\tsubgraph cluster_$processed_files{$file} {\n";
 		        print OUT "\t\tlabel=\"$file\"\n";
 			print OUT "\t\tshape=\"$file_shape\"\n";
     }
-		if(defined($file_to_macro{$file})){
+
+		if($cluster_macro == 1 and defined($file_to_macro{$file})){
 			foreach my $macro (sort keys %{$file_to_macro{$file}}){
 				print OUT "\t\tmacro_$processed_files{$file}_$macro [label=\"$macro\",color=\"$macro_col\",fillcolor=\"$macro_fill_col\",style=\"$macro_style\"]\n";
 			}
 		}
-		if(defined($file_to_func{$file})){
+		if($cluster_func == 1 and defined($file_to_func{$file})){
 			foreach my $func (sort keys %{$file_to_func{$file}}){
 				print OUT "\t\tfunc_$processed_files{$file}_$func [label=\"$func\",color=\"$func_col\",fillcolor=\"$func_fill_col\",style=\"$func_style\"]\n";
 			}
 		}
-		if($cluster == 1){
+		if($draw_cluster == 1){
 			print OUT "\t}\n\n";
+		}
+		if($cluster_macro == 0 and defined($file_to_macro{$file})){
+			foreach my $macro (sort keys %{$file_to_macro{$file}}){
+				print OUT "\t\tmacro_$processed_files{$file}_$macro [label=\"$macro\",color=\"$macro_col\",fillcolor=\"$macro_fill_col\",style=\"$macro_style\"]\n";
+			}
+		}
+		if($cluster_func == 0 and defined($file_to_func{$file})){
+			foreach my $func (sort keys %{$file_to_func{$file}}){
+				print OUT "\t\tfunc_$processed_files{$file}_$func [label=\"$func\",color=\"$func_col\",fillcolor=\"$func_fill_col\",style=\"$func_style\"]\n";
+			}
 		}
 	}
   if($ignore_ext != 1){
@@ -660,7 +629,11 @@ sub draw_arcs
 
 sub usage 
 {
-	print "USAGE: $0 OPTIONS <file list>\n";
+	print "\nUSAGE: $0 OPTIONS <file list>\n\n";
+  print "$0 is a perl script which uses dot to generate a call graph diagram of an entire project.\n";
+  print "Unlike doxygen, it does not attempt to document the code, but is mostly useful in seeing if\n";
+  print "you have written spagitti code and useful when you are trying to refactor your code.\n";
+  print "But its best use is to put fuel to your ego :-)\n\n";
   print "
     OPTIONS:
       --cluster (default) - Cluster function definitions based on files in graphs,
@@ -671,27 +644,42 @@ sub usage
 
       --macrocol=COL - color of the nodes representing macro definitions. (default=grey)
       --funccol=COL  - color of the nodes representing function definitions. (default=white)
-      --extcol=COL   - color of the nodes representing external function definition dependancies (default=green)
+      --extcol=COL   - color of the nodes representing external function definition dependencies (default=green)
 
       --name=PATH    - Path and name of the output project. There will be 3 files generated. (default: figure)
-                       PATH.calls - Contains ascii representation of the calls made by each definition.
                        PATH.dot   - The DOT graph file. 
-                       PATH.\$type- The graph plotted using --app with type being from --type (See below)
+                       PATH.TYPE  - The graph plotted using --app with type being from --type (See below)
+
       --type=TYPE    - The type of the output generated file using dot. (default: svg)
                        Supported values: ps,svg,svgz,fig,mif,hpgl,pcl,png,gif,dia,imap,cmapx
 
       --app=APP      - The graphviz application to use (default: dot)
                        Supported values: dot, neato, twopi, circo, fdp
 
+      --ignore_ext   - Option will ignore all external calls in generating the call graphs.
+
+      --cluster_ext  - (Default) All external calls will be clustered in a single file. Ignored with --ignore_ext
+      --nocluster_ext- All external calls are not clustered in a single file. Useful to let graphviz decide their
+                       optimal location. Ignored with --ignore_ext.
+                       This is forced with --nocluster (Even if you specify --cluster_ext).
+
+      --cluster_macro- (Default) Cluster macros in their respective files. 
+      --nocluster_macro- Do not cluster macros in files. Let dot optimize their location. Forced with --nocluster.
+
+      --cluster_func - (Default) Cluster function definitions in their respective files.
+      --nocluster_func- Do not cluster function definitions in files. Let dot optimize their location. Forced with
+                        --nocluster
+
       --help         - Shows this text
 
       <file list>
       path to a directory or list of dirs/c-files. Note that only *.c or *.h files will be processed. 
-      There is NO support for C++. 
+      There is NO support for C++ or any other language for that matter. 
 
       (C) Amithash Prasad 2009
       See terms of GPL v3 refer to:
       http://www.gnu.org/licenses/gpl-3.0-standalone.html
   ";
+  print "\n";
 
 }
