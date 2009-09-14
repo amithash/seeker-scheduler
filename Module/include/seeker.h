@@ -27,8 +27,6 @@
 #ifndef _SEEKER_H_
 #define _SEEKER_H_
 
-#include <seeker_features.h>
-
 #include <linux/version.h>
 
 /* Ass holes changed on_each_cpu's declaration.... */
