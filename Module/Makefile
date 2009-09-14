@@ -50,7 +50,7 @@ seeker_scheduler-objs += 	seeker-scheduler/main.o			\
 				seeker-scheduler/mutate_common.o	\
 				seeker-scheduler/load.o			\
 				seeker-scheduler/hwcounters.o		\
-				seeker-scheduler/stats.o		\
+				seeker-scheduler/state.o		\
 				seeker-scheduler/tsc_intf.o		\
 				seeker-scheduler/sched_debug.o		\
 				seeker-scheduler/nrtasks.o		\
