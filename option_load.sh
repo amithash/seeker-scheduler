@@ -17,12 +17,13 @@ OPTIONS:
    -s      Scheduling method (ladder,select,aladder,disable) Default: ladder
    -m      Mutation method (mdyn,gd,od,cv,disable) Default: gd
    -i	   Mutation interval in milli-seconds Default: 1000
-   -b      Base state 
-   -c	   Allowed number of cpus
-   -d      Delta value
-   -l      Comma seperated initialization layout
+   -b      Base state Default: 0
+   -c	   Allowed number of cpus Default: 4
+   -d      Delta value Default: 1
+   -l      Comma seperated initialization layout Default: 0,0,0,0
 EOF
 }
+
 SCHEDULING_METHOD="ladder"
 MUTATION_METHOD="gd"
 declare -i MUTATION_INTERVAL=1000
@@ -130,6 +131,17 @@ if [ ! $DELTA -gt 0 ]; then
 	exit;
 fi
 
+if [ -z $SEEKER_HOME ]; then
+  echo "SEEKER_HOME Environment variable is not set. Please set it and build seeker first."
+fi
+
+if [ -f $SEEKER_HOME/Build/pmu.ko && -f $SEEKER_HOME/Build/seeker_cpufreq.ko && -f $SEEKER_HOME/Build/seeker_scheduler.ko && -f $SEEKER_HOME/Build/seekerlogd ]; then
+  echo "Gathering module options"
+else
+  echo "Please build your modules by performing the following:"
+  echo "cd ${SEEKER_HOME}"
+  echo "make"
+fi
 
 
 echo "SCHEDULING_METHOD=$SCHEDULING_METHOD"
@@ -142,11 +154,25 @@ echo "LAYOUT=$LAYOUT"
 
 if [ `lsmod | grep $DRIVER | wc -l` -eq 0 ]; then
 	echo 'no powernow, inserting.'
-	echo modprobe $DRIVER
+	modprobe $DRIVER
 fi
 
-echo "insmod $SEEKER_HOME/Build/pmu.ko"
-echo "insmod $SEEKER_HOME/Build/seeker_cpufreq.ko"
-echo "$SEEKER_HOME/seeker_cpufreq.pl start"
-echo "insmod $SEEKER_HOME/Build/seeker_scheduler.ko change_interval=$MUTATION_INTERVAL mutation_method=$MUTATION_METHOD base_state=$BASE_STATE allowed_cpus=$NR_CPUS scheduling_method=$SCHEDULING_METHOD init_layout=$LAYOUT"
+if [ `lsmod | grep seeker_scheduler | wc -l` -ne 0 ]; then
+  echo "seeker_scheduler seems to be loaded. Please unload it by runing unload.sh"
+  exit;
+fi
+if [ `lsmod | grep seeker_cpufreq | wc -l` -ne 0 ]; then
+  echo "seeker_cpufreq seems to be loaded. Please unload it by runing unload.sh"
+  exit;
+fi
+if [ `lsmod | grep pmu | wc -l` -ne 0 ]; then
+  echo "pmu seems to be loaded. Please unload it by runing unload.sh"
+  exit;
+fi
+
+
+insmod $SEEKER_HOME/Build/pmu.ko
+insmod $SEEKER_HOME/Build/seeker_cpufreq.ko
+$SEEKER_HOME/seeker_cpufreq.pl start
+insmod $SEEKER_HOME/Build/seeker_scheduler.ko change_interval=$MUTATION_INTERVAL mutation_method=$MUTATION_METHOD base_state=$BASE_STATE allowed_cpus=$NR_CPUS scheduling_method=$SCHEDULING_METHOD init_layout=$LAYOUT
 
