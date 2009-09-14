@@ -162,6 +162,8 @@ sub main
 		parse_file($file);
 	}
 
+  build_external_list();
+
 	print "-------- parse complete ------------\n";
 
 	print_to_dot();
@@ -499,6 +501,31 @@ sub remove_comment
 	return $l;
 }
 
+sub build_external_list
+{
+  foreach my $file (keys %processed_files){
+    if(defined($file_to_func{$file})){
+      foreach my $func (keys %{$file_to_func{$file}}){
+        foreach my $call (keys %{$file_to_func{$file}->{$func}}){
+          if(not defined($internal{$call})){
+            $external{$call} = 1;
+          }
+        }
+      }
+    }
+    if(defined($file_to_macro{$file})){
+      foreach my $func (keys %{$file_to_macro{$file}}){
+        foreach my $call (keys %{$file_to_macro{$file}->{$func}}){
+          if(not defined($internal{$call})){
+            $external{$call} = 1;
+          }
+        }
+      }
+    }
+  }
+
+}
+
 sub print_to_dot
 {
 	open OUT, "+>$figure_name" or die "Could not write to $figure_name!\n";
@@ -554,21 +581,19 @@ sub print_to_dot
 			}
 		}
 	}
-  if($ignore_ext != 1){
+  if($ignore_ext == 0){
   	# DRAW EXTERNAL NODES
-  	if(scalar (keys %external) > 0){
-  		if($cluster_ext == 1){
-  			print OUT "\tsubgraph cluster_EXT {\n";
-  			print OUT "\t\tlabel=\"ExternalDependancies\"\n";
-  			print OUT "\t\tshape=\"$file_shape\"\n";
-  		}
-  		foreach my $func (sort keys %external){
-  			print OUT "\t\tfunc_EXT_$func [label=\"$func\",color=\"$ext_col\",fillcolor=\"$ext_fill_col\",style=\"$ext_style\"]\n"
-  		}
-  		if($cluster_ext == 1){
-  			print OUT "\t}\n\n";
-  		}
-  	} 
+  	if($cluster_ext == 1){
+  		print OUT "\tsubgraph cluster_EXT {\n";
+  		print OUT "\t\tlabel=\"ExternalDependancies\"\n";
+  		print OUT "\t\tshape=\"$file_shape\"\n";
+  	}
+  	foreach my $func (sort keys %external){
+  		print OUT "\t\tfunc_EXT_$func [label=\"$func\",color=\"$ext_col\",fillcolor=\"$ext_fill_col\",style=\"$ext_style\"]\n"
+  	}
+  	if($cluster_ext == 1){
+  		print OUT "\t}\n\n";
+  	}
   }
 
 	# DRAW ARCS
