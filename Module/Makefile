@@ -22,9 +22,9 @@
 include $(SEEKER_HOME)/Makefile.defaults
 
 # All the kernel modules 
-obj-m += seeker_scheduler.o           	\
-	 pmu.o  	       		\
-	 seeker_cpufreq.o
+obj-m += 			seeker_scheduler.o			\
+	 			pmu.o					\
+	 			seeker_cpufreq.o
 
 # The seeker cpufreq governor and its test module.
 seeker_cpufreq-objs += 		seeker-cpufreq/main.o			\
@@ -33,11 +33,11 @@ seeker_cpufreq-objs += 		seeker-cpufreq/main.o			\
 				seeker-cpufreq/user.o
 
 # Performance Monitoring counters.
-pmu-objs += pmu/main.o      \
-	    pmu/intr_pmu.o  \
-	    pmu/intr_fpmu.o \
-	    pmu/msr_pmu.o   \
-	    pmu/msr_fpmu.o
+pmu-objs += 			pmu/main.o      			\
+				pmu/intr_pmu.o  			\
+				pmu/intr_fpmu.o 			\
+				pmu/msr_pmu.o   			\
+				pmu/msr_fpmu.o
 
 # Seeker scheduler
 seeker_scheduler-objs += 	seeker-scheduler/main.o			\

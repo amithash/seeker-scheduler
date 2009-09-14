@@ -32,9 +32,4 @@
  * 			  SCHEDULER DEBUGGING 					*
  ********************************************************************************/
 
-#ifdef DEBUG
-	/* Uncomment the next line to enable scheduler logging */
-	// #define SCHED_DEBUG 1
-#endif
-
 #endif
