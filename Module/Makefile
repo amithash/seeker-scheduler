@@ -48,7 +48,7 @@ seeker_scheduler-objs += 	seeker-scheduler/main.o			\
 				seeker-scheduler/mutate_od.o		\
 				seeker-scheduler/mutate_cv.o		\
 				seeker-scheduler/mutate_common.o	\
-				seeker-scheduler/state.o		\
+				seeker-scheduler/load.o			\
 				seeker-scheduler/hwcounters.o		\
 				seeker-scheduler/stats.o		\
 				seeker-scheduler/tsc_intf.o		\

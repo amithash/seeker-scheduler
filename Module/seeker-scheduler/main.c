@@ -33,7 +33,7 @@
 #include <seeker.h>
 
 #include "state.h"
-#include "stats.h"
+#include "load.h"
 #include "migrate.h"
 #include "mutate.h"
 #include "probe.h"

@@ -30,7 +30,7 @@
 #include <seeker_cpufreq.h>
 
 #include "state.h"
-#include "stats.h"
+#include "load.h"
 #include "mutate.h"
 
 /********************************************************************************
