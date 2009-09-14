@@ -1,11 +1,14 @@
 /******************************************************************************\
- * FILE: hwcounters.h
- * DESCRIPTION: 
+ * FILE: pmu_public.h
+ * DESCRIPTION: This is the public header (User space can include this without
+ * any dependancy on the kernel headers) for the performance monitoring unit.
+ * Contains defines on the number of counters.
  *
  \*****************************************************************************/
 
 /******************************************************************************\
  * Copyright 2009 Amithash Prasad                                              *
+ * Copyright 2006 Tipp Mosely                                                  *
  *                                                                             *
  * This file is part of Seeker                                                 *
  *                                                                             *

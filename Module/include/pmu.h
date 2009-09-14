@@ -1,6 +1,6 @@
 /******************************************************************************\
- * FILE: hwcounters.h
- * DESCRIPTION: 
+ * FILE: pmu.h
+ * DESCRIPTION: This is the performance monitoring unit's interface headers.  
  *
  \*****************************************************************************/
 
@@ -26,8 +26,6 @@
 
 #ifndef _PMU_H_
 #define _PMU_H_
-
-#include <pmu_public.h>
 
 void counter_clear(u32 counter);
 void fcounter_clear(u32 counter);

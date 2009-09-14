@@ -1,6 +1,7 @@
 /******************************************************************************\
- * FILE: hwcounters.h
- * DESCRIPTION: 
+ * FILE: seeker.h
+ * DESCRIPTION: The global header. Everyone includes this by default.
+ * Contains required macros.
  *
  \*****************************************************************************/
 

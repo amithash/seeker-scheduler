@@ -1,6 +1,8 @@
 /******************************************************************************\
- * FILE: hwcounters.h
- * DESCRIPTION: 
+ * FILE: seeker_cpufreq.h
+ * DESCRIPTION: This is the public header (User space can include without
+ * kernel dependancies) for seeker-cpufreq governor. It also acts as the
+ * kernel module dependancy. 
  *
  \*****************************************************************************/
 

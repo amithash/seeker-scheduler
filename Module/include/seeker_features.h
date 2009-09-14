@@ -1,6 +1,8 @@
 /******************************************************************************\
- * FILE: hwcounters.h
- * DESCRIPTION: 
+ * FILE: seeker_features.h
+ * DESCRIPTION: This file contains the features of seeker. It is here you
+ * enable the debugging level and scheduler debugging. Currently contains
+ * The choice of scheduler. This will be removed and moved as a module parm.
  *
  \*****************************************************************************/
 
