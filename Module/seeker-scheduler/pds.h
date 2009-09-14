@@ -26,6 +26,11 @@
 #ifndef _PDS_H_
 #define _PDS_H_
 
+#define LADDER_SCHEDULING 0
+#define SELECT_SCHEDULING 1
+#define ADAPTIVE_LADDER_SCHEDULING 2
+#define DISABLE_SCHEDULING 3
+
 int evaluate_ipc(int ipc, int cur_state, int *step, int *state_req);
 
 #endif

@@ -23,10 +23,13 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.              *
  \*****************************************************************************/
 
+#include <linux/kernel.h>
+
 #include <seeker.h>
 #include <seeker_cpufreq.h>
 
 #include "ipc.h"
+#include "pds.h"
 #include "search_state.h"
 
 /********************************************************************************
@@ -34,6 +37,8 @@
  ********************************************************************************/
 
 extern int total_states;
+
+extern int scheduling_method;
 
 
 /********************************************************************************
@@ -149,21 +154,27 @@ int select_evaluation(int ipc, int cur_state, int *state_req)
 
   return new_state;
 }
-
+int error_thrown = 0;
 
 int evaluate_ipc(int ipc, int cur_state, int *step, int *state_req)
 {
-  int new_state;
-  #if SCHEDULER_TYPE == LADDER_SCHEDULING
-  new_state = ladder_evaluation(ipc,cur_state,state_req);
-  #elif SCHEDULER_TYPE == ADAPTIVE_LADDER_SCHEDULING
-  new_state = adaptive_ladder_evaluation(ipc,cur_state,step,state_req);
-  #elif SCHEDULER_TYPE == SELECT_SCHEDULING
-  new_state = select_evaluation(ipc, cur_state, state_req);
-  #else
-    #error "Unsupported Scheduling method."
-  #endif
-
+  int new_state = cur_state;
+  switch(scheduling_method){
+  	case LADDER_SCHEDULING: 
+  		new_state = ladder_evaluation(ipc,cur_state,state_req);
+		break;
+	case ADAPTIVE_LADDER_SCHEDULING:
+  		new_state = adaptive_ladder_evaluation(ipc,cur_state,step,state_req);
+		break;
+	case SELECT_SCHEDULING:
+  		new_state = select_evaluation(ipc, cur_state, state_req);
+		break;
+	default:
+		if(!error_thrown){
+			error("INVALID SCHEDULING method: %d",scheduling_method);
+			error_thrown = 1;
+		}
+  }
   return new_state;
 }
 

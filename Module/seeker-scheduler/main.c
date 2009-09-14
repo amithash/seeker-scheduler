@@ -39,6 +39,7 @@
 #include "probe.h"
 #include "assigncpu.h"
 #include "log.h"
+#include "pds.h"
 #include "hwcounters.h"
 #include "tsc_intf.h"
 #include "sched_debug.h"
@@ -80,6 +81,14 @@ int mutation_method = GREEDY_DELTA_MUTATOR;
 /* The home state for the scheduler and the mutator */
 int base_state = 0;
 
+/* The scheduling method:
+ * 0 - ladder
+ * 1 - select
+ * 2 - adaptive scheduling
+ * 3 - disable scheduling
+ */
+int scheduling_method = 0;
+
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
@@ -113,8 +122,20 @@ static int scheduler_init(void)
 		disable_scheduling = 1;
 	}
 
-	if (disable_scheduling != 0) {
-		disable_scheduling = 1;
+	switch(scheduling_method){
+		case LADDER_SCHEDULING:
+		case SELECT_SCHEDULING:
+		case ADAPTIVE_LADDER_SCHEDULING:
+			break;
+		case DISABLE_SCHEDULING:
+			disable_scheduling = 1;
+			break;
+		default:
+			error("Invalid scheduling method selected. Supported"
+			      "Methods: %d (Ladder), %d (Select),%d (Adaptive ladder), "
+			      "%d(disable scheduling)",LADDER_SCHEDULING, SELECT_SCHEDULING,
+			      ADAPTIVE_LADDER_SCHEDULING,DISABLE_SCHEDULING);
+			return -ENOTSUPP;
 	}
 
 	total_online_cpus = num_online_cpus();
@@ -221,9 +242,12 @@ MODULE_PARM_DESC(base_state,
 module_param(allowed_cpus, int, 0444);
 MODULE_PARM_DESC(allowed_cpus, "Limit cpus to this number, default is all online cpus.");
 
-module_param(disable_scheduling, int, 0444);
-MODULE_PARM_DESC(disable_scheduling,
-		 "Set to not allow scheduling. Does a dry run. Also enables static layout.");
+module_param(scheduling_method, int, 0444);
+MODULE_PARM_DESC(scheduling_method, "Set the scheduling method:"
+			"0 - Ladder scheduling (default)"
+			"1 - Select scheduling"
+			"2 - adaptive ladder scheduling"
+			"3 - disable scheduling");
 
 module_param_array(init_layout, int, &init_layout_length, 0444);
 MODULE_PARM_DESC(init_layout, "Use to set a static_layout to use");
