@@ -24,6 +24,7 @@
  \*****************************************************************************/
 
 #include <seeker.h>
+#include <seeker_cpufreq.h>
 
 #include "ipc.h"
 #include "search_state.h"

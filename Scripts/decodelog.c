@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <signal.h>
 
-#include <seeker.h>
+#include <log_public.h>
 #include "../generic.h"
 
 int main(int argc, char **argv, char **envp)

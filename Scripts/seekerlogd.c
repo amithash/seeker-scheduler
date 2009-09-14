@@ -31,7 +31,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-#include <seeker.h>
+#include <log_public.h>
 #include "../generic.h"
 
 #define P_ASSERT_EXIT(t,i) if(!(t)) {perror((i)); exit(EXIT_FAILURE);}

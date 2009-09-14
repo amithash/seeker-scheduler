@@ -26,7 +26,7 @@
 #ifndef __LOG_H_
 #define __LOG_H_
 
-#include <seeker.h>
+#include <log_public.h>
 
 /* Node of the linear linked list of the debug buffer */
 struct log_block {
@@ -52,3 +52,4 @@ struct log_block *get_log(void);
 void put_log(struct log_block *p);
 
 #endif
+

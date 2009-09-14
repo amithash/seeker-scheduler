@@ -29,6 +29,8 @@
 #include <linux/cpumask.h>
 
 #include <seeker.h>
+#include <seeker_cpufreq.h>
+
 #include "state.h"
 
 extern int total_online_cpus;

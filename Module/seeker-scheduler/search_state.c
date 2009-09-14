@@ -26,6 +26,7 @@
 #include <linux/cpu.h>
 
 #include <seeker.h>
+#include <seeker_cpufreq.h>
 
 #include "state.h"
 #include "nrtasks.h"
