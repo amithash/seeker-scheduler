@@ -55,9 +55,9 @@ GetOptions(
 	"type=s"    => \$type,
 	"app=s"   => \$dot_app,
   "ignore_ext" => \$ignore_ext,
-  "cluster_ext" => \$cluster_ext,
-  "cluster_macro" => \$cluster_macro,
-  "cluster_func" => \$cluster_func,
+  "cluster_ext!" => \$cluster_ext,
+  "cluster_macro!" => \$cluster_macro,
+  "cluster_func!" => \$cluster_func,
 	"help" => \$help
 );
 
