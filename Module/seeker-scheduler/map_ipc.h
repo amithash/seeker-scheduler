@@ -23,8 +23,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.              *
  \*****************************************************************************/
 
-#ifndef _PDS_H_
-#define _PDS_H_
+#ifndef _MAP_IPC_H_
+#define _MAP_IPC_H_
 
 #define LADDER_SCHEDULING 0
 #define SELECT_SCHEDULING 1
