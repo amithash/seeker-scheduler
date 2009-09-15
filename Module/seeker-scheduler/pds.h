@@ -1,6 +1,6 @@
 /******************************************************************************\
  * FILE: pds.h
- * DESCRIPTION: 
+ * DESCRIPTION: Provides interface for probes to call the PDS functionality. 
  *
  \*****************************************************************************/
 

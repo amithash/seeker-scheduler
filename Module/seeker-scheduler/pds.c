@@ -1,6 +1,7 @@
 /******************************************************************************\
  * FILE: pds.c
- * DESCRIPTION: 
+ * DESCRIPTION: Provides interface for the probe functions to call the 
+ * performance directed scheduling features.
  *
  \*****************************************************************************/
 
