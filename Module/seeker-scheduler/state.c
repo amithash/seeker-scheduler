@@ -1,6 +1,9 @@
 /******************************************************************************\
  * FILE: state.c
- * DESCRIPTION: 
+ * DESCRIPTION: Provides interfaces which provides views and manipulation
+ * functions for performance states. This is also responsible to talk to
+ * and listen to seeker-cpufreq. All the mutators do is set_freq. This takes
+ * care of the rest.
  *
  \*****************************************************************************/
 

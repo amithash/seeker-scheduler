@@ -1,6 +1,7 @@
 /******************************************************************************\
  * FILE: tsc_intf.c
- * DESCRIPTION: 
+ * DESCRIPTION: Provides an interface to read the time stamp counter on each
+ * cpu. 
  *
  \*****************************************************************************/
 

@@ -1,6 +1,7 @@
 /******************************************************************************\
  * FILE: ipc.h
- * DESCRIPTION: 
+ * DESCRIPTION: Provides macros to compute the IPC from insts and cycles ( Using
+ * fixed point math.
  *
  \*****************************************************************************/
 
@@ -23,6 +24,9 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.              *
  \*****************************************************************************/
 
+#ifndef _IPC_H_
+#define _IPC_H_
+
 /* IPC of 8 Corrospondents to IPC of 1.0. */
 #define IPC(inst,cy) div(((inst)<<3),(cy))
 
@@ -36,4 +40,4 @@
 #define IPC_0_875 7
 #define IPC_1_000 8
 
-
+#endif

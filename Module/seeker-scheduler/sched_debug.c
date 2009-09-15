@@ -1,6 +1,8 @@
 /******************************************************************************\
  * FILE: sched_debug.c
- * DESCRIPTION: 
+ * DESCRIPTION: As printk's are banned in the scheduler (In fact adding them
+ * will cause a crash) this interface provdes a scheme to print debug messages
+ * which allow prints which are just copied to a buffer and printed by a timer.
  *
  \*****************************************************************************/
 
@@ -37,90 +39,92 @@
  * 			Function Declarations 					*
  ********************************************************************************/
 
-void assigncpu_logger(struct work_struct *w);
+void sched_debug_logger(struct work_struct *w);
 
 /********************************************************************************
  * 				global_variables				*
  ********************************************************************************/
 #ifdef SCHED_DEBUG
-/* temp storage for assigncpu messages */
-char debug_string[ASSIGNCPU_DEBUG_LEN] = "";
+/* temp storage for sched_debug messages */
+char debug_string[SCHED_DEBUG_LEN] = "";
 
 /* Spin lock to change debug_string safely */
-DEFINE_SPINLOCK(assigncpu_logger_lock);
+DEFINE_SPINLOCK(sched_debug_logger_lock);
 
 /* Flag indicating that logger has started */
-int assigncpu_logger_started = 0;
+int sched_debug_logger_started = 0;
 
 /* Work which safely prints the work */
-static DECLARE_DELAYED_WORK(assigncpu_logger_work, assigncpu_logger);
+static DECLARE_DELAYED_WORK(sched_debug_logger_work, sched_debug_logger);
 #endif
 
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
 #ifdef SCHED_DEBUG
+
+#warning "SCHED_DEBUG is enabled, performance will be compromised"
 /********************************************************************************
- * assigncpu_logger - The assigncpu logging function.
+ * sched_debug_logger - The sched_debug logging function.
  * @w - The work calling this routine, not used.
  * 
- * Prints out the contents of the assigncpu debug buffer and sets 
+ * Prints out the contents of the sched_debug debug buffer and sets 
  * its length to 0. This is done safely with a spin lock held. 
  ********************************************************************************/
-void assigncpu_logger(struct work_struct *w)
+void sched_debug_logger(struct work_struct *w)
 {
-	spin_lock(&assigncpu_logger_lock);
+	spin_lock(&sched_debug_logger_lock);
 	printk("%s",debug_string);
 	debug_string[0] = '\0';
-	spin_unlock(&assigncpu_logger_lock);
-	if(assigncpu_logger_started)
-		schedule_delayed_work(&assigncpu_logger_work, ASSIGNCPU_LOGGER_INTERVAL);	
+	spin_unlock(&sched_debug_logger_lock);
+	if(sched_debug_logger_started)
+		schedule_delayed_work(&sched_debug_logger_work, SCHED_DEBUG_LOGGER_INTERVAL);	
 }
 
 /********************************************************************************
- * init_assigncpu_logger - initialize the assigncpu logging subtask.
+ * init_sched_debug_logger - initialize the sched_debug logging subtask.
  *
- * Initialize the locks and worker thread used for the assigncpu
+ * Initialize the locks and worker thread used for the sched_debug
  * logging subtask.
  ********************************************************************************/
-void init_assigncpu_logger(void)
+void init_sched_debug_logger(void)
 {
-	assigncpu_logger_started = 1;
-	spin_lock_init(&assigncpu_logger_lock);
-	init_timer_deferrable(&assigncpu_logger_work.timer);
-	schedule_delayed_work(&assigncpu_logger_work, ASSIGNCPU_LOGGER_INTERVAL);	
+	sched_debug_logger_started = 1;
+	spin_lock_init(&sched_debug_logger_lock);
+	init_timer_deferrable(&sched_debug_logger_work.timer);
+	schedule_delayed_work(&sched_debug_logger_work, SCHED_DEBUG_LOGGER_INTERVAL);	
 	return;
 }
 
 /********************************************************************************
- * exit_assigncpu_logger - Cleanup the assigncpu logging subtask.
+ * exit_sched_debug_logger - Cleanup the sched_debug logging subtask.
  *
- * Cancels all pending assigncpu logging tasks which are pending. 
+ * Cancels all pending sched_debug logging tasks which are pending. 
  * Then unlocks the spin lock if it is still held.
  ********************************************************************************/
-void exit_assigncpu_logger(void)
+void exit_sched_debug_logger(void)
 {
-	if(assigncpu_logger_started){
-		assigncpu_logger_started = 0;
-		cancel_delayed_work(&assigncpu_logger_work);
+	if(sched_debug_logger_started){
+		sched_debug_logger_started = 0;
+		cancel_delayed_work(&sched_debug_logger_work);
 	}
-	if(spin_is_locked(&assigncpu_logger_lock))
-		spin_unlock(&assigncpu_logger_lock);
+	if(spin_is_locked(&sched_debug_logger_lock))
+		spin_unlock(&sched_debug_logger_lock);
 }
 
 #else
 
-/* assigncpu logging interface are just stubs when debug is not enabled */
+/* sched_debug logging interface are just stubs when debug is not enabled */
 
-void assigncpu_logger(struct work_struct *w)
+void sched_debug_logger(struct work_struct *w)
 {
 	return;
 }
-void init_assigncpu_logger(void)
+void init_sched_debug_logger(void)
 {
 	return;
 }
-void exit_assigncpu_logger(void)
+void exit_sched_debug_logger(void)
 {
 	return;
 }

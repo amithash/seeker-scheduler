@@ -1,6 +1,7 @@
 /******************************************************************************\
  * FILE: search_state.h
- * DESCRIPTION: 
+ * DESCRIPTION: API to search state sets for a state closest to a state
+ * _and_ available.
  *
  \*****************************************************************************/
 

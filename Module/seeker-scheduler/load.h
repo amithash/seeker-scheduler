@@ -1,6 +1,6 @@
 /******************************************************************************\
  * FILE: load.h
- * DESCRIPTION: 
+ * DESCRIPTION: Provides API to use the time based load interface.
  *
  \*****************************************************************************/
 
@@ -23,8 +23,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.              *
  \*****************************************************************************/
 
-#ifndef _STATS_H_
-#define _STATS_H_
+#ifndef _LOAD_H_
+#define _LOAD_H_
 
 /********************************************************************************
  * 				Stats API 					*

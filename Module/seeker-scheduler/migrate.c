@@ -1,6 +1,7 @@
 /******************************************************************************\
  * FILE: migrate.c
- * DESCRIPTION: 
+ * DESCRIPTION: implements methodologies to migrate a task to a required cpuset
+ * within the confines of the capabilities of a kernel module.
  *
  \*****************************************************************************/
 
@@ -137,7 +138,7 @@ void put_work(struct task_struct *ts, cpumask_t mask)
 	}
 	spin_unlock(&mig_pool_lock);
 	if(i == MIG_POOL_SIZE){
-		assigncpu_debug("Migrtion pool is empty");
+		sched_debug("Migrtion pool is empty");
 		return;
 	}
 

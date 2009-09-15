@@ -26,22 +26,22 @@
 #ifndef __SCHED_DEBUG_H_
 #define __SCHED_DEBUG_H_
 
-void init_assigncpu_logger(void);
-void exit_assigncpu_logger(void);
+void init_sched_debug_logger(void);
+void exit_sched_debug_logger(void);
 
 /* Interval to print messages */
-#define ASSIGNCPU_LOGGER_INTERVAL (HZ/10)
+#define SCHED_DEBUG_LOGGER_INTERVAL (HZ/10)
 
 /* Length of buffer. Increase this if you increase the above */
-#define ASSIGNCPU_DEBUG_LEN 1024
+#define SCHED_DEBUG_LEN 1024
 
 #ifdef SCHED_DEBUG
-extern char debug_string[ASSIGNCPU_DEBUG_LEN];
-extern spinlock_t assigncpu_logger_lock;
+extern char debug_string[SCHED_DEBUG_LEN];
+extern spinlock_t sched_debug_logger_lock;
 #endif
 
 /* You cannot call printk in any of the scheduler related functions. 
- * So this is a little hack to that. Call assigncpu_debug instead
+ * So this is a little hack to that. Call sched_debug instead
  * NOTE: here is a list of things to know.
  *   1. It tries to get a spin lock. so do not nest it in other critical sections.
  *   2. If you do not have to use it, do not use it.. use debug instead.
@@ -49,18 +49,18 @@ extern spinlock_t assigncpu_logger_lock;
  */
 
 #if defined(SCHED_DEBUG) 
-#define assigncpu_debug(str,a...) do{ 								\
+#define sched_debug(str,a...) do{ 								\
 					int __len = strlen(debug_string) + 1;			\
 					char __tmp_str[100];		 			\
 					__len += sprintf(__tmp_str,"SAD: " str "\n",## a);    	\
-					if( __len < ASSIGNCPU_DEBUG_LEN ){			\
-						spin_lock(&assigncpu_logger_lock);		\
+					if( __len < SCHED_DEBUG_LEN ){				\
+						spin_lock(&sched_debug_logger_lock);		\
 						strcat(debug_string,__tmp_str);			\
-						spin_unlock(&assigncpu_logger_lock);		\
+						spin_unlock(&sched_debug_logger_lock);		\
 					}							\
 				} while(0)
 #else
-#define assigncpu_debug(str,a...) do{;}while(0)
+#define sched_debug(str,a...) 
 #endif
 
 #endif

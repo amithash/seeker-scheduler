@@ -1,6 +1,6 @@
 /******************************************************************************\
  * FILE: nrtasks.h
- * DESCRIPTION: 
+ * DESCRIPTION: API to get load in terms of number of tasks on CPU/system
  *
  \*****************************************************************************/
 

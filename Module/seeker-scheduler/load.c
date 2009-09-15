@@ -1,6 +1,6 @@
 /******************************************************************************\
  * FILE: load.c
- * DESCRIPTION: 
+ * DESCRIPTION: Provides functions to determine load in terms of active time.
  *
  \*****************************************************************************/
 

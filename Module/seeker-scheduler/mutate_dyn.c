@@ -1,6 +1,15 @@
 /******************************************************************************\
  * FILE: mutate_dyn.c
- * DESCRIPTION: 
+ * DESCRIPTION: Mutator implementing the memorization based dynamic programming
+ * implementiation to solve the delta mutation problem as a multiple-choice
+ * knapsack. Presented in:
+ *
+ * Multiple Choice Knapsack Functions
+ * James C. Bean
+ * Department of Industrial and Operations Engineering
+ * The University of Michigan
+ * Ann, Arbor, MI 48109-2117
+ * January 4 1988
  *
  \*****************************************************************************/
 

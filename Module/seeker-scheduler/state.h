@@ -1,6 +1,7 @@
 /******************************************************************************\
  * FILE: state.h
- * DESCRIPTION: 
+ * DESCRIPTION: Provides API to manipulate states and also to maintain the
+ * performance state demand.
  *
  \*****************************************************************************/
 
@@ -25,14 +26,6 @@
 
 #ifndef __STATE_H_
 #define __STATE_H_
-
-/* init defines. */
-#define ALL_HIGH 1
-#define BALANCE 2
-#define ALL_LOW 3
-#define STATIC_LAYOUT 4
-#define NO_CHANGE 5
-#define BASE_LAYOUT 6
 
 /* contains various parameters associated
  * to a CPU state. 

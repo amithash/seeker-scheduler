@@ -1,6 +1,8 @@
 /******************************************************************************\
  * FILE: log.c
- * DESCRIPTION: 
+ * DESCRIPTION: Implements functions to log system statastics. And it provides
+ * a simple get/put api to add log entries. Also initializes the logging /dev
+ * interface for user space daemons.
  *
  \*****************************************************************************/
 

@@ -1,6 +1,7 @@
 /******************************************************************************\
  * FILE: mutate.h
- * DESCRIPTION: 
+ * DESCRIPTION: Interface providing API to initialize or stop the mutation 
+ * engine.
  *
  \*****************************************************************************/
 

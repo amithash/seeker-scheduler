@@ -1,6 +1,7 @@
 /******************************************************************************\
  * FILE: mutate_gd.c
- * DESCRIPTION: 
+ * DESCRIPTION: The greedy delta constrained mutation scheme developed as part
+ * of the thesis. 
  *
  \*****************************************************************************/
 

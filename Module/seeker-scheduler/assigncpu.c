@@ -126,7 +126,7 @@ void put_mask_from_stats(struct task_struct *ts)
 	#ifdef SCHED_DEBUG
 	for(i=0;i<total_states;i++){
 		if(states[i].cpus > 0){
-			assigncpu_debug("%d:%d",i,get_state_tasks(i));
+			sched_debug("%d:%d",i,get_state_tasks(i));
 		}
 	}
 	#endif
@@ -157,7 +157,7 @@ void put_mask_from_stats(struct task_struct *ts)
 			mask = states[new_state].cpumask;
 		#if defined(SCHED_DEBUG) && DEBUG == 2
 		else{
-			assigncpu_debug("Negative state for %s",ts->comm);
+			sched_debug("Negative state for %s",ts->comm);
 		}
 		#endif
 
@@ -191,7 +191,7 @@ void put_mask_from_stats(struct task_struct *ts)
 
 	/* What the duche? as stewie says it */
 	if (cpus_empty(mask)) {
-		assigncpu_debug("Empty mask for %s",ts->comm);
+		sched_debug("Empty mask for %s",ts->comm);
 		return;
 	}
 

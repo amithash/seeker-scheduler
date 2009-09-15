@@ -1,6 +1,7 @@
 /******************************************************************************\
  * FILE: nrtasks.c
- * DESCRIPTION: 
+ * DESCRIPTION: Provides functions to return the load in terms of number of
+ * tasks running on the system/cpu.
  *
  \*****************************************************************************/
 

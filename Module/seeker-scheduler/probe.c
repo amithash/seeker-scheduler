@@ -1,6 +1,7 @@
 /******************************************************************************\
  * FILE: probe.c
- * DESCRIPTION: 
+ * DESCRIPTION: Functions to probe important functions in the kernel relating
+ * to scheduling to insert the performance directed scheduling functionality 
  *
  \*****************************************************************************/
 

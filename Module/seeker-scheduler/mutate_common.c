@@ -1,6 +1,7 @@
 /******************************************************************************\
  * FILE: mutate_common.c
- * DESCRIPTION: 
+ * DESCRIPTION: Common mutator functions dealing with timers and calls the
+ * the appropiate functions.
  *
  \*****************************************************************************/
 

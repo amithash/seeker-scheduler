@@ -1,6 +1,7 @@
 /******************************************************************************\
  * FILE: main.c
- * DESCRIPTION: 
+ * DESCRIPTION: Contains the entry and exit functions performing initialization
+ * and cleanup.
  *
  \*****************************************************************************/
 
@@ -184,7 +185,7 @@ static int scheduler_init(void)
 		return -ENOSYS;
 	}
 
-	init_assigncpu_logger();
+	init_sched_debug_logger();
 
 
   return 0;
@@ -213,7 +214,7 @@ static void scheduler_exit(void)
 	debug("Exiting the counters");
 	exit_counters();
 	exit_mig_pool();
-	exit_assigncpu_logger();
+	exit_sched_debug_logger();
 }
 
 /********************************************************************************

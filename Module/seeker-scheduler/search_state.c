@@ -1,6 +1,7 @@
 /******************************************************************************\
  * FILE: search_state.c
- * DESCRIPTION: 
+ * DESCRIPTION: Provdes functions to search for state sets with processors
+ * available. all return the state which is the best.
  *
  \*****************************************************************************/
 
