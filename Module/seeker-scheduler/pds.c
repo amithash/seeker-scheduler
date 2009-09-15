@@ -1,5 +1,5 @@
 /******************************************************************************\
- * FILE: assigncpu.c
+ * FILE: pds.c
  * DESCRIPTION: 
  *
  \*****************************************************************************/
@@ -29,7 +29,7 @@
 
 #include <seeker.h>
 
-#include "assigncpu.h"
+#include "pds.h"
 #include "sched_debug.h"
 #include "state.h"
 #include "seeker_cpufreq.h"
@@ -38,7 +38,7 @@
 #include "nrtasks.h"
 #include "migrate.h"
 #include "search_state.h"
-#include "pds.h"
+#include "map_ipc.h"
 #include "ipc.h"
 
 #define FIXED_STATE_LOW		0

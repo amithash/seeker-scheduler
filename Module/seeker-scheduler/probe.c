@@ -33,7 +33,7 @@
 
 #include <pmu.h>
 
-#include "assigncpu.h"
+#include "pds.h"
 #include "log.h"
 #include "hwcounters.h"
 #include "tsc_intf.h"

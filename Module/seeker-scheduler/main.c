@@ -38,7 +38,7 @@
 #include "migrate.h"
 #include "mutate.h"
 #include "probe.h"
-#include "assigncpu.h"
+#include "map_ipc.h"
 #include "log.h"
 #include "pds.h"
 #include "hwcounters.h"

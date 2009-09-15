@@ -42,7 +42,7 @@ pmu-objs += 			pmu/main.o      			\
 # Seeker scheduler
 seeker_scheduler-objs += 	seeker-scheduler/main.o			\
 			 	seeker-scheduler/probe.o		\
-				seeker-scheduler/assigncpu.o		\
+				seeker-scheduler/pds.o			\
 				seeker-scheduler/migrate.o		\
 				seeker-scheduler/mutate_gd.o		\
 				seeker-scheduler/mutate_dyn.o		\

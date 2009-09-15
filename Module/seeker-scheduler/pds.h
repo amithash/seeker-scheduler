@@ -1,5 +1,5 @@
 /******************************************************************************\
- * FILE: assigncpu.h
+ * FILE: pds.h
  * DESCRIPTION: 
  *
  \*****************************************************************************/
@@ -23,8 +23,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.              *
  \*****************************************************************************/
 
-#ifndef __ASSIGNCPU_H_
-#define __ASSIGNCPU_H_
+#ifndef __PDS_H_
+#define __PDS_H_
 
 void put_mask_from_stats(struct task_struct *ts);
 void initial_mask(struct task_struct *ts);
