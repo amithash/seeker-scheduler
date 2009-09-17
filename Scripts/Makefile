@@ -41,11 +41,11 @@ seekerlogd: seekerlogd.c
 	$(CC) $(CFLAGS) $? $(LDFLAGS) $(SEEKER_INCLUDE) -DNR_CPUS=$(CPUS) -DARCH_$(ARCA) -o $@
 test_recommendations: test_recommendations.c
 	$(CC) $(CFLAGS) $? $(LDFLAGS) -lstate_recommendations -L$(STATE_LIB) -o $@
-interp: interp.C
+interp: interp.cpp
 	$(CXX) $(CFLAGS) $? $(LDFLAGS) -o $@
-maxmin: maxmin.C
+maxmin: maxmin.cpp
 	$(CXX) $(CFLAGS) $? $(LDFLAGS) -o $@
-smooth: smooth.C
+smooth: smooth.cpp
 	$(CXX) $(CFLAGS) $? $(LDFLAGS) -o $@
 
 clean:
