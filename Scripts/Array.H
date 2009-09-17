@@ -1,25 +1,30 @@
-/**************************************************************************
- * Copyright 2009 Amithash Prasad                                         *
- *                                                                        *
- * This file is part of Seeker                                            *
- *                                                                        *
- * Seeker is free software: you can redistribute it and/or modify         *
- * it under the terms of the GNU General Public License as published by   *
- * the Free Software Foundation, either version 3 of the License, or      *
- * (at your option) any later version.                                    *
- *                                                                        *
- * This program is distributed in the hope that it will be useful,        *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of         *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
- * GNU General Public License for more details.                           *
- *                                                                        *
- * You should have received a copy of the GNU General Public License      *
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
- **************************************************************************/
+/******************************************************************************\
+ * FILE: Array.h
+ * DESCRIPTION: This implements a C++ Array template. It has everything but the
+ * kitchen sink. Yes, I could have used an STL implementation but what is the
+ * fun in that? I get to learn the use of templates, and I have a library
+ * which is _exactly_ what I want.
+ *
+ \*****************************************************************************/
 
-/* Yeah, I could have used STL. But what's the fun in that?
- * This way, I get to learn templates, and have a library 
- * which exactly fit my needs */
+/******************************************************************************\
+ * Copyright 2009 Amithash Prasad                                              *
+ *                                                                             *
+ * This file is part of Seeker                                                 *
+ *                                                                             *
+ * Seeker is free software: you can redistribute it and/or modify it under the *
+ * terms of the GNU General Public License as published by the Free Software   *
+ * Foundation, either version 3 of the License, or (at your option) any later  *
+ * version.                                                                    *
+ *                                                                             *
+ * This program is distributed in the hope that it will be useful, but WITHOUT *
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       *
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License        *
+ * for more details.                                                           *
+ *                                                                             *
+ * You should have received a copy of the GNU General Public License along     *
+ * with this program. If not, see <http://www.gnu.org/licenses/>.              *
+ \*****************************************************************************/
 
 #ifndef ARRAY_H_
 #define ARRAY_H_
