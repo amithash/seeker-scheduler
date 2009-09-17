@@ -26,7 +26,7 @@
  \*****************************************************************************/
 
 /* Auto Regressive Moving Average Process */
-#include "Array.H"
+#include "Array.h"
 
 template <class T>
 Array<T> mva(Array<Array<T> > * data, int ind, int window);
