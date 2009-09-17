@@ -26,7 +26,7 @@
  \*****************************************************************************/
 
 #include <stdio.h>
-#include "../lib/state_recommendations.h"
+#include "state_recommendations.h"
 
 int main(void)
 {

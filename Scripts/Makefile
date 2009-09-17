@@ -28,19 +28,16 @@ endif
 CC = gcc
 CXX = g++
 SEEKER_INCLUDE := -I$(shell pwd)/../Module/include
-STATE_LIB := $(shell pwd)/../lib
 
 
-all: decodelog seekerlogd test_recommendations interp maxmin smooth
+all: decodelog seekerlogd interp maxmin smooth
 
-debug: decodelog seekerlogd test_recommendations interp maxmin smooth
+debug: decodelog seekerlogd interp maxmin smooth
 
 decodelog: decodelog.c
 	$(CC) $(CFLAGS) $? $(LDFLAGS) $(SEEKER_INCLUDE) -DNR_CPUS=$(CPUS) -DARCH_$(ARCA) -o $@
 seekerlogd: seekerlogd.c
 	$(CC) $(CFLAGS) $? $(LDFLAGS) $(SEEKER_INCLUDE) -DNR_CPUS=$(CPUS) -DARCH_$(ARCA) -o $@
-test_recommendations: test_recommendations.c
-	$(CC) $(CFLAGS) $? $(LDFLAGS) -lstate_recommendations -L$(STATE_LIB) -o $@
 interp: interp.cpp
 	$(CXX) $(CFLAGS) $? $(LDFLAGS) -o $@
 maxmin: maxmin.cpp
@@ -49,5 +46,5 @@ smooth: smooth.cpp
 	$(CXX) $(CFLAGS) $? $(LDFLAGS) -o $@
 
 clean:
-	rm -f seekerlogd interp maxmin smooth decodelog test_recommendations
+	rm -f seekerlogd interp maxmin smooth decodelog
 

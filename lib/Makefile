@@ -22,14 +22,18 @@ include $(SEEKER_HOME)/Makefile.defaults
 CFLAGS = -O3
 CC = gcc
 CXX = g++
+STATE_LIB := $(shell pwd)
+
 
 all:
 	${CC} -fPIC -c state_recommendations.c -o state_recommendations.o
 	${CC} -shared -Wl,-soname,libstate_recommendations.so -o libstate_recommendations.so state_recommendations.o -lc 
+	$(CC) $(CFLAGS) $(LDFLAGS) test_recommendations.c -lstate_recommendations -L$(STATE_LIB) -o test_recommendations 
 
 debug:
 	${CC} -fPIC -c state_recommendations.c -o state_recommendations.o -DDEBUG
 	${CC} -shared -Wl,-soname,libstate_recommendations.so -o libstate_recommendations.so state_recommendations.o -lc 
+	$(CC) $(CFLAGS) $(LDFLAGS) test_recommendations.c -lstate_recommendations -L$(STATE_LIB) -o test_recommendations 
 clean:
-	rm -f libstate_recommendations.so state_recommendations.o
+	rm -f libstate_recommendations.so state_recommendations.o test_recommendations
 
