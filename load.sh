@@ -1,26 +1,29 @@
 #!/bin/bash
-#*************************************************************************
-# Copyright 2009 Amithash Prasad                                         *
-#                                                                        *
-# This file is part of Seeker                                            *
-#                                                                        *
-# Seeker is free software: you can redistribute it and/or modify         *
-# it under the terms of the GNU General Public License as published by   *
-# the Free Software Foundation, either version 3 of the License, or      *
-# (at your option) any later version.                                    *
-#                                                                        *
-# This program is distributed in the hope that it will be useful,        *
-# but WITHOUT ANY WARRANTY; without even the implied warranty of         *
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
-# GNU General Public License for more details.                           *
-#                                                                        *
-# You should have received a copy of the GNU General Public License      *
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
-#*************************************************************************
+ #*****************************************************************************\
+ # FILE: load.sh
+ # DESCRIPTION: Auto load script to take in human readble options, provide help
+ # if required and load all the required modules. 
+ #
+ #*****************************************************************************/
 
-
-#!/bin/bash
-# Argument = -t test -r server -p password -v
+ #*****************************************************************************\
+ # Copyright 2009 Amithash Prasad                                              *
+ #                                                                             *
+ # This file is part of Seeker                                                 *
+ #                                                                             *
+ # Seeker is free software: you can redistribute it and/or modify it under the *
+ # terms of the GNU General Public License as published by the Free Software   *
+ # Foundation, either version 3 of the License, or (at your option) any later  *
+ # version.                                                                    *
+ #                                                                             *
+ # This program is distributed in the hope that it will be useful, but WITHOUT *
+ # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       *
+ # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License        *
+ # for more details.                                                           *
+ #                                                                             *
+ # You should have received a copy of the GNU General Public License along     *
+ # with this program. If not, see <http://www.gnu.org/licenses/>.              *
+ #*****************************************************************************/
 
 DRIVER="powernow_k8"
 
