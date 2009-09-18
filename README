@@ -45,6 +45,35 @@ If all this does not scare you (Or your adviser is not giving up), welcome my fr
 Welcome to hell. 
 
 ========================================================================================
+PROJECT DIRECTORY ORGANIZATION
+------------------------------
+$SEEKER_HOME
+	All scripts run scripts and shared headers.
+$SEEKER_HOME/Module
+	Linux kernel Modules
+	$SEEKER_HOME/Module/pmu
+		The performance monitoring counter driver
+	$SEEKER_HOME/Module/seeker-cpufreq
+		The seeker cpufreq governor.
+	$SEEKER_HOME/Module/seeker-scheduler
+		The meat of this project!
+$SEEKER_HOME/Patches
+	The patches which needed to be applied for the above modules to work.
+$SEEKER_HOME/Scripts
+	The scripts/utils which act as support user space applications for the Modules
+$SEEKER_HOME/lib
+	Libraries which were written to use the seeker syscall interface (And benchmarks
+	which does not count)
+$SEEKER_HOME/utils
+	Utulities (multi-launcher) which is useful to run experiments.
+$SEEKER_HOME/SyntheticBenchmarks
+	synthetic benchmark to test the system's capibility.
+$SEEKER_HOME/MiscScripts
+	Scripts to run experiments (Low use for anyone other than people in CU)
+	No help section for these. Use by reading the code.
+$SEEKER_HOME/AnalysisScripts
+	Scripts to analyze data. (Low use for anyone other than myself)
+	No help section for these. Use by reading the code.
 
 PRE-SETUP / PRE-REQS:
 --------------------
@@ -268,6 +297,7 @@ seeker-scheduler/
 
                         This is just so that I could simulate these governors
                         in my infrastructure so I can gather the same logs. 
+
       base_state     -  The state (0,1,2,...) which the scheduler will place
                         tasks upon their start. 
 
@@ -276,8 +306,10 @@ seeker-scheduler/
                        tasks from now on will NOT execute on other 
                        cpus (Other than black listed tasks of course)
      
-     disable_scheduling - 0 - Enable scheduling (Default)
-                          1 - Disable the scheduler. Tasks are free.
+     scheduling_method  -	0 - Ladder scheduling
+				1 - Select scheduling
+				2 - adaptive ladder scheduling
+				3 - disable scheduling
 
      init_layout   - Provide a comma separated list of the performance state
                        of cpus starting from 0.
@@ -288,6 +320,7 @@ seeker-scheduler/
     PS: Read thesis.pdf :-) 
         mutation interval -> change_interval
         delta             -> delta
+	scheduling_method -> evaluation
 
 seeker scheduler exposes a dev interface
 /dev/seeker_log which when opened, it will start collecting logs and dumping
@@ -312,11 +345,11 @@ INTERFACE TO SEEKER SCHEDULER (Daemons and utils and scripts, Oh My!):
 DAEMONS:
 --------
 
-debugd - Is the user space daemon which sucks the binary logs from 
+seekerlogd - Is the user space daemon which sucks the binary logs from 
 /dev/seeker_log and dumps it into a binary file. 
 
   USAGE:
-  $SEEKER_HOME/Scripts/debugd <LOG FORMAT> <SAMPLE TIME>
+  $SEEKER_HOME/Scripts/seekerlogd <LOG FORMAT> <SAMPLE TIME>
     LOG FORMAT:
       This is the format to the output name. If it is:
         ~/log_
@@ -326,13 +359,14 @@ debugd - Is the user space daemon which sucks the binary logs from
         The time interval in seconds. debug will wake up every "SAMPLE TIME" seconds
         and copies data from /dev/seeker_log and dump it into the output file. 
 
-  Make sure that <LOG_FORMAT><NUM> does not exist. debugd will chock and die
+  Make sure that <LOG_FORMAT><NUM> does not exist. seekerlogd will chock and die
   at start. Worse if it happens in the middle!
 
   Sometimes it takes a few seconds after a process ends for that event
   to make it into the log, so I generally wait about 10-20s after I
   think a process/experiment is done to swap out logs.
 
+========================================================================================
 UTILS:
 ------
 
@@ -344,23 +378,25 @@ decodelog - Is the util to decode the binary log to get the ASCII (Human readabl
 
     Decodes the binary log. 
 
+========================================================================================
 SCRIPTS:
 --------
 
-send.pl  - Instructs debugd daemon to stop writing to the current binary log and start
-           writing to the next binary log. Or to kill debugd
+send.pl  - Instructs seekerlogd daemon to stop writing to the current binary log and start
+           writing to the next binary log. Or to kill seekerlogd
 
   USAGE:
     $SEEKER_HOME/Scripts/send.pl [-t]
-      -t - terminate debugd. 
+      -t - terminate seekerlogd. 
 
-           so if debugd is given a format: ~/log_
+           so if seekerlogd is given a format: ~/log_
            and starts writing to ~/log_0,
            executing send.pl 
            makes it to close ~/log_0 and start to write to ~/log_1
-           Using the -t option will cause debugd to close the current binary log and 
+           Using the -t option will cause seekerlogd to close the current binary log and 
            the input /dev/seeker_log and terminate.
 
+----------------------------------------------------------------------------------------
 
 change_speed.pl - Script to manually change the speed with the seeker cpufreq governor.
                   PS: You need the seeker_cpufreq.ko inserted and have enabled
@@ -379,6 +415,8 @@ change_speed.pl - Script to manually change the speed with the seeker cpufreq go
               Sets performance state of cpu 0-2 to 0, 3-5 to 1 and 6-7 to 2
               For a one time thing, seeker_cpufreq.ko has load time options,
               this should be used for runtime change of clock speeds. 
+
+----------------------------------------------------------------------------------------
 
 pattern_speed.pl - Script to change clock speed with a pattern. 
               
@@ -658,7 +696,7 @@ $SEEKER_HOME/seeker_cpufreq.pl start
 insmod $SEEKER_HOME/Build/seeker_cpufreq.ko  # And other options.
 
 # Start the logging daemon.
-$SEEKER_HOME/Scripts/debugd ~/logs/log_
+$SEEKER_HOME/Scripts/seekerlogd ~/logs/log_
 
 # Do whatever experiments you want 
 
@@ -687,18 +725,28 @@ $SEEKER_HOME/Scripts/pull.pl --input ~/logs/log_0.txt --output ~/APP_logs --benc
 
 # Enjoy! 
 ========================================================================================
+UNDOCUMENTED SCRIPTS
+--------------------
+The scripts in MiscScripts/ and AnalysisScripts/ are not documented anywhere and
+are on a read-the-source-then-use based documentation. The reasons have two folds:
+1. I am lazy.
+2. They are almost useless for anyone but me. 
 
+========================================================================================
 REFERENCE:
 ----------
 
 1. p4sampler, Author: Tipp Moseley, Graduate Student, Department of Computer Science,
 University of Colorado, Boulder pmu driver was a derivative work of this.
+Also the log interface of seeker is a derivative work of his use to log the system.
 
 2. INTEL IA32/64 system programmers reference manual.
 
 3. INTEL forums.
 
 4. AMD BIOS developers guide. 
+
+5. AMD Forums.
 
 ========================================================================================
 
@@ -707,7 +755,8 @@ AUTHOR:
 
 Amithash Prasad, Graduate Student, Department of Electrical and Computer Engineering,
 University of Colorado, Boulder
-Email: amithash.prasad@colorado.edu
+Email: amithash.prasad@colorado.edu, 
+       amithash@gmail.com (I am not going to have the above mentioned id forever!)
 
 ========================================================================================
 
