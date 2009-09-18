@@ -1,21 +1,29 @@
-#*************************************************************************
-# Copyright 2009 Amithash Prasad                                         *
-#                                                                        *
-# This file is part of Seeker                                            *
-#                                                                        *
-# Seeker is free software: you can redistribute it and/or modify         *
-# it under the terms of the GNU General Public License as published by   *
-# the Free Software Foundation, either version 3 of the License, or      *
-# (at your option) any later version.                                    *
-#                                                                        *
-# This program is distributed in the hope that it will be useful,        *
-# but WITHOUT ANY WARRANTY; without even the implied warranty of         *
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
-# GNU General Public License for more details.                           *
-#                                                                        *
-# You should have received a copy of the GNU General Public License      *
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
-#*************************************************************************
+ #*****************************************************************************\
+ # FILE: plot_all.r
+ # DESCRIPTION: This massively inefficient and large R script takes in the 
+ # high level table values of delta, ondemand and delta_sel and generates 3
+ # graphs for each value of delta of scatter plots in each way.
+ #
+ #*****************************************************************************/
+
+ #*****************************************************************************\
+ # Copyright 2009 Amithash Prasad                                              *
+ #                                                                             *
+ # This file is part of Seeker                                                 *
+ #                                                                             *
+ # Seeker is free software: you can redistribute it and/or modify it under the *
+ # terms of the GNU General Public License as published by the Free Software   *
+ # Foundation, either version 3 of the License, or (at your option) any later  *
+ # version.                                                                    *
+ #                                                                             *
+ # This program is distributed in the hope that it will be useful, but WITHOUT *
+ # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       *
+ # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License        *
+ # for more details.                                                           *
+ #                                                                             *
+ # You should have received a copy of the GNU General Public License along     *
+ # with this program. If not, see <http://www.gnu.org/licenses/>.              *
+ #*****************************************************************************/
 
 a = read.table('delta',header=TRUE,as.is=FALSE)
 b = read.table('ondemand', header=TRUE, as.is=FALSE)

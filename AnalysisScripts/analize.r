@@ -1,21 +1,31 @@
-#*************************************************************************
-# Copyright 2009 Amithash Prasad                                         *
-#                                                                        *
-# This file is part of Seeker                                            *
-#                                                                        *
-# Seeker is free software: you can redistribute it and/or modify         *
-# it under the terms of the GNU General Public License as published by   *
-# the Free Software Foundation, either version 3 of the License, or      *
-# (at your option) any later version.                                    *
-#                                                                        *
-# This program is distributed in the hope that it will be useful,        *
-# but WITHOUT ANY WARRANTY; without even the implied warranty of         *
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
-# GNU General Public License for more details.                           *
-#                                                                        *
-# You should have received a copy of the GNU General Public License      *
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
-#*************************************************************************
+ #*****************************************************************************\
+ # FILE: analyze.r
+ # DESCRIPTION: For 3 trials of experiments for delta, deltasel, ondemand and
+ # fixed, this takes in files (Hardcoded) which are the output of epi.pl which
+ # itself takes in the output of analyzeDVFS.pl. And finally generates 
+ # a file with a computed value for slowdown as a additional column, with the
+ # rest being medians.
+ #
+ #*****************************************************************************/
+
+ #*****************************************************************************\
+ # Copyright 2009 Amithash Prasad                                              *
+ #                                                                             *
+ # This file is part of Seeker                                                 *
+ #                                                                             *
+ # Seeker is free software: you can redistribute it and/or modify it under the *
+ # terms of the GNU General Public License as published by the Free Software   *
+ # Foundation, either version 3 of the License, or (at your option) any later  *
+ # version.                                                                    *
+ #                                                                             *
+ # This program is distributed in the hope that it will be useful, but WITHOUT *
+ # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       *
+ # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License        *
+ # for more details.                                                           *
+ #                                                                             *
+ # You should have received a copy of the GNU General Public License along     *
+ # with this program. If not, see <http://www.gnu.org/licenses/>.              *
+ #*****************************************************************************/
 
 # Load the data files.
 delta5_t1 = read.table('jpbi_delta5_t1',header=TRUE,as.is=TRUE)
