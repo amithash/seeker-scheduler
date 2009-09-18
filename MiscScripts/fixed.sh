@@ -98,6 +98,8 @@ for (( i=0;i<$CPUS_LEN;i++ )); do
 				continue;
 			fi
 
+			BENCHLIST=$SEEKER_HOME/MiscScripts/benchlists/group_${CPUS[$i]}/${BLS[$k]}
+
 			${SEEKER_HOME}/MiscScripts/generate_runscript.pl --benchlist=${SEEKER_HOME}/MiscScripts/group_${CPUS[$i]}/${BLS[$k]} -a 
 			chmod +x ./run.sh
 			$SEEKER_HOME/Scripts/seekerlogd $GROUP/log_ >> $OUT 2>> $ERR
@@ -113,7 +115,7 @@ for (( i=0;i<$CPUS_LEN;i++ )); do
 
 			$SEEKER_HOME/Scripts/pull.pl --input $GROUP/raw_${LAYOUT_NAME[$j]}_${BLS_NAME[$k]}.txt              \
 				                    --output $GROUP/log_${LAYOUT_NAME[$j]}_${BLS_NAME[$k]}                  \
-						    --benchlist ${SEEKER_HOME}/MiscScripts/group_${CPUS[$i]}/${BLS[$k]} \
+						    --benchlist $BENCHLIST						    \
 						    --what=all >> $OUT 2>> $ERR
 
 			rm $GROUP/log_0 >> $OUT 2>> $ERR

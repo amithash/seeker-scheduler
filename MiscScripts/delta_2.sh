@@ -97,7 +97,7 @@ for (( i=0;i<$CPUS_LEN;i++ )); do
 				TIME_NAME=$GROUP/time_${INTERVAL[$l]}_${DELTA[$j]}_${BLS_NAME[$k]}.txt
 				RAW_NAME=$GROUP/raw_${INTERVAL[$l]}_${DELTA[$j]}_${BLS_NAME[$k]}.txt
 				LOG_NAME=$GROUP/log_${INTERVAL[$l]}_${DELTA[$j]}_${BLS_NAME[$k]}
-				BENCHLIST=$SEEKER_HOME/MiscScripts/group_${CPUS[$i]}/${BLS[$k]}
+				BENCHLIST=$SEEKER_HOME/MiscScripts/benchlists/group_${CPUS[$i]}/${BLS[$k]}
 
 				# Allow restart.
 				if [ -e $TIME_NAME ]; then
