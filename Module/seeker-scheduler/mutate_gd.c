@@ -102,6 +102,14 @@ extern u64 interval_count;
 
 extern struct proc_info info[NR_CPUS];
 
+/********************************************************************************
+ * 			    External functions					*
+ ********************************************************************************/
+
+void wake_up_procs(int req_cpus);
+
+void retire_procs(int req_cpus, int *put_to_sleep, int *cpu_awake_proxy);
+
 
 /********************************************************************************
  * 				Functions					*
@@ -406,51 +414,6 @@ static int get_winning_state(void)
 		}
 	}
 	return max;
-}
-
-/********************************************************************************
- * wake_up_procs - wake up total_demand processors, if asleep.
- * @total_demand - total processors required.
- *
- * first count the number of awake processors, if greater than or equal to
- * the required (total_demand) then return.
- * Else, iteratively wake up the proc with min sleep_time 
- ********************************************************************************/
-static void wake_up_procs(int total_demand)
-{
-	int awake_total = 0;
-	unsigned int min_sleep_time;
-	unsigned int wake_up_proc;
-	int i,j;
-	/* First count awake processors */
-	for (i = 0; i < total_online_cpus; i++){
-		awake_total += info[i].awake;
-	}
-	if(awake_total >= total_demand){
-		return;
-	}
-	for(i=0; i<total_demand; i++){
-		awake_total = 0;
-		min_sleep_time = UINT_MAX;
-		wake_up_proc = UINT_MAX;
-		for(j=0; j < total_online_cpus && awake_total < total_demand; j++){
-			if(info[j].sleep_time == 0){
-				awake_total++;
-				continue;
-			}
-			if(info[j].sleep_time < min_sleep_time){
-				wake_up_proc = j;
-				min_sleep_time = info[j].sleep_time;
-			}
-		}
-		if(wake_up_proc < total_online_cpus){
-			awake_total++;
-			info[wake_up_proc].sleep_time = 0;
-			info[wake_up_proc].awake = 1;
-		}
-		if(awake_total >= total_demand)
-			break;
-	}
 }
 
 /********************************************************************************

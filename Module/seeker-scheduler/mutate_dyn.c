@@ -75,6 +75,15 @@ extern struct proc_info info[NR_CPUS];
 extern u64 interval_count;
 
 /********************************************************************************
+ * 			    External functions					*
+ ********************************************************************************/
+
+void wake_up_procs(int req_cpus);
+
+void retire_procs(int req_cpus, int *put_to_sleep, int *cpu_awake_proxy);
+
+
+/********************************************************************************
  * 			Global Datastructures 					*
  ********************************************************************************/
 
@@ -94,82 +103,6 @@ static int demand[MAX_STATES];
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
-
-/********************************************************************************
- * wake_up_procs - wake up total_demand processors, if asleep.
- * @total_demand - total processors required.
- *
- * first count the number of awake processors, if greater than or equal to
- * the required (total_demand) then return.
- * Else, iteratively wake up the proc with min sleep_time 
- ********************************************************************************/
-static int wake_up_procs(int total_demand)
-{
-	int awake_total = 0;
-	unsigned int min_sleep_time;
-	unsigned int wake_up_proc;
-	int i,j;
-	/* First count awake processors */
-	for (i = 0; i < total_online_cpus; i++){
-		awake_total += info[i].awake;
-	}
-
-	/* Some one has to get up. */
-	if(awake_total < total_demand){
-		/* Find the cpu with the lowest sleep time and wake that up */
-		for(i=0; i<total_demand; i++){
-			awake_total = 0;
-			min_sleep_time = UINT_MAX;
-			wake_up_proc = UINT_MAX;
-			for(j=0; j < total_online_cpus && awake_total < total_demand; j++){
-				if(info[j].sleep_time == 0){
-					awake_total++;
-					continue;
-				}
-				if(info[j].sleep_time < min_sleep_time){
-					wake_up_proc = j;
-					min_sleep_time = info[j].sleep_time;
-				}
-			}
-			if(wake_up_proc < total_online_cpus){
-				awake_total++;
-				info[wake_up_proc].sleep_time = 0;
-				info[wake_up_proc].awake = 1;
-			}
-			/* Continue till the required processors are awake */
-			if(awake_total >= total_demand)
-				break;
-		}
-	}
-	/* Some processor has to sleep */
-	if(awake_total > total_demand){
-		for(i=0; i<total_online_cpus; i++){
-			/* Choose an awake processor with no tasks on it */
-			if(info[i].awake == 1 && get_cpu_tasks(i) == 0){
-				put_to_sleep[i] = 1;
-				info[i].awake = 0;
-				info[i].sleep_time = 1;
-				info[i].awake_time = 0;
-				awake_total--;
-			} else {
-				put_to_sleep[i] = 0;
-			}
-			/* Stop when all required procs are asleep */
-			if(awake_total <= total_demand){
-				break;
-			}
-		}
-	}
-	/* Now create a proxy of awake processors 
-	 * creating an illusion that 0-x are awake */
-	for(i=0,j=0;i<total_online_cpus;i++){
-		if(info[i].awake == 1){
-			cpu_awake_proxy[j] = i;
-			j++;
-		}
-	}
-	return awake_total;
-}
 
 static void delta_based_demand_transform(int cpus, int delta)
 {
@@ -360,9 +293,11 @@ void mem_dynamic_prog(int delta)
 	if(total_cpus_req == 0){
 		total_cpus_req = 1;
 	}
+	total = total_cpus_req;
 
 	/* Wake up/put to sleep req procs */
-	total = wake_up_procs(total_cpus_req);
+	wake_up_procs(total_cpus_req);
+	retire_procs(total_cpus_req,put_to_sleep,cpu_awake_proxy);
 
 	delta_based_demand_transform(total, delta);
 
