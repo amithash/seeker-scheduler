@@ -1,8 +1,8 @@
 ========================================================================================
                                     SEEKER
                             Performance based scheduler
-                      	   Copyright 2009 Amithash Prasad
-	                                                                        
+                           Copyright 2009 Amithash Prasad
+                                                                                
      Seeker is free software: you can redistribute it and/or modify         
      it under the terms of the GNU General Public License as published by   
      the Free Software Foundation, either version 3 of the License, or      
@@ -48,32 +48,32 @@ Welcome to hell.
 PROJECT DIRECTORY ORGANIZATION
 ------------------------------
 $SEEKER_HOME
-	All scripts run scripts and shared headers.
+        All scripts run scripts and shared headers.
 $SEEKER_HOME/Module
-	Linux kernel Modules
-	$SEEKER_HOME/Module/pmu
-		The performance monitoring counter driver
-	$SEEKER_HOME/Module/seeker-cpufreq
-		The seeker cpufreq governor.
-	$SEEKER_HOME/Module/seeker-scheduler
-		The meat of this project!
+        Linux kernel Modules
+        $SEEKER_HOME/Module/pmu
+                The performance monitoring counter driver
+        $SEEKER_HOME/Module/seeker-cpufreq
+                The seeker cpufreq governor.
+        $SEEKER_HOME/Module/seeker-scheduler
+                The meat of this project!
 $SEEKER_HOME/Patches
-	The patches which needed to be applied for the above modules to work.
+        The patches which needed to be applied for the above modules to work.
 $SEEKER_HOME/Scripts
-	The scripts/utils which act as support user space applications for the Modules
+        The scripts/utils which act as support user space applications for the Modules
 $SEEKER_HOME/lib
-	Libraries which were written to use the seeker syscall interface (And benchmarks
-	which does not count)
+        Libraries which were written to use the seeker syscall interface (And benchmarks
+        which does not count)
 $SEEKER_HOME/utils
-	Utulities (multi-launcher) which is useful to run experiments.
+        Utulities (multi-launcher) which is useful to run experiments.
 $SEEKER_HOME/SyntheticBenchmarks
-	synthetic benchmark to test the system's capibility.
+        synthetic benchmark to test the system's capibility.
 $SEEKER_HOME/MiscScripts
-	Scripts to run experiments (Low use for anyone other than people in CU)
-	No help section for these. Use by reading the code.
+        Scripts to run experiments (Low use for anyone other than people in CU)
+        No help section for these. Use by reading the code.
 $SEEKER_HOME/AnalysisScripts
-	Scripts to analyze data. (Low use for anyone other than myself)
-	No help section for these. Use by reading the code.
+        Scripts to analyze data. (Low use for anyone other than myself)
+        No help section for these. Use by reading the code.
 
 PRE-SETUP / PRE-REQS:
 --------------------
@@ -104,17 +104,17 @@ hardware:
 
 1. Intel or AMD architecture WITH performance counter support. Please refer to your
    manual to verify this.
-   1a. If you have a core architecture, verify my fpmu and pmu module to check if it is all
-   right. I developed it for the core2duo series. Untested on Nehelam (Core i7).
-   1b. If you have a AMD architecture, verify my pmu module. 
-   NOTE: Things to verify:
-     Core - 2 programmable counters (pmu), 3 fixed counters (fpmu)
-     AMD  - 4 programmable counters no fixed counters. 
-     Register (Model specific registers) address values 
+   1a. Number of counters:
+       i. Core - 2 programmable counters (pmu), 3 fixed counters (fpmu)
+       ii. AMD  - 4 programmable counters no fixed counters. 
+   1b. Register (Model specific registers) address values 
+       Check Module/pmu/pmu_internal.h describe the correct values.
+       Check Module/seeker-scheduler/hwcounters.h to use the correct event select values.
 
-2. Support for DVFS 
+2. Support for DVFS exsits for the current processor in the Linux kernel.
   2a. If AMD - Check powernow-k8 works (loads)
   2b. If Intel, check acpi-cpufreq works (loads)
+
 3. Check if DVFS _really_ works! 
    Note: Intel fuc*ed me on this. The acpi-cpufreq loaded, but DVFS really did not work! 
    Guess it was a BIOS thing. But it took me a while to figure this out. 
@@ -127,11 +127,21 @@ hardware:
    Increase the trials. 
   ./synth_bench cpu 200
 
-  Now run synth_bench on all "displayed" CPU frequencies. There must be obvious 
-  changes like you doubled the clock speed? Your execution time must be cut to half. 
-  If not the DVFS mechanism does not work and is just for show, it really really
-  does not work. Get another machine! :-)
-  PS: Make sure to change the frequency of ALL cores for each experiment. 
+   Now run synth_bench on all "displayed" CPU frequencies. There must be obvious 
+   changes like if you doubled the clock speed, your execution time must be cut to half. 
+   If not the DVFS mechanism does not work and is just for show, it really really
+   does not work. Get another machine! :-)
+   PS: Make sure to change the frequency of ALL cores for each experiment. 
+
+4. Each core/virtual processor can transition to clock speeds independently of one another.
+   This is currently possible only for the AMD Barcelona processors. There are rumors
+   that this support was removed for the later released AMD Barcelona. The Intel Nehelam
+   obviously does not have this support as it introduces SMT. 
+   I used the AMD Barcelona for my tests, so I did not have to worry about the extra
+   complications. If you want to add this support make sure you use one more level
+   of hierarchy. Instead of STATE -> CPU GROUP -> CPU, use
+   STATE -> CPUSET GROUP -> CPUSET -> CPU
+
 
 INSTALLING THE PATCHES TO A VANILLA KERNEL
 ------------------------------------------
@@ -241,6 +251,8 @@ schedmod-kernel-2.6.28.patch
   Tested on the 2.6.28 kernel (Must be obvious from the naming)
   This is a very simple patch which
   1. adds a system call called sys_seeker. 
+  2. Adds extra members to task_struct.
+  3. Exports a few functions to be used from the module.
 
 ========================================================================================
 KERNEL MODULES:
@@ -263,7 +275,7 @@ seeker-cpufreq/
     After this run `$SEEKER_HOME/seeker_cpufreq.pl start` to select it.
 
     OPTIONS: 
-      allowed_states=<list of comma seperated states>
+      allowed_states=<list of comma separated states>
       example, if the system has 5 states:
       0 - 1100MHz
       1 - 1400MHz
@@ -290,7 +302,7 @@ seeker-scheduler/
       delta           - the mutation constraint. (delta constraint)
 
       mutation_method - 0 - Delta (Default)
-			1 - dynamic programing (Does not work)
+                        1 - dynamic programing (Does not work)
                         2 - Ondemand
                         3 - Conservative
                         4 - Static layout (No mutation)
@@ -306,10 +318,10 @@ seeker-scheduler/
                        tasks from now on will NOT execute on other 
                        cpus (Other than black listed tasks of course)
      
-     scheduling_method  -	0 - Ladder scheduling
-				1 - Select scheduling
-				2 - adaptive ladder scheduling
-				3 - disable scheduling
+     scheduling_method  - 0 - Ladder scheduling
+                          1 - Select scheduling
+                          2 - adaptive ladder scheduling
+                          3 - disable scheduling
 
      init_layout   - Provide a comma separated list of the performance state
                        of cpus starting from 0.
@@ -320,7 +332,7 @@ seeker-scheduler/
     PS: Read thesis.pdf :-) 
         mutation interval -> change_interval
         delta             -> delta
-	scheduling_method -> evaluation
+        scheduling_method -> evaluation
 
 seeker scheduler exposes a dev interface
 /dev/seeker_log which when opened, it will start collecting logs and dumping
@@ -331,12 +343,8 @@ Example:
 insmod $SEEKER_HOME/Build/seeker_scheduler.ko delta=4 change_interval=125 \
                                               allowed_cpus=4 base_stat=3 
 
-init, mutation_method=4 and disable_scheduling are used for special uses. 
-And if used, it is no longer the system mentioned in thesis.pdf! :-)
-But these are used only to make comparisons.
-
-static_layout - disables the mutator
-disable_scheduling - disables the scheduler from affecting tasks.
+Some of these options are not discussed in the thesis as these were used
+to enable comparison. 
 
 ========================================================================================
 INTERFACE TO SEEKER SCHEDULER (Daemons and utils and scripts, Oh My!):
@@ -366,7 +374,7 @@ seekerlogd - Is the user space daemon which sucks the binary logs from
   to make it into the log, so I generally wait about 10-20s after I
   think a process/experiment is done to swap out logs.
 
-========================================================================================
+----------------------------------------------------------------------------------------
 UTILS:
 ------
 
@@ -378,7 +386,7 @@ decodelog - Is the util to decode the binary log to get the ASCII (Human readabl
 
     Decodes the binary log. 
 
-========================================================================================
+----------------------------------------------------------------------------------------
 SCRIPTS:
 --------
 
@@ -413,8 +421,6 @@ change_speed.pl - Script to manually change the speed with the seeker cpufreq go
                   $SEEKER_HOME/Scripts/change_speed.pl -p=0,0,0,1,1,1,2,2
             
               Sets performance state of cpu 0-2 to 0, 3-5 to 1 and 6-7 to 2
-              For a one time thing, seeker_cpufreq.ko has load time options,
-              this should be used for runtime change of clock speeds. 
 
 ----------------------------------------------------------------------------------------
 
@@ -564,7 +570,7 @@ interp
   USAGE: interp /path/to/input/csv/file /path/to/output/csv/file. INTERVAL(Millions of instructions)
 
   The configuration is in iconfig.h
-  Yes. This is a C++ header. No, this is not a configuraiton file. The configuration
+  Yes. This is a C++ header. No, this is not a configuration file. The configuration
   is _compiled_ in. This is to improve the speed of the operations. 
 
   For configuration help refer to iconfig.h. It is well documented. 
@@ -601,7 +607,7 @@ USAGE: $SEEKER_HOME/Scripts/powersample.pl <OUTPUT FILE>
     OUTPUT FILE - The output file to save the samples. 
 
   NOTES:
-          1. This is a custom hacked tool. You will have to modify it for each machine.. (Sorry)
+          1. This is a custom hacked script. You will have to modify it for each machine.. (Sorry)
           2. It probes ipmitool, so it must be installed.
           3. Not only that the ipmitool must be working. Try `ipmitool sensors` to check if everything
              is smooth.
@@ -673,18 +679,28 @@ $SEEKER_HOME/utils/README
 OTHER SCRIPTS
 -------------
 
+$SEEKER_HOME/MiscScripts
+These were written to create and run experiments using a home bred benchmark suite
+called the Iyyer benchmark suite (IBS) or the DRACO Benchmark Suite which is internal
+to CU's system's lab which is just a reorganized and generic collection of various
+benchmark systems like the SPEC suite. So if you are not part of CU, this will be 
+useless to you.
+
 Everything in $SEEKER_HOME/AnalysisScripts
 
 These were _hack_ scripts written to get my analysis done. It may not be useful to
-anyone but me. I just need to version control them too. So, here they are. 
+anyone but me. I just needed to version control them too. So, here they are. 
 
 ========================================================================================
 FULL SYSTEM USE CASE:
 ---------------------
 
+# Compile ON THE SYSTEM to be loaded on
+cd $SEEKER_HOME
+make
+
 # Insert the PMU Drivers.
-insmod $SEEKER_HOME/Build/pmu.ko  # if AMD
-insmod $SEEKER_HOME/Build/fpmu.ko # if Intel
+insmod $SEEKER_HOME/Build/pmu.ko
 
 # Insert the seeker cpufreq governor. Note: The cpufreq driver must be in!
 insmod $SEEKER_HOME/Build/seeker_cpufreq.ko
@@ -699,6 +715,8 @@ insmod $SEEKER_HOME/Build/seeker_cpufreq.ko  # And other options.
 $SEEKER_HOME/Scripts/seekerlogd ~/logs/log_
 
 # Do whatever experiments you want 
+
+sleep 20
 
 # Terminate the logging daemon
 $SEEKER_HOME/Scripts/send.pl -t
@@ -725,13 +743,6 @@ $SEEKER_HOME/Scripts/pull.pl --input ~/logs/log_0.txt --output ~/APP_logs --benc
 
 # Enjoy! 
 ========================================================================================
-UNDOCUMENTED SCRIPTS
---------------------
-The scripts in MiscScripts/ and AnalysisScripts/ are not documented anywhere and
-are on a read-the-source-then-use based documentation. The reasons have two folds:
-1. I am lazy.
-2. They are almost useless for anyone but me. 
-
 ========================================================================================
 REFERENCE:
 ----------
