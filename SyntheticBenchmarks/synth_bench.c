@@ -29,9 +29,17 @@
 #include <math.h>
 #include <string.h>
 
+#define DEFAULT_CACHE_SIZE 1024
+
 #ifndef CACHE_SIZE
 #warning "CACHE_SIZE was not specified assuming a conservative 1MB"
-#define CACHE_SIZE 1024
+#define CACHE_SIZE DEFAULT_CACHE_SIZE
+#endif
+
+#if CACHE_SIZE <= 0
+#undef CACHE_SIZE
+#warning "CACHE_SIZE was invalid using a conservative 1MB"
+#define CACHE_SIZE DEFAULT_CACHE_SIZE
 #endif
 
 #define CACHE_SIZE_INT ((CACHE_SIZE * 1024) / sizeof(int))
