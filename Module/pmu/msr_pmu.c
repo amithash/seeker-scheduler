@@ -117,22 +117,22 @@ inline void evtsel_write(u32 evtsel_num)
 		rdmsr(cur_evtsel->addr, low, high);
 		low &= EVTSEL_RESERVED_BITS;
 
-		low |= ((cur_evtsel->ev_select & BITS(8)) << 0) /*bits 0-7 */
-		    | (cur_evtsel->ev_mask << 8) /* bits 8-15 */
-		    | (cur_evtsel->usr_flag << 16) /* bit 16 */
-		    | (cur_evtsel->os_flag << 17) /* bit 17 */
-		    | (cur_evtsel->edge << 18) /* bit 18 */
-		    | (cur_evtsel->pc_flag << 19) /* bit 19 */
-		    | (cur_evtsel->int_flag << 20) /* bit 20 */
-		    | (cur_evtsel->enabled << 22) /* bit 22 */
-		    | (cur_evtsel->inv_flag << 23) /* bit 23 */
-		    | (cur_evtsel->cnt_mask << 24); /* bits 24-31 */
+		low |= ((cur_evtsel->ev_select & BITS(LOW_BITS_EVT_SEL)) << SHIFT_EVT_SEL)
+		    | (cur_evtsel->ev_mask << SHIFT_EVT_MASK)
+		    | (cur_evtsel->usr_flag << SHIFT_USR_FLAG)
+		    | (cur_evtsel->os_flag << SHIFT_OS_FLAG)
+		    | (cur_evtsel->edge << SHIFT_EDGE_FLAG)
+		    | (cur_evtsel->pc_flag << SHIFT_PC_FLAG)
+		    | (cur_evtsel->int_flag << SHIFT_INT_FLAG)
+		    | (cur_evtsel->enabled << SHIFT_ENABLED)
+		    | (cur_evtsel->inv_flag << SHIFT_INV_FLAG)
+		    | (cur_evtsel->cnt_mask << SHIFT_CNT_MASK);
 
 		high &= EVTSEL_RESERVED_BITS_HIGH;
 #if defined(ARCH_K8) || defined(ARCH_K10)
-		high |= ((cur_evtsel->ev_select >> 8) << 0) /* bits 0(32)-3(35) */
-			| (cur_evtsel->go << 8) /* bit 8(40) */
-			| (cur_evtsel->ho << 9); /* bit 9(41) */
+		high |= ((cur_evtsel->ev_select >> SHIFT_VAL_HIGH_EVT_SEL) << SHIFT_HIGH_EVT_SEL)
+			| (cur_evtsel->go << SHIFT_HIGH_GO_FLAG)
+			| (cur_evtsel->ho << SHIFT_HIGH_HO_FLAG);
 #endif
 
 		wrmsr(cur_evtsel->addr, low, high);

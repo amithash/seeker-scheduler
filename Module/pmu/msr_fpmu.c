@@ -112,15 +112,15 @@ inline void control_write(void)
 		rdmsr(MSR_PERF_FIXED_CTR_CTRL, low, high);
 		low &= FIXSEL_RESERVED_BITS;
 
-		low = (cur_control->os0 << 0)
-		    | (cur_control->usr0 << 1)
-		    | (cur_control->pmi0 << 3)
-		    | (cur_control->os1 << 4)
-		    | (cur_control->usr1 << 5)
-		    | (cur_control->pmi1 << 7)
-		    | (cur_control->os2 << 8)
-		    | (cur_control->usr2 << 9)
-		    | (cur_control->pmi2 << 11);
+		low = (cur_control->os0 << SHIFT_FIX_OS0)
+		    | (cur_control->usr0 << SHIFT_FIX_USR0)
+		    | (cur_control->pmi0 << SHIFT_FIX_PMI0)
+		    | (cur_control->os1 << SHIFT_FIX_OS1)
+		    | (cur_control->usr1 << SHIFT_FIX_USR1)
+		    | (cur_control->pmi1 << SHIFT_FIX_PMI1)
+		    | (cur_control->os2 << SHIFT_FIX_OS2)
+		    | (cur_control->usr2 << SHIFT_FIX_USR2)
+		    | (cur_control->pmi2 << SHIFT_FIX_PMI2);
 
 		wrmsr(MSR_PERF_FIXED_CTR_CTRL, low, high);
 	}
