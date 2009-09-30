@@ -33,13 +33,6 @@ all:
 	+make -C Scripts $(EXTRA_ARGS)
 	+make -C SyntheticBenchmarks
 	+make -C utils
-tags:
-	ctags -R -u
-	cp linux_2.6.28_tags.gz linux.gz
-	gunzip linux.gz
-	cat linux >> tags
-	rm linux
-
 debug:
 	+make -C Module debug $(EXTRA_ARGS)
 	+make -C lib debug $(EXTRA_ARGS)
