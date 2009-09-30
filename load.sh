@@ -154,15 +154,15 @@ if [ ! $DELTA -gt 0 ]; then
 fi
 
 if [ -z $SEEKER_HOME ]; then
-  echo "SEEKER_HOME Environment variable is not set. Please set it and build seeker first."
+	echo "SEEKER_HOME Environment variable is not set. Please set it and build seeker first."
 fi
 
 if [ -f $SEEKER_HOME/Build/pmu.ko && -f $SEEKER_HOME/Build/seeker_cpufreq.ko && -f $SEEKER_HOME/Build/seeker_scheduler.ko && -f $SEEKER_HOME/Build/seekerlogd ]; then
-  echo "Gathering module options"
+	echo "Gathering module options"
 else
-  echo "Please build your modules by performing the following:"
-  echo "cd ${SEEKER_HOME}"
-  echo "make"
+	echo "Please build your modules by performing the following:"
+	echo "cd ${SEEKER_HOME}"
+	echo "make"
 fi
 
 
@@ -180,16 +180,16 @@ if [ `lsmod | grep $DRIVER | wc -l` -eq 0 ]; then
 fi
 
 if [ `lsmod | grep seeker_scheduler | wc -l` -ne 0 ]; then
-  echo "seeker_scheduler seems to be loaded. Please unload it by runing unload.sh"
-  exit;
+	echo "seeker_scheduler seems to be loaded. Please unload it by runing unload.sh"
+	exit;
 fi
 if [ `lsmod | grep seeker_cpufreq | wc -l` -ne 0 ]; then
-  echo "seeker_cpufreq seems to be loaded. Please unload it by runing unload.sh"
-  exit;
+	echo "seeker_cpufreq seems to be loaded. Please unload it by runing unload.sh"
+	exit;
 fi
 if [ `lsmod | grep pmu | wc -l` -ne 0 ]; then
-  echo "pmu seems to be loaded. Please unload it by runing unload.sh"
-  exit;
+	echo "pmu seems to be loaded. Please unload it by runing unload.sh"
+	exit;
 fi
 
 
