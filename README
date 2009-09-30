@@ -272,7 +272,7 @@ pmu/
 seeker-cpufreq/
     The cpufreq governor which exposes the set_freq interface to seeker-scheduler
     insmod $SEEKER_HOME/Build/seeker_cpufreq.ko
-    After this run `$SEEKER_HOME/seeker_cpufreq.pl start` to select it.
+    After this run `$SEEKER_HOME/Scripts/seeker_cpufreq.pl start` to select it.
 
     OPTIONS: 
       allowed_states=<list of comma separated states>
@@ -417,7 +417,7 @@ change_speed.pl - Script to manually change the speed with the seeker cpufreq go
 
       Example:
                   insmod $SEEKER_HOME/Build/seeker_cpufreq.ko
-                  $SEEKER_HOME/seeker_cpufreq.pl start
+                  $SEEKER_HOME/Scripts/seeker_cpufreq.pl start
                   $SEEKER_HOME/Scripts/change_speed.pl -p=0,0,0,1,1,1,2,2
             
               Sets performance state of cpu 0-2 to 0, 3-5 to 1 and 6-7 to 2
@@ -436,7 +436,7 @@ pattern_speed.pl - Script to change clock speed with a pattern.
 
       example: 
         insmod $SEEKER_HOME/Build/seeker_cpufreq.ko
-        $SEEKER_HOME/seeker_cpufreq.pl start
+        $SEEKER_HOME/Scripts/seeker_cpufreq.pl start
         $SEEKER_HOME/Scripts/pattern_speed.pl -p=0,1,2,3,4 -i=100,200,300,400 
         This will cause all cpus to be transitioned first to 0, then after 100ms,
         will transition to 1 then wait for 200ms and so on. This process is 
@@ -706,7 +706,7 @@ insmod $SEEKER_HOME/Build/pmu.ko
 insmod $SEEKER_HOME/Build/seeker_cpufreq.ko
 
 # Pick the seeker governor as the current governor.
-$SEEKER_HOME/seeker_cpufreq.pl start
+$SEEKER_HOME/Scripts/seeker_cpufreq.pl start
 
 # load the seeker scheduler
 insmod $SEEKER_HOME/Build/seeker_cpufreq.ko  # And other options.
@@ -726,7 +726,7 @@ rmmod seeker_scheduler
 
 # Remove seeker as the current cpufreq governor.
 # This is important to remove the module.
-$SEEKER_HOME/seeker_cpufreq.pl stop
+$SEEKER_HOME/Scripts/seeker_cpufreq.pl stop
 
 # Remove the seeker cpufreq governor.
 rmmod seeker_cpufreq

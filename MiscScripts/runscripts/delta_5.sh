@@ -61,7 +61,7 @@ fi
 
 insmod $SEEKER_HOME/Build/pmu.ko
 insmod $SEEKER_HOME/Build/seeker_cpufreq.ko 
-$SEEKER_HOME/seeker_cpufreq.pl start
+$SEEKER_HOME/Scripts/seeker_cpufreq.pl start
 
 cd $BENCH_ROOT
 
@@ -137,7 +137,7 @@ for (( i=0;i<$CPUS_LEN;i++ )); do
 done
 mailme "All done, come and get it!"
 
-$SEEKER_HOME/seeker_cpufreq.pl stop
+$SEEKER_HOME/Scripts/seeker_cpufreq.pl stop
 rmmod seeker_cpufreq
 rmmod pmu
 

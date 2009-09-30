@@ -34,7 +34,7 @@ function remove {
 
 remove "seeker_scheduler"
 remove "pmu"
-$SEEKER_HOME/seeker_cpufreq.pl stop
+$SEEKER_HOME/Scripts/seeker_cpufreq.pl stop
 remove "seeker_cpufreq"
 
 echo Done!

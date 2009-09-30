@@ -195,6 +195,6 @@ fi
 
 insmod $SEEKER_HOME/Build/pmu.ko
 insmod $SEEKER_HOME/Build/seeker_cpufreq.ko
-$SEEKER_HOME/seeker_cpufreq.pl start
+$SEEKER_HOME/Scripts/seeker_cpufreq.pl start
 insmod $SEEKER_HOME/Build/seeker_scheduler.ko change_interval=$MUTATION_INTERVAL mutation_method=$MUTATION_METHOD base_state=$BASE_STATE allowed_cpus=$NR_CPUS scheduling_method=$SCHEDULING_METHOD init_layout=$LAYOUT
 
