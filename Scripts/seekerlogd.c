@@ -33,7 +33,7 @@
 #include <signal.h>
 
 #include <log_public.h>
-#include "../generic.h"
+#include "generic.h"
 
 #define P_ASSERT_EXIT(t,i) if(!(t)) {perror((i)); exit(EXIT_FAILURE);}
 #define BUFFER_SIZE (4096*sizeof(log_t))

@@ -30,7 +30,7 @@
 #include <signal.h>
 
 #include <log_public.h>
-#include "../generic.h"
+#include "generic.h"
 
 int main(int argc, char **argv, char **envp)
 {
