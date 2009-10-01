@@ -255,10 +255,6 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	int cpu = smp_processor_id();
 	ts[cpu] = to;
 
-	if (TS_MEMBER(to, seeker_scheduled) == SEEKER_MAGIC_NUMBER &&
-	    is_blacklist_task(to) == 0)
-		usage_inc(TS_MEMBER(to, cpustate));
-
 	read_counters(cpu);
 	TS_MEMBER(from, inst) += pmu_val[cpu][0];
 	TS_MEMBER(from, re_cy) += pmu_val[cpu][1];
@@ -271,8 +267,6 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 
 	if (is_blacklist_task(from))
 		goto get_out;
-
-	usage_dec(TS_MEMBER(from, cpustate));
 
 	if (is_blacklist_task(from) == 0)
 		put_mask_from_stats(from);

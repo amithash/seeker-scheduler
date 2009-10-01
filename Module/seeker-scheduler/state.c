@@ -163,53 +163,6 @@ void hint_clear(int state)
 }
 
 /********************************************************************************
- * usage_inc - increment usage
- * @state - state who's usage has to be incremented 
- * @Side Effects - None
- *
- * Increment the usage for state "state" 
- ********************************************************************************/
-void usage_inc(int state)
-{
-	atomic_inc(&(states[state].usage));
-}
-
-/********************************************************************************
- * usage_dec - decrement usage
- * @state - state who's usage has to be decremented
- * @Side Effects - None
- *
- * Decrements the usage for state "state"
- ********************************************************************************/
-void usage_dec(int state)
-{
-	if (usage_get(state) != 0)
-		atomic_dec(&(states[state].usage));
-}
-
-/********************************************************************************
- * usage_get - Get the current value of usage
- * @state - the state who's usage is required.
- *
- * Get the current value of usage.
- ********************************************************************************/
-int usage_get(int state)
-{
-	return atomic_read(&(states[state].usage));
-}
-
-/********************************************************************************
- * usage_clear - Set the value of usage to 0.
- * @state - The state whose usage has to be cleared.
- *
- * Set the current value of usage to 0 for state `state`.
- ********************************************************************************/
-void usage_clear(int state)
-{
-	atomic_set(&(states[state].usage), 0);
-}
-
-/********************************************************************************
  * log_cpu_state - log the state of cpu. 
  * @cpu - the cpu for which state has to be logged.
  *
@@ -349,7 +302,6 @@ int init_cpu_states(void)
 		states[i].state = i;
 		states[i].cpus = 0;
 		hint_clear(i);
-		usage_clear(i);
 		cpus_clear(states[i].cpumask);
 	}
 
