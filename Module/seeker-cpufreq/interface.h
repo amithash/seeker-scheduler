@@ -30,4 +30,3 @@ void register_self(void);
 void deregister_self(void);
 
 #endif
-

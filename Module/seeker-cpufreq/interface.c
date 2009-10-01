@@ -36,13 +36,12 @@
  * 				Function Declarations				*
  ********************************************************************************/
 
-static ssize_t cpufreq_seeker_showspeed(struct cpufreq_policy *policy, 
-		char *buf);
+static ssize_t cpufreq_seeker_showspeed(struct cpufreq_policy *policy,
+					char *buf);
 static int cpufreq_seeker_governor(struct cpufreq_policy *policy,
 				   unsigned int event);
-static int cpufreq_seeker_setspeed(struct cpufreq_policy *policy, 
+static int cpufreq_seeker_setspeed(struct cpufreq_policy *policy,
 				   unsigned int freq);
-
 
 /********************************************************************************
  * 				Global Datastructures 				*
@@ -58,7 +57,6 @@ struct cpufreq_governor seeker_governor = {
 	.store_setspeed = cpufreq_seeker_setspeed,
 };
 
-
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
@@ -72,10 +70,11 @@ struct cpufreq_governor seeker_governor = {
  * governor userspace interface informs a speed to be set and this function
  * will be called with the cpu's profile as a parameter.
  *******************************************************************************/
-static int cpufreq_seeker_setspeed(struct cpufreq_policy *policy, unsigned int freq)
+static int cpufreq_seeker_setspeed(struct cpufreq_policy *policy,
+				   unsigned int freq)
 {
-	debug("User wants speed to be %u on cpu %d",freq,policy->cpu);
-	return __set_freq(policy->cpu,freq);
+	debug("User wants speed to be %u on cpu %d", freq, policy->cpu);
+	return __set_freq(policy->cpu, freq);
 }
 
 /*******************************************************************************
@@ -87,11 +86,12 @@ static int cpufreq_seeker_setspeed(struct cpufreq_policy *policy, unsigned int f
  * Copies a string which is the current speed for cpu defined in policy 
  * into buf and returns the number of bytes copied.
  *******************************************************************************/
-static ssize_t cpufreq_seeker_showspeed(struct cpufreq_policy *policy, char *buf)
+static ssize_t cpufreq_seeker_showspeed(struct cpufreq_policy *policy,
+					char *buf)
 {
 	debug("Someone called showspeed... so let's show them something");
-	sprintf(buf,"%d",policy->cur);
-	return (strlen(buf)+1)*sizeof(char);
+	sprintf(buf, "%d", policy->cur);
+	return (strlen(buf) + 1) * sizeof(char);
 }
 
 /*******************************************************************************
@@ -111,9 +111,9 @@ static int cpufreq_seeker_governor(struct cpufreq_policy *policy,
 	switch (event) {
 	case CPUFREQ_GOV_START:
 		info("Starting governor on cpu %d", cpu);
-		gov_init_freq_info_cpu(cpu,policy);
-		info("Latency for cpu %d = %d nanoseconds",cpu,
-					policy->cpuinfo.transition_latency);
+		gov_init_freq_info_cpu(cpu, policy);
+		info("Latency for cpu %d = %d nanoseconds", cpu,
+		     policy->cpuinfo.transition_latency);
 		break;
 	case CPUFREQ_GOV_STOP:
 		info("Stopping governor on cpu %d", cpu);
@@ -138,5 +138,3 @@ void deregister_self(void)
 {
 	cpufreq_unregister_governor(&seeker_governor);
 }
-
-
