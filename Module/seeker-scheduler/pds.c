@@ -165,7 +165,7 @@ void put_mask_from_stats(struct task_struct *ts)
 
 	} while (read_seqretry(&states_seq_lock, seq));
 
-	hint_inc(state_req);
+	demand_inc(state_req);
 
 	/* Push statastics to the debug buffer if enabled */
 	p = get_log();

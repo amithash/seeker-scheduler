@@ -117,47 +117,47 @@ static DECLARE_DELAYED_WORK(state_logger_work, state_logger);
  ********************************************************************************/
 
 /********************************************************************************
- * hint_inc - increment hint 
+ * demand_inc - increment hint 
  * @state - state who's hint has to be incremented 
  * @Side Effects - None
  *
  * Increment the demand for state "state" 
  ********************************************************************************/
-void hint_inc(int state)
+void demand_inc(int state)
 {
 	atomic_inc(&(states[state].demand));
 }
 
 /********************************************************************************
- * hint_dec - decrement hint
+ * demand_dec - decrement hint
  * @state - state who's hint has to be decremented
  * @Side Effects - None
  *
  * Decrements the demand for state "state"
  ********************************************************************************/
-void hint_dec(int state)
+void demand_dec(int state)
 {
 	atomic_dec(&(states[state].demand));
 }
 
 /********************************************************************************
- * hint_get - Get the current value of hint
+ * demand_get - Get the current value of hint
  * @state - the state who's hint is required.
  *
  * Get the current value of hint.
  ********************************************************************************/
-int hint_get(int state)
+int demand_get(int state)
 {
 	return atomic_read(&(states[state].demand));
 }
 
 /********************************************************************************
- * hint_clear - Set the value of hint to 0.
+ * demand_clear - Set the value of hint to 0.
  * @state - The state whose hint has to be cleared.
  *
  * Set the current value of hint to 0 for state `state`.
  ********************************************************************************/
-void hint_clear(int state)
+void demand_clear(int state)
 {
 	atomic_set(&(states[state].demand), 0);
 }
@@ -301,7 +301,7 @@ int init_cpu_states(void)
 	for (i = 0; i < total_states; i++) {
 		states[i].state = i;
 		states[i].cpus = 0;
-		hint_clear(i);
+		demand_clear(i);
 		cpus_clear(states[i].cpumask);
 	}
 

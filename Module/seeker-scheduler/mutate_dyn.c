@@ -288,7 +288,7 @@ void mem_dynamic_prog(int delta)
 
 	/* demand is hint + 1 as the algo cannot stand 0 demand! */
 	for (j = 0; j < total_states; j++) {
-		demand[j] = hint_get(j) + 1;
+		demand[j] = demand_get(j) + 1;
 	}
 
 	/* Suicide if req procs is 0 */
@@ -319,7 +319,7 @@ void mem_dynamic_prog(int delta)
 	for (j = 0; j < total_states; j++) {
 		states[j].cpumask = new_states[j].cpumask;
 		states[j].cpus = new_states[j].cpus;
-		hint_clear(j);
+		demand_clear(j);
 	}
 	write_sequnlock(&states_seq_lock);
 

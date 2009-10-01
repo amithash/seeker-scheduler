@@ -455,12 +455,12 @@ void greedy_delta(int delta)
 
 	/* Compute the total = sum of hints */
 	for (j = 0; j < total_states; j++) {
-		total += hint_get(j);
+		total += demand_get(j);
 	}
 
 	/* Compute CPU's demanded for each state */
 	for (j = 0; j < total_states; j++) {
-		demand[j] = procs(hint_get(j), total, load);
+		demand[j] = procs(demand_get(j), total, load);
 		total_demand += demand[j];
 	}
 
@@ -559,7 +559,7 @@ void greedy_delta(int delta)
 	for (j = 0; j < total_states; j++) {
 		states[j].cpumask = new_states[j].cpumask;
 		states[j].cpus = new_states[j].cpus;
-		hint_clear(j);
+		demand_clear(j);
 	}
 	write_sequnlock(&states_seq_lock);
 
