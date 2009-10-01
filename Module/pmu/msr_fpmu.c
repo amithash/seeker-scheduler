@@ -145,6 +145,7 @@ inline void fcounter_clear(u32 counter)
 		wrmsr(fcounters[cpu_id][counter].addr,
 		      fcleared[cpu_id][counter].low,
 		      fcleared[cpu_id][counter].high);
+
 		wrmsr(fcounters[cpu_id][counter].addr,
 		      fcleared[cpu_id][counter].low,
 		      fcleared[cpu_id][counter].high);
@@ -194,14 +195,14 @@ u64 get_fcounter_data(u32 counter, u32 cpu_id)
 {
 #if NUM_FIXED_COUNTERS > 0
 	u64 counter_val;
-	if (likely(counter < NUM_FIXED_COUNTERS && cpu_id < NR_CPUS)) {
-		counter_val = (u64) fcounters[cpu_id][counter].low;
-		counter_val =
-		    counter_val | ((u64) fcounters[cpu_id][counter].high << 32);
-		return counter_val - fcleared[cpu_id][counter].all;
-	} else {
+
+	if(unlikely(counter >= NUM_FIXED_COUNTERS && cpu_id >= NR_CPUS))
 		return -1;
-	}
+
+	counter_val = U64(fcounters[cpu_id][counter].low,
+			  fcounters[cpu_id][counter].high);
+
+	return counter_val - fcleared[cpu_id][counter].all;
 #else
 	return 0;
 #endif
@@ -266,4 +267,3 @@ void fcounters_enable(u32 os)
 }
 
 EXPORT_SYMBOL_GPL(fcounters_enable);
-

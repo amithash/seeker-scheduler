@@ -52,7 +52,6 @@ extern fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS];
  * 				Functions					*
  ********************************************************************************/
 
-
 /*******************************************************************************
  * fpmu_configure_interrupt - Configures a counter to interrupt on _this_ cpu.
  * @ctr - The counter to configure.
@@ -222,4 +221,3 @@ int fpmu_clear_ovf_status(int ctr)
 }
 
 EXPORT_SYMBOL_GPL(fpmu_clear_ovf_status);
-

@@ -51,7 +51,6 @@ extern cleared_t cleared[NR_CPUS][NUM_COUNTERS];
  * 				Functions					*
  ********************************************************************************/
 
-
 /*******************************************************************************
  * pmu_configure_interrupt - Configures a counter to interrupt on _this_ cpu.
  * @ctr - The counter to configure.
@@ -254,4 +253,3 @@ int pmu_clear_ovf_status(int ctr)
 }
 
 EXPORT_SYMBOL_GPL(pmu_clear_ovf_status);
-

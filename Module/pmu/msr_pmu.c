@@ -52,7 +52,6 @@ extern cleared_t cleared[NR_CPUS][NUM_COUNTERS];
  * 				Functions					*
  ********************************************************************************/
 
-
 /*******************************************************************************
  * evtsel_read - Read and return the low 32 bits of the evtsel reg.
  * @evtsel_num - The counter number
@@ -117,7 +116,9 @@ inline void evtsel_write(u32 evtsel_num)
 		rdmsr(cur_evtsel->addr, low, high);
 		low &= EVTSEL_RESERVED_BITS;
 
-		low |= ((cur_evtsel->ev_select & BITS(LOW_BITS_EVT_SEL)) << SHIFT_EVT_SEL)
+		low |=
+		    ((cur_evtsel->
+		      ev_select & BITS(LOW_BITS_EVT_SEL)) << SHIFT_EVT_SEL)
 		    | (cur_evtsel->ev_mask << SHIFT_EVT_MASK)
 		    | (cur_evtsel->usr_flag << SHIFT_USR_FLAG)
 		    | (cur_evtsel->os_flag << SHIFT_OS_FLAG)
@@ -130,9 +131,12 @@ inline void evtsel_write(u32 evtsel_num)
 
 		high &= EVTSEL_RESERVED_BITS_HIGH;
 #if defined(ARCH_K8) || defined(ARCH_K10)
-		high |= ((cur_evtsel->ev_select >> SHIFT_VAL_HIGH_EVT_SEL) << SHIFT_HIGH_EVT_SEL)
-			| (cur_evtsel->go << SHIFT_HIGH_GO_FLAG)
-			| (cur_evtsel->ho << SHIFT_HIGH_HO_FLAG);
+		high |=
+		    ((cur_evtsel->
+		      ev_select >> SHIFT_VAL_HIGH_EVT_SEL) <<
+		     SHIFT_HIGH_EVT_SEL)
+		    | (cur_evtsel->go << SHIFT_HIGH_GO_FLAG)
+		    | (cur_evtsel->ho << SHIFT_HIGH_HO_FLAG);
 #endif
 
 		wrmsr(cur_evtsel->addr, low, high);
@@ -183,7 +187,7 @@ void counter_read(void)
 	if (likely(cpu_id < NR_CPUS)) {
 		/* this is the "full" read of the full 48bits */
 		for (i = 0; i < NUM_COUNTERS; i++) {
-			if(counters[cpu_id][i].enabled == 0)
+			if (counters[cpu_id][i].enabled == 0)
 				continue;
 			rdmsr(counters[cpu_id][i].addr, low, high);
 			counters[cpu_id][i].high = high;
@@ -211,8 +215,9 @@ u64 get_counter_data(u32 counter, u32 cpu_id)
 	u64 counter_val;
 	if (unlikely(counter >= NUM_COUNTERS))
 		return 0;
-	counter_val = (u64) counters[cpu_id][counter].low;
-	counter_val |= ((u64) counters[cpu_id][counter].high << 32);
+	counter_val = U64(counters[cpu_id][counter].low,
+			  counters[cpu_id][counter].high);
+
 	return counter_val;
 #else
 	return 0;
@@ -236,7 +241,7 @@ inline void counter_disable(int counter)
 	if (unlikely(counter >= NUM_COUNTERS || cpu_id >= NR_CPUS))
 		return;
 
-	if(counters[cpu_id][counter].enabled == 0)
+	if (counters[cpu_id][counter].enabled == 0)
 		return;
 
 	evtsel_clear(counter);
@@ -278,7 +283,7 @@ int counter_enable(u32 event, u32 ev_mask, u32 os)
 			break;
 		}
 	}
-	if(unlikely(counter_num < 0))
+	if (unlikely(counter_num < 0))
 		return -1;
 
 	evtsel_clear(counter_num);
@@ -305,4 +310,3 @@ int counter_enable(u32 event, u32 ev_mask, u32 os)
 }
 
 EXPORT_SYMBOL_GPL(counter_enable);
-

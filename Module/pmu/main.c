@@ -35,12 +35,9 @@
 
 #include "pmu_int.h"
 
-
-
 /********************************************************************************
  * 			Global Datastructures 					*
  ********************************************************************************/
-
 
 /* evtsel defined per counter per cpu. the structures are
  * different for K8 and K10 so initialized using #ifdefs. 
@@ -155,11 +152,9 @@ fcleared_t fcleared[NR_CPUS][NUM_FIXED_COUNTERS] = {
 	 }
 };
 
-
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
-
 
 /*******************************************************************************
  * pmu_init_msrs - initialize msrs on _this_ cpu.
@@ -189,6 +184,7 @@ void pmu_init_msrs(void *info)
 	put_cpu();
 #endif
 }
+
 EXPORT_SYMBOL_GPL(pmu_init_msrs);
 
 /*******************************************************************************
@@ -220,8 +216,8 @@ void fpmu_init_msrs(void *info)
 	put_cpu();
 #endif
 }
-EXPORT_SYMBOL_GPL(fpmu_init_msrs);
 
+EXPORT_SYMBOL_GPL(fpmu_init_msrs);
 
 /*******************************************************************************
  * pmu_init - The init function for pmu.
@@ -236,7 +232,6 @@ static int __init pmu_init(void)
 		error("Could not enable all counters. Panicing and exiting");
 		return -ENODEV;
 	}
-
 #if NUM_FIXED_COUNTERS > 0
 	if (ON_EACH_CPU(&fpmu_init_msrs, NULL, 1, 1) < 0) {
 		error("Could not enable anything, panicing and exiting");
@@ -270,4 +265,3 @@ module_exit(pmu_exit);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
 MODULE_DESCRIPTION("Module provides an interface to access the PMU");
-
