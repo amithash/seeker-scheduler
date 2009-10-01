@@ -34,7 +34,7 @@
  * 				Global Prototyprs 				*
  ********************************************************************************/
 
-struct scpufreq_user_list{
+struct scpufreq_user_list {
 	struct scpufreq_user *user;
 	struct scpufreq_user_list *next;
 };
@@ -62,19 +62,21 @@ static unsigned int current_highest_id = 0;
 static int create_user(struct scpufreq_user *u)
 {
 	struct scpufreq_user_list *i;
-	if(!u)
+	if (!u)
 		return ERR_INV_USER;
-	if(!u->inform)
+	if (!u->inform)
 		return ERR_INV_CALLBACK;
 	spin_lock(&user_lock);
-	if(user_head){
-		for(i=user_head;i->next;i=i->next);
-		i->next = kmalloc(sizeof(struct scpufreq_user_list), GFP_KERNEL);
+	if (user_head) {
+		for (i = user_head; i->next; i = i->next) ;
+		i->next =
+		    kmalloc(sizeof(struct scpufreq_user_list), GFP_KERNEL);
 		i = i->next;
 	} else {
-		i = user_head = kmalloc(sizeof(struct scpufreq_user_list), GFP_KERNEL);
+		i = user_head =
+		    kmalloc(sizeof(struct scpufreq_user_list), GFP_KERNEL);
 	}
-	if(!i){
+	if (!i) {
 		spin_unlock(&user_lock);
 		return ERR_USER_MEM_LOW;
 	}
@@ -95,20 +97,21 @@ static int create_user(struct scpufreq_user *u)
  *******************************************************************************/
 static int destroy_user(struct scpufreq_user *u)
 {
-	struct scpufreq_user_list *i,*j;
-	if(!u)
+	struct scpufreq_user_list *i, *j;
+	if (!u)
 		return ERR_INV_USER;
-	if(!u->inform)
+	if (!u->inform)
 		return ERR_INV_CALLBACK;
 	spin_lock(&user_lock);
 
-	for(i=user_head,j=NULL;i && i->user->user_id != u->user_id ;j=i,i=i->next);
+	for (i = user_head, j = NULL; i && i->user->user_id != u->user_id;
+	     j = i, i = i->next) ;
 
-	if(!i){
+	if (!i) {
 		spin_unlock(&user_lock);
 		return ERR_INV_USER;
 	}
-	if(!j)
+	if (!j)
 		user_head = i->next;
 	else
 		j->next = i->next;
@@ -116,7 +119,6 @@ static int destroy_user(struct scpufreq_user *u)
 	kfree(i);
 	return 0;
 }
-
 
 /*******************************************************************************
  * inform_freq_change - Infrom all registered users of a freq change.
@@ -130,11 +132,11 @@ void inform_freq_change(int cpu, int state)
 	struct scpufreq_user_list *i;
 	int dummy_ret = 0;
 
-	for(i=user_head;i;i=i->next){
-		if(i->user->inform)
-			dummy_ret |= i->user->inform(cpu,state);
+	for (i = user_head; i; i = i->next) {
+		if (i->user->inform)
+			dummy_ret |= i->user->inform(cpu, state);
 	}
-	if(dummy_ret){
+	if (dummy_ret) {
 		warn("Some of the users returned an error code which was lost");
 	}
 }
@@ -149,6 +151,7 @@ int register_scpufreq_user(struct scpufreq_user *u)
 {
 	return create_user(u);
 }
+
 EXPORT_SYMBOL_GPL(register_scpufreq_user);
 
 /*******************************************************************************
@@ -161,6 +164,7 @@ int deregister_scpufreq_user(struct scpufreq_user *u)
 {
 	return destroy_user(u);
 }
+
 EXPORT_SYMBOL_GPL(deregister_scpufreq_user);
 
 void init_user_interface(void)
@@ -171,9 +175,9 @@ void init_user_interface(void)
 
 void exit_user_interface(void)
 {
-	struct scpufreq_user_list *i,*j;
+	struct scpufreq_user_list *i, *j;
 	spin_lock(&user_lock);
-	for(i=user_head;i;){
+	for (i = user_head; i;) {
 		j = i->next;
 		kfree(i);
 		i = j;
@@ -181,5 +185,3 @@ void exit_user_interface(void)
 	user_head = NULL;
 	spin_unlock(&user_lock);
 }
-
-

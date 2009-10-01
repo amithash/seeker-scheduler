@@ -36,7 +36,6 @@
 #include "freq.h"
 #include "interface.h"
 
-
 /********************************************************************************
  * 				Module Parameters 				*
  ********************************************************************************/
@@ -66,7 +65,7 @@ static int __init seeker_cpufreq_init(void)
 
 	init_freqs();
 
-	if(init_freqs()){
+	if (init_freqs()) {
 		deregister_self();
 		return -ENODEV;
 	}
@@ -93,10 +92,9 @@ module_init(seeker_cpufreq_init);
 module_exit(seeker_cpufreq_exit);
 
 module_param_array(allowed_states, int, &allowed_states_length, 0444);
-MODULE_PARM_DESC(allowed_states, "Use this to provide an array for allowed states.");
+MODULE_PARM_DESC(allowed_states,
+		 "Use this to provide an array for allowed states.");
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Amithash Prasad (amithash.prasad@colorado.edu)");
 MODULE_DESCRIPTION("Provides abstracted access to the cpufreq driver");
-
-
