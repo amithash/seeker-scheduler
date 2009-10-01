@@ -82,7 +82,6 @@ void wake_up_procs(int req_cpus);
 
 void retire_procs(int req_cpus, int *put_to_sleep, int *cpu_awake_proxy);
 
-
 /********************************************************************************
  * 			Global Datastructures 					*
  ********************************************************************************/
@@ -99,23 +98,23 @@ static int new_cpu_state[NR_CPUS];
 /* Computed demand for each state */
 static int demand[MAX_STATES];
 
-
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
 
 static void delta_based_demand_transform(int cpus, int delta)
 {
-	int can_win[NR_STATES] = {0};
-	int i,j;
+	int can_win[NR_STATES] = { 0 };
+	int i, j;
 	int left, right;
 	int friend;
 
 	/* Evaluate states which can never win under delta */
-	for(j = 0; j < total_states; j++){
+	for (j = 0; j < total_states; j++) {
 		can_win[j] = 0;
-		for(i=0;i<cpus;i++){
-			if(ABS((cur_cpu_state[cpu_awake_proxy[i]] - j)) <= delta){
+		for (i = 0; i < cpus; i++) {
+			if (ABS((cur_cpu_state[cpu_awake_proxy[i]] - j)) <=
+			    delta) {
 				can_win[j] = 1;
 				break;
 			}
@@ -123,31 +122,31 @@ static void delta_based_demand_transform(int cpus, int delta)
 	}
 
 	/* Transfer demand of states which cannot win to nearby states */
-	for(j = 0; j < total_states; j++){
-		if(can_win[j] == 1 || demand[j] == 0)
+	for (j = 0; j < total_states; j++) {
+		if (can_win[j] == 1 || demand[j] == 0)
 			continue;
 
 		left = right = -1;
-		for(i = j; i < total_states; i++){
-			if(can_win[i] == 1){
+		for (i = j; i < total_states; i++) {
+			if (can_win[i] == 1) {
 				right = i;
 				break;
 			}
 		}
-		for(i = j; i >= 0; i--){
-			if(can_win[i] == 1){
+		for (i = j; i >= 0; i--) {
+			if (can_win[i] == 1) {
 				left = i;
 				break;
 			}
 		}
-		if(left == -1) {
+		if (left == -1) {
 			friend = right;
-		} else if(right == -1) {
+		} else if (right == -1) {
 			friend = left;
-		} else if(ABS(left - j) == ABS(right - j)){
+		} else if (ABS(left - j) == ABS(right - j)) {
 			friend = demand[left] > demand[right] ? left : right;
 		} else {
-			friend = ABS(left - j) < ABS(right - j) ? left : right;	
+			friend = ABS(left - j) < ABS(right - j) ? left : right;
 		}
 		demand[friend] += demand[j];
 	}
@@ -184,58 +183,61 @@ static void mck(int n, int m, int w)
 		int f;
 		int sol;
 	};
-	static struct struct_f dyna[NR_CPUS+1][MAX_DELTA+1];
+	static struct struct_f dyna[NR_CPUS + 1][MAX_DELTA + 1];
 	static int wt[NR_CPUS][NR_STATES];
 
-	for(i = 0; i < n; i++){
-		for(j = 0; j < m; j++){
+	for (i = 0; i < n; i++) {
+		for (j = 0; j < m; j++) {
 			wt[i][j] = ABS(j - cur_cpu_state[cpu_awake_proxy[i]]);
 		}
 	}
 
-	for(i=0;i<=n;i++){
-		for(j = 0; j <= w; j++){
+	for (i = 0; i <= n; i++) {
+		for (j = 0; j <= w; j++) {
 			dyna[i][j].f = 0;
 			dyna[i][j].sol = -1;
 		}
 	}
 
 	/* init first proc */
-	for(b = 0; b <= w; b++){
+	for (b = 0; b <= w; b++) {
 		max = -1;
 		ind = -1;
-		for(j=0;j<m;j++){
-			if(wt[0][j] <= b && max < demand[j]){
+		for (j = 0; j < m; j++) {
+			if (wt[0][j] <= b && max < demand[j]) {
 				max = demand[j];
 				ind = j;
 			}
 		}
-		if(b > 0 && dyna[1][b-1].f > max){
-			dyna[1][b].f = dyna[1][b-1].f;
+		if (b > 0 && dyna[1][b - 1].f > max) {
+			dyna[1][b].f = dyna[1][b - 1].f;
 		} else {
 			dyna[1][b].f = max;
 		}
-		if(max > 0){
+		if (max > 0) {
 			dyna[1][b].sol = ind;
 		}
 	}
 
 	/* do for all! */
-	for(k = 2; k <= n; k++){
-		for(b = 0; b <= w; b++){
+	for (k = 2; k <= n; k++) {
+		for (b = 0; b <= w; b++) {
 			max = -1;
 			ind = -1;
-			for(j = 0; j < m; j++){
-				demand1 = (b - wt[k-1][j]) >= 0 ? dyna[k-1][b-wt[k-1][j]].f : 0;
+			for (j = 0; j < m; j++) {
+				demand1 =
+				    (b - wt[k - 1][j]) >=
+				    0 ? dyna[k - 1][b - wt[k - 1][j]].f : 0;
 				demand2 = demand1 + demand[j];
-				if(wt[k-1][j] <= b && demand1 > 0 && max < demand2){
+				if (wt[k - 1][j] <= b && demand1 > 0
+				    && max < demand2) {
 					max = demand2;
 					ind = j;
 				}
 			}
-			if(b > 0 && dyna[k][b-1].f > max){
-				dyna[k][b].f = dyna[k][b-1].f;
-			} else if(max > 0){
+			if (b > 0 && dyna[k][b - 1].f > max) {
+				dyna[k][b].f = dyna[k][b - 1].f;
+			} else if (max > 0) {
 				dyna[k][b].f = max;
 				dyna[k][b].sol = ind;
 			}
@@ -244,18 +246,18 @@ static void mck(int n, int m, int w)
 
 	/* backtrack */
 	b = w;
-	for(k = n; k > 0; k--){
-		while(b >= 0){
-			if(dyna[k][b].sol >= 0){
-				new_cpu_state[cpu_awake_proxy[k-1]] = dyna[k][b].sol;
-				b = b - wt[k-1][dyna[k][b].sol];
+	for (k = n; k > 0; k--) {
+		while (b >= 0) {
+			if (dyna[k][b].sol >= 0) {
+				new_cpu_state[cpu_awake_proxy[k - 1]] =
+				    dyna[k][b].sol;
+				b = b - wt[k - 1][dyna[k][b].sol];
 				break;
 			}
 			b--;
 		}
 	}
 }
-
 
 /********************************************************************************
  * mem_dynamic_prog - The mutator called every mutator interval.
@@ -290,14 +292,14 @@ void mem_dynamic_prog(int delta)
 	}
 
 	/* Suicide if req procs is 0 */
-	if(total_cpus_req == 0){
+	if (total_cpus_req == 0) {
 		total_cpus_req = 1;
 	}
 	total = total_cpus_req;
 
 	/* Wake up/put to sleep req procs */
 	wake_up_procs(total_cpus_req);
-	retire_procs(total_cpus_req,put_to_sleep,cpu_awake_proxy);
+	retire_procs(total_cpus_req, put_to_sleep, cpu_awake_proxy);
 
 	delta_based_demand_transform(total, delta);
 
@@ -305,9 +307,9 @@ void mem_dynamic_prog(int delta)
 	mck(total, total_states, delta);
 
 	/* Set up the states */
-	for(i = 0; i < total_online_cpus; i++){
-		if(info[i].awake == 0)
-		      continue;
+	for (i = 0; i < total_online_cpus; i++) {
+		if (info[i].awake == 0)
+			continue;
 		new_states[new_cpu_state[i]].cpus++;
 		cpu_set(i, new_states[new_cpu_state[i]].cpumask);
 	}
@@ -322,10 +324,10 @@ void mem_dynamic_prog(int delta)
 	write_sequnlock(&states_seq_lock);
 
 	for (i = 0; i < total_online_cpus; i++) {
-		if(put_to_sleep[i] == 1){
+		if (put_to_sleep[i] == 1) {
 			set_freq(i, 0);
 		}
-		if(info[i].awake == 0){
+		if (info[i].awake == 0) {
 			info[i].sleep_time++;
 			continue;
 		}
@@ -336,20 +338,19 @@ void mem_dynamic_prog(int delta)
 
 	/* Update debug log. by now, cur_cpu_state will be updated. */
 	p = get_log();
-	if(!p) {
+	if (!p) {
 		goto exit_debug;
 	}
 	p->entry.type = LOG_MUT;
 	p->entry.u.mut.interval = interval_count;
 	p->entry.u.mut.count = total_states;
-	for ( j = 0; j < total_states; j++ ) {
+	for (j = 0; j < total_states; j++) {
 		p->entry.u.mut.cpus_req[j] = demand[j];
 		p->entry.u.mut.cpus_given[j] = 0;
 	}
-	for ( i = 0; i < total_online_cpus; i++ ) {
+	for (i = 0; i < total_online_cpus; i++) {
 		p->entry.u.mut.cpus_given[cur_cpu_state[i]]++;
 	}
 exit_debug:
 	put_log(p);
 }
-

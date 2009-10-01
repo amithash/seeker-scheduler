@@ -34,7 +34,6 @@
 
 #include "sched_debug.h"
 
-
 /********************************************************************************
  * 			Function Declarations 					*
  ********************************************************************************/
@@ -74,11 +73,12 @@ static DECLARE_DELAYED_WORK(sched_debug_logger_work, sched_debug_logger);
 void sched_debug_logger(struct work_struct *w)
 {
 	spin_lock(&sched_debug_logger_lock);
-	printk("%s",debug_string);
+	printk("%s", debug_string);
 	debug_string[0] = '\0';
 	spin_unlock(&sched_debug_logger_lock);
-	if(sched_debug_logger_started)
-		schedule_delayed_work(&sched_debug_logger_work, SCHED_DEBUG_LOGGER_INTERVAL);	
+	if (sched_debug_logger_started)
+		schedule_delayed_work(&sched_debug_logger_work,
+				      SCHED_DEBUG_LOGGER_INTERVAL);
 }
 
 /********************************************************************************
@@ -92,7 +92,8 @@ void init_sched_debug_logger(void)
 	sched_debug_logger_started = 1;
 	spin_lock_init(&sched_debug_logger_lock);
 	init_timer_deferrable(&sched_debug_logger_work.timer);
-	schedule_delayed_work(&sched_debug_logger_work, SCHED_DEBUG_LOGGER_INTERVAL);	
+	schedule_delayed_work(&sched_debug_logger_work,
+			      SCHED_DEBUG_LOGGER_INTERVAL);
 	return;
 }
 
@@ -104,11 +105,11 @@ void init_sched_debug_logger(void)
  ********************************************************************************/
 void exit_sched_debug_logger(void)
 {
-	if(sched_debug_logger_started){
+	if (sched_debug_logger_started) {
 		sched_debug_logger_started = 0;
 		cancel_delayed_work(&sched_debug_logger_work);
 	}
-	if(spin_is_locked(&sched_debug_logger_lock))
+	if (spin_is_locked(&sched_debug_logger_lock))
 		spin_unlock(&sched_debug_logger_lock);
 }
 
@@ -120,13 +121,14 @@ void sched_debug_logger(struct work_struct *w)
 {
 	return;
 }
+
 void init_sched_debug_logger(void)
 {
 	return;
 }
+
 void exit_sched_debug_logger(void)
 {
 	return;
 }
 #endif
-

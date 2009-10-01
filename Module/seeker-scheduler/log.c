@@ -42,8 +42,7 @@
 int seeker_log_close(struct inode *in, struct file *f);
 int seeker_log_open(struct inode *in, struct file *f);
 ssize_t seeker_log_read(struct file *file_ptr, char __user * buf,
-			  size_t count, loff_t * offset);
-
+			size_t count, loff_t * offset);
 
 void log_free(struct log_block *p);
 
@@ -204,7 +203,7 @@ void purge_log(void)
  * it is freed and start_log is made to point to the next block. 
  ********************************************************************************/
 ssize_t seeker_log_read(struct file *file_ptr, char __user * buf,
-			  size_t count, loff_t * offset)
+			size_t count, loff_t * offset)
 {
 	struct log_block *log;
 	int i = 0;
@@ -288,8 +287,8 @@ int log_init(void)
 	}
 	debug("Creating cache");
 	log_cachep = kmem_cache_create("seeker_log_cache",
-					 sizeof(struct log_block),
-					 0, SLAB_PANIC, NULL);
+				       sizeof(struct log_block),
+				       0, SLAB_PANIC, NULL);
 	if (!log_cachep) {
 		error
 		    ("Could not create log cache, Debug unit will not be avaliable");
@@ -312,7 +311,7 @@ int log_init(void)
 	return 0;
 err:
 	error("Something went wrong in the log init section. "
-      "It will be unavaliable based on the implementation of the caller");
+	      "It will be unavaliable based on the implementation of the caller");
 	misc_deregister(&seeker_log_mdev);
 	return -1;
 }

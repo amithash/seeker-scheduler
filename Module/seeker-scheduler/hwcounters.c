@@ -126,8 +126,9 @@ int configure_counters(void)
  * Disables counters on all cpus. Must be called before exiting the module,
  * else re-use without reloading pmu/fpmu is not allowed. 
  ********************************************************************************/
-void exit_counters(void){
-	if(ON_EACH_CPU(disable_pmu_counters, NULL, 1, 1) < 0) {
+void exit_counters(void)
+{
+	if (ON_EACH_CPU(disable_pmu_counters, NULL, 1, 1) < 0) {
 		error("Counters could not be disabled");
 	}
 }
@@ -163,4 +164,3 @@ void clear_counters(int cpu)
 	counter_clear(sys_counters[cpu][1]);
 #endif
 }
-

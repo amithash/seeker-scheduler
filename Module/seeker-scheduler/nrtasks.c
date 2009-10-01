@@ -46,7 +46,7 @@ int get_tasks_load(void)
 {
 	unsigned long total = 0;
 	int i;
-	for(i = 0; i < total_online_cpus; i++) {
+	for (i = 0; i < total_online_cpus; i++) {
 #ifdef SEEKER_PLUGIN_PATCH
 		total += get_cpu_nr_running(i);
 #endif
@@ -56,10 +56,10 @@ int get_tasks_load(void)
 
 int get_state_tasks(int state)
 {
-	unsigned int i; 
+	unsigned int i;
 	unsigned long tasks = 0;
 	cpumask_t mask = states[state].cpumask;
-	for_each_cpu_mask_nr(i,mask){
+	for_each_cpu_mask_nr(i, mask) {
 #ifdef SEEKER_PLUGIN_PATCH
 		tasks += get_cpu_nr_running(i);
 #endif
@@ -69,15 +69,15 @@ int get_state_tasks(int state)
 
 int get_state_tasks_exself(int state)
 {
-	unsigned int i; 
+	unsigned int i;
 	unsigned long tasks = 0;
 	cpumask_t mask = states[state].cpumask;
-	for_each_cpu_mask_nr(i,mask){
+	for_each_cpu_mask_nr(i, mask) {
 #ifdef SEEKER_PLUGIN_PATCH
 		tasks += get_cpu_nr_running(i);
 #endif
 	}
-	if(tasks)
+	if (tasks)
 		tasks--;
 	return tasks;
 }
@@ -86,8 +86,7 @@ int get_cpu_tasks(int cpu)
 {
 #ifdef SEEKER_PLUGIN_PATCH
 	return get_cpu_nr_running(cpu);
-#else 
+#else
 	return 0;
 #endif
 }
-

@@ -32,4 +32,3 @@ void exit_mig_pool(void);
 void put_work(struct task_struct *ts, cpumask_t mask);
 
 #endif
-

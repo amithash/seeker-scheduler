@@ -110,7 +110,6 @@ void wake_up_procs(int req_cpus);
 
 void retire_procs(int req_cpus, int *put_to_sleep, int *cpu_awake_proxy);
 
-
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
@@ -128,17 +127,17 @@ static int transition_direction(void)
 	int pre_level = 0;
 	int i;
 
-	for(i=0;i<total_states;i++){
-		req_level += demand[i] * (i+1);
+	for (i = 0; i < total_states; i++) {
+		req_level += demand[i] * (i + 1);
 	}
-	for(i=0;i<total_online_cpus;i++){
-		if(info[i].sleep_time > 0)
+	for (i = 0; i < total_online_cpus; i++) {
+		if (info[i].sleep_time > 0)
 			continue;
 		pre_level += cur_cpu_state[i] + 1;
 	}
-	if(req_level > pre_level)
+	if (req_level > pre_level)
 		return 1;
-	if(req_level < pre_level)
+	if (req_level < pre_level)
 		return -1;
 	return 0;
 }
@@ -179,29 +178,31 @@ static void update_state_matrix(int delta, int direction)
 {
 	int i = 0;
 	int j = 0;
-	int left = (((direction * direction) - direction + 2) * total_states) >> 1;
-	int right = (((direction * direction) + direction + 2) * total_states) >> 1;
+	int left =
+	    (((direction * direction) - direction + 2) * total_states) >> 1;
+	int right =
+	    (((direction * direction) + direction + 2) * total_states) >> 1;
 
 	for (i = 0; i < total_online_cpus; i++) {
 		/* 0 to L[i]-delta */
-		for(j = 0; j < (new_cpu_state[i] - delta); j++){
+		for (j = 0; j < (new_cpu_state[i] - delta); j++) {
 			state_matrix[i][j] = 0;
 		}
 		/* L-Delta to L[i] */
-		for( ; j < new_cpu_state[i]; j++){
-			state_matrix[i][j] =  left + j - new_cpu_state[i];
+		for (; j < new_cpu_state[i]; j++) {
+			state_matrix[i][j] = left + j - new_cpu_state[i];
 		}
 
 		/* L[i] */
 		state_matrix[i][j++] = (total_states << 1);
 
 		/* L[i] to L[i] + delta */
-		for( ; j < total_states && j <= (new_cpu_state[i] + delta); j++ ){
-			state_matrix[i][j] = right + new_cpu_state[i] - j;	
+		for (; j < total_states && j <= (new_cpu_state[i] + delta); j++) {
+			state_matrix[i][j] = right + new_cpu_state[i] - j;
 		}
 
 		/* L[i] + delta to T */
-		for( ; j < total_states; j++) {
+		for (; j < total_states; j++) {
 			state_matrix[i][j] = 0;
 		}
 
@@ -217,10 +218,10 @@ static void update_state_matrix(int delta, int direction)
  ********************************************************************************/
 static void update_state_weight(void)
 {
-	int i,j;
-	for(j = 0; j < total_states; j++) {
+	int i, j;
+	for (j = 0; j < total_states; j++) {
 		state_weight[j] = 0;
-		for(i=0;i < total_online_cpus; i++){
+		for (i = 0; i < total_online_cpus; i++) {
 			state_weight[j] += state_matrix[i][j];
 		}
 	}
@@ -240,8 +241,8 @@ static int get_left_distance(int pos)
 {
 	int i;
 	int ret = -1;
-	for (i = pos - 1; i >= 0; i--){
-		if(state_weight[i] != 0){
+	for (i = pos - 1; i >= 0; i--) {
+		if (state_weight[i] != 0) {
 			ret = i;
 			break;
 		}
@@ -265,7 +266,7 @@ static int get_right_distance(int pos)
 	int ret = -1;
 
 	for (i = pos + 1; i < total_states; i++) {
-		if(state_weight[i] != 0){
+		if (state_weight[i] != 0) {
 			ret = i;
 			break;
 		}
@@ -286,13 +287,13 @@ static int get_right_distance(int pos)
  ********************************************************************************/
 static int closest(int pos, int left, int right)
 {
-	if(left == -1 && right == -1){
+	if (left == -1 && right == -1) {
 		return -1;
 	}
-	if(left == -1){
+	if (left == -1) {
 		return right;
 	}
-	if(right == -1){
+	if (right == -1) {
 		return left;
 	}
 	return (pos - left) > (right - pos) ? right : left;
@@ -317,33 +318,34 @@ static void update_demand_field(int dir)
 	int left;
 	int right;
 	int friend = -1;
-	for(i = 0; i < total_states; i++) {
+	for (i = 0; i < total_states; i++) {
 		demand_field[i] = demand[i];
 		proxy_source[i] = i;
 	}
 
-	for(i = 0; i < total_states; i++) {
-		if(demand_field[i] != 0 && state_weight[i] == 0){
+	for (i = 0; i < total_states; i++) {
+		if (demand_field[i] != 0 && state_weight[i] == 0) {
 			left = get_left_distance(i);
 			right = get_right_distance(i);
-			if(left == -1 && right == -1){
+			if (left == -1 && right == -1) {
 				continue;
-			} if(dir == 1 && left != -1){
+			}
+			if (dir == 1 && left != -1) {
 				friend = left;
-			} else if(dir == 1){
+			} else if (dir == 1) {
 				friend = right;
-			} else if(dir == 0 && left == -1){
+			} else if (dir == 0 && left == -1) {
 				friend = right;
-			} else if(dir == 0 && right == -1){
+			} else if (dir == 0 && right == -1) {
 				friend = left;
-			} else if(dir == 0){
-				friend = closest(i,left,right);
-			} else if(dir == -1 && right != -1){
+			} else if (dir == 0) {
+				friend = closest(i, left, right);
+			} else if (dir == -1 && right != -1) {
 				friend = right;
-			} else if(dir == -1){
+			} else if (dir == -1) {
 				friend = left;
 			}
-			if(friend == -1){
+			if (friend == -1) {
 				continue;
 			}
 			/* Closest member inherits the demand */
@@ -364,17 +366,17 @@ static void update_demand_field(int dir)
  ********************************************************************************/
 static void update_winning_procs(void)
 {
-	int i,j;
+	int i, j;
 	int max_val;
 	int max;
 	int val;
-	for(j = 0; j < total_states; j++) {
+	for (j = 0; j < total_states; j++) {
 		max = -1;
 		max_val = 0;
-		for(i = 0; i < total_online_cpus; i++){
+		for (i = 0; i < total_online_cpus; i++) {
 			val = selected_cpus[i] * state_matrix[i][j];
 
-			if(val > max_val){
+			if (val > max_val) {
 				max_val = val;
 				max = i;
 			}
@@ -395,18 +397,18 @@ static int get_winning_state(void)
 	int max_weight = 0;
 	int max_proc = 0;
 	int max = -1;
-	int weight; 
-	for(j = 0; j < total_states; j++) {
+	int weight;
+	for (j = 0; j < total_states; j++) {
 		weight = state_weight[j] * demand_field[j];
 
-		if(weight > max_weight){
+		if (weight > max_weight) {
 			max_weight = weight;
 			max = j;
 			max_proc = state_matrix[winning_procs[j]][j];
 			continue;
-		} 
-		if( weight == max_weight){
-			if(state_matrix[winning_procs[j]][j] > max_proc){
+		}
+		if (weight == max_weight) {
+			if (state_matrix[winning_procs[j]][j] > max_proc) {
 				max_weight = weight;
 				max = j;
 				max_proc = state_matrix[winning_procs[j]][j];
@@ -469,15 +471,16 @@ void greedy_delta(int delta)
 	direction = transition_direction();
 
 	/* Now for each delta to spend, hold an auction */
-	for(total_iter = 0; total_iter < load; total_iter++){
+	for (total_iter = 0; total_iter < load; total_iter++) {
 
-		if(total < MIN_REQUESTS || load <= 0 || delta <= 0 || total_demand <= 0){
+		if (total < MIN_REQUESTS || load <= 0 || delta <= 0
+		    || total_demand <= 0) {
 			break;
 		}
 		debug("Iteration %d", total_iter);
 
 		/* Compute the state matrix */
-		update_state_matrix(delta,direction);
+		update_state_matrix(delta, direction);
 
 		update_state_weight();
 
@@ -488,14 +491,14 @@ void greedy_delta(int delta)
 
 		winner = get_winning_state();
 
-		if (winner < 0 || winner >= total_states){
+		if (winner < 0 || winner >= total_states) {
 			debug("Auction ended with invalid state");
 			break;
 		}
 
 		winner_proc = winning_procs[winner];
 
-		if (winner_proc < 0 || winner_proc >= total_online_cpus){
+		if (winner_proc < 0 || winner_proc >= total_online_cpus) {
 			debug("Auction ended with invalid best proc!");
 			break;
 		}
@@ -509,7 +512,6 @@ void greedy_delta(int delta)
 		debug("Winner is state %d choosing cpu %d", winner,
 		      winner_proc);
 
-
 		total_selected_cpus++;
 
 		/* Subtract that from the delta */
@@ -518,16 +520,16 @@ void greedy_delta(int delta)
 		/* Assign the new cpus state to be the winner */
 		new_cpu_state[winner_proc] = winner;
 
-		/* Continue the auction if delta > 0  or till all cpus are allocated */
+		/* Continue the auction if delta > 0  
+		 * or till all cpus are allocated */
 	}
 
- 
-	for(i=0; i < total_online_cpus; i++){
-		if(total_selected_cpus >= load)
+	for (i = 0; i < total_online_cpus; i++) {
+		if (total_selected_cpus >= load)
 			break;
-		if(selected_cpus[i] == 0)
+		if (selected_cpus[i] == 0)
 			continue;
-		if(info[i].sleep_time == 0){
+		if (info[i].sleep_time == 0) {
 			total_selected_cpus++;
 			selected_cpus[i] = 0;
 		}
@@ -585,21 +587,19 @@ void greedy_delta(int delta)
 
 	/* Update debug log. by now, cur_cpu_state will be updated. */
 	p = get_log();
-	if(!p) {
+	if (!p) {
 		goto exit_debug;
 	}
 	p->entry.type = LOG_MUT;
 	p->entry.u.mut.interval = interval_count;
 	p->entry.u.mut.count = total_states;
-	for ( j = 0; j < total_states; j++ ) {
+	for (j = 0; j < total_states; j++) {
 		p->entry.u.mut.cpus_req[j] = demand[j];
 		p->entry.u.mut.cpus_given[j] = 0;
 	}
-	for ( i = 0; i < total_online_cpus; i++ ) {
+	for (i = 0; i < total_online_cpus; i++) {
 		p->entry.u.mut.cpus_given[cur_cpu_state[i]]++;
 	}
 exit_debug:
 	put_log(p);
 }
-
-

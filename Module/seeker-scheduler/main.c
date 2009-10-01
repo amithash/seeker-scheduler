@@ -117,44 +117,46 @@ static int scheduler_init(void)
 
 #endif
 
-	if(mutation_method == ONDEMAND_MUTATOR  || 
-	   mutation_method == CONSERVATIVE_MUTATOR ){
+	if (mutation_method == ONDEMAND_MUTATOR ||
+	    mutation_method == CONSERVATIVE_MUTATOR) {
 		warn("scheduling is disabled for ondemand or conservative");
 		disable_scheduling = 1;
 	}
 
-	switch(scheduling_method){
-		case LADDER_SCHEDULING:
-		case SELECT_SCHEDULING:
-		case ADAPTIVE_LADDER_SCHEDULING:
-			break;
-		case DISABLE_SCHEDULING:
-			disable_scheduling = 1;
-			break;
-		default:
-			error("Invalid scheduling method selected. Supported"
-			      "Methods: %d (Ladder), %d (Select),%d (Adaptive ladder), "
-			      "%d(disable scheduling)",LADDER_SCHEDULING, SELECT_SCHEDULING,
-			      ADAPTIVE_LADDER_SCHEDULING,DISABLE_SCHEDULING);
-			return -ENOTSUPP;
+	switch (scheduling_method) {
+	case LADDER_SCHEDULING:
+	case SELECT_SCHEDULING:
+	case ADAPTIVE_LADDER_SCHEDULING:
+		break;
+	case DISABLE_SCHEDULING:
+		disable_scheduling = 1;
+		break;
+	default:
+		error("Invalid scheduling method selected. Supported"
+		      "Methods: %d (Ladder), %d (Select),%d (Adaptive ladder), "
+		      "%d(disable scheduling)", LADDER_SCHEDULING,
+		      SELECT_SCHEDULING, ADAPTIVE_LADDER_SCHEDULING,
+		      DISABLE_SCHEDULING);
+		return -ENOTSUPP;
 	}
 
 	total_online_cpus = num_online_cpus();
 
-	if(allowed_cpus != 0){
-		if(allowed_cpus > 0 && allowed_cpus <= total_online_cpus){
+	if (allowed_cpus != 0) {
+		if (allowed_cpus > 0 && allowed_cpus <= total_online_cpus) {
 			total_online_cpus = allowed_cpus;
 		} else {
-			warn("allowed_cpus has to be within (0,%d]",total_online_cpus);
+			warn("allowed_cpus has to be within (0,%d]",
+			     total_online_cpus);
 		}
 	}
 
 	cpus_clear(total_online_mask);
-	for(i=0;i<total_online_cpus;i++){
-		cpu_set(i,total_online_mask);
+	for (i = 0; i < total_online_cpus; i++) {
+		cpu_set(i, total_online_mask);
 	}
 
-	info("Total online mask = %x\n",CPUMASK_TO_UINT(total_online_mask));
+	info("Total online mask = %x\n", CPUMASK_TO_UINT(total_online_mask));
 
 	init_mig_pool();
 
@@ -181,14 +183,13 @@ static int scheduler_init(void)
 	if (log_init() != 0)
 		return -ENODEV;
 
-	if(insert_probes()){
+	if (insert_probes()) {
 		return -ENOSYS;
 	}
 
 	init_sched_debug_logger();
 
-
-  return 0;
+	return 0;
 }
 
 /*******************************************************************************
@@ -206,9 +207,9 @@ static void scheduler_exit(void)
 
 	stop_state_logger();
 
-  if(remove_probes()){
-    error("ERROR: Probes not properly removed");
-  }
+	if (remove_probes()) {
+		error("ERROR: Probes not properly removed");
+	}
 
 	log_exit();
 	debug("Exiting the counters");
@@ -229,26 +230,24 @@ MODULE_PARM_DESC(change_interval,
 		 "Interval in ms to change the global state (Default: 1000)");
 
 module_param(mutation_method, int, 0444);
-MODULE_PARM_DESC(mutation_method, 
-		"Type of mutation: Greedy delta (default) - 0, "
-		"dynamic programming with memort - 1 "
-		"ondemand - 2, "
-		"conservative - 3"
-    "static (disable mutation) - 4");
+MODULE_PARM_DESC(mutation_method,
+		 "Type of mutation: Greedy delta (default) - 0, "
+		 "dynamic programming with memort - 1 "
+		 "ondemand - 2, "
+		 "conservative - 3" "static (disable mutation) - 4");
 
 module_param(base_state, int, 0444);
-MODULE_PARM_DESC(base_state,
-		"The base state the scheduler/mutator shall take");
+MODULE_PARM_DESC(base_state, "The base state the scheduler/mutator shall take");
 
 module_param(allowed_cpus, int, 0444);
-MODULE_PARM_DESC(allowed_cpus, "Limit cpus to this number, default is all online cpus.");
+MODULE_PARM_DESC(allowed_cpus,
+		 "Limit cpus to this number, default is all online cpus.");
 
 module_param(scheduling_method, int, 0444);
 MODULE_PARM_DESC(scheduling_method, "Set the scheduling method:"
-			"0 - Ladder scheduling (default)"
-			"1 - Select scheduling"
-			"2 - adaptive ladder scheduling"
-			"3 - disable scheduling");
+		 "0 - Ladder scheduling (default)"
+		 "1 - Select scheduling"
+		 "2 - adaptive ladder scheduling" "3 - disable scheduling");
 
 module_param_array(init_layout, int, &init_layout_length, 0444);
 MODULE_PARM_DESC(init_layout, "Use to set a static_layout to use");

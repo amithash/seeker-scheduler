@@ -55,10 +55,11 @@ extern int total_states;
  ********************************************************************************/
 inline int is_state_free(int old, int state)
 {
-	if(old == state && states[state].cpus > 0 && 
-		get_state_tasks_exself(state) < states[state].cpus)
+	if (old == state && states[state].cpus > 0 &&
+	    get_state_tasks_exself(state) < states[state].cpus)
 		return 1;
-	if(states[state].cpus > 0 && get_state_tasks(state) < states[state].cpus)
+	if (states[state].cpus > 0
+	    && get_state_tasks(state) < states[state].cpus)
 		return 1;
 
 	return 0;
@@ -78,28 +79,27 @@ int lowest_loaded_state(void)
 	int this_load;
 	int i;
 
-	for(i=0;i<total_states;i++){
-		if(states[i].cpus == 0)
+	for (i = 0; i < total_states; i++) {
+		if (states[i].cpus == 0)
 			continue;
 
 		this_load = get_state_tasks(i) - states[i].cpus;
-		if(min_found == 0){
+		if (min_found == 0) {
 			min_load = this_load;
 			min_state = i;
 			min_found = 1;
 			continue;
 		}
-		if(this_load < min_load){
+		if (this_load < min_load) {
 			min_load = this_load;
 			min_state = i;
-		} 
+		}
 	}
-	if(min_found == 0)
+	if (min_found == 0)
 		return -1;
 
 	return min_state;
 }
-		
 
 /********************************************************************************
  * get_lower_state - Get a state lower than current state.
@@ -115,11 +115,11 @@ int search_state_down(int old_state, int req_state)
 	int new_state = req_state;
 	int i;
 	for (i = new_state; i >= 0; i--) {
-		if (is_state_free(old_state,i))
+		if (is_state_free(old_state, i))
 			return i;
 	}
 	for (i = new_state + 1; i < total_states; i++) {
-		if (is_state_free(old_state,i))
+		if (is_state_free(old_state, i))
 			return i;
 	}
 	return lowest_loaded_state();
@@ -139,11 +139,11 @@ inline int search_state_up(int old_state, int req_state)
 	int new_state = req_state;
 	int i;
 	for (i = new_state; i < total_states; i++) {
-		if (is_state_free(old_state,i))
+		if (is_state_free(old_state, i))
 			return i;
 	}
 	for (i = new_state - 1; i >= 0; i--) {
-		if (is_state_free(old_state,i))
+		if (is_state_free(old_state, i))
 			return i;
 	}
 	return lowest_loaded_state();
@@ -161,18 +161,18 @@ inline int search_state_closest(int old_state, int req_state)
 {
 	int state1, state2;
 	int ret_state;
-	if (is_state_free(old_state,req_state))
+	if (is_state_free(old_state, req_state))
 		return req_state;
-	state1 = search_state_down(old_state,req_state);
-	state2 = search_state_up(old_state,req_state);
-	if(state1 == -1 && state2 == -1)
+	state1 = search_state_down(old_state, req_state);
+	state2 = search_state_up(old_state, req_state);
+	if (state1 == -1 && state2 == -1)
 		return lowest_loaded_state();
-	if(state1 == -1)
+	if (state1 == -1)
 		return state2;
-	if(state2 == -1)
+	if (state2 == -1)
 		return state1;
-	ret_state = ABS(req_state - state1) < ABS(req_state - state2) ? state1 : state2;
+	ret_state =
+	    ABS(req_state - state1) < ABS(req_state - state2) ? state1 : state2;
 
 	return ret_state;
 }
-

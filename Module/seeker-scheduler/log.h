@@ -52,4 +52,3 @@ struct log_block *get_log(void);
 void put_log(struct log_block *p);
 
 #endif
-

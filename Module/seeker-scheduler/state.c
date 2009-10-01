@@ -104,14 +104,13 @@ struct scpufreq_user seeker_scheduler_user = {
 };
 
 /* holds the jiffies of the last time data was read. */
-unsigned long long current_jiffies[NR_CPUS] = {0};
+unsigned long long current_jiffies[NR_CPUS] = { 0 };
 
 /* Indicates that the state logger is running */
 int state_logger_started = 0;
 
 /* states logger work */
 static DECLARE_DELAYED_WORK(state_logger_work, state_logger);
-
 
 /********************************************************************************
  * 				Functions					*
@@ -160,7 +159,7 @@ int hint_get(int state)
  ********************************************************************************/
 void hint_clear(int state)
 {
-	atomic_set(&(states[state].demand),0);
+	atomic_set(&(states[state].demand), 0);
 }
 
 /********************************************************************************
@@ -184,7 +183,7 @@ void usage_inc(int state)
  ********************************************************************************/
 void usage_dec(int state)
 {
-	if(usage_get(state) != 0)
+	if (usage_get(state) != 0)
 		atomic_dec(&(states[state].usage));
 }
 
@@ -207,9 +206,8 @@ int usage_get(int state)
  ********************************************************************************/
 void usage_clear(int state)
 {
-	atomic_set(&(states[state].usage),0);
+	atomic_set(&(states[state].usage), 0);
 }
-
 
 /********************************************************************************
  * log_cpu_state - log the state of cpu. 
@@ -220,21 +218,23 @@ void usage_clear(int state)
 void log_cpu_state(int cpu)
 {
 	struct log_block *p = NULL;
-	if(jiffies == current_jiffies[cpu])
+	if (jiffies == current_jiffies[cpu])
 		return;
 
 	p = get_log();
-	if(p){
+	if (p) {
 		p->entry.type = LOG_STATE;
 		p->entry.u.state.cpu = cpu;
 		p->entry.u.state.state = cur_cpu_state[cpu];
-		p->entry.u.state.residency_time = (jiffies - current_jiffies[cpu]) * 1000;
-		p->entry.u.state.residency_time = p->entry.u.state.residency_time / HZ;
+		p->entry.u.state.residency_time =
+		    (jiffies - current_jiffies[cpu]) * 1000;
+		p->entry.u.state.residency_time =
+		    p->entry.u.state.residency_time / HZ;
 	}
 	current_jiffies[cpu] = jiffies;
 	put_log(p);
 }
-	
+
 /********************************************************************************
  * seeker_cpufreq_inform - The inform callback function for seeker_cpufreq,
  * @cpu - The cpu for which frequency has changed.
@@ -247,11 +247,11 @@ void log_cpu_state(int cpu)
  ********************************************************************************/
 int seeker_cpufreq_inform(int cpu, int state)
 {
-	debug("State of cpu %d changed to %d",cpu,state);
-	if(cur_cpu_state[cpu] != state){
+	debug("State of cpu %d changed to %d", cpu, state);
+	if (cur_cpu_state[cpu] != state) {
 		write_seqlock(&states_seq_lock);
-		cpu_set(cpu,states[state].cpumask);
-		cpu_clear(cpu,states[cur_cpu_state[cpu]].cpumask);
+		cpu_set(cpu, states[state].cpumask);
+		cpu_clear(cpu, states[cur_cpu_state[cpu]].cpumask);
 		states[state].cpus++;
 		states[cur_cpu_state[cpu]].cpus--;
 		cur_cpu_state[cpu] = state;
@@ -275,7 +275,7 @@ void state_logger(struct work_struct *w)
 {
 	int i;
 
-	for (i=0; i<total_online_cpus; i++){
+	for (i = 0; i < total_online_cpus; i++) {
 		log_cpu_state(i);
 	}
 
@@ -292,7 +292,7 @@ void state_logger(struct work_struct *w)
  ********************************************************************************/
 void start_state_logger(void)
 {
-	if(state_logger_started)
+	if (state_logger_started)
 		return;
 	init_timer_deferrable(&state_logger_work.timer);
 	schedule_delayed_work(&state_logger_work, LOGGER_INTERVAL);
@@ -306,12 +306,11 @@ void start_state_logger(void)
  ********************************************************************************/
 void stop_state_logger(void)
 {
-	if(!state_logger_started)
+	if (!state_logger_started)
 		return;
 	state_logger_started = 0;
 	cancel_delayed_work(&state_logger_work);
 }
-
 
 /********************************************************************************
  * init_cpu_states - initialize the states sub system. 
@@ -328,7 +327,7 @@ int init_cpu_states(void)
 
 	seqlock_init(&states_seq_lock);
 
-	for(i = 0; i < total_online_cpus; i++) {
+	for (i = 0; i < total_online_cpus; i++) {
 		current_jiffies[i] = jiffies;
 	}
 
@@ -342,11 +341,9 @@ int init_cpu_states(void)
 	high_state = total_states - 1;
 	mid_state = (total_states >> 1);
 
-	
-	base_state = BOUNDS(base_state,0,total_states);
+	base_state = BOUNDS(base_state, 0, total_states);
 
-	info("Using base state as: %d",base_state);
-
+	info("Using base state as: %d", base_state);
 
 	for (i = 0; i < total_states; i++) {
 		states[i].state = i;
@@ -357,20 +354,20 @@ int init_cpu_states(void)
 	}
 
 	/* init cpu states */
-	if(init_layout_length == 0){
-		for(i = 0; i < total_online_cpus; i++){
+	if (init_layout_length == 0) {
+		for (i = 0; i < total_online_cpus; i++) {
 			init_layout[i] = 0;
 		}
 		init_layout_length = total_online_cpus;
 	}
 
-	if(init_layout_length > total_online_cpus){
+	if (init_layout_length > total_online_cpus) {
 		init_layout_length = total_online_cpus;
 	}
 
 	for (i = 0; i < init_layout_length; i++) {
-		init_layout[i] = BOUNDS(init_layout[i],0,total_states);
-		info("init_layout[%d]=%d",i,init_layout[i]);
+		init_layout[i] = BOUNDS(init_layout[i], 0, total_states);
+		info("init_layout[%d]=%d", i, init_layout[i]);
 
 		set_freq(i, init_layout[i]);
 		cpu_set(i, states[init_layout[i]].cpumask);
@@ -379,14 +376,14 @@ int init_cpu_states(void)
 	}
 
 	for (i = init_layout_length; i < total_online_cpus; i++) {
-		info("init_layout[%d]=%d",i,0);
+		info("init_layout[%d]=%d", i, 0);
 		set_freq(i, 0);
 		cpu_set(i, states[0].cpumask);
 		states[0].cpus++;
 		cur_cpu_state[i] = 0;
 	}
 
-	if(register_scpufreq_user(&seeker_scheduler_user)){
+	if (register_scpufreq_user(&seeker_scheduler_user)) {
 		error("Registering with seeker_cpufreq failed.");
 		return -1;
 	}
@@ -404,4 +401,3 @@ void exit_cpu_states(void)
 {
 	deregister_scpufreq_user(&seeker_scheduler_user);
 }
-

@@ -40,7 +40,6 @@
 void init_mutator(void);
 void exit_mutator(void);
 
-
 /* sleep_time - intervals the cpu has been sleeping 
  * awake - 1 if cpu is awake, 0 otherwise 
  */
@@ -49,6 +48,5 @@ struct proc_info {
 	unsigned int awake;
 	unsigned int awake_time;
 };
-
 
 #endif

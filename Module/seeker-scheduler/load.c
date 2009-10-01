@@ -82,9 +82,12 @@ void init_idle_logger(void)
 unsigned int get_cpu_load(int cpu)
 {
 	unsigned total_time;
-	unsigned int cur_idle_time =
+	unsigned int cur_idle_time;
+	unsigned int this_time;
+
+	cur_idle_time =
 	    kstat_cpu(cpu).cpustat.idle + kstat_cpu(cpu).cpustat.iowait;
-		unsigned int this_time = cur_idle_time - CPU_INFO(cpu)->prev_idle_time;
+	this_time = cur_idle_time - CPU_INFO(cpu)->prev_idle_time;
 	CPU_INFO(cpu)->prev_idle_time = cur_idle_time;
 	total_time = msecs_to_jiffies(change_interval);
 

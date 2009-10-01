@@ -71,18 +71,17 @@ void conservative(void)
 
 	for (i = 0; i < total_online_cpus; i++) {
 		load = get_cpu_load(i);
-		if( load > LOAD_0_875 ) {
-			new_cpu_state[i] = cur_cpu_state[i] == (total_states -1) ? 
-				total_states-1 : 
-				cur_cpu_state[i]+1;
+		if (load > LOAD_0_875) {
+			new_cpu_state[i] =
+			    cur_cpu_state[i] ==
+			    (total_states - 1) ? total_states -
+			    1 : cur_cpu_state[i] + 1;
 		} else {
 			new_cpu_state[i] = cur_cpu_state[i] == 0 ?
-				0 :
-				cur_cpu_state[i] - 1;
+			    0 : cur_cpu_state[i] - 1;
 		}
-		if(cur_cpu_state[i] != new_cpu_state[i]){
-			set_freq(i,new_cpu_state[i]);
+		if (cur_cpu_state[i] != new_cpu_state[i]) {
+			set_freq(i, new_cpu_state[i]);
 		}
 	}
 }
-

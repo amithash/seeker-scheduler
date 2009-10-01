@@ -48,19 +48,20 @@ extern spinlock_t sched_debug_logger_lock;
  *   3. Keep messages short and sweet not an autobiography. 
  */
 
-#if defined(SCHED_DEBUG) 
-#define sched_debug(str,a...) do{ 								\
-					int __len = strlen(debug_string) + 1;			\
-					char __tmp_str[100];		 			\
-					__len += sprintf(__tmp_str,"SAD: " str "\n",## a);    	\
-					if( __len < SCHED_DEBUG_LEN ){				\
-						spin_lock(&sched_debug_logger_lock);		\
-						strcat(debug_string,__tmp_str);			\
-						spin_unlock(&sched_debug_logger_lock);		\
-					}							\
-				} while(0)
+#if defined(SCHED_DEBUG)
+#define sched_debug(str,a...)						\
+	do{ 								\
+		int __len = strlen(debug_string) + 1;			\
+		char __tmp_str[100];		 			\
+		__len += sprintf(__tmp_str,"SAD: " str "\n",## a);    	\
+		if( __len < SCHED_DEBUG_LEN ){				\
+			spin_lock(&sched_debug_logger_lock);		\
+			strcat(debug_string,__tmp_str);			\
+			spin_unlock(&sched_debug_logger_lock);		\
+			}						\
+	} while(0)
 #else
-#define sched_debug(str,a...) 
+#define sched_debug(str,a...)
 #endif
 
 #endif

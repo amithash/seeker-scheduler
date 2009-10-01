@@ -58,7 +58,6 @@ void inst_scheduler_tick(void);
  * 			Global Datastructures 					*
  ********************************************************************************/
 
-
 /* Per-cpu task_structs updated by __switch_to */
 struct task_struct *ts[NR_CPUS] = { NULL };
 
@@ -107,7 +106,6 @@ extern u64 pmu_val[NR_CPUS][3];
 /* state.c: Current state of cpu's */
 extern int cur_cpu_state[NR_CPUS];
 
-
 /********************************************************************************
  * 				Functions					*
  ********************************************************************************/
@@ -121,17 +119,16 @@ extern int cur_cpu_state[NR_CPUS];
  *******************************************************************************/
 int is_blacklist_task(struct task_struct *p)
 {
-	if(strcmp(p->comm,"debugd") == 0)
+	if (strcmp(p->comm, "debugd") == 0)
 		return 1;
-	if(strncmp(p->comm,"events/",7) == 0)
+	if (strncmp(p->comm, "events/", 7) == 0)
 		return 1;
-	if(strncmp(p->comm,"migration/",10) == 0)
+	if (strncmp(p->comm, "migration/", 10) == 0)
 		return 1;
-	if(strncmp(p->comm,"ksoftirqd/",10) == 0)
+	if (strncmp(p->comm, "ksoftirqd/", 10) == 0)
 		return 1;
 	return 0;
 }
-
 
 /*******************************************************************************
  * inst_scheduler_tick - probe for scheduler_tick
@@ -159,7 +156,7 @@ void inst_release_thread(struct task_struct *t)
 	struct log_block *p = NULL;
 	if (TS_MEMBER(t, seeker_scheduled) != SEEKER_MAGIC_NUMBER)
 		goto out;
-	if(is_blacklist_task(t))
+	if (is_blacklist_task(t))
 		goto out;
 	p = get_log();
 	if (p) {
@@ -195,7 +192,7 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	    || TS_MEMBER(ts[cpu], seeker_scheduled) != SEEKER_MAGIC_NUMBER)
 		return 0;
 
-	if(is_blacklist_task(ts[cpu]))
+	if (is_blacklist_task(ts[cpu]))
 		return 0;
 
 	read_counters(cpu);
@@ -208,7 +205,8 @@ int inst_schedule(struct kprobe *p, struct pt_regs *regs)
 	if (TS_MEMBER(ts[cpu], inst) > INST_THRESHOLD
 	    || TS_MEMBER(ts[cpu], cpustate) != cur_cpu_state[cpu]
 	    || TS_MEMBER(ts[cpu], interval) != interval_count) {
-		set_tsk_need_resched(ts[cpu]);	/* lazy, as we are anyway getting into schedule */
+		set_tsk_need_resched(ts[cpu]);	/* lazy, as we are anyway 
+						   getting into schedule */
 	}
 	return 0;
 }
@@ -234,7 +232,7 @@ void inst_sched_fork(struct task_struct *new, int clone_flags)
 	TS_MEMBER(new, ref_cy) = 0;
 	TS_MEMBER(new, re_cy) = 0;
 
-	if(is_blacklist_task(new) == 0){
+	if (is_blacklist_task(new) == 0) {
 		TS_MEMBER(new, seeker_scheduled) = SEEKER_MAGIC_NUMBER;
 		initial_mask(new);
 	}
@@ -257,8 +255,8 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 	int cpu = smp_processor_id();
 	ts[cpu] = to;
 
-	if(TS_MEMBER(to, seeker_scheduled) == SEEKER_MAGIC_NUMBER &&
-		is_blacklist_task(to) == 0)
+	if (TS_MEMBER(to, seeker_scheduled) == SEEKER_MAGIC_NUMBER &&
+	    is_blacklist_task(to) == 0)
 		usage_inc(TS_MEMBER(to, cpustate));
 
 	read_counters(cpu);
@@ -271,12 +269,12 @@ void inst___switch_to(struct task_struct *from, struct task_struct *to)
 		goto get_out;
 	}
 
-	if(is_blacklist_task(from))
+	if (is_blacklist_task(from))
 		goto get_out;
 
 	usage_dec(TS_MEMBER(from, cpustate));
 
-	if(is_blacklist_task(from) == 0)
+	if (is_blacklist_task(from) == 0)
 		put_mask_from_stats(from);
 get_out:
 	jprobe_return();
@@ -284,7 +282,7 @@ get_out:
 
 int insert_probes(void)
 {
-  int probe_ret;
+	int probe_ret;
 
 	/* One of the good uses of goto! For each of the registering, 
 	 * if they fail, we still need to de-register anything done
@@ -323,7 +321,7 @@ int insert_probes(void)
 		goto no_release_thread;
 	}
 	info("Registering of kp_schedule was successful");
-  return 0;
+	return 0;
 
 no_release_thread:
 	unregister_kprobe(&kp_schedule);
@@ -348,7 +346,5 @@ int remove_probes(void)
 	unregister_jprobe(&jp_release_thread);
 	debug("Debug exiting");
 
-  return 0;
+	return 0;
 }
-
-

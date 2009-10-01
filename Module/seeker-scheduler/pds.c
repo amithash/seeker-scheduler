@@ -87,7 +87,6 @@ extern int base_state;
  * 				Functions					*
  ********************************************************************************/
 
-
 /********************************************************************************
  * put_mask_from_stats - The fate of "ts" shall be decided!
  * @ts - The task 
@@ -109,9 +108,9 @@ void put_mask_from_stats(struct task_struct *ts)
 	u64 tasks_interval = 0;
 	cpumask_t mask = CPU_MASK_NONE;
 
-	#if defined(SCHED_DEBUG)
+#if defined(SCHED_DEBUG)
 	int i;
-	#endif
+#endif
 	/* Do not try to estimate anything
 	 * till INST_THRESHOLD insts are 
 	 * executed. Hopefully avoids messing
@@ -122,15 +121,15 @@ void put_mask_from_stats(struct task_struct *ts)
 	if (TS_MEMBER(ts, inst) < INST_THRESHOLD)
 		return;
 	tasks_interval = TS_MEMBER(ts, interval);
-	old_state = TS_MEMBER(ts,cpustate);
+	old_state = TS_MEMBER(ts, cpustate);
 
-	#ifdef SCHED_DEBUG
-	for(i=0;i<total_states;i++){
-		if(states[i].cpus > 0){
-			sched_debug("%d:%d",i,get_state_tasks(i));
+#ifdef SCHED_DEBUG
+	for (i = 0; i < total_states; i++) {
+		if (states[i].cpus > 0) {
+			sched_debug("%d:%d", i, get_state_tasks(i));
 		}
 	}
-	#endif
+#endif
 
 	do {
 		seq = read_seqbegin(&states_seq_lock);
@@ -139,33 +138,34 @@ void put_mask_from_stats(struct task_struct *ts)
 
 		switch (TS_MEMBER(ts, fixed_state)) {
 		case FIXED_STATE_LOW:
-			new_state = search_state_closest(state,low_state);
+			new_state = search_state_closest(state, low_state);
 			state_req = low_state;
 			break;
 		case FIXED_STATE_MID:
-			new_state = search_state_closest(state,mid_state);
+			new_state = search_state_closest(state, mid_state);
 			state_req = mid_state;
 			break;
 		case FIXED_STATE_HIGH:
-			new_state = search_state_closest(state,high_state);
+			new_state = search_state_closest(state, high_state);
 			state_req = high_state;
 			break;
 		default:
 			ipc = IPC(TS_MEMBER(ts, inst), TS_MEMBER(ts, re_cy));
-      new_state = evaluate_ipc(ipc,state,&(TS_MEMBER(ts,hist_step)),&state_req);
+			new_state = evaluate_ipc(ipc, state,
+						 &(TS_MEMBER(ts, hist_step)),
+						 &state_req);
 		}
 		if (new_state >= 0 && new_state < total_states)
 			mask = states[new_state].cpumask;
-		#if defined(SCHED_DEBUG) && DEBUG == 2
-		else{
-			sched_debug("Negative state for %s",ts->comm);
+#if defined(SCHED_DEBUG) && DEBUG == 2
+		else {
+			sched_debug("Negative state for %s", ts->comm);
 		}
-		#endif
+#endif
 
 	} while (read_seqretry(&states_seq_lock, seq));
 
 	hint_inc(state_req);
-
 
 	/* Push statastics to the debug buffer if enabled */
 	p = get_log();
@@ -192,7 +192,7 @@ void put_mask_from_stats(struct task_struct *ts)
 
 	/* What the duche? as stewie says it */
 	if (cpus_empty(mask)) {
-		sched_debug("Empty mask for %s",ts->comm);
+		sched_debug("Empty mask for %s", ts->comm);
 		return;
 	}
 
@@ -201,8 +201,8 @@ void put_mask_from_stats(struct task_struct *ts)
 	 * function, but this is done to have the same 
 	 * overhead
 	 */
-	if(disable_scheduling == 0){
-		put_work(ts,mask);
+	if (disable_scheduling == 0) {
+		put_work(ts, mask);
 	}
 }
 
@@ -215,24 +215,22 @@ void put_mask_from_stats(struct task_struct *ts)
 void initial_mask(struct task_struct *ts)
 {
 	int state = base_state;
-  int cpu = smp_processor_id();
+	int cpu = smp_processor_id();
 	cpumask_t mask = CPU_MASK_NONE;
 	unsigned seq;
 	do {
 		seq = read_seqbegin(&states_seq_lock);
-		state = search_state_closest(cur_cpu_state[cpu],base_state);
+		state = search_state_closest(cur_cpu_state[cpu], base_state);
 		if (state >= 0 && state < total_states)
 			mask = states[state].cpumask;
 	} while (read_seqretry(&states_seq_lock, seq));
 	TS_MEMBER(ts, hist_step) = 0;
-	if(cpus_empty(mask)){
+	if (cpus_empty(mask)) {
 		mask = total_online_mask;
 		TS_MEMBER(ts, cpustate) = cur_cpu_state[cpu];
 	} else {
 		TS_MEMBER(ts, cpustate) = state;
 	}
-	put_work(ts,mask);
+	put_work(ts, mask);
 
 }
-
-

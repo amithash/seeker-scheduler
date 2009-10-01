@@ -40,7 +40,6 @@ extern int total_states;
 
 extern int scheduling_method;
 
-
 /********************************************************************************
  * 				Local Macros					*
  ********************************************************************************/
@@ -74,20 +73,19 @@ extern int scheduling_method;
                                        (inc_low) :                \
                                        ((a)+(b))))
 
-
-static int min_states[MAX_STATES] = {MIN_IPC_0, MIN_IPC_1, 
-				     MIN_IPC_2, MIN_IPC_3,
-				     MIN_IPC_4};
-
+static int min_states[MAX_STATES] = { MIN_IPC_0, MIN_IPC_1,
+	MIN_IPC_2, MIN_IPC_3,
+	MIN_IPC_4
+};
 
 int ladder_evaluation(int ipc, int cur_state, int *state_req)
 {
-  int new_state;
-  
-			/*up */
+	int new_state;
+
+	/*up */
 	if (ipc >= IPC_HIGH) {
 		*state_req = sat_inc(cur_state, total_states);
-		new_state = search_state_up(cur_state,*state_req);
+		new_state = search_state_up(cur_state, *state_req);
 	} else if (ipc <= IPC_LOW) {
 		*state_req = sat_dec(cur_state, 0);
 		new_state = search_state_down(cur_state, *state_req);
@@ -96,85 +94,88 @@ int ladder_evaluation(int ipc, int cur_state, int *state_req)
 		new_state = search_state_closest(cur_state, *state_req);
 	}
 
-  return new_state;
+	return new_state;
 }
 
-int adaptive_ladder_evaluation(int ipc, int cur_state, int *step, int *state_req)
+int adaptive_ladder_evaluation(int ipc, int cur_state, int *step,
+			       int *state_req)
 {
-  int new_state;
+	int new_state;
 	if (ipc >= IPC_HIGH) {
-    if(*step > 0) {
-			*state_req = sat_sum(cur_state, *step ,0, total_states);
-			*step = sat_inc(*step,total_states);
-      new_state = search_state_up(cur_state, *state_req);
-		} else if(*step == 0){
-      *state_req = cur_state;
-      *step = 1;
-      new_state = search_state_closest(cur_state, *state_req);
-    } else {
-			*state_req = cur_state;
-			*step = 0;
-      new_state = search_state_closest(cur_state, *state_req);
-		}
-  } else if (ipc <= IPC_LOW) {
-		if(*step < 0){
+		if (*step > 0) {
 			*state_req = sat_sum(cur_state, *step, 0, total_states);
-			*step = sat_dec(*step, (-1*(int)total_states));
-      new_state = search_state_down(cur_state, *state_req);
-		} else if(*step == 0){
-      *state_req = cur_state;
-      *step = -1;
-      new_state = search_state_closest(cur_state, *state_req);
-    } else {
+			*step = sat_inc(*step, total_states);
+			new_state = search_state_up(cur_state, *state_req);
+		} else if (*step == 0) {
+			*state_req = cur_state;
+			*step = 1;
+			new_state = search_state_closest(cur_state, *state_req);
+		} else {
 			*state_req = cur_state;
 			*step = 0;
-      new_state = search_state_closest(cur_state, *state_req);
+			new_state = search_state_closest(cur_state, *state_req);
+		}
+	} else if (ipc <= IPC_LOW) {
+		if (*step < 0) {
+			*state_req = sat_sum(cur_state, *step, 0, total_states);
+			*step = sat_dec(*step, (-1 * (int)total_states));
+			new_state = search_state_down(cur_state, *state_req);
+		} else if (*step == 0) {
+			*state_req = cur_state;
+			*step = -1;
+			new_state = search_state_closest(cur_state, *state_req);
+		} else {
+			*state_req = cur_state;
+			*step = 0;
+			new_state = search_state_closest(cur_state, *state_req);
 		}
 	} else {
 		*state_req = cur_state;
-		new_state = search_state_closest(cur_state,*state_req);
+		new_state = search_state_closest(cur_state, *state_req);
 		*step = 0;
 	}
 
-  return new_state;
+	return new_state;
 }
 
 int select_evaluation(int ipc, int cur_state, int *state_req)
 {
-  int i;
-  int new_state;
+	int i;
+	int new_state;
 
-	for(i = total_states - 1; i >= 0; i++){
-		if(ipc >= min_states[i]){
+	for (i = total_states - 1; i >= 0; i++) {
+		if (ipc >= min_states[i]) {
 			*state_req = i;
 			break;
 		}
 	}
 	new_state = search_state_closest(cur_state, *state_req);
 
-  return new_state;
+	return new_state;
 }
+
 int error_thrown = 0;
 
 int evaluate_ipc(int ipc, int cur_state, int *step, int *state_req)
 {
-  int new_state = cur_state;
-  switch(scheduling_method){
-  	case LADDER_SCHEDULING: 
-  		new_state = ladder_evaluation(ipc,cur_state,state_req);
+	int new_state = cur_state;
+	switch (scheduling_method) {
+	case LADDER_SCHEDULING:
+		new_state = ladder_evaluation(ipc, cur_state, state_req);
 		break;
 	case ADAPTIVE_LADDER_SCHEDULING:
-  		new_state = adaptive_ladder_evaluation(ipc,cur_state,step,state_req);
+		new_state =
+		    adaptive_ladder_evaluation(ipc, cur_state, step, state_req);
 		break;
 	case SELECT_SCHEDULING:
-  		new_state = select_evaluation(ipc, cur_state, state_req);
+		new_state = select_evaluation(ipc, cur_state, state_req);
 		break;
 	default:
-		if(!error_thrown){
-			error("INVALID SCHEDULING method: %d",scheduling_method);
+		if (!error_thrown) {
+			error("INVALID SCHEDULING method: %d",
+			      scheduling_method);
 			error_thrown = 1;
 		}
-  }
-  return new_state;
+	}
+	return new_state;
 }
-

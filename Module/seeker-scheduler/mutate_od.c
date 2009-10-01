@@ -71,14 +71,13 @@ void ondemand(void)
 
 	for (i = 0; i < total_online_cpus; i++) {
 		load = get_cpu_load(i);
-		if( load > LOAD_0_875 ) {
-			new_cpu_state[i] = total_states-1;
+		if (load > LOAD_0_875) {
+			new_cpu_state[i] = total_states - 1;
 		} else {
 			new_cpu_state[i] = 0;
 		}
-		if(cur_cpu_state[i] != new_cpu_state[i]){
-			set_freq(i,new_cpu_state[i]);
+		if (cur_cpu_state[i] != new_cpu_state[i]) {
+			set_freq(i, new_cpu_state[i]);
 		}
 	}
 }
-

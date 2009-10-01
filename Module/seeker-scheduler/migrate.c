@@ -35,18 +35,16 @@
 /* migration pool size */
 #define MIG_POOL_SIZE (NR_CPUS * 8)
 
-
 /********************************************************************************
  * 			Local Prototype 					*
  ********************************************************************************/
 
-struct mask_work{
+struct mask_work {
 	struct delayed_work work;
 	struct task_struct *task;
 	cpumask_t mask;
 	int free;
 };
-
 
 /********************************************************************************
  * 				global_variables				*
@@ -58,7 +56,6 @@ static DEFINE_SPINLOCK(mig_pool_lock);
 /* The migration pool */
 struct mask_work mig_pool[MIG_POOL_SIZE];
 
-
 /********************************************************************************
  * change_cpus - Perform migration if required.
  * @w - The work struct responsible for this call.
@@ -68,12 +65,12 @@ struct mask_work mig_pool[MIG_POOL_SIZE];
 void change_cpus(struct work_struct *w)
 {
 	int retval;
-	struct delayed_work *wrk = container_of(w,struct delayed_work,work);
-	struct mask_work *mw = container_of(wrk,struct mask_work,work);
+	struct delayed_work *wrk = container_of(w, struct delayed_work, work);
+	struct mask_work *mw = container_of(wrk, struct mask_work, work);
 	struct task_struct *ts = mw->task;
-	if(mw->free == 1)
+	if (mw->free == 1)
 		return;
-	if(cpus_equal(mw->mask,ts->cpus_allowed)){
+	if (cpus_equal(mw->mask, ts->cpus_allowed)) {
 		debug("No change required");
 		goto change_cpus_out;
 	}
@@ -91,7 +88,7 @@ change_cpus_out:
 void init_mig_pool(void)
 {
 	int i;
-	for(i=0; i < MIG_POOL_SIZE; i++){
+	for (i = 0; i < MIG_POOL_SIZE; i++) {
 		INIT_DELAYED_WORK(&(mig_pool[i].work), change_cpus);
 		mig_pool[i].free = 1;
 	}
@@ -107,8 +104,8 @@ void exit_mig_pool(void)
 {
 	int i;
 	spin_lock(&mig_pool_lock);
-	for(i=0; i < MIG_POOL_SIZE; i++){
-		if(mig_pool[i].free == 1){
+	for (i = 0; i < MIG_POOL_SIZE; i++) {
+		if (mig_pool[i].free == 1) {
 			mig_pool[i].free = 0;
 		} else {
 			cancel_delayed_work(&mig_pool[i].work);
@@ -130,22 +127,22 @@ void put_work(struct task_struct *ts, cpumask_t mask)
 {
 	int i;
 	spin_lock(&mig_pool_lock);
-	for(i=0; i < MIG_POOL_SIZE; i++) {
-		if(mig_pool[i].free == 1){
+	for (i = 0; i < MIG_POOL_SIZE; i++) {
+		if (mig_pool[i].free == 1) {
 			mig_pool[i].free = 0;
 			break;
 		}
 	}
 	spin_unlock(&mig_pool_lock);
-	if(i == MIG_POOL_SIZE){
+	if (i == MIG_POOL_SIZE) {
 		sched_debug("Migrtion pool is empty");
 		return;
 	}
 
-	PREPARE_DELAYED_WORK(&(mig_pool[i].work),change_cpus);
+	PREPARE_DELAYED_WORK(&(mig_pool[i].work), change_cpus);
 	mig_pool[i].mask = mask;
 	mig_pool[i].task = ts;
-	schedule_delayed_work(&(mig_pool[i].work),1);
+	schedule_delayed_work(&(mig_pool[i].work), 1);
 }
 
 /********************************************************************************
@@ -158,15 +155,11 @@ void cancel_task_work(struct task_struct *ts)
 {
 	int i;
 	spin_lock(&mig_pool_lock);
-	for(i=0;i<MIG_POOL_SIZE;i++){
-		if(mig_pool[i].free == 0 && 
-		   ts->pid == mig_pool[i].task->pid){
+	for (i = 0; i < MIG_POOL_SIZE; i++) {
+		if (mig_pool[i].free == 0 && ts->pid == mig_pool[i].task->pid) {
 			cancel_delayed_work(&mig_pool[i].work);
 			mig_pool[i].free = 1;
 		}
 	}
 	spin_unlock(&mig_pool_lock);
 }
-
-
-

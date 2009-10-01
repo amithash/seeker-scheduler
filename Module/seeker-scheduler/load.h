@@ -62,7 +62,6 @@
 #define LOAD_1_000 8
 #define LOAD_1_125 (LOAD_1_000 + LOAD_0_125)
 
-
 void init_idle_logger(void);
 unsigned int get_cpu_load(int cpu);
 
