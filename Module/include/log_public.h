@@ -28,10 +28,10 @@
 #ifndef _LOG_PUBLIC_H_
 #define _LOG_PUBLIC_H_
 
-#include <seeker_cpufreq.h>  /* Contains define for MAX_STATES */
+#include <seeker_cpufreq.h>	/* Contains define for MAX_STATES */
 
 /* Seeker-scheduler sample data */
-enum {LOG_SCH, LOG_MUT, LOG_PID, LOG_STATE};
+enum { LOG_SCH, LOG_MUT, LOG_PID, LOG_STATE };
 
 typedef struct {
 	unsigned long long interval;
@@ -66,12 +66,12 @@ typedef struct {
 
 typedef struct {
 	int type;
-	union{
+	union {
 		log_scheduler_t sch;
 		log_mutator_t mut;
 		log_pid_t tpid;
 		log_state_t state;
-	}u;
+	} u;
 } log_t;
 
 #endif

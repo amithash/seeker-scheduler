@@ -60,5 +60,3 @@ int pmu_is_interrupt(int ctr);
 int fpmu_is_interrupt(int ctr);
 
 #endif
-
-

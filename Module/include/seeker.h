@@ -36,7 +36,6 @@
 #define ON_EACH_CPU(a,b,c,d) on_each_cpu((a),(b),(c))
 #endif
 
-
 /* Useful Macros */
 
 /* Error and warn hash defines kern meaning is increased on purpose... */
